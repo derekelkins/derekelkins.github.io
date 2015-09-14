@@ -7,8 +7,25 @@
         <description><![CDATA[Mostly math, physics, and CS]]></description>
         <atom:link href="https://derekelkins.github.io/rss.xml" rel="self"
                    type="application/rss+xml" />
-        <lastBuildDate>Mon, 14 Sep 2015 06:12:26 UT</lastBuildDate>
+        <lastBuildDate>Mon, 14 Sep 2015 07:53:29 UT</lastBuildDate>
         <item>
+    <title>Differentiation under the integral</title>
+    <link>https://derekelkins.github.io/posts/differentiation-under-the-integral.html</link>
+    <description><![CDATA[<p><a href="../raw/DiffUnderIntegral.pdf">Here</a> is a PDF with an informal proof of a very general form of <a href="https://en.wikipedia.org/wiki/Differentiation_under_the_integral_sign">differentiation under the integral</a>.</p>
+<p>It’s formulated using geometric algebra and provides a simple demonstration of using some of the basic identities in geometric calculus.</p>
+<p>The end result is:</p>
+<p><img src="../raw/diff-under-integral.svg" alt="d/(dt) int_(D(t)) L_t(x; d^m x) = int_(D(t)) dot L_t(x; (d^m x ^^ (del x)/(del t)) * dot grad_x) + int_(del D(t)) L_t(x; d^(m-1) x ^^ (del x)/(del t)) + int_(D(t))(del L_t(x; d^m x))/(del t)"></img></p>
+<!--
+> `#d/(dt) int_(cc"D"(t)) bb"L"_t(bb"x"; d^m bb"x") 
+>    = int_(cc"D"(t)) dot bb"L"_t(bb"x"; (d^m bb"x" ^^ (del x)/(del t)) * dot grad_(bb"x"))#
+>  # + int_(del cc"D"(t)) bb"L"_t(bb"x"; d^(m-1) bb"x" ^^ (del x)/(del t))#
+>  # + int_(cc"D"(t))(del bb"L"_t(bb"x"; d^m bb"x"))/(del t)#`{.asciimath}
+-->]]></description>
+    <pubDate>Mon, 14 Sep 2015 07:53:29 UT</pubDate>
+    <guid>https://derekelkins.github.io/posts/differentiation-under-the-integral.html</guid>
+    <dc:creator>Derek Elkins</dc:creator>
+</item>
+<item>
     <title>A better way to write convolution</title>
     <link>https://derekelkins.github.io/posts/convolution.html</link>
     <description><![CDATA[<p>Normally discrete convolution is written as follows:</p>
@@ -30,7 +47,7 @@
 <blockquote>
 <p><code class="asciimath">#sum_(j+k=n) f(j)g(k) = sum_(k=-oo)^oo f(k)g(n-k)#</code></p>
 </blockquote>
-<p>In many combinatorial situations this makes no difference and may even be preferable. If, however, you are doing something like a short-time Fourier transform, then you probably don’t want to include an infinite number of entries (but you probably aren’t indexing by #bbZ#). Personally, I view this as a feature; you should be clear about the domain of your variables.</p>
+<p>In many combinatorial situations this makes no difference and may even be preferable. If, however, you are doing something like a short-time Fourier transform, then you probably don’t want to include an infinite number of entries (but you probably aren’t indexing by #bbbZ#). Personally, I view this as a feature; you should be clear about the domain of your variables.</p>
 <p>Let’s prove that #**# is associative, i.e. <code class="asciimath">#((f ** g) ** h)(n) = (f ** (g ** h))(n)#</code>. Expanding the left hand side we get:</p>
 <blockquote>
 <p><code class="asciimath">#sum_(m+k=n) sum_(i+j=m) f(i)g(j)h(k)# #= sum_(i+j+k=n) f(i)g(j)h(k)# #= sum_(i+m=n) sum_(j+k=m) f(i)g(j)h(k)#</code></p>

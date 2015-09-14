@@ -9,7 +9,7 @@
     <meta name="author" content="Derek Elkins">
     <!--<link rel="icon" href="/images/favicon.ico">-->
 
-    <title>Posts tagged "math"</title>
+    <title>Differentiation under the integral</title>
     <!-- Bootstrap core CSS -->
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom styles for this template -->
@@ -34,66 +34,51 @@
 
     <div class="container">
       
-          <div class="blog-header">
-            <a href="../"><h1 class="blog-title">Hedonistic Learning</h1></a>
-            <p class="lead blog-description">Learning for the fun of it</p>
-          </div>
       
       <div class="row">
         
-        <div class="col-sm-8 blog-main">
+        <div class="col-sm-12 blog-main">
         
-          <div class="list-group">
-    
-        <div class="list-group-item">
-            <h4 class="list-group-item-heading blog-post-link"><a href="../posts/differentiation-under-the-integral.html">Differentiation under the integral</a></h4>
-            <p class="list-group-item-text" style="color: #666;">
-                September 14, 2015 07:53 UTC
-                <a class="pull-right" data-disqus-identifier="352A55FE-CF0D-4CEE-975F-E77624467A13" href="../posts/differentiation-under-the-integral.html#disqus_thread"></a>
-                <h6 class="pull-right">Tags: <a href="../tags/math.html">math</a>, <a href="../tags/geometric%20algebra.html">geometric algebra</a></h6>
-            </p>
-        </div>
-    
-        <div class="list-group-item">
-            <h4 class="list-group-item-heading blog-post-link"><a href="../posts/convolution.html">A better way to write convolution</a></h4>
-            <p class="list-group-item-text" style="color: #666;">
-                September 14, 2015 06:12 UTC
-                <a class="pull-right" data-disqus-identifier="15CC5B1D-C7FE-46D9-B2DB-E7297B90A851" href="../posts/convolution.html#disqus_thread"></a>
-                <h6 class="pull-right">Tags: <a href="../tags/math.html">math</a></h6>
-            </p>
-        </div>
-    
-</div>
+          <div class="blog-post">
+    <h2 class="blog-post-title" style="margin-top: 30px;">Differentiation under the integral</h2>
+    <p class="blog-post-meta">September 14, 2015 07:53 UTC 
+        
+        (Last updated on September 14, 2015 07:55 UTC)
+    </p>
+    <h6 class="blog-post-meta">
+        
+        Tags: <a href="../tags/math.html">math</a>, <a href="../tags/geometric%20algebra.html">geometric algebra</a>
+        
+    </h6>
 
+    <p><a href="../raw/DiffUnderIntegral.pdf">Here</a> is a PDF with an informal proof of a very general form of <a href="https://en.wikipedia.org/wiki/Differentiation_under_the_integral_sign">differentiation under the integral</a>.</p>
+<p>It’s formulated using geometric algebra and provides a simple demonstration of using some of the basic identities in geometric calculus.</p>
+<p>The end result is:</p>
+<p><img src="../raw/diff-under-integral.svg" alt="d/(dt) int_(D(t)) L_t(x; d^m x) = int_(D(t)) dot L_t(x; (d^m x ^^ (del x)/(del t)) * dot grad_x) + int_(del D(t)) L_t(x; d^(m-1) x ^^ (del x)/(del t)) + int_(D(t))(del L_t(x; d^m x))/(del t)" /></p>
+<!--
+> `#d/(dt) int_(cc"D"(t)) bb"L"_t(bb"x"; d^m bb"x") 
+>    = int_(cc"D"(t)) dot bb"L"_t(bb"x"; (d^m bb"x" ^^ (del x)/(del t)) * dot grad_(bb"x"))#
+>  # + int_(del cc"D"(t)) bb"L"_t(bb"x"; d^(m-1) bb"x" ^^ (del x)/(del t))#
+>  # + int_(cc"D"(t))(del bb"L"_t(bb"x"; d^m bb"x"))/(del t)#`{.asciimath}
+-->
+
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_shortname = 'hedonisticlearning';
+        var disqus_identifier = '352A55FE-CF0D-4CEE-975F-E77624467A13';
+        var disqus_title = 'Differentiation under the integral';
+        
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript> 
+</div>
 
         </div><!-- /.blog-main -->
         
-            <div class="col-sm-3 col-sm-offset-1 blog-sidebar">
-              
-              <div class="sidebar-module panel panel-default" style="padding: 0;">
-                <div class="panel-heading"><h4>Recent</h4></div>
-                <div class="panel-body">
-                    <ol class="list-unstyled">
-                        
-                          <li><div class="blog-post-link">2015-09-14 - <a href="../posts/differentiation-under-the-integral.html">Differentiation under the integral</a></div></li>
-                        
-                          <li><div class="blog-post-link">2015-09-14 - <a href="../posts/convolution.html">A better way to write convolution</a></div></li>
-                        
-                          <li><div class="blog-post-link">2015-09-14 - <a href="../posts/first-post.html">First post</a></div></li>
-                        
-                    </ol>
-                </div>
-              </div>
-              <div class="sidebar-module panel panel-default" style="padding: 0;">
-                <div class="panel-heading"><h4>Tags</h4></div>
-                <div class="panel-body">
-                    <ol class="list-unstyled">
-                      <li><a href="../tags/geometric%20algebra.html">geometric algebra (1)</a></li>
-<li><a href="../tags/math.html">math (2)</a></li>
-                    </ol>
-                </div>
-              </div>
-            </div><!-- /.blog-sidebar -->
         
       </div><!-- /.row -->
     </div><!-- /.container -->

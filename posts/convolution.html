@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">A better way to write convolution</h2>
     <p class="blog-post-meta">September 14, 2015 06:12 UTC 
         
-        (Last updated on September 14, 2015 06:12 UTC)
+        (Last updated on September 14, 2015 07:55 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -70,7 +70,7 @@
 <blockquote>
 <p><code class="asciimath">#sum_(j+k=n) f(j)g(k) = sum_(k=-oo)^oo f(k)g(n-k)#</code></p>
 </blockquote>
-<p>In many combinatorial situations this makes no difference and may even be preferable. If, however, you are doing something like a short-time Fourier transform, then you probably don’t want to include an infinite number of entries (but you probably aren’t indexing by #bbZ#). Personally, I view this as a feature; you should be clear about the domain of your variables.</p>
+<p>In many combinatorial situations this makes no difference and may even be preferable. If, however, you are doing something like a short-time Fourier transform, then you probably don’t want to include an infinite number of entries (but you probably aren’t indexing by #bbbZ#). Personally, I view this as a feature; you should be clear about the domain of your variables.</p>
 <p>Let’s prove that #**# is associative, i.e. <code class="asciimath">#((f ** g) ** h)(n) = (f ** (g ** h))(n)#</code>. Expanding the left hand side we get:</p>
 <blockquote>
 <p><code class="asciimath">#sum_(m+k=n) sum_(i+j=m) f(i)g(j)h(k)# #= sum_(i+j+k=n) f(i)g(j)h(k)# #= sum_(i+m=n) sum_(j+k=m) f(i)g(j)h(k)#</code></p>
