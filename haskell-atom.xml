@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <title>Derek Elkins' Blog</title>
+    <link href="https://derekelkins.github.io/haskell-atom.xml" rel="self" />
+    <link href="https://derekelkins.github.io" />
+    <id>https://derekelkins.github.io/haskell-atom.xml</id>
+    <author>
+        <name>Derek Elkins</name>
+        <email>derek.a.elkins+blog@gmail.com</email>
+    </author>
+    <updated>2015-09-14T06:12:26Z</updated>
+    <entry>
+    <title>A better way to write convolution</title>
+    <link href="https://derekelkins.github.io/posts/convolution.html" />
+    <id>https://derekelkins.github.io/posts/convolution.html</id>
+    <published>2015-09-14T06:12:26Z</published>
+    <updated>2015-09-14T06:12:26Z</updated>
+    <summary type="html"><![CDATA[<p>Normally discrete convolution is written as follows:</p>
+<blockquote>
+<p><code class="asciimath">#(f ** g)(n) = sum_(k=0)^n f(k)g(n-k)#</code></p>
+</blockquote>
+<p>It is not immediately obvious from this that #f ** g = g ** f#. Consider this alternate representation:</p>
+<blockquote>
+<p><code class="asciimath">#(f ** g)(n) = sum_(j+k=n) f(j)g(k)#</code></p>
+</blockquote>
+<p>This formula is obviously symmetric in #f# and #g# and it clarifies an important invariant. For example, to multiply two polynomials (or formal power series) we convolve their coefficients. This looks like:</p>
+<p>Let <code class="asciimath">#P(x) = sum_k a_k x^k# and #Q(x) = sum_k b_k x^k#</code> then</p>
+<blockquote>
+<p><code class="asciimath">#P(x)Q(x) = sum_(j+k=n) a_j b_k x^n#</code></p>
+</blockquote>
+<p>This emphasizes that the #n#th coefficient is the product of the coefficients whose degrees sum to #n#. (You may recognize this as the convolution theorem.)</p>
+<!--more-->
+<p>There is one subtle difference. In this alternate representation, it very much matters what the domain of #j# and #k# are. If #j# and #k# are naturals, we get what we started with. But if they are integers, then we have:</p>
+<blockquote>
+<p><code class="asciimath">#sum_(j+k=n) f(j)g(k) = sum_(k=-oo)^oo f(k)g(n-k)#</code></p>
+</blockquote>
+<p>In many combinatorial situations this makes no difference and may even be preferable. If, however, you are doing something like a short-time Fourier transform, then you probably don’t want to include an infinite number of entries (but you probably aren’t indexing by #bbZ#). Personally, I view this as a feature; you should be clear about the domain of your variables.</p>
+<p>Let’s prove that #**# is associative, i.e. <code class="asciimath">#((f ** g) ** h)(n) = (f ** (g ** h))(n)#</code>. Expanding the left hand side we get:</p>
+<blockquote>
+<p><code class="asciimath">#sum_(m+k=n) sum_(i+j=m) f(i)g(j)h(k)# #= sum_(i+j+k=n) f(i)g(j)h(k)# #= sum_(i+m=n) sum_(j+k=m) f(i)g(j)h(k)#</code></p>
+</blockquote>
+<p>and we’re done. It’s clear the associativity of convolution comes from the associativity of addition and distributivity. In fact, the commutativity also came from the commutativity of addition. This suggests a simple but broad generalization. Simply replace the #+# in the indexing with any binary operation, i.e.:</p>
+<blockquote>
+<p><code class="asciimath">#(f ** g)(n) = sum_(j o+ k=n) f(j)g(k)#</code></p>
+</blockquote>
+<p>Usually #o+# is taken to be an operation of a group, and this makes sense when you need to support the equivalent of #n-k#, but there’s really nothing keeping it from being a monoid, and the unit isn’t doing anything so why not a semigroup, and we only really need associativity if we want the convolution to be associative, and nothing requires #n# to be the same type as #j# or #k# or for them to be the same type as each other for that matter… Of course having a group structure reduces the often sticky problem of factoring #n# into all the pairs of #j# and #k# such that #j o+ k = n# to the problem of “simply” enumerating the group.</p>
+<p>Here’s some code for the free monoid (i.e. lists) case:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Data.Monoid</span>
+<span class="kw">import </span><span class="dt">Data.List</span>
+
+<span class="kw">class</span> <span class="dt">Monoid</span> m <span class="ot">=&gt;</span> <span class="dt">CommutativeMonoid</span> m
+<span class="kw">instance</span> <span class="dt">Num</span> a <span class="ot">=&gt;</span> <span class="dt">CommutativeMonoid</span> (<span class="dt">Sum</span> a)
+
+<span class="co">-- Overly generalized convolve</span>
+<span class="ot">ogconvolve ::</span> (<span class="dt">CommutativeMonoid</span> m) <span class="ot">=&gt;</span> (a <span class="ot">-&gt;</span> b <span class="ot">-&gt;</span> m) <span class="ot">-&gt;</span> (n <span class="ot">-&gt;</span> [(j,k)]) <span class="ot">-&gt;</span> (j <span class="ot">-&gt;</span> a) <span class="ot">-&gt;</span> (k <span class="ot">-&gt;</span> b) <span class="ot">-&gt;</span> n <span class="ot">-&gt;</span> m
+ogconvolve mul factor f g n <span class="fu">=</span> mconcat (map (uncurry (\j k <span class="ot">-&gt;</span> mul (f j) (g k))) (factor n))
+
+<span class="ot">gconvolve ::</span> <span class="dt">Num</span> m <span class="ot">=&gt;</span> (n <span class="ot">-&gt;</span> [(n,n)]) <span class="ot">-&gt;</span> (n <span class="ot">-&gt;</span> m) <span class="ot">-&gt;</span> (n <span class="ot">-&gt;</span> m) <span class="ot">-&gt;</span> n <span class="ot">-&gt;</span> m
+gconvolve factor f g n <span class="fu">=</span> getSum (ogconvolve (\a b <span class="ot">-&gt;</span> <span class="dt">Sum</span> (a<span class="fu">*</span>b)) factor f g n)
+
+<span class="ot">lconvolve ::</span> <span class="dt">Num</span> m <span class="ot">=&gt;</span> ([a] <span class="ot">-&gt;</span> m) <span class="ot">-&gt;</span> ([a] <span class="ot">-&gt;</span> m) <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> m
+lconvolve <span class="fu">=</span> gconvolve (\as <span class="ot">-&gt;</span> zip (inits as) (tails as))</code></pre></div>
+<p>You may have noticed that we never actually use #o+# anywhere. It’s only significance is to define the valid factorizations. I.e. there’s an implicit constraint in the above code that</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">all (\(j,k) <span class="ot">-&gt;</span> n <span class="fu">==</span> j <span class="ot">`oplus`</span> k) (factor n)</code></pre></div>
+<p>and also that</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">factor n <span class="fu">==</span> nub (factor n)</code></pre></div>
+<p>i.e. no duplicates. (Conceptually, factor spits out a set, indeed the graph of the relation #(j,k)|-&gt;j o+ k=n#.)</p>
+<p>The commutative monoid constraint and <code>mul</code> function were just for the heck of it, but why a commutative monoid and not an arbitrary monoid? Well, we don’t want the result to depend on how <code>factor</code> spits out the factors. In other words, if it actually did return a set then we can’t depend on the order of the elements in the set if we want a well-defined function.</p>
+<p>Here’s where I tell you that <code>lconvolve</code> is an important function for something. I suspect it or a variant probably is, but I don’t know. Here’s another monoid case, commutative this time, that definitely is important and interesting: <a href="https://en.wikipedia.org/wiki/Dirichlet_convolution">Dirichlet convolution</a>.</p>
+<p>Here’s the typical bad definition:</p>
+<blockquote>
+<p><code class="asciimath">#(f *** g)(n) = sum_(d|n) f(d)g(n/d)#</code> where #d|n# means #d# evenly divides #n#.</p>
+</blockquote>
+<p>These are the coefficients of the product of two Dirichlet series. For example,</p>
+<blockquote>
+<p><code class="asciimath">#F(s) = sum_(n=1)^oo f(n)n^(-s) \quad G(s) = sum_(n=1)^oo g(n)n^(-s)#</code> <code class="asciimath">#\quad F(s)G(s) = sum_(n=1)^oo (f *** g)(n)n^(-s)#</code></p>
+</blockquote>
+<p>We again see a situation where the correspondence doesn’t just jump out at you (or at least it didn’t to me originally) until you realize the above sum can be written:</p>
+<blockquote>
+<p><code class="asciimath">#(f *** g)(n) = sum_(ab=n) f(a)g(b)#</code></p>
+</blockquote>
+<p>then it’s pretty easy to see that it is right. We can start doing a lot of number theory with the above combined with the <a href="https://en.wikipedia.org/wiki/Euler_product">Euler product</a> formula:</p>
+<blockquote>
+<p><code class="asciimath">#sum_(n=1)^oo f(n)n^(-s) = prod_(p\ &quot;prime&quot;) sum_(n=0)^oo f(p^n)p^(-ns)#</code></p>
+</blockquote>
+<p>where #f# is multiplicative, which means #f(ab) = f(a)f(b)# when #a# and #b# are coprime. (The real significance of #f# being multiplicative is that it is equivalent to #f# being completely determined by its values on prime powers.) It turns out it is surprisingly easy and fun to derive various <a href="https://en.wikipedia.org/wiki/Arithmetic_function">arithmetic functions</a> and identities between them. Here’s a brief teaser.</p>
+<p>#1(n) = 1# is a multiplicative function and this gives:</p>
+<blockquote>
+<p><code class="asciimath">#zeta(s) = sum_(n=1)^oo n^(-s) = prod_(p\ &quot;prime&quot;) 1/(1-p^(-s))#</code></p>
+</blockquote>
+<p>where we’ve used the formula for the sum of a geometric series.</p>
+<p>So <code class="asciimath">#1/(zeta(s)) = prod_(p\ &quot;prime&quot;) 1-p^(-s) = sum_(n=1)^oo mu(n)n^(-s)#</code>. The question is now, what is #mu#? Well, all we need to do is say what it is on prime powers and comparing the Euler product formula to the above we see, for prime #p#, #mu(p) = -1# and #mu(p^n) = 0# for #n &gt; 1#. This is the <a href="https://en.wikipedia.org/wiki/M%C3%B6bius_function">Möbius function</a>. Because #zeta(s) * (1/(zeta(s))) = 1# we have #(1 *** mu)(n) = sum_(d|n) mu(d) = 0# for #n &gt; 1#. Continuing in this vein leads to analytic number theory and the Riemann hypothesis, though you may want to pick up the <a href="https://en.wikipedia.org/wiki/Mellin_transform">Mellin transform</a> along the way.</p>]]></summary>
+</entry>
+<entry>
+    <title>First post</title>
+    <link href="https://derekelkins.github.io/posts/first-post.html" />
+    <id>https://derekelkins.github.io/posts/first-post.html</id>
+    <published>2015-09-14T06:12:11Z</published>
+    <updated>2015-09-14T06:12:11Z</updated>
+    <summary type="html"><![CDATA[<p>I finally made a blog. We’ll see how it goes. Right now I’m in a kind of mathy mood so the coming posts will probably be pretty theoretical/mathematical. I do have a list of topics I’d like to write about, so I should be producing something for a while. If there’s something you’d like me to talk about, email me.</p>]]></summary>
+</entry>
+
+</feed>
