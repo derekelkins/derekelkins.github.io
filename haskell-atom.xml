@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-    <title>Derek Elkins' Blog</title>
+    <title>Hedonistic Learning</title>
     <link href="https://derekelkins.github.io/haskell-atom.xml" rel="self" />
     <link href="https://derekelkins.github.io" />
     <id>https://derekelkins.github.io/haskell-atom.xml</id>
