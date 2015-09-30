@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="A blog mostly on math, physics, and computer science.">
+    <meta name="author" content="Derek Elkins">
+    <!--<link rel="icon" href="/images/favicon.ico">-->
+
+    <title>The three styles of category theory</title>
+    <!-- Bootstrap core CSS -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="../css/blog.css" rel="stylesheet">
+    <link href="../css/syntax.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="blog-masthead">
+      <div class="container">
+        <nav class="blog-nav">
+          <a class="blog-nav-item " href="../">Home</a>
+          <a class="blog-nav-item " href="../about.html">About</a>
+          <a class="blog-nav-item " href="../contact.html">Contact</a>
+          <a class="blog-nav-item " href="../readinglist.html">Reading List</a>
+          <a class="blog-nav-item " href="../archive.html">Archive</a>
+          <a class="blog-nav-item pull-right" href="../rss.xml">RSS</a>
+          <a class="blog-nav-item pull-right" href="../atom.xml">Atom</a>
+        </nav>
+      </div>
+    </div>
+
+    <div class="container">
+      
+      
+      <div class="row">
+        
+        <div class="col-sm-12 blog-main">
+        
+          <div class="blog-post">
+    <h2 class="blog-post-title" style="margin-top: 30px;">The three styles of category theory</h2>
+    <p class="blog-post-meta">September 30, 2015 05:45 UTC 
+        
+        (Last updated on September 30, 2015 05:48 UTC)
+    </p>
+    <h6 class="blog-post-meta">
+        
+        Tags: <a href="../tags/math.html">math</a>, <a href="../tags/category%20theory.html">category theory</a>
+        
+    </h6>
+
+    <h3 id="introduction">Introduction</h3>
+<p> Arguably (1-)category theory is the study of universal properties. There are three standard formulations of the notion of universal property which are all equivalent. Most introductions to category theory will  cover all three and how they relate. By systematically preferring one formulation above the others, three styles of doing category theory arise with distinctive constructions and proof styles.  I noticed this trichotomy many years ago, but I haven’t heard anyone explicitly identify and compare these styles. Furthermore, in my opinion, one of these styles, the one I call <strong>Set</strong>-category theory, is significantly easier to use than the others, but seems poorly represented in introductions to category theory.  For myself, it wasn’t until I read <a href="http://www.tac.mta.ca/tac/reprints/articles/10/tr10abs.html">Basic Concepts of Enriched Category Theory</a>  by G. M. Kelly and was introduced to indexed (co)limits (aka weighted (co)limits), that I began to recognize and appreciate <strong>Set</strong>-category theory. Indexed (co)limits are virtually absent from category theory introductions, and the closely related notion of (co)ends are also very weakly represented despite being far more useful than (conical) (co)limits. I don’t know why this is. Below I’ll be more focused on comparing the styles than illustrating the usefulness of indexed (co)limits. I may write an article about that in the future; in the mean time you can read “Basic Concepts of Enriched Category Theory” and just ignore the enriched aspect. Admittedly, it is definitely <em>not</em> an introduction to category theory.  <!--more-->  ### Universality  What follows are three equivalent formulations of the notion of universal property including proofs of equivalence.  #### Initiality  Initiality is by far the simplest formulation of universal properties to understand because it is a very special case, albeit a special case that can be finagled to cover the general case.  An object, typically denoted |0|, is <strong>initial</strong> iff for every object in the category there exists a unique arrow from |0|. If |A| is an object in the category, we can write |(:A:) : 0 -&gt; A| for the unique arrow.  #### Representability  Representability isn’t as simple or intuitive as initiality, but it is still pretty simple.  A functor |F : C^(op) -&gt; Set| is <strong>representable</strong> iff |F ~= Hom(-,Y)| for some |Y|. Note that this is an isomorphism between functors, i.e. a natural isomorphism. We say |Y| <strong>represents</strong> the functor |F|. A  functor |G : C -&gt; Set| is <strong>co-representable</strong> iff |G ~= Hom(X,-)| for some |X|. Similarly we say |X| <strong>(co-)represents</strong> the functor |G|. Representable and co-representable aren’t actually different; if we  set |D = C^(op)| then we could say |F| is co-representable as a functor from |D| and it would mean the same  thing.  Now we need to prove initiality and (co-)representability equivalent. One direction is easy, |0|  co-represents the functor |lambda C . {<strong>}|.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> It’s easy to show that  this says exactly that |0| is initial.  I’ll hold off on the other direction and instead prove the circular implication: </strong>Representability<strong> |=&gt;| </strong>Initiality** |=&gt;| <strong>Universal Arrow</strong> |=&gt;| <strong>Representability</strong>. Right now we’ve done the first step;  we can recast initiality as representability. Next we’ll show that we can recast universal arrows as  initiality and representability as a universal arrow and we’ll have shown them all equivalent.  #### Universal arrow  Let |U : C -&gt; D| be a functor. |eta : A -&gt; UX| is a <strong>universal arrow</strong> iff for all |f : A -&gt; UY| there exists a unique arrow |(:f:) : X -&gt; Y| such that |f = U(:f:) @ eta|. Dually, let |F : C -&gt; D| be a functor, then |epsilon : FX -&gt; A| is a <strong>co-universal arrow</strong> iff for all |g : FY -&gt; A| there exists a unique arrow |(:g:) : Y -&gt; X| such that |g = epsilon @ F(:g:)|. Again, these are equivalent notions. A co-universal arrow is just a universal arrow in the opposite category.  Now to prove <strong>Initiality</strong> |=&gt;| <strong>Universal Arrow</strong>. Consider the (comma) category whose objects are pairs |(f, Y)| where |f : A -&gt; UY| and whose arrows |k : (f, Y) -&gt; (g, Z)| are arrows |k : Y -&gt; Z| such that |g = Uk @ f|. |eta| is a universal arrow iff |(eta, X)| is initial in this category. This is easy to check.  Finally, <strong>Universal Arrow</strong> |=&gt;| <strong>Representability</strong>. Let |G : C -&gt; Set|. The claim is there exists a universal arrow <code class="asciimath">|eta : {**} -&gt; GX|</code> iff |X| co-represents |G|. Doing the backwards direction first, if |X|  co-represents |G| then there is an element of |GX| that corresponds to |id : X -&gt; X|. Have |eta| pick out  that element. Given another element |y : {<strong>} -&gt; GY| we need to find a unique arrow |(:y:) : X -&gt; Y| such that |G(:y:)(eta) = y|. Naturality of the isomorphism making |X| co-represent |G| says:  |f @ phi_A(a) = phi_B(Gf(a))| where |phi : G ~= Hom(X,-)|, |f : A -&gt; B|, and |a in GA|. Applying |phi_Y| to both sides of the earlier equation and using |phi_X(eta) = id| we get: |(:y:) = phi_Y(y)| showing that |(:y:)| exists and is unique and thus |eta| is a universal arrow.  Next we need to show that |eta : {</strong>} -&gt; GX| being a universal arrow implies that |X| co-represents |G|. We immediately have a parameterized bijection namely |(: - :)_Y : GY ~= Hom(X,Y)|. All we need to do is show that it is natural in |Y| which is to say |f @ (:a:)_A = (:Gf(a):)_B| where |f : A -&gt; B|. We have |Gf(a) = Gf(G(:a:)(eta)) = (Gf @ G(:a:))(eta) = G(f @ (:a:))(eta)|. Using |f = (:Gf(eta):)_B| which is a consequence of |eta| being universal, we get |(:Gf(a):)_B = f @ (:a:)_A| as desired.  ### Initiality  In the initiality style of doing category theory, the main exercise is defining an appropriate category. This is pretty difficult from both a creativity perspective and a notational perspective. Once an appropriate category is defined, though, the proofs are typically not too hard. Perhaps the main tool is the comma  category as that allows the compact and flexible specification of many categories, though it can often take a touch of creativity to recognize a category as a comma category. Technically, the proof above implies that for any universal property there’s an appropriate comma category in which the universal object is the initial object.  This style is often seen in introductions to category theory. If you’ve ever read about categories of  (co)cones or wedges, then you’ve seen an example of this style with an ad-hoc definition of the relevant categories. In practice, the categories needed to characterize a specific universal property are of little interest on their own so the effort spent defining them isn’t repaid. The main exception is the category of |F|-algebras for some functor |F|. (Incidentally, the category of |F|-algebras is a full subcategory of a comma category.)  The style of proof is to leverage the uniqueness of the mediating morphism to equate two seemingly different things. Lambek’s lemma is an excellent illustration of this proof style.  ### <strong>Set</strong>-category theory  The core of this style of category theory is representability and its parameterized variant. Representability alone is already very powerful and ergonomic. Every limit or colimit in a category represents a limit of homsets. This means all the tools and intuitions of set theory are available. This is the basis for my naming of this style: we elucidate the structure of a category by relating it to the structure of the  category of sets.  The main tools of this style are (co)ends, indexed (co)limits, and adjunctions in the form  |Hom(FA,B) ~= Hom(A,UB)|. In particular, the intimate connection between ends/indexed limits and sets of  natural transformations significantly eases moving up and down functor categories.  By far the best part of this approach is the style of proof. By leveraging continuity properties,  characterizations in terms of (parameterized) representability, some general isomorphisms, and occasionally some hand-crafted isomorphisms, nearly any categorical theorem can be proven in a dozen or less isomorphisms. The presentation looks and feels very much like solving an algebraic equation. The proofs are easy to read  and easy to write.  The main drawback of this style is that most of the properties above weaken and some disappear when working in enriched or higher categories.  ### <strong>Cat</strong>-category theory  Arguably, this style should be based on universal arrows. While it technically is, in practice, it’s rare that one talks about universal arrows and instead the parameterized version, namely adjunctions in their unit/counit formulation are the main tool. After adjunctions would be Kan extensions. All of these are concepts that live naturally at the level of 2-categories which makes them much easier to generalize.  The main style of proof is diagram chasing, i.e. proving typically several equalities. On the one hand, proving an equation is straight-forward equational reasoning; on the other hand, there tend to be several equations that need to be proven at a time, they tend to be fine-grained and thus detailed and tedious, and often general results don’t obviously apply. The solution to most of these problems is to use string  diagrams instead. Many of the bureaucratic details completely disappear and the proofs become crystal clear. A wonderful example of this style of proof is proving that an adjunction gives rise to a monad. With normal diagram chasing it’s mildly tedious. With string diagrams it proves itself.  One issue that comes up in this style is the elegant definitions tend to be wholesale. For example, there’s a nice adjunction that characterizes all limits of any given shape. Unfortunately, the adjunction only exists if all the limits of that shape exists. If they don’t all exist, then you need to use some other method  to talk about the limits that do exist. Technically, universal arrows could handle this, but usually  representability is used instead.  <!-- ### Yoneda-->  ### Conclusion  Ultimately, one should become familiar with all these approaches. There are definitely problems that fit nicer in some than others. However, when it comes to universal properties the <strong>Set</strong>-category theory wins hands down. <strong>Cat</strong>-category theory tends to be more useful when working with structures that aren’t  characterized by a universal property such as monoidal structure. Initiality has its niche with initial algebras. I don’t have any ideas on where it might also be a profitable perspective. In fact, I’m not completely sure it’s a good thing that we think about initial algebras as initial algebras. There are interesting interactions between initial algebras and adjunctions for example and it’s not clear to me that they wouldn’t be more accessible with a different presentation of initial algebras.  ### Texts illustrating these approaches  * Representatives of initiality: - <a href="http://maartenfokkinga.github.io/utwente/mmf92b.pdf">A Gentle Introduction to Category Theory – the calculational approach –</a> by Maarten Fokkinga  * Representatives of <strong>Set</strong>-category theory: - <a href="http://www.cs.ox.ac.uk/ralf.hinze/publications/WGP10.pdf">Reason Isomorphically!</a> by Ralf Hinze - <a href="http://arxiv.org/abs/1501.02503">This is the (co)end, my only (co)friend</a> by Fosco Loregian - <a href="http://www.tac.mta.ca/tac/reprints/articles/10/tr10abs.html">Basic Concepts of Enriched Category Theory</a> by G. M. Kelly  * Representatives of <strong>Cat</strong>-category theory: - <a href="http://www.dcs.ed.ac.uk/home/dt/CT/categories.pdf">Category Theory Lecture Notes</a> by Daniele Turi</p>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>|{**}| is just some singleton set.<a href="#fnref1">↩</a></p></li>
+</ol>
+</div>
+
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_shortname = 'hedonisticlearning';
+        var disqus_identifier = '50477F76-898F-444F-AAD6-A4BC20802E5E';
+        var disqus_title = 'The three styles of category theory';
+        
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript> 
+</div>
+
+        </div><!-- /.blog-main -->
+        
+        
+      </div><!-- /.row -->
+    </div><!-- /.container -->
+
+    <footer class="blog-footer">
+      <p>Site generated by <a href="http://jaspervdj.be/hakyll">Hakyll</a></p>
+      <p>
+        <a href="#">Back to top</a>
+      </p>
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!--<script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>-->
+    <script type="text/javascript">
+        var disqus_shortname = 'hedonisticlearning';
+        (function () {
+            var s = document.createElement('script'); s.async = true;
+            s.type = 'text/javascript';
+            s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
+            (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+        }());
+    </script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_HTMLorMML.js">
+    </script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+          extensions: ['asciimath2jax.js'],
+          asciimath2jax: {
+              delimiters: [['|','|'], ['#','#']],
+              processClass: 'asciimath'
+            }
+        });
+    </script>
+  </body>
+</html>
