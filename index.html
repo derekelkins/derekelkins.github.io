@@ -46,6 +46,38 @@
           
     <div class="blog-post teaser panel panel-default">
     <div class="panel-heading">
+        <h2 class="blog-post-title"><a href="./posts/you-know-more-about-presheaves-than-you-think.html">You know more about presheaves than you think</a></h2>
+        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="32F754A2-5428-4404-A21A-759092CC4010" href="./posts/you-know-more-about-presheaves-than-you-think.html#disqus_thread"></a></h6>
+    </div>
+
+    <div class="panel-body">
+        
+            <h3 id="the-category-of-graphs-as-a-presheaf">The category of graphs as a presheaf</h3>
+<p>Here’s a small example of why people find category theory interesting. Consider the category, call it |ccC|, consisting of two objects, which we’ll imaginatively name |0| and |1|, and two non-identity arrows |s,t : 0 -&gt; 1|. The category of graphs (specifically directed multigraphs with loops) is the category of presheaves over |ccC|, which is to say, it’s the category of contravariant functors from |ccC| to <code class="asciimath">|cc&quot;Set&quot;|</code>. I’ll spell out what that means momentarily, but first think about what has been done. We’ve provided a complete definition of not only graphs but the entire category of graphs and graph homomorphisms given you’re familiar with very basic category theory<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>. This is somewhat magical.</p>
+<p>Spelling things out, |G| is a contravariant functor from |ccC| to <code class="asciimath">|cc&quot;Set&quot;|</code>. This means that |G| takes each object of |ccC| to a set, i.e. |G(0) = V| and |G(1) = E| for arbitrary sets |V| and |E|, but which will represent the vertices and edges of our graph. In addition, |G| takes the arrows in |ccC| to a (set) function, but, because it’s contravariant, it flips the arrows around. So we have, for example, |G(s) : G(1) -&gt; G(0)| or |G(s) : E -&gt; V|, and similarly for |t|. |G(s)| is a function that takes an edge and gives its source vertex, and |G(t)| gives the target. The arrows in the category of graphs are just natural transformations between the functors. In this case, that means if we have two graphs |G| and |H|, a graph homomorphism |f : G -&gt; H| is a pair of functions |f_0 : G(0) -&gt; H(0)| and |f_1 : G(1) -&gt; H(1)| that satisfy |H(s) @ f_1 = f_0 @ G(s)| and |H(t) @ f_1 = f_0 @ G(t)|. With a bit of thought you can see that all this says is that we must map the source and target of an edge |e| to the source and target of the edge |f_1(e)|. You may also have noticed that <em>any</em> pair of sets and pair of functions between them is a graph. In other words, graphs are very simple things. This takes out a lot of the magic, though it is nice that we get the right notion of graph homomorphism for free. Let me turn the magic up to 11.</p>
+
+            <h6><a href="./posts/you-know-more-about-presheaves-than-you-think.html">Read more...</a></h6>
+        
+    </div>
+
+    <div class="panel-footer">
+        <h6 class="blog-post-meta">
+            November  2, 2015 12:04 UTC
+            
+            (Last updated on November  2, 2015 12:09 UTC)
+
+            
+                Tags: <a href="./tags/CS.html">CS</a>, <a href="./tags/category%20theory.html">category theory</a>
+            
+        </h6>
+    </div>
+
+</div><!-- /.blog-post -->
+
+
+
+    <div class="blog-post teaser panel panel-default">
+    <div class="panel-heading">
         <h2 class="blog-post-title"><a href="./posts/styles-of-category-theory.html">The three styles of category theory</a></h2>
         <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="50477F76-898F-444F-AAD6-A4BC20802E5E" href="./posts/styles-of-category-theory.html#disqus_thread"></a></h6>
     </div>
@@ -195,6 +227,8 @@
                 <div class="panel-body">
                     <ol class="list-unstyled">
                         
+                          <li><div class="blog-post-link">2015-11-02 - <a href="./posts/you-know-more-about-presheaves-than-you-think.html">You know more about presheaves than you think</a></div></li>
+                        
                           <li><div class="blog-post-link">2015-09-30 - <a href="./posts/styles-of-category-theory.html">The three styles of category theory</a></div></li>
                         
                           <li><div class="blog-post-link">2015-09-14 - <a href="./posts/differentiation-under-the-integral.html">Differentiation under the integral</a></div></li>
@@ -210,7 +244,8 @@
                 <div class="panel-heading"><h4>Tags</h4></div>
                 <div class="panel-body">
                     <ol class="list-unstyled">
-                      <li><a href="./tags/category%20theory.html">category theory (1)</a></li>
+                      <li><a href="./tags/CS.html">CS (1)</a></li>
+<li><a href="./tags/category%20theory.html">category theory (2)</a></li>
 <li><a href="./tags/geometric%20algebra.html">geometric algebra (1)</a></li>
 <li><a href="./tags/math.html">math (3)</a></li>
                     </ol>

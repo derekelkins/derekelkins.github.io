@@ -7,8 +7,109 @@
         <description><![CDATA[Mostly math, physics, and CS]]></description>
         <atom:link href="https://derekelkins.github.io/rss.xml" rel="self"
                    type="application/rss+xml" />
-        <lastBuildDate>Wed, 30 Sep 2015 05:45:11 UT</lastBuildDate>
+        <lastBuildDate>Mon, 02 Nov 2015 12:04:45 UT</lastBuildDate>
         <item>
+    <title>You know more about presheaves than you think</title>
+    <link>https://derekelkins.github.io/posts/you-know-more-about-presheaves-than-you-think.html</link>
+    <description><![CDATA[<h3 id="the-category-of-graphs-as-a-presheaf">The category of graphs as a presheaf</h3>
+<p>Here’s a small example of why people find category theory interesting. Consider the category, call it |ccC|, consisting of two objects, which we’ll imaginatively name |0| and |1|, and two non-identity arrows |s,t : 0 -&gt; 1|. The category of graphs (specifically directed multigraphs with loops) is the category of presheaves over |ccC|, which is to say, it’s the category of contravariant functors from |ccC| to <code class="asciimath">|cc&quot;Set&quot;|</code>. I’ll spell out what that means momentarily, but first think about what has been done. We’ve provided a complete definition of not only graphs but the entire category of graphs and graph homomorphisms given you’re familiar with very basic category theory<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>. This is somewhat magical.</p>
+<p>Spelling things out, |G| is a contravariant functor from |ccC| to <code class="asciimath">|cc&quot;Set&quot;|</code>. This means that |G| takes each object of |ccC| to a set, i.e. |G(0) = V| and |G(1) = E| for arbitrary sets |V| and |E|, but which will represent the vertices and edges of our graph. In addition, |G| takes the arrows in |ccC| to a (set) function, but, because it’s contravariant, it flips the arrows around. So we have, for example, |G(s) : G(1) -&gt; G(0)| or |G(s) : E -&gt; V|, and similarly for |t|. |G(s)| is a function that takes an edge and gives its source vertex, and |G(t)| gives the target. The arrows in the category of graphs are just natural transformations between the functors. In this case, that means if we have two graphs |G| and |H|, a graph homomorphism |f : G -&gt; H| is a pair of functions |f_0 : G(0) -&gt; H(0)| and |f_1 : G(1) -&gt; H(1)| that satisfy |H(s) @ f_1 = f_0 @ G(s)| and |H(t) @ f_1 = f_0 @ G(t)|. With a bit of thought you can see that all this says is that we must map the source and target of an edge |e| to the source and target of the edge |f_1(e)|. You may also have noticed that <em>any</em> pair of sets and pair of functions between them is a graph. In other words, graphs are very simple things. This takes out a lot of the magic, though it is nice that we get the right notion of graph homomorphism for free. Let me turn the magic up to 11.</p>
+<!--more-->
+<p>Presheaves are extremely important in category theory, so categorists know a lot about them. It turns out that they have a lot of structure (mostly because <code class="asciimath">|cc&quot;Set&quot;|</code> has a lot of structure). In particular, in the categorical jargon, if |ccC| is small (and finite is definitely small), then the category of presheaves over |ccC| is a complete and cocomplete elementary topos with a natural number object. For those of you learning category theory who’ve gotten beyond the basics, proving this is a <em>very</em> good and important exercise. In programmer-speak, that says we can do dependently typed lambda calculus with algebraic data and codata types in that category. To be clear, this is not saying we have a lambda calculus with a graph type. It’s saying we have a lambda calculus where <em>all</em> our types have graph structure.</p>
+<h3 id="beyond-graphs">Beyond graphs</h3>
+<p>But set that aside for now. This isn’t an article about graphs so let’s start generalizing away from them. We’ll start with a baby step. You can probably guess how we’d go about making edge labeled graphs. We’d add another object to |ccC|, say |2|, and an arrow from |2| to |1|, call it |l_e| — remember that the arrows are “backwards” because presheaves are contravariant. You may start seeing a pattern already. One way to start formalizing that pattern is to say for every object of |ccC| we have an abstract data type with a field for each arrow into that object. In our example, |1| has three arrows into it, namely |s|, |t|, and |l_e|. We can view an element |e in F(1)| for a presheaf |F| as having fields <code>e.s</code>, <code>e.t</code> and <code>e.l_e</code>. Since <code class="asciimath">|cc&quot;Set&quot;|</code> has (non-constructive, non-computable) decidable equality for everything, we can tell |e| from |e’| even if <code>e.s = e'.s</code> and <code>e.t = e'.t</code> and <code>e.l_e = e'.l_e</code>. This is different from a normal abstract data type (in a purely functional language) where an abstract data type with three fields would be isomorphic to a 3-tuple. The extra ability to differentiate them could be modeled by having a fourth field that returned something that could only be compared for equality, kind of like <a href="https://hackage.haskell.org/package/base/docs/Data-Unique.html">Data.Unique</a> (ignoring the <code>Ord</code> instance…) It may look like:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Vertex</span> <span class="co">-- abstract</span>
+<span class="ot">vertexId ::</span> <span class="dt">Vertex</span> <span class="ot">-&gt;</span> <span class="dt">Unique</span>
+
+<span class="kw">data</span> <span class="dt">Label</span> <span class="co">-- abstract</span>
+<span class="ot">labelId ::</span> <span class="dt">Label</span> <span class="ot">-&gt;</span> <span class="dt">Unique</span>
+
+<span class="kw">data</span> <span class="dt">Edge</span> <span class="co">-- abstract</span>
+<span class="ot">edgeId ::</span> <span class="dt">Edge</span> <span class="ot">-&gt;</span> <span class="dt">Unique</span>
+<span class="ot">src ::</span> <span class="dt">Edge</span> <span class="ot">-&gt;</span> <span class="dt">Vertex</span>
+<span class="ot">tgt ::</span> <span class="dt">Edge</span> <span class="ot">-&gt;</span> <span class="dt">Vertex</span>
+<span class="ot">label ::</span> <span class="dt">Edge</span> <span class="ot">-&gt;</span> <span class="dt">Label</span></code></pre></div>
+<p>Of course, if these are literally all the functions we have for these types (plus some constants otherwise we can’t make anything), then these abstract types might as well be records. Anything else they have is unobservable and thus superfluous.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Vertex</span> <span class="fu">=</span> <span class="dt">Vertex</span> {<span class="ot"> vertexId ::</span> <span class="dt">Unique</span> }
+
+<span class="kw">data</span> <span class="dt">EdgeLabel</span> <span class="fu">=</span> <span class="dt">EdgeLabel</span> {<span class="ot"> edgeLabelId ::</span> <span class="dt">Unique</span> }
+
+<span class="kw">data</span> <span class="dt">Edge</span> <span class="fu">=</span> <span class="dt">Edge</span> { 
+<span class="ot">    edgeId ::</span> <span class="dt">Unique</span>, 
+<span class="ot">    src ::</span> <span class="dt">Vertex</span>, 
+<span class="ot">    tgt ::</span> <span class="dt">Vertex</span>,
+<span class="ot">    edgeLabel ::</span> <span class="dt">EdgeLabel</span>
+}</code></pre></div>
+<p>This starts to suggest that we can just turn each object in our category |ccC| into a record with an ID field. Each arrow in to that object becomes an additional field. This almost works. We’ll come back to this, but let’s take another baby step.</p>
+<p>Something a bit more interesting happens if we want to label the vertices. We proceed as before: add another object, call it |3|, and another arrow |l_v : 3 -&gt; 0|. This time, though, we’re not finished. |ccC| is supposed to be a category, so we can compose arrows and thus we have two composites but no arrow for the composites to be, namely: |s @ l_v| and |t @ l_v|. The abstract data type intuition suggests that whenever we run into this situation, we should add a distinct arrow for each composite. For the purpose of labeling vertices, this is the right way to go: we want to think of each vertex as having a vertex label field with no constraints. There is, however, another choice. We could add <em>one</em> new arrow and have both composites be equal to it. What that would say is that for every edge, the source and the target vertices must have the same label. It’s easy to see that that would lead to every vertex in a connected component having the same label. In code, the former choice would look like:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">VertexLabel</span> <span class="fu">=</span> <span class="dt">VertexLabel</span> {<span class="ot"> vertexLabelId ::</span> <span class="dt">Unique</span> }
+
+<span class="kw">data</span> <span class="dt">Vertex</span> <span class="fu">=</span> <span class="dt">Vertex</span> { 
+<span class="ot">    vertexId ::</span> <span class="dt">Unique</span>,
+<span class="ot">    vertexLabel ::</span> <span class="dt">VertexLabel</span>
+}
+
+<span class="kw">data</span> <span class="dt">EdgeLabel</span> <span class="fu">=</span> <span class="dt">EdgeLabel</span> {<span class="ot"> edgeLabelId ::</span> <span class="dt">Unique</span> }
+
+<span class="kw">data</span> <span class="dt">Edge</span> <span class="fu">=</span> <span class="dt">Edge</span> { 
+<span class="ot">    edgeId ::</span> <span class="dt">Unique</span>, 
+<span class="ot">    src ::</span> <span class="dt">Vertex</span>, 
+<span class="ot">    tgt ::</span> <span class="dt">Vertex</span>,
+<span class="ot">    edgeLabel ::</span> <span class="dt">EdgeLabel</span>
+    <span class="co">-- With our earlier &quot;rule&quot; to add a field for each arrow</span>
+    <span class="co">-- we should also have:</span>
+    <span class="co">--    srcVertexLabel :: VertexLabel</span>
+    <span class="co">--    tgtVertexLabel :: VertexLabel</span>
+    <span class="co">-- but, by definition, these are:</span>
+    <span class="co">--    vertexLabel . src and</span>
+    <span class="co">--    vertexLabel . tgt respectively.</span>
+    <span class="co">-- So we don&#39;t explicitly add a field for composite arrows.</span>
+}</code></pre></div>
+<p>The latter choice would look the same, except there would be an extra constraint that we can’t capture in Haskell, namely <code class="sourceCode haskell">vertexLabel <span class="fu">.</span> src <span class="fu">==</span> vertexLabel <span class="fu">.</span> tgt</code>.</p>
+<p>If we stick to the abstract data type intuition and we have a cycle in the arrows in |ccC|, then the requirement to add a distinct arrow for each composite means we need to add a countably infinite number of arrows, so |ccC| is no longer finite. It is still “small” though, so that’s no problem. We could say we have a finite <em>graph</em> of the non-composite arrows and possibly some equations like |s @ l_v = t @ l_v| and we generate a category from that graph subject to those equations by adding in all composites as necessary. We will use the arrows in this graph to decide on the fields for our abstract data types, rather than the arrows in the category so we don’t end up with an infinity of fields in our data types. Even when there aren’t an infinite number of arrows in our category, this is still useful since we aren’t going to add a field to our edges to hold each vertex’s label, since we can just get the vertex and then get the label.</p>
+<p>Some of you have probably thought of another more appropriate intuition. A presheaf is a database. The category which our presheaf is over, what we’ve been calling |ccC| <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> is sort of like a schema. You don’t specify types, but you do specify foreign key relationships plus some additional integrity constraints that don’t fit in to the typical ones supported by databases.</p>
+<h3 id="presheaves-as-databases">Presheaves as databases</h3>
+<p>For our earlier example:</p>
+<div class="sourceCode"><pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">CREATE</span> VertexLabel (<span class="kw">Id</span> uniqueidentifier <span class="kw">PRIMARY</span> <span class="kw">KEY</span>);
+<span class="kw">CREATE</span> Vertex (
+    <span class="kw">Id</span> uniqueidentifier <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,
+    <span class="kw">Label</span> uniqueidentifier <span class="kw">REFERENCES</span> VertexLabel(<span class="kw">Id</span>)
+);
+<span class="kw">CREATE</span> EdgeLabel (<span class="kw">Id</span> uniqueidentifier <span class="kw">PRIMARY</span> <span class="kw">KEY</span>);
+<span class="kw">CREATE</span> Edge (
+    <span class="kw">Id</span> uniqueidentifier <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,
+    Src uniqueidentifier <span class="kw">REFERENCES</span> VertexLabel(<span class="kw">Id</span>),
+    Tgt uniqueidentifier <span class="kw">REFERENCES</span> VertexLabel(<span class="kw">Id</span>),
+    <span class="kw">Label</span> uniqueidentifier <span class="kw">REFERENCES</span> EdgeLabel(<span class="kw">Id</span>)
+    <span class="co">-- Nothing stops us from having additional columns here and elsewhere</span>
+    <span class="co">-- corresponding to the fact that our types were really abstract data</span>
+    <span class="co">-- types in the Haskell, and to the fact that we can choose an arbitrary</span>
+    <span class="co">-- set as long as it has at least this much structure.  They won&#39;t be</span>
+    <span class="co">-- preserved by &quot;homomorphisms&quot; though.</span>
+);</code></pre></div>
+<p>To be clear, each presheaf corresponds to database <em>with data</em>. Inserting a row into a table is a homomorphism of presheaves, but so is adding a (not preserved by homomorphism) column. The schema above corresponds to the |ccC| part of the presheaf.</p>
+<p>If we had made that second choice before where we had only <em>one</em> arrow back to that would lead to the following integrity constraint:</p>
+<div class="sourceCode"><pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">NOT</span> <span class="kw">EXISTS</span>(<span class="kw">SELECT</span> *
+           <span class="kw">FROM</span> Edge e
+           <span class="kw">JOIN</span> Vertex src <span class="kw">ON</span> e.Src = src.Id
+           <span class="kw">JOIN</span> Vertex tgt <span class="kw">ON</span> e.Tgt = tgt.Id
+           <span class="kw">WHERE</span> src.Label &lt;&gt; tgt.Label)</code></pre></div>
+<p>It turns out this intuition is completely general. You can actually think of all of presheaf theory as a (slightly unusual) database theory. More objects just means more tables. More arrows means more foreign keys and potentially additional integrity constraints. It’s not exactly relational though. In fact, in some ways it’s a bit closer to SQL<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a> or object databases. You can turn this around too going back to the point at the beginning. Whether or not we can think of <em>all</em> presheaves like databases or all databases like presheaves, we can certainly think of <em>this</em> example, and many like it, as presheaves. This means for many “databases”, we can talk about doing dependently typed programming where our types <em>are</em> databases of the given shape. This also dramatically shifts the focus in database theory from databases to database migrations, i.e. homomorphisms of databases.</p>
+<p>David Spivak is the one who has done the most on this, so I’ll refer you to his <a href="http://math.mit.edu/~dspivak/informatics/pure/">work</a>. He also has a better story for schemas that are much closer to normal schemas. I’ll end as I began:</p>
+<p>Here’s a small example of why people find category theory interesting.</p>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>“very basic category theory” means knowing the definitions of categories, isomorphisms, functors, and natural transformations<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>remember the presheaf is the <em>functor</em> from |ccC^(op) -&gt; cc“Set”|<a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>SQL is hardly the relational ideal<a href="#fnref3">↩</a></p></li>
+</ol>
+</div>]]></description>
+    <pubDate>Mon, 02 Nov 2015 12:04:45 UT</pubDate>
+    <guid>https://derekelkins.github.io/posts/you-know-more-about-presheaves-than-you-think.html</guid>
+    <dc:creator>Derek Elkins</dc:creator>
+</item>
+<item>
     <title>The three styles of category theory</title>
     <link>https://derekelkins.github.io/posts/styles-of-category-theory.html</link>
     <description><![CDATA[<h3 id="introduction">Introduction</h3>
