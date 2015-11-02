@@ -87,8 +87,8 @@
     <span class="co">-- set as long as it has at least this much structure.  They won&#39;t be</span>
     <span class="co">-- preserved by &quot;homomorphisms&quot; though.</span>
 );</code></pre></div>
-<p>To be clear, each presheaf corresponds to database <em>with data</em>. Inserting a row into a table is a homomorphism of presheaves, but so is adding a (not preserved by homomorphism) column. The schema above corresponds to the |ccC| part of the presheaf.</p>
-<p>If we had made that second choice before where we had only <em>one</em> arrow back to that would lead to the following integrity constraint:</p>
+<p>To be clear, each presheaf corresponds to a database <em>with data</em>. Inserting a row into a table is a homomorphism of presheaves, but so is adding a (not preserved by homomorphism) column. The schema above corresponds to the |ccC| part of the presheaf.</p>
+<p>If we had made that second choice before where we had only <em>one</em> arrow back that would lead to the following integrity constraint:</p>
 <div class="sourceCode"><pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">NOT</span> <span class="kw">EXISTS</span>(<span class="kw">SELECT</span> *
            <span class="kw">FROM</span> Edge e
            <span class="kw">JOIN</span> Vertex src <span class="kw">ON</span> e.Src = src.Id
