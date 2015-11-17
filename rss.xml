@@ -7,8 +7,126 @@
         <description><![CDATA[Mostly math, physics, and CS]]></description>
         <atom:link href="https://derekelkins.github.io/rss.xml" rel="self"
                    type="application/rss+xml" />
-        <lastBuildDate>Mon, 02 Nov 2015 12:04:45 UT</lastBuildDate>
+        <lastBuildDate>Tue, 17 Nov 2015 00:54:35 UT</lastBuildDate>
         <item>
+    <title>Behavioral Reflection</title>
+    <link>https://derekelkins.github.io/posts/behavioral-reflection.html</link>
+    <description><![CDATA[<h2 id="behavioral-reflection">Behavioral Reflection</h2>
+<p>The ultimate goal of behavioral reflection (aka procedural reflection and no doubt other things) is to make a language where programs within the language are able to completely redefine the language as it executes. This is arguably the pinnacle of expressive power. This also means, though, local reasoning about code is utterly impossible, essentially by design.</p>
+<p>Smalltalk is probably the language closest to this that is widely used. The Common Lisp MOP (Meta-Object Protocol) is also inspired by research in this vein. The ability to mutate classes and handle calls to missing methods as present in, e.g. Ruby, are also examples of very limited forms of behavioral reflection. (Though, for the latter, often the term “structural reflection” is used instead, reserving “behavioral reflection” for things beyond mere structural reflection.)</p>
+<h3 id="very-brief-history">Very Brief History</h3>
+<p>The seminal reference for behavioral reflection is Brian Smith’s 1982 <a href="http://publications.csail.mit.edu/lcs/specpub.php?id=840">thesis</a> on 3-LISP. This was followed by the languages <a href="http://cs.au.dk/~hosc/vol01/01-wand-friedman.html">Brown</a>, <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.40.2018&amp;rep=rep1&amp;type=pdf">Blond</a>, <a href="ftp://html.soic.indiana.edu/pub/techreports/TR362.pdf">Refci</a>, and <a href="http://www.is.ocha.ac.jp/~asai/Black/">Black</a> in chronological order. This is not a comprehensive list, and the last time I was in to this was about a decade ago. (Sure enough, there is some new work on Black and some very new citations of Black.)</p>
+<!--[Reflection for the Masses](http://www.p-cos.net/documents/s32008.pdf) by Herzeel, Constanza, and D'Hondt.-->
+<h3 id="core-idea">Core Idea</h3>
+<p>The core idea is simply to expose the state of the (potentially conceptual) interpreter and allow it to be manipulated.</p>
+<!--more-->
+<p>From this perspective Scheme’s <code>call/cc</code> is a basic, limited example of behavioral reflection. It exposes one part of the state of the interpreter and allows it to be replaced. Delimited continuations (i.e. <code>shift</code> and <code>reset</code>) are a bit more powerful. They expose the same part of the state as <code>call/cc</code>, but they expose it in a more structured manner that allows more manipulations beyond merely replacing it. We could imagine representing the continuation with a less opaque object than a function which would lead to Smalltalk’s <code>MethodContext</code>.</p>
+<p>Early Lisps’ fexpr was another example of exposing a different part of the interpreter state, namely the expression under evaluation. The <a href="https://web.cs.wpi.edu/~jshutt/kernel.html">Kernel</a> language explores this in more depth (among other things which can likely also be classified as forms of behavior reflection.)</p>
+<p>For a language with mutation the heap would also be exposed. For a language without mutation, mutation can be added using the techniques from <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.43.8213&amp;rep=rep1&amp;type=pdf">Representing Monads</a> since something at least as powerful as delimited continuations will almost certainly be available. At that point, the heap would be first-class.</p>
+<p>As an aside, I like to use the word “introspection” for purely read-only access to interpreter state, and reserve the word “reflection” for when manipulations are possible. Terminologically, “reflection” is also often broken down into “structural reflection” for the widely available ability to add and remove methods to classes and similar such operations; and “behavioral” or “procedural” reflection, the ability to manipulate the language itself. To control introspection and, at least, structural reflection, <a href="http://www.bracha.org/mirrors.pdf">mirrors</a> can be used.</p>
+<!-- Reflective Tower -->
+<h3 id="example">Example</h3>
+<p>Making a simple behaviorally reflective language is actually pretty straightforward. If you have an abstract machine for your language, all you need to do is provide one additional primitive operation which gets passed the interpreter state and returns a new interpreter state. It may be clearer and cleaner, perhaps, to split this into two operations: one, often called <code>reify</code>, that provides the interpreter state as a value, and another, often called <code>reflect</code>, that sets the interpreter state to the state represented by the given value. Note that both <code>reify</code> and <code>reflect</code> are (very) impure operations. The more tedious part is marshalling the state of the interpreter into a language level object and vice versa. In the special case of a meta-circular interpreter, this part turns out to be trivial. The following interpreter is NOT meta-circular though.</p>
+<p>The approach taken in this example, while simple, is very unstructured. For example, it is possible to write a procedure that when evaluated transforms the language from call-by-value (the CEK machine is an implementation of the CbV lambda calculus), to call-by name. However, to do this requires walking all the code in the environment and continuation and rewriting applications to force their first argument and delay their second argument. Primitives also need to be dealt with. It would be far nicer and cleaner to simply be able to say, “when you do an application, do this instead.” The newer behaviorally reflective languages work more like this.</p>
+<p>Note, despite the fact that we do a global transformation, this is not an example of lack of expressiveness. We can define this transformation locally and execute it at run-time without coordination with the rest of the code. In this sense, everything is macro expressible (a la <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.51.4656&amp;rep=rep1&amp;type=pdf">Felleisen</a>) because arbitrary global transformations are macro expressible.</p>
+<h3 id="the-code">The Code</h3>
+<p>You can get a copy of the full version of the code from <a href="../raw/CEK.hs">here</a>.</p>
+<p>I arbitrarily decided to start from the CEK machine: an abstract machine for the untyped call-by-value lambda calculus. (CEK stands for Control-Environment-Kontinuation, these being the three pieces of interpreter state with control being the expression driving evaluation.) While a call-by-value language is probably the way to go because both <code>reify</code> and <code>reflect</code> are very impure operations (particularly <code>reflect</code>), the main motivation for choosing this machine was that the state components correspond in a direct way to concepts that are natural to the programmer. Compare this to the SECD machine which stands for Stack-Environment-Control-Dump.</p>
+<p>The AST uses deBruijn indices.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Expr</span> 
+    <span class="fu">=</span> <span class="dt">EVar</span> <span class="fu">!</span><span class="dt">Int</span> 
+    <span class="fu">|</span> <span class="dt">ELam</span> <span class="dt">Expr</span> 
+    <span class="fu">|</span> <span class="dt">Expr</span> <span class="fu">:@:</span> <span class="dt">Expr</span></code></pre></div>
+<p>The only types of values we have are closures. The two additional pieces of interpreter state are the environment and the continuation (the call stack).</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Value</span> <span class="fu">=</span> <span class="dt">Closure</span> <span class="dt">Expr</span> <span class="dt">Env</span>
+
+<span class="kw">type</span> <span class="dt">Env</span> <span class="fu">=</span> [<span class="dt">Value</span>]
+
+<span class="kw">data</span> <span class="dt">Kont</span> <span class="fu">=</span> <span class="dt">Done</span> <span class="fu">|</span> <span class="dt">Arg</span> <span class="dt">Expr</span> <span class="dt">Env</span> <span class="dt">Kont</span> <span class="fu">|</span> <span class="dt">Fun</span> <span class="dt">Value</span> <span class="dt">Kont</span></code></pre></div>
+<p>Finally the evaluator is fairly straightforward, and is a straightforward transcription of the operational semantics. Evaluation starts off with the final contination and an empty environment. With a bit of inspection you can see that evaluation is call-by-value and proceeds left-to-right. Derive <code class="sourceCode haskell"><span class="dt">Show</span></code> for <code class="sourceCode haskell"><span class="dt">Expr</span></code> and <code class="sourceCode haskell"><span class="dt">Value</span></code> and these 15 lines of code are a complete interpreter.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">evaluate ::</span> <span class="dt">Expr</span> <span class="ot">-&gt;</span> <span class="dt">Value</span>
+evaluate e <span class="fu">=</span> cek e [] <span class="dt">Done</span>
+
+<span class="ot">cek ::</span> <span class="dt">Expr</span> <span class="ot">-&gt;</span> <span class="dt">Env</span> <span class="ot">-&gt;</span> <span class="dt">Kont</span> <span class="ot">-&gt;</span> <span class="dt">Value</span>
+cek (<span class="dt">EVar</span> i)  env                         k <span class="fu">=</span> cek e env&#39; k <span class="kw">where</span> <span class="dt">Closure</span> e env&#39; <span class="fu">=</span> env <span class="fu">!!</span> i
+cek (f <span class="fu">:@:</span> x) env                         k <span class="fu">=</span> cek f env (<span class="dt">Arg</span> x env k)
+cek (<span class="dt">ELam</span> b)  env                      <span class="dt">Done</span> <span class="fu">=</span> <span class="dt">Closure</span> b env
+cek (<span class="dt">ELam</span> b)  env            (<span class="dt">Arg</span> x env&#39; k) <span class="fu">=</span> cek x env&#39; (<span class="dt">Fun</span> (<span class="dt">Closure</span> b env) k)
+cek (<span class="dt">ELam</span> b)  env (<span class="dt">Fun</span> (<span class="dt">Closure</span> b&#39; env&#39;) k) <span class="fu">=</span> cek b&#39; (<span class="dt">Closure</span> b env<span class="fu">:</span>env&#39;) k</code></pre></div>
+<p>The first stab at adding reflective features looks like this. We add the primitive operation to reify and reflect. We’ll require them to be wrapped in lambdas so the interpreter doesn’t have to deal with unevaluated arguments when interpreting them. Note that <code class="sourceCode haskell">reify</code> doesn’t pass the <code class="sourceCode haskell"><span class="dt">Expr</span></code> part to its argument. This is because the <code class="sourceCode haskell"><span class="dt">Expr</span></code> part would just be <code class="sourceCode haskell"><span class="dt">EReify</span></code>. The arguments of this particular application are stored, unevaluated, in the continuation as arguments needing to be evaluated. So, if we want to define <code class="sourceCode haskell">quote</code> which simply returns the expression representing it’s argument, we’ll have to dig into the continuation to get that argument.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Expr</span>
+    <span class="fu">=</span> <span class="fu">...</span>
+    <span class="fu">|</span> <span class="dt">EReify</span>
+    <span class="fu">|</span> <span class="dt">EReflect</span>
+
+<span class="co">-- reify f = f e k</span>
+reify <span class="fu">=</span> <span class="dt">ELam</span> <span class="dt">EReify</span>
+
+<span class="co">-- reflect c e k</span>
+reflect <span class="fu">=</span> <span class="dt">ELam</span> (<span class="dt">ELam</span> (<span class="dt">ELam</span> <span class="dt">EReflect</span>))</code></pre></div>
+<p>And here’s what we’d like to write in the interpreter (and is very close to what we ultimately will write.)</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">cek ::</span> <span class="dt">Expr</span> <span class="ot">-&gt;</span> <span class="dt">Env</span> <span class="ot">-&gt;</span> <span class="dt">Kont</span> <span class="ot">-&gt;</span> <span class="dt">Value</span>
+<span class="fu">...</span>
+cek <span class="dt">EReify</span>   (<span class="dt">Closure</span> b env&#39;<span class="fu">:</span>env) k <span class="fu">=</span> cek b (k<span class="fu">:</span>env<span class="fu">:</span>env&#39;) k
+cek <span class="dt">EReflect</span> (k<span class="fu">:</span>e<span class="fu">:</span>c<span class="fu">:</span>_)            _ <span class="fu">=</span> cek c            e k</code></pre></div>
+<p>There are two problems with this code: one minor and one major. The minor problem is that the argument to <code class="sourceCode haskell">reify</code> takes two arguments but we can’t just pass them directly to it. We need to follow our calling convention which expects to evaluate arguments one at a time. This problem is easily fixed by pushing an <code class="sourceCode haskell"><span class="dt">Arg</span></code> call stack frame onto the continuation to (trivially) evaluate the continuation.</p>
+<p>The major problem is that this doesn’t type check. <code>c</code>, <code>e</code>, <code>env</code>, and <code>k</code> can’t simultaneously be <code class="sourceCode haskell"><span class="dt">Value</span></code>s and <code class="sourceCode haskell"><span class="dt">Expr</span></code>s, <code class="sourceCode haskell"><span class="dt">Env</span></code>s, and <code class="sourceCode haskell"><span class="dt">Kont</span></code>s. We need a way to embed and project <code class="sourceCode haskell"><span class="dt">Expr</span></code>, <code class="sourceCode haskell"><span class="dt">Env</span></code>, and <code class="sourceCode haskell"><span class="dt">Kont</span></code> value into and out of <code class="sourceCode haskell"><span class="dt">Value</span></code>. The embedding is easy; you just fold over the data structure and build up a lambda term representing the Church encoding. The projection from <code class="sourceCode haskell"><span class="dt">Value</span></code>s is… non-obvious, to say the least.</p>
+<p>Instead of figuring that out, we can simply add <code class="sourceCode haskell"><span class="dt">Expr</span></code>, <code class="sourceCode haskell"><span class="dt">Env</span></code>, and <code class="sourceCode haskell"><span class="dt">Kont</span></code> to our language as primitive types. This is also, almost certainly, dramatically more efficient.</p>
+<p>We extend our AST and <code class="sourceCode haskell"><span class="dt">Value</span></code>.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Expr</span>
+    <span class="fu">=</span> <span class="fu">...</span>
+    <span class="fu">|</span> <span class="dt">EInject</span> <span class="dt">Value</span>
+
+<span class="co">-- Int so we can manipulate the EVar case.</span>
+<span class="kw">data</span> <span class="dt">Value</span> <span class="fu">=</span> <span class="dt">Closure</span> <span class="dt">Expr</span> <span class="dt">Env</span> <span class="fu">|</span> <span class="dt">Int</span> <span class="fu">!</span><span class="dt">Int</span> <span class="fu">|</span> <span class="dt">Expr</span> <span class="dt">Expr</span> <span class="fu">|</span> <span class="dt">Env</span> <span class="dt">Env</span> <span class="fu">|</span> <span class="dt">Kont</span> <span class="dt">Kont</span></code></pre></div>
+<p>The changes to the interpreter are minimal. We need to change the <code class="sourceCode haskell"><span class="dt">EVar</span></code> case to handle the new kinds of values that can be returned and add a trivial <code class="sourceCode haskell"><span class="dt">EInject</span></code> case. Some cases can be omitted because they would only come up in programs that would “get stuck” anyway. (In our case, “getting stuck” means pattern match failure or index out of bounds.)</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">inject ::</span> <span class="dt">Value</span> <span class="ot">-&gt;</span> (<span class="dt">Expr</span>, <span class="dt">Env</span>)
+inject (<span class="dt">Closure</span> b env) <span class="fu">=</span> (<span class="dt">ELam</span> b, env)
+inject v <span class="fu">=</span> (<span class="dt">EInject</span> v, [])
+ 
+<span class="ot">cek ::</span> <span class="dt">Expr</span> <span class="ot">-&gt;</span> <span class="dt">Env</span> <span class="ot">-&gt;</span> <span class="dt">Kont</span> <span class="ot">-&gt;</span> <span class="dt">Value</span>
+cek (<span class="dt">EVar</span> i) env k <span class="fu">=</span> cek e env&#39; k <span class="kw">where</span> (e, env&#39;) <span class="fu">=</span> inject (env <span class="fu">!!</span> i)
+<span class="fu">...</span>
+cek <span class="dt">EReify</span> (<span class="dt">Closure</span> b env&#39;<span class="fu">:</span>env) k <span class="fu">=</span> cek b (<span class="dt">Env</span> env<span class="fu">:</span>env&#39;) (<span class="dt">Arg</span> (<span class="dt">EInject</span> (<span class="dt">Kont</span> k)) [] k)
+cek <span class="dt">EReflect</span> (<span class="dt">Kont</span> k<span class="fu">:</span><span class="dt">Env</span> e<span class="fu">:</span><span class="dt">Expr</span> c<span class="fu">:</span>_) _ <span class="fu">=</span> cek c e k
+cek (<span class="dt">EInject</span> v) _ <span class="dt">Done</span> <span class="fu">=</span> v
+cek (<span class="dt">EInject</span> v) _ (<span class="dt">Fun</span> (<span class="dt">Closure</span> b&#39; env&#39;) k) <span class="fu">=</span> cek b&#39; (v<span class="fu">:</span>env&#39;) k</code></pre></div>
+<p>While this interpreter achieves the goal, it is somewhat limited. We don’t have any means to manipulate the values of these new primitive types, so our manipulation of the interpreter state is limited to replacing a component, e.g. the environment, with some version of it that we got before via <code class="sourceCode haskell">reify</code>. Though it may be limited, it is not trivial. You can implement something close to call/cc if not call/cc itself.</p>
+<p>Still, the scenario above of turning the language into a call-by-name language doesn’t seem possible. Modifying the interpreter to support primitive operations defined in Haskell is a simple matter of programming: you add a constructor for primitive operations to the AST, you make a very slight variant of the <code class="sourceCode haskell"><span class="dt">EInject</span></code> case in <code class="sourceCode haskell">cek</code>, and then you tediously make primitives corresponding to each constructor for each type and a fold for each type. See the linked <a href="../raw/CEK.hs">source file</a> for the details.</p>
+<p>The file additionally defines a pretty printer and a layer using parametric higher-order abstract syntax because humans are terrible with deBruijn indices. The end result is code that looks like this:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">one <span class="fu">=</span> _<span class="dt">Suc</span> <span class="fu">:@</span> _<span class="dt">Zero</span>
+
+identity <span class="fu">=</span> lam (\x <span class="ot">-&gt;</span> x)
+
+loop <span class="fu">=</span> lam (\x <span class="ot">-&gt;</span> x <span class="fu">:@</span> x) <span class="fu">:@</span> lam (\x <span class="ot">-&gt;</span> x <span class="fu">:@</span> x)
+
+tailEnv <span class="fu">=</span> lam (\e <span class="ot">-&gt;</span> paraEnv <span class="fu">:@</span> e <span class="fu">:@</span> _<span class="dt">Nil</span> 
+                                  <span class="fu">:@</span> lam (\_ <span class="ot">-&gt;</span> lam (\x <span class="ot">-&gt;</span> lam (\_ <span class="ot">-&gt;</span> x))))
+
+tailKont <span class="fu">=</span> lam (\k <span class="ot">-&gt;</span> paraKont <span class="fu">:@</span> k <span class="fu">:@</span> _<span class="dt">Done</span>
+                                    <span class="fu">:@</span> lam (\_ <span class="ot">-&gt;</span> lam (\_ <span class="ot">-&gt;</span> lam (\x <span class="ot">-&gt;</span> lam (\_ <span class="ot">-&gt;</span> x))))
+                                    <span class="fu">:@</span> lam (\_ <span class="ot">-&gt;</span> lam (\x <span class="ot">-&gt;</span> lam (\_ <span class="ot">-&gt;</span> x))))
+
+eval <span class="fu">=</span> lam (\c <span class="ot">-&gt;</span> reify <span class="fu">:@</span> lam (\e <span class="ot">-&gt;</span> lam (\k <span class="ot">-&gt;</span> reflect <span class="fu">:@</span> c <span class="fu">:@</span> (tailEnv <span class="fu">:@</span> e) <span class="fu">:@</span> k)))
+
+quote <span class="fu">=</span> reify <span class="fu">:@</span> lam (\e <span class="ot">-&gt;</span> lam (\k <span class="ot">-&gt;</span> reflect <span class="fu">:@</span> (_<span class="dt">Inject</span> <span class="fu">:@</span> c k) <span class="fu">:@</span> e <span class="fu">:@</span> (tailKont <span class="fu">:@</span> k)))
+    <span class="kw">where</span> c k <span class="fu">=</span> paraKont <span class="fu">:@</span> k <span class="fu">:@</span> garbage 
+                              <span class="fu">:@</span> lam (\x <span class="ot">-&gt;</span> (lam (\_ <span class="ot">-&gt;</span> lam (\_ <span class="ot">-&gt;</span> lam (\_ <span class="ot">-&gt;</span> x))))) 
+                              <span class="fu">:@</span> lam (\_ <span class="ot">-&gt;</span> lam (\_ <span class="ot">-&gt;</span> lam (\_ <span class="ot">-&gt;</span> garbage)))
+          garbage <span class="fu">=</span> _<span class="dt">Inject</span> <span class="fu">:@</span> _<span class="dt">Zero</span>
+
+callCC <span class="fu">=</span> lam (\f <span class="ot">-&gt;</span> reify <span class="fu">:@</span> lam (\e <span class="ot">-&gt;</span> lam (\k <span class="ot">-&gt;</span> 
+            f <span class="fu">:@</span> lam (\a <span class="ot">-&gt;</span> reflect <span class="fu">:@</span> (_<span class="dt">Inject</span> <span class="fu">:@</span> a) <span class="fu">:@</span> (tailEnv <span class="fu">:@</span> e) <span class="fu">:@</span> k))))
+
+example1 <span class="fu">=</span> evaluate <span class="fu">$</span> quote <span class="fu">:@</span> loop <span class="co">-- output looks like: Expr ((\a -&gt; a a) (\a -&gt; a a))</span>
+example2 <span class="fu">=</span> evaluate <span class="fu">$</span> eval <span class="fu">:@</span> (quote <span class="fu">:@</span> loop) <span class="co">-- loops forever</span>
+example3 <span class="fu">=</span> evaluate <span class="fu">$</span> callCC <span class="fu">:@</span> lam (\k <span class="ot">-&gt;</span> k <span class="fu">:@</span> one <span class="fu">:@</span> loop) <span class="co">-- escape before evaluating the loop</span>
+example4 <span class="fu">=</span> evaluate <span class="fu">$</span> callCC <span class="fu">:@</span> lam (\k <span class="ot">-&gt;</span> lam (\_ <span class="ot">-&gt;</span> loop) <span class="fu">:@</span> (k <span class="fu">:@</span> one)) <span class="co">-- also escape before the loop</span></code></pre></div>]]></description>
+    <pubDate>Tue, 17 Nov 2015 00:54:35 UT</pubDate>
+    <guid>https://derekelkins.github.io/posts/behavioral-reflection.html</guid>
+    <dc:creator>Derek Elkins</dc:creator>
+</item>
+<item>
     <title>You know more about presheaves than you think</title>
     <link>https://derekelkins.github.io/posts/you-know-more-about-presheaves-than-you-think.html</link>
     <description><![CDATA[<h3 id="the-category-of-graphs-as-a-presheaf">The category of graphs as a presheaf</h3>

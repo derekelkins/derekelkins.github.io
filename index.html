@@ -46,6 +46,43 @@
           
     <div class="blog-post teaser panel panel-default">
     <div class="panel-heading">
+        <h2 class="blog-post-title"><a href="./posts/behavioral-reflection.html">Behavioral Reflection</a></h2>
+        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="F0CE0069-CB69-4FE0-9B3B-9B161A3EF6E6" href="./posts/behavioral-reflection.html#disqus_thread"></a></h6>
+    </div>
+
+    <div class="panel-body">
+        
+            <h2 id="behavioral-reflection">Behavioral Reflection</h2>
+<p>The ultimate goal of behavioral reflection (aka procedural reflection and no doubt other things) is to make a language where programs within the language are able to completely redefine the language as it executes. This is arguably the pinnacle of expressive power. This also means, though, local reasoning about code is utterly impossible, essentially by design.</p>
+<p>Smalltalk is probably the language closest to this that is widely used. The Common Lisp MOP (Meta-Object Protocol) is also inspired by research in this vein. The ability to mutate classes and handle calls to missing methods as present in, e.g. Ruby, are also examples of very limited forms of behavioral reflection. (Though, for the latter, often the term “structural reflection” is used instead, reserving “behavioral reflection” for things beyond mere structural reflection.)</p>
+<h3 id="very-brief-history">Very Brief History</h3>
+<p>The seminal reference for behavioral reflection is Brian Smith’s 1982 <a href="http://publications.csail.mit.edu/lcs/specpub.php?id=840">thesis</a> on 3-LISP. This was followed by the languages <a href="http://cs.au.dk/~hosc/vol01/01-wand-friedman.html">Brown</a>, <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.40.2018&amp;rep=rep1&amp;type=pdf">Blond</a>, <a href="ftp://html.soic.indiana.edu/pub/techreports/TR362.pdf">Refci</a>, and <a href="http://www.is.ocha.ac.jp/~asai/Black/">Black</a> in chronological order. This is not a comprehensive list, and the last time I was in to this was about a decade ago. (Sure enough, there is some new work on Black and some very new citations of Black.)</p>
+<!--[Reflection for the Masses](http://www.p-cos.net/documents/s32008.pdf) by Herzeel, Constanza, and D'Hondt.-->
+<h3 id="core-idea">Core Idea</h3>
+<p>The core idea is simply to expose the state of the (potentially conceptual) interpreter and allow it to be manipulated.</p>
+
+            <h6><a href="./posts/behavioral-reflection.html">Read more...</a></h6>
+        
+    </div>
+
+    <div class="panel-footer">
+        <h6 class="blog-post-meta">
+            November 17, 2015 00:54 UTC
+            
+            (Last updated on November 17, 2015 00:56 UTC)
+
+            
+                Tags: <a href="./tags/CS.html">CS</a>
+            
+        </h6>
+    </div>
+
+</div><!-- /.blog-post -->
+
+
+
+    <div class="blog-post teaser panel panel-default">
+    <div class="panel-heading">
         <h2 class="blog-post-title"><a href="./posts/you-know-more-about-presheaves-than-you-think.html">You know more about presheaves than you think</a></h2>
         <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="32F754A2-5428-4404-A21A-759092CC4010" href="./posts/you-know-more-about-presheaves-than-you-think.html#disqus_thread"></a></h6>
     </div>
@@ -227,6 +264,8 @@
                 <div class="panel-body">
                     <ol class="list-unstyled">
                         
+                          <li><div class="blog-post-link">2015-11-17 - <a href="./posts/behavioral-reflection.html">Behavioral Reflection</a></div></li>
+                        
                           <li><div class="blog-post-link">2015-11-02 - <a href="./posts/you-know-more-about-presheaves-than-you-think.html">You know more about presheaves than you think</a></div></li>
                         
                           <li><div class="blog-post-link">2015-09-30 - <a href="./posts/styles-of-category-theory.html">The three styles of category theory</a></div></li>
@@ -244,7 +283,7 @@
                 <div class="panel-heading"><h4>Tags</h4></div>
                 <div class="panel-body">
                     <ol class="list-unstyled">
-                      <li><a href="./tags/CS.html">CS (1)</a></li>
+                      <li><a href="./tags/CS.html">CS (2)</a></li>
 <li><a href="./tags/category%20theory.html">category theory (2)</a></li>
 <li><a href="./tags/geometric%20algebra.html">geometric algebra (1)</a></li>
 <li><a href="./tags/math.html">math (3)</a></li>
