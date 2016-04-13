@@ -46,6 +46,41 @@
           
     <div class="blog-post teaser panel panel-default">
     <div class="panel-heading">
+        <h2 class="blog-post-title"><a href="./posts/understanding-typing-judgments.html">Understanding typing judgments</a></h2>
+        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="EE49D35E-A547-46A0-86F3-9419AFCEA309" href="./posts/understanding-typing-judgments.html#disqus_thread"></a></h6>
+    </div>
+
+    <div class="panel-body">
+        
+            <h3 id="introduction">Introduction</h3>
+<p>For many people interested in type systems and type theory, their first encounter with the literature presents them with this:</p>
+<p><code class="asciimath">#frac(Gamma,x:tau_1 |--_Sigma e : tau_2)(Gamma |--_Sigma (lambda x:tau_1.e) : tau_1 -&gt; tau_2) -&gt;I#</code></p>
+<p><code class="asciimath">#frac(Gamma |--_Sigma f : tau_1 -&gt; tau_2 \qquad Gamma |--_Sigma x : tau_1)(Gamma |--_Sigma f x : tau_2) -&gt;E#</code></p>
+<p>Since this notation is ubiquitous, authors (reasonably) expect readers to already be familiar with it and thus provide no explanation. Because the notation is ubiquitous, the beginner looking for alternate resources will not escape it. All they will find is that the notation is everywhere but exists in myriad minor variations which may or may not indicate significant differences. At this point the options are: 1) to muddle on and hope understanding the notation isn’t too important, 2) look for introductory resources which typically take the form of $50+ 500+ page textbooks, or 3) give up.</p>
+<p>The goal of this article is to explain the notation part-by-part in common realizations, and to cover the main idea behind the notation which is the idea of an inductively defined relation. To eliminate ambiguity and make hand-waving impossible, I’ll ground the explanations in code, in particular, in <a href="http://wiki.portal.chalmers.se/agda/pmwiki.php">Agda</a>. That means for each example of the informal notation, there will be how it would be realized in Agda.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> It will become clear that I’m am not (just) using Agda as a formal notation to talk about these concepts, but that Agda’s<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> data type mechanism directly captures them<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a>. The significance of this is that programmers are already familiar with many of the ideas behind the informal notation, and the notation is just obscuring this familiarity. Admittedly, Agda is itself pretty intimidating. I hope most of this article is accessible to those with familiarity with algebraic data types as they appear in Haskell, ML, Rust, or Swift with little to no need to look up details about Agda. Nevertheless, Agda at least has the benefit, when compared to the informal notation, of having a clear place to go to learn more, an unambiguous meaning, and tools that allow playing around with the ideas.</p>
+
+            <h6><a href="./posts/understanding-typing-judgments.html">Read more...</a></h6>
+        
+    </div>
+
+    <div class="panel-footer">
+        <h6 class="blog-post-meta">
+            April 13, 2016 02:41 UTC
+            
+            (Last updated on April 13, 2016 02:41 UTC)
+
+            
+                Tags: <a href="./tags/Agda.html">Agda</a>, <a href="./tags/type%20theory.html">type theory</a>
+            
+        </h6>
+    </div>
+
+</div><!-- /.blog-post -->
+
+
+
+    <div class="blog-post teaser panel panel-default">
+    <div class="panel-heading">
         <h2 class="blog-post-title"><a href="./posts/high-dimensional-thought-experiment.html">High dimensional thought experiment from Hamming</a></h2>
         <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="8CBD9E89-9943-45CA-9E5A-9CF2C04E5393" href="./posts/high-dimensional-thought-experiment.html#disqus_thread"></a></h6>
     </div>
@@ -292,6 +327,8 @@
                 <div class="panel-body">
                     <ol class="list-unstyled">
                         
+                          <li><div class="blog-post-link">2016-04-13 - <a href="./posts/understanding-typing-judgments.html">Understanding typing judgments</a></div></li>
+                        
                           <li><div class="blog-post-link">2015-12-04 - <a href="./posts/high-dimensional-thought-experiment.html">High dimensional thought experiment from Hamming</a></div></li>
                         
                           <li><div class="blog-post-link">2015-11-17 - <a href="./posts/behavioral-reflection.html">Behavioral Reflection</a></div></li>
@@ -313,10 +350,12 @@
                 <div class="panel-heading"><h4>Tags</h4></div>
                 <div class="panel-body">
                     <ol class="list-unstyled">
-                      <li><a href="./tags/CS.html">CS (2)</a></li>
+                      <li><a href="./tags/Agda.html">Agda (1)</a></li>
+<li><a href="./tags/CS.html">CS (2)</a></li>
 <li><a href="./tags/category%20theory.html">category theory (2)</a></li>
 <li><a href="./tags/geometric%20algebra.html">geometric algebra (1)</a></li>
 <li><a href="./tags/math.html">math (4)</a></li>
+<li><a href="./tags/type%20theory.html">type theory (1)</a></li>
                     </ol>
                 </div>
               </div>
