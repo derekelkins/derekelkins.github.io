@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="A blog mostly on math, physics, and computer science.">
+    <meta name="author" content="Derek Elkins">
+    <!--<link rel="icon" href="/images/favicon.ico">-->
+
+    <title>The Mistake Everyone Makes with KnockoutJS</title>
+    <!-- Bootstrap core CSS -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="../css/blog.css" rel="stylesheet">
+    <link href="../css/syntax.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="blog-masthead">
+      <div class="container">
+        <nav class="blog-nav">
+          <a class="blog-nav-item " href="../">Home</a>
+          <a class="blog-nav-item " href="../about.html">About</a>
+          <a class="blog-nav-item " href="../contact.html">Contact</a>
+          <a class="blog-nav-item " href="../readinglist.html">Reading List</a>
+          <a class="blog-nav-item " href="../archive.html">Archive</a>
+          <a class="blog-nav-item pull-right" href="../rss.xml">RSS</a>
+          <a class="blog-nav-item pull-right" href="../atom.xml">Atom</a>
+        </nav>
+      </div>
+    </div>
+
+    <div class="container">
+      
+      
+      <div class="row">
+        
+        <div class="col-sm-12 blog-main">
+        
+          <div class="blog-post">
+    <h2 class="blog-post-title" style="margin-top: 30px;">The Mistake Everyone Makes with KnockoutJS</h2>
+    <p class="blog-post-meta">May  5, 2016 20:38 UTC 
+        
+        (Last updated on May  5, 2016 20:38 UTC)
+    </p>
+    <h6 class="blog-post-meta">
+        
+        Tags: <a href="../tags/javascript.html">javascript</a>
+        
+    </h6>
+
+    <h3 id="introduction">Introduction</h3>
+<p><a href="http://knockoutjs.com">Knockout</a> is a nice JavaScript library for making values that automatically update when any of their “dependencies” update. Those dependencies can form an arbitrary directed acyclic graph. Many people seem to think of it as “yet another” templating library, but the core idea which is useful far beyond “templating” is the notion of observable values. One nice aspect is that it is a library and not a framework so you can use it as little or as much as you want and you can integrate it with other libraries and frameworks.</p>
+<p>At any rate, this article is more geared toward those who have already decided on using Knockout or a library (in any language) offering similar capabilities. I strongly suspect the issues and solutions I’ll discuss apply to all similar sorts of libraries.</p>
+<h3 id="the-problem">The Problem</h3>
+<p>When doing any front-end work, before long there will be a requirement to support “multi-select” of something. Of course, you want the standard select/deselect all functionality and for it to work correctly, and of course you want to do something with the items you’ve selected. Here’s a very simple example:</p>
+<div id="#badExample">
+Number selected: <span data-bind="text: $data.numberSelected()"></span>
+<table>
+<tr>
+<th>
+<input type="checkbox" data-bind="checked: $data.allSelected" />
+</th>
+<th>
+Item
+</th>
+</tr>
+<!-- ko foreach: { data: $data.items(), as: '$item' } -->
+<tr>
+<td>
+<input type="checkbox" data-bind="checked: $data.selected" />
+</td>
+<td data-bind="text: 'Item number: '+$data.body">
+</td>
+</tr>
+<!-- /ko -->
+<tr>
+<td>
+<button data-bind="click: function() { $data.add(); }">
+Add
+</button>
+</td>
+</tr>
+</table>
+</div>
+<p>Here, the number selected is an overly simple example of using the selected items. More realistically, the selected items will trigger other items to show up and/or trigger AJAX requests to update the data or populate other data. The HTML for this example is completely straightforward.</p>
+<div class="sourceCode"><pre class="sourceCode html"><code class="sourceCode html"><span class="kw">&lt;div</span><span class="ot"> id=</span><span class="st">&quot;#badExample&quot;</span><span class="kw">&gt;</span>
+    Number selected: <span class="kw">&lt;span</span><span class="ot"> data-bind=</span><span class="st">&quot;text: $data.numberSelected()&quot;</span><span class="kw">&gt;&lt;/span&gt;</span>
+    <span class="kw">&lt;table&gt;</span>
+        <span class="kw">&lt;tr&gt;&lt;th&gt;&lt;input</span><span class="ot"> type=</span><span class="st">&quot;checkbox&quot;</span><span class="ot"> data-bind=</span><span class="st">&quot;checked: $data.allSelected&quot;</span><span class="kw">/&gt;&lt;/th&gt;&lt;th&gt;</span>Item<span class="kw">&lt;/th&gt;&lt;/tr&gt;</span>
+        <span class="co">&lt;!-- ko foreach: { data: $data.items(), as: '$item' } --&gt;</span>
+        <span class="kw">&lt;tr&gt;&lt;td&gt;&lt;input</span><span class="ot"> type=</span><span class="st">&quot;checkbox&quot;</span><span class="ot"> data-bind=</span><span class="st">&quot;checked: $data.selected&quot;</span><span class="kw">/&gt;&lt;/td&gt;&lt;td</span><span class="ot"> data-bind=</span><span class="st">&quot;text: 'Item number: '+$data.body&quot;</span><span class="kw">&gt;&lt;/td&gt;&lt;/tr&gt;</span>
+        <span class="co">&lt;!-- /ko --&gt;</span>
+        <span class="kw">&lt;tr&gt;&lt;td&gt;&lt;button</span><span class="ot"> data-bind=</span><span class="st">&quot;click: function() { $data.add(); }&quot;</span><span class="kw">&gt;</span>Add<span class="kw">&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;</span>
+    <span class="kw">&lt;/table&gt;</span>
+<span class="kw">&lt;/div&gt;</span></code></pre></div>
+<p>The way nearly everyone (including me) first thinks to implement this is by adding a <code>selected</code> observable to each item and then having <code>allSelected</code> depend on all of the <code>selected</code> observables. Since we also want to write to <code>allSelected</code> to change the state of the <code>selected</code> observables we use a <a href="http://knockoutjs.com/documentation/computed-writable.html">writable computed observable</a>. This computed observable will loop through all the items and check to see if they are all set to determine it’s state. When it is updated, it will loop through all the <code>selected</code> observables and set them to the appropriate state. Here’s the full code listing.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> badViewModel <span class="op">=</span> <span class="op">{</span>
+    <span class="dt">counter</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span>
+    <span class="dt">items</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observableArray</span>()
+<span class="op">};</span>
+
+<span class="va">badViewModel</span>.<span class="at">allSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="op">{</span>
+    <span class="dt">read</span><span class="op">:</span> <span class="kw">function</span>() <span class="op">{</span>
+        <span class="kw">var</span> items <span class="op">=</span> <span class="va">badViewModel</span>.<span class="at">items</span>()<span class="op">;</span>
+        <span class="kw">var</span> allSelected <span class="op">=</span> <span class="kw">true</span><span class="op">;</span>
+        <span class="cf">for</span>(<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="va">items</span>.<span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) <span class="op">{</span> <span class="co">// Need to make sure we depend on each item, so don't break out of loop early</span>
+            allSelected <span class="op">=</span> allSelected <span class="op">&amp;&amp;</span> items[i].<span class="at">selected</span>()<span class="op">;</span>
+        <span class="op">}</span>
+        <span class="cf">return</span> allSelected<span class="op">;</span>
+    <span class="op">},</span>
+    <span class="dt">write</span><span class="op">:</span> <span class="kw">function</span>(newValue) <span class="op">{</span>
+        <span class="kw">var</span> items <span class="op">=</span> <span class="va">badViewModel</span>.<span class="at">items</span>()<span class="op">;</span>
+        <span class="cf">for</span>(<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="va">items</span>.<span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) <span class="op">{</span>
+            items[i].<span class="at">selected</span>(newValue)<span class="op">;</span>
+        <span class="op">}</span>
+    <span class="op">}</span>
+<span class="op">}</span>)<span class="op">;</span>
+
+<span class="va">badViewModel</span>.<span class="at">numberSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="kw">function</span>() <span class="op">{</span>
+    <span class="kw">var</span> count <span class="op">=</span> <span class="dv">0</span><span class="op">;</span>
+    <span class="kw">var</span> items <span class="op">=</span> <span class="va">badViewModel</span>.<span class="at">items</span>()<span class="op">;</span>
+    <span class="cf">for</span>(<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="va">items</span>.<span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) <span class="op">{</span>
+        <span class="cf">if</span>(items[i].<span class="at">selected</span>()) count<span class="op">++;</span>
+    <span class="op">}</span>
+    <span class="cf">return</span> count<span class="op">;</span>
+<span class="op">}</span>)<span class="op">;</span>
+
+<span class="va">badViewModel</span>.<span class="at">add</span> <span class="op">=</span> <span class="kw">function</span>() <span class="op">{</span>
+    <span class="va">badViewModel</span>.<span class="va">items</span>.<span class="at">push</span>(<span class="op">{</span>
+        <span class="dt">body</span><span class="op">:</span> <span class="va">badViewModel</span>.<span class="at">counter</span><span class="op">++,</span>
+        <span class="dt">selected</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observable</span>(<span class="kw">false</span>)
+    <span class="op">}</span>)<span class="op">;</span>
+<span class="op">};</span>
+
+<span class="va">ko</span>.<span class="at">applyBindings</span>(badViewModel<span class="op">,</span> <span class="va">document</span>.<span class="at">getElementById</span>(<span class="st">'#badExample'</span>))<span class="op">;</span></code></pre></div>
+<p>This should be relatively straightforward, and it works, so what’s the problem. The problem can be seen in <code>numberSelected</code> (and it also comes up with <code>allSelected</code> which I’ll get to momentarily). <code>numberSelected</code> depends on <em>each</em> <code>selected</code> observable and so it will be fired <em>each</em> time <em>each</em> one updates. That means if you have 100 items, and you use the select all checkbox, <code>numberSelected</code> will be called 100 times. For this example, that doesn’t really matter. For a more realistic example than <code>numberSelected</code>, this may mean rendering one, then two, then three, … then 100 HTML fragments or making 100 AJAX requests. In fact, this same behavior is present in <code>allSelected</code>. When it is written, as it’s writing to the <code>selected</code> observables, it is also triggering <em>itself</em>.</p>
+<p>So the problem is updating <code>allSelected</code> or <code>numberSelected</code> can’t be done all at once, or to use database terminology, it can’t be updated atomically. One possible solution in newer versions of Knockout is to use <code>deferredUpdates</code> or, what I did back in the much earlier versions of Knockout, abuse the rate limiting features. The problem with this solution is that it makes updates asynchronous. If you’ve written your code to not care whether it was called synchronous or asynchronously, then this will work fine. If you haven’t, doing this throws you into a world of shared state concurrency and race conditions. In this case, the solution is far worse than the disease.</p>
+<h3 id="the-solution">The Solution</h3>
+<p>So, what’s the alternative? We want to update all selected items atomically; we can atomically update a single observable; so put all selected items into a single observable. Now an item determines if it is selected by checking whether it is in the collection of selected items. More abstractly, we make our observables more coarse-grained, and we have a bunch of small computed observables depend on a large observable instead of a large computed observable depending on a bunch of small observables as we had in the previous code. Here’s an example using the exact same HTML and presenting the same overt behavior.</p>
+<div id="#goodExample">
+Number selected: <span data-bind="text: $data.numberSelected()"></span>
+<table>
+<tr>
+<th>
+<input type="checkbox" data-bind="checked: $data.allSelected" />
+</th>
+<th>
+Item
+</th>
+</tr>
+<!-- ko foreach: { data: $data.items(), as: '$item' } -->
+<tr>
+<td>
+<input type="checkbox" data-bind="checked: $data.selected" />
+</td>
+<td data-bind="text: 'Item number: '+$data.body">
+</td>
+</tr>
+<!-- /ko -->
+<tr>
+<td>
+<button data-bind="click: function() { $data.add(); }">
+Add
+</button>
+</td>
+</tr>
+</table>
+</div>
+<p>And here’s the code behind this second example:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> goodViewModel <span class="op">=</span> <span class="op">{</span>
+    <span class="dt">counter</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span>
+    <span class="dt">selectedItems</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observableArray</span>()<span class="op">,</span>
+    <span class="dt">items</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observableArray</span>()
+<span class="op">};</span>
+
+<span class="va">goodViewModel</span>.<span class="at">allSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="op">{</span>
+    <span class="dt">read</span><span class="op">:</span> <span class="kw">function</span>() <span class="op">{</span>
+        <span class="cf">return</span> <span class="va">goodViewModel</span>.<span class="at">items</span>().<span class="at">length</span> <span class="op">===</span> <span class="va">goodViewModel</span>.<span class="at">selectedItems</span>().<span class="at">length</span><span class="op">;</span>
+    <span class="op">},</span>
+    <span class="dt">write</span><span class="op">:</span> <span class="kw">function</span>(newValue) <span class="op">{</span>
+        <span class="cf">if</span>(newValue) <span class="op">{</span>
+            <span class="va">goodViewModel</span>.<span class="at">selectedItems</span>(<span class="va">goodViewModel</span>.<span class="at">items</span>().<span class="at">slice</span>(<span class="dv">0</span>))<span class="op">;</span> <span class="co">// Need a copy!</span>
+        <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span>
+            <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">removeAll</span>()<span class="op">;</span>
+        <span class="op">}</span>
+    <span class="op">}</span>
+<span class="op">}</span>)<span class="op">;</span>
+
+<span class="va">goodViewModel</span>.<span class="at">numberSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="kw">function</span>() <span class="op">{</span>
+    <span class="cf">return</span> <span class="va">goodViewModel</span>.<span class="at">selectedItems</span>().<span class="at">length</span><span class="op">;</span>
+<span class="op">}</span>)<span class="op">;</span>
+
+<span class="va">goodViewModel</span>.<span class="at">add</span> <span class="op">=</span> <span class="kw">function</span>() <span class="op">{</span>
+    <span class="kw">var</span> item <span class="op">=</span> <span class="op">{</span> <span class="dt">body</span><span class="op">:</span> <span class="va">goodViewModel</span>.<span class="at">counter</span><span class="op">++</span> <span class="op">}</span>
+    <span class="va">item</span>.<span class="at">selected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="op">{</span>
+        <span class="dt">read</span><span class="op">:</span> <span class="kw">function</span>() <span class="op">{</span>
+            <span class="cf">return</span> <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">indexOf</span>(item) <span class="op">&gt;</span> <span class="op">-</span><span class="dv">1</span><span class="op">;</span>
+        <span class="op">},</span>
+        <span class="dt">write</span><span class="op">:</span> <span class="kw">function</span>(newValue) <span class="op">{</span>
+            <span class="cf">if</span>(newValue) <span class="op">{</span>
+                <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">push</span>(item)<span class="op">;</span>
+            <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span>
+                <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">remove</span>(item)<span class="op">;</span>
+            <span class="op">}</span>
+        <span class="op">}</span>
+    <span class="op">}</span>)<span class="op">;</span>
+    <span class="va">goodViewModel</span>.<span class="va">items</span>.<span class="at">push</span>(item)<span class="op">;</span>
+<span class="op">};</span>
+
+<span class="va">ko</span>.<span class="at">applyBindings</span>(goodViewModel<span class="op">,</span> <span class="va">document</span>.<span class="at">getElementById</span>(<span class="st">'#goodExample'</span>))<span class="op">;</span></code></pre></div>
+<p>One thing to note is that setting <code>allSelected</code> and <code>numberSelected</code> are now both simple operations. A write to an observable on triggers a constant number of writes to other observables. In fact, there are only two (non-computed) observables. On the other hand, <em>reading</em> the <code>selected</code> observable is more expensive. Toggling all items has quadratic complexity. In fact, it had quadratic complexity before due to the feedback. However, unlike the previous code, this <em>also</em> has quadratic complexity when any <em>individual</em> item is toggled. Unlike the previous code, though, this is simply due to a poor choice of data structure. Equipping each item with an “ID” field and using an object as a hash map would reduce the complexity to linear. In practice, for this sort of scenario, it tends not to make a big difference. Also, Knockout won’t trigger dependents if the value doesn’t change, so there’s no risk of the extra work propagating into still more extra work. Nevertheless, while I endorse this solution for this particular problem, in general making <em>finer</em> grained observables can help limit the scope of changes so unnecessary work isn’t done.</p>
+<p>Still, the real concern and benefit of this latter approach isn’t the asymptotic complexity of the operations, but the <em>atomicity</em> of the operations. In the second solution, every update is atomic. There are no intermediate states on the way to a final state. This means that dependents, represented by <code>numberSelected</code> but which are realistically much more complicated, don’t get triggered excessively and don’t need to “compensate” for unintended intermediate values.</p>
+<h3 id="epilogue">Epilogue</h3>
+<p>We could take the coarse-graining to its logical conclusion and have the view model for an application be a single observable holding an object representing the entire view model (and containing no observables of its own). Taking this approach actually does have a lot of benefits, albeit there is little reason to use Knockout at that point. Instead this starts to lead to things like Facebook’s <a href="https://facebook.github.io/flux/">Flux</a> pattern and the pattern perhaps most clearly articulated by <a href="http://cycle.js.org/">Cycle JS</a>.</p>
+<script lang="text/javascript" src="http://ajax.aspnetcdn.com/ajax/knockout/knockout-3.3.0.js"></script>
+<script lang="text/javascript">
+// Bad View Model
+
+var badViewModel = {
+    counter: 0,
+    items: ko.observableArray()
+};
+
+badViewModel.allSelected = ko.computed({
+    read: function() {
+        var items = badViewModel.items();
+        var allSelected = true;
+        for(var i = 0; i < items.length; i++) { // Need to make sure we depend on each item, so don't break out of loop early
+            allSelected = allSelected && items[i].selected();
+        }
+        return allSelected;
+    },
+    write: function(newValue) {
+        var items = badViewModel.items();
+        for(var i = 0; i < items.length; i++) {
+            items[i].selected(newValue);
+        }
+    }
+});
+
+badViewModel.numberSelected = ko.computed(function() {
+    var count = 0;
+    var items = badViewModel.items();
+    for(var i = 0; i < items.length; i++) {
+        if(items[i].selected()) count++;
+    }
+    return count;
+});
+
+badViewModel.add = function() {
+    badViewModel.items.push({
+        body: badViewModel.counter++,
+        selected: ko.observable(false)
+    });
+};
+
+
+// Good View Model
+
+var goodViewModel = {
+    counter: 0,
+    selectedItems: ko.observableArray(),
+    items: ko.observableArray()
+};
+
+goodViewModel.allSelected = ko.computed({
+    read: function() {
+        return goodViewModel.items().length === goodViewModel.selectedItems().length;
+    },
+    write: function(newValue) {
+        if(newValue) {
+            goodViewModel.selectedItems(goodViewModel.items().slice(0)); // Need a copy!
+        } else {
+            goodViewModel.selectedItems.removeAll();
+        }
+    }
+});
+
+goodViewModel.numberSelected = ko.computed(function() {
+    return goodViewModel.selectedItems().length;
+});
+
+goodViewModel.add = function() {
+    var item = { body: goodViewModel.counter++ }
+    item.selected = ko.computed({
+        read: function() {
+            return goodViewModel.selectedItems.indexOf(item) > -1;
+        },
+        write: function(newValue) {
+            if(newValue) {
+                goodViewModel.selectedItems.push(item);
+            } else {
+                goodViewModel.selectedItems.remove(item);
+            }
+        }
+    });
+    goodViewModel.items.push(item);
+};
+
+ko.applyBindings(badViewModel, document.getElementById('#badExample'));
+ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
+</script>
+
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_shortname = 'hedonisticlearning';
+        var disqus_identifier = 'd07dccbe-b66a-437f-b8fc-0c4442d340b6';
+        var disqus_title = 'The Mistake Everyone Makes with KnockoutJS';
+        
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript> 
+</div>
+
+        </div><!-- /.blog-main -->
+        
+        
+      </div><!-- /.row -->
+    </div><!-- /.container -->
+
+    <footer class="blog-footer">
+      <p>Site generated by <a href="http://jaspervdj.be/hakyll">Hakyll</a></p>
+      <p>
+        <a href="#">Back to top</a>
+      </p>
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!--<script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>-->
+    <script type="text/javascript">
+        var disqus_shortname = 'hedonisticlearning';
+        (function () {
+            var s = document.createElement('script'); s.async = true;
+            s.type = 'text/javascript';
+            s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
+            (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+        }());
+    </script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_HTMLorMML.js">
+    </script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+          extensions: ['asciimath2jax.js'],
+          asciimath2jax: {
+              delimiters: [['|','|'], ['#','#']],
+              processClass: 'asciimath'
+            }
+        });
+    </script>
+  </body>
+</html>
