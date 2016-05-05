@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">The Mistake Everyone Makes with KnockoutJS</h2>
     <p class="blog-post-meta">May  5, 2016 20:38 UTC 
         
-        (Last updated on May  5, 2016 20:38 UTC)
+        (Last updated on May  5, 2016 20:46 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -53,7 +53,7 @@
 
     <h3 id="introduction">Introduction</h3>
 <p><a href="http://knockoutjs.com">Knockout</a> is a nice JavaScript library for making values that automatically update when any of their “dependencies” update. Those dependencies can form an arbitrary directed acyclic graph. Many people seem to think of it as “yet another” templating library, but the core idea which is useful far beyond “templating” is the notion of observable values. One nice aspect is that it is a library and not a framework so you can use it as little or as much as you want and you can integrate it with other libraries and frameworks.</p>
-<p>At any rate, this article is more geared toward those who have already decided on using Knockout or a library (in any language) offering similar capabilities. I strongly suspect the issues and solutions I’ll discuss apply to all similar sorts of libraries.</p>
+<p>At any rate, this article is more geared toward those who have already decided on using Knockout or a library (in any language) offering similar capabilities. I strongly suspect the issues and solutions I’ll discuss apply to all similar sorts of libraries. While I’ll focus on one particular example, the ideas behind it apply generally. This example, admittedly, is one that almost anyone will implement, and in my experience will do it incorrectly the first time and won’t realize the problem until later.</p>
 <h3 id="the-problem">The Problem</h3>
 <p>When doing any front-end work, before long there will be a requirement to support “multi-select” of something. Of course, you want the standard select/deselect all functionality and for it to work correctly, and of course you want to do something with the items you’ve selected. Here’s a very simple example:</p>
 <div id="#badExample">
