@@ -376,7 +376,7 @@ ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
         <h6 class="blog-post-meta">
             April 13, 2016 02:41 UTC
             
-            (Last updated on April 13, 2016 21:43 UTC)
+            (Last updated on May  7, 2016 18:26 UTC)
 
             
                 Tags: <a href="./tags/Agda.html">Agda</a>, <a href="./tags/type%20theory.html">type theory</a>
@@ -396,7 +396,7 @@ ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
 
     <div class="panel-body">
         
-            <p>This is a simple mathematical thought experiment from Richard Hamming to demonstrate how poor our intuition  for high dimensional spaces is. All that is needed is some basic, middle school level geometry and algebra.  Consider a 2x2 square centered at the origin. In each quadrant place circles as big as possible so that they fit in the square and don’t overlap. They’ll clearly have radius 1/2. See the image below. The question now is what’s the radius of the largest circle centered at the origin that doesn’t overlap the other circles.  <img src="../raw/high-dimensional-diagram.svg" alt />  It’s clear from symmetry that the inner circle is going to touch all the other circles at the same time, and it is clear that it is going to touch along the line from the origin to the center of one of the outer circles. So the radius of the inner circle, #r#, is just the distance from the origin to the center of one of the outer circles minus the radius of the outer circle, namely 1/2. As an equation:  <code class="asciimath">#r = sqrt(1/2^2 + 1/2^2) - 1/2 = sqrt(2)/2 - 1/2 ~~ 0.207106781#</code>  Now if we go to three dimensions we’ll have eight circles instead of four, but everything else is the same except the distances will now be <code class="asciimath">#sqrt(1/2^2 + 1/2^2 + 1/2^2)#</code>. It’s clear that the only  difference for varying dimensions is that in dimension #n# we’ll have #n# #1/2^2# terms under the square root sign. So the general solution is easily shown to be:  <code class="asciimath">#r = sqrt(n)/2 - 1/2#</code>  You should be weirded out now. If you aren’t, here’s a hint: what happens when #n = 10#? Here’s another hint: what happens as #n# approaches #oo#?</p>
+            <p>This is a simple mathematical thought experiment from Richard Hamming to demonstrate how poor our intuition  for high dimensional spaces is. All that is needed is some basic, middle school level geometry and algebra.  Consider a 2x2 square centered at the origin. In each quadrant place circles as big as possible so that they fit in the square and don’t overlap. They’ll clearly have radius 1/2. See the image below. The question now is what’s the radius of the largest circle centered at the origin that doesn’t overlap the other circles.  <img src="raw/high-dimensional-diagram.svg" alt />  It’s clear from symmetry that the inner circle is going to touch all the other circles at the same time, and it is clear that it is going to touch along the line from the origin to the center of one of the outer circles. So the radius of the inner circle, #r#, is just the distance from the origin to the center of one of the outer circles minus the radius of the outer circle, namely 1/2. As an equation:  <code class="asciimath">#r = sqrt(1/2^2 + 1/2^2) - 1/2 = sqrt(2)/2 - 1/2 ~~ 0.207106781#</code>  Now if we go to three dimensions we’ll have eight circles instead of four, but everything else is the same except the distances will now be <code class="asciimath">#sqrt(1/2^2 + 1/2^2 + 1/2^2)#</code>. It’s clear that the only  difference for varying dimensions is that in dimension #n# we’ll have #n# #1/2^2# terms under the square root sign. So the general solution is easily shown to be:  <code class="asciimath">#r = sqrt(n)/2 - 1/2#</code>  You should be weirded out now. If you aren’t, here’s a hint: what happens when #n = 10#? Here’s another hint: what happens as #n# approaches #oo#?</p>
         
     </div>
 
@@ -404,7 +404,7 @@ ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
         <h6 class="blog-post-meta">
             December  4, 2015 01:22 UTC
             
-            (Last updated on December  4, 2015 02:33 UTC)
+            (Last updated on May  7, 2016 18:26 UTC)
 
             
                 Tags: <a href="./tags/math.html">math</a>
@@ -441,7 +441,7 @@ ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
         <h6 class="blog-post-meta">
             November 17, 2015 00:54 UTC
             
-            (Last updated on November 17, 2015 00:56 UTC)
+            (Last updated on May  7, 2016 18:25 UTC)
 
             
                 Tags: <a href="./tags/CS.html">CS</a>
@@ -526,10 +526,10 @@ ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
 
     <div class="panel-body">
         
-            <p><a href="../raw/DiffUnderIntegral.pdf">Here</a> is a PDF with an informal proof of a very general form of <a href="https://en.wikipedia.org/wiki/Differentiation_under_the_integral_sign">differentiation under the integral</a>.</p>
+            <p><a href="raw/DiffUnderIntegral.pdf">Here</a> is a PDF with an informal proof of a very general form of <a href="https://en.wikipedia.org/wiki/Differentiation_under_the_integral_sign">differentiation under the integral</a>.</p>
 <p>It’s formulated using geometric algebra and provides a simple demonstration of using some of the basic identities in geometric calculus.</p>
 <p>The end result is:</p>
-<p><img src="../raw/diff-under-integral.svg" alt="d/(dt) int_(D(t)) L_t(x; d^m x) = int_(D(t)) dot L_t(x; (d^m x ^^ (del x)/(del t)) * dot grad_x) + int_(del D(t)) L_t(x; d^(m-1) x ^^ (del x)/(del t)) + int_(D(t))(del L_t(x; d^m x))/(del t)" /></p>
+<p><img src="raw/diff-under-integral.svg" alt="d/(dt) int_(D(t)) L_t(x; d^m x) = int_(D(t)) dot L_t(x; (d^m x ^^ (del x)/(del t)) * dot grad_x) + int_(del D(t)) L_t(x; d^(m-1) x ^^ (del x)/(del t)) + int_(D(t))(del L_t(x; d^m x))/(del t)" /></p>
 <!--
 > `#d/(dt) int_(cc"D"(t)) bb"L"_t(bb"x"; d^m bb"x") 
 >    = int_(cc"D"(t)) dot bb"L"_t(bb"x"; (d^m bb"x" ^^ (del x)/(del t)) * dot grad_(bb"x"))#
@@ -543,7 +543,7 @@ ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
         <h6 class="blog-post-meta">
             September 14, 2015 07:53 UTC
             
-            (Last updated on September 14, 2015 07:55 UTC)
+            (Last updated on May  7, 2016 18:25 UTC)
 
             
                 Tags: <a href="./tags/math.html">math</a>, <a href="./tags/geometric%20algebra.html">geometric algebra</a>
