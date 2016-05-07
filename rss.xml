@@ -7,8 +7,18 @@
         <description><![CDATA[Mostly math, physics, and CS]]></description>
         <atom:link href="https://derekelkins.github.io/rss.xml" rel="self"
                    type="application/rss+xml" />
-        <lastBuildDate>Thu, 05 May 2016 20:38:08 UT</lastBuildDate>
+        <lastBuildDate>Sat, 07 May 2016 18:12:29 UT</lastBuildDate>
         <item>
+    <title>Constructivist Motto</title>
+    <link>https://derekelkins.github.io/posts/constructivist-motto.html</link>
+    <description><![CDATA[<blockquote>
+<p>I don’t believe classical logic is false; I just believe that it is not true.</p>
+</blockquote>]]></description>
+    <pubDate>Sat, 07 May 2016 18:12:29 UT</pubDate>
+    <guid>https://derekelkins.github.io/posts/constructivist-motto.html</guid>
+    <dc:creator>Derek Elkins</dc:creator>
+</item>
+<item>
     <title>The Mistake Everyone Makes with KnockoutJS</title>
     <link>https://derekelkins.github.io/posts/the-mistake-everyone-makes-with-knockoutjs.html</link>
     <description><![CDATA[<h3 id="introduction">Introduction</h3>

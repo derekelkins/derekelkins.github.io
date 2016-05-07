@@ -8,8 +8,18 @@
         <name>Derek Elkins</name>
         <email>derek.a.elkins+blog@gmail.com</email>
     </author>
-    <updated>2016-05-05T20:38:08Z</updated>
+    <updated>2016-05-07T18:12:29Z</updated>
     <entry>
+    <title>Constructivist Motto</title>
+    <link href="https://derekelkins.github.io/posts/constructivist-motto.html" />
+    <id>https://derekelkins.github.io/posts/constructivist-motto.html</id>
+    <published>2016-05-07T18:12:29Z</published>
+    <updated>2016-05-07T18:12:29Z</updated>
+    <summary type="html"><![CDATA[<blockquote>
+<p>I don’t believe classical logic is false; I just believe that it is not true.</p>
+</blockquote>]]></summary>
+</entry>
+<entry>
     <title>The Mistake Everyone Makes with KnockoutJS</title>
     <link href="https://derekelkins.github.io/posts/the-mistake-everyone-makes-with-knockoutjs.html" />
     <id>https://derekelkins.github.io/posts/the-mistake-everyone-makes-with-knockoutjs.html</id>
