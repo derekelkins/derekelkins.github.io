@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="A blog mostly on math, physics, and computer science.">
+    <meta name="author" content="Derek Elkins">
+    <!--<link rel="icon" href="/images/favicon.ico">-->
+
+    <title>Initial (not very usable) release of nullary</title>
+    <!-- Bootstrap core CSS -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="../css/blog.css" rel="stylesheet">
+    <link href="../css/syntax.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="blog-masthead">
+      <div class="container">
+        <nav class="blog-nav">
+          <a class="blog-nav-item " href="../">Home</a>
+          <a class="blog-nav-item " href="../about.html">About</a>
+          <a class="blog-nav-item " href="../contact.html">Contact</a>
+          <a class="blog-nav-item " href="../readinglist.html">Reading List</a>
+          <a class="blog-nav-item " href="../archive.html">Archive</a>
+          <a class="blog-nav-item pull-right" href="../rss.xml">RSS</a>
+          <a class="blog-nav-item pull-right" href="../atom.xml">Atom</a>
+        </nav>
+      </div>
+    </div>
+
+    <div class="container">
+      
+      
+      <div class="row">
+        
+        <div class="col-sm-12 blog-main">
+        
+          <div class="blog-post">
+    <h2 class="blog-post-title" style="margin-top: 30px;">Initial (not very usable) release of nullary</h2>
+    <p class="blog-post-meta">November  4, 2015 01:52 UTC 
+        
+        (Last updated on August  3, 2016 19:42 UTC)
+    </p>
+    <h6 class="blog-post-meta">
+        
+        Tags: 
+        
+    </h6>
+
+    <h2 id="introduction">Introduction</h2>
+<p>This provides support for working with nullary type classes and generating instances locally. Everything works except due to the way GHC, and in particular GHCi, handles unsatisfiable constraints, the result is very not ergonomic. Namely, GHC won’t infer these types, and even if you provide them, <code>:t</code> in GHCi will error. This has nothing to do with the nullary aspect but only with the unsatisfiable aspect. The same problem would happen if you put <code class="sourceCode haskell"><span class="dt">Show</span> (<span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span>)</code> in your function’s context.</p>
+<h2 id="quick-start">Quick start</h2>
+<p>If you want a nullary class that can be locally satisfied, do the following:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- The following four extensions are necessary.</span>
+<span class="co">-- Users don't need any of these extensions.</span>
+<span class="ot">{-# LANGUAGE FlexibleContexts #-}</span>
+<span class="ot">{-# LANGUAGE MultiParamTypeClasses #-}</span>
+<span class="ot">{-# LANGUAGE Rank2Types #-}</span>
+<span class="ot">{-# LANGUAGE UndecidableInstances #-}</span>
+
+<span class="co">-- Not exported unless you want to allow users to opt out of</span>
+<span class="co">-- the checking by making an instance for Tag PartialTag.</span>
+<span class="kw">data</span> <span class="dt">PartialTag</span>
+
+<span class="co">-- The nullary type class. It can have members, but it's not</span>
+<span class="co">-- clear this accomplishes anything.</span>
+<span class="kw">class</span> <span class="dt">Partial</span>
+
+<span class="co">-- Enable this library.  Instances like this unfortunately</span>
+<span class="co">-- require UndecidableInstances.</span>
+<span class="kw">instance</span> <span class="dt">Tag</span> <span class="dt">PartialTag</span> <span class="ot">=&gt;</span> <span class="dt">Partial</span>
+
+<span class="co">-- Wrap unsafeTag for user convenience.</span>
+<span class="ot">partial ::</span> (<span class="dt">Partial</span> <span class="ot">=&gt;</span> a) <span class="ot">-&gt;</span> a
+partial <span class="fu">=</span> unsafeTag (<span class="dt">Proxy</span><span class="ot"> ::</span> <span class="dt">Proxy</span> <span class="dt">PartialTag</span>)
+<span class="ot">{-# INLINE partial #-}</span>
+
+<span class="co">-- Define your functions using the Partial class.</span>
+<span class="co">-- The type signature is, unfortunately, necessary.</span>
+head<span class="ot"> ::</span> <span class="dt">Partial</span> <span class="ot">=&gt;</span> [a] <span class="ot">-&gt;</span> a
+head (x<span class="fu">:</span>xs) <span class="fu">=</span> x
+
+<span class="co">-- ... elsewhere ...</span>
+main <span class="fu">=</span> print (partial (head <span class="st">&quot;hello&quot;</span>))</code></pre></div>
+<h2 id="history">History</h2>
+<p>Nullary type classes have a special place in my heart, because I think I inadvertently led to them being supported by GHC (and maybe to even to PureScript). Lennart Augustsson <a href="http://augustss.blogspot.com/2014/12/a-commentary-on-24-days-of-ghc_19.html">discusses</a> some pre-history uses of nullary type classes, and I <a href="http://augustss.blogspot.com/2014/12/a-commentary-on-24-days-of-ghc_19.html#1149704008111082650">commented</a> on my (probable) involvement in this go around.</p>
+<p>One thing I didn’t mention is the context that I usually brought it up was as a rare example where Haskell (GHC really), didn’t support a degenerate case.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> Did you know <code class="sourceCode haskell"><span class="kw">let</span> <span class="kw">in</span> <span class="dv">3</span></code> is valid Haskell 98?</p>
+<p>One thing I did mention, incorrectly, is that outlawing orphan instances, a notion gaining popularity and implemented in PureScript, would render this feature useless. A PureScript <a href="https://github.com/purescript/purescript/issues/1126">issue</a> ran into this head-on, but it did not come to the conclusion that nullary type classes were rendered useless.</p>
+<h2 id="how-it-works">How it works</h2>
+<p>This uses the same evil trick (uses unsafeCoerce and implementation details) that <a href="https://hackage.haskell.org/package/reflection">Data.Reflection</a> uses to generate instances locally. In normal use, the class <code class="sourceCode haskell"><span class="dt">Tag</span></code> will never have instances. The instance declaration for <code class="sourceCode haskell"><span class="dt">Partial</span></code> states that <em>if</em> such an instance existed then you’d have an instance for <code class="sourceCode haskell"><span class="dt">Partial</span></code>. If GHC would infer the type for <code class="sourceCode haskell">head</code>, the type it would give is actually <code class="sourceCode haskell"><span class="dt">Tag</span> <span class="dt">PartialTag</span> <span class="ot">=&gt;</span> [a] <span class="ot">-&gt;</span> a</code>. Writing <code class="sourceCode haskell"><span class="dt">Partial</span> <span class="ot">=&gt;</span> [a] <span class="ot">-&gt;</span> a</code> is like writing <code class="sourceCode haskell"><span class="ot">(==) ::</span> <span class="dt">Eq</span> [a] <span class="ot">=&gt;</span> [a] <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">Bool</span></code>. Here we can resolve the <code class="sourceCode haskell"><span class="dt">Eq</span> [a]</code> constraint by using the <code class="sourceCode haskell"><span class="dt">Eq</span></code> instance for <code class="sourceCode haskell">[a]</code> albeit then introducing an <code class="sourceCode haskell"><span class="dt">Eq</span> a</code> constraint into our context.</p>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Degenerate case statements, incidentally, weren’t then supported either.<a href="#fnref1">↩</a></p></li>
+</ol>
+</div>
+
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_shortname = 'hedonisticlearning';
+        var disqus_identifier = '568F1A95-B1AE-4CF3-BA7D-60AC3AEC7773';
+        var disqus_title = 'Initial (not very usable) release of nullary';
+        
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript> 
+</div>
+
+        </div><!-- /.blog-main -->
+        
+        
+      </div><!-- /.row -->
+    </div><!-- /.container -->
+
+    <footer class="blog-footer">
+      <p>Site generated by <a href="http://jaspervdj.be/hakyll">Hakyll</a></p>
+      <p>
+        <a href="#">Back to top</a>
+      </p>
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!--<script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>-->
+    <script type="text/javascript">
+        var disqus_shortname = 'hedonisticlearning';
+        (function () {
+            var s = document.createElement('script'); s.async = true;
+            s.type = 'text/javascript';
+            s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
+            (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+        }());
+    </script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_HTMLorMML.js">
+    </script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+          extensions: ['asciimath2jax.js'],
+          asciimath2jax: {
+              delimiters: [['|','|'], ['#','#']],
+              processClass: 'asciimath'
+            }
+        });
+    </script>
+  </body>
+</html>
