@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">Constant-time Find First Set</h2>
     <p class="blog-post-meta">November 10, 2016 07:48 UTC 
         
-        (Last updated on November 10, 2016 07:48 UTC)
+        (Last updated on November 10, 2016 08:03 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -54,7 +54,7 @@
     <h2 id="introduction">Introduction</h2>
 <p>I’ve been watching the <a href="https://courses.csail.mit.edu/6.851/spring14/lectures/">Spring 2012 lectures for MIT 6.851 Advanced Data Structures</a> with Prof. Erik Demaine. In lecture 12, “Fusion Trees”, it mentions a constant time algorithm for <a href="https://en.wikipedia.org/wiki/Find_first_set">find first set bit</a> which finds the index of the first most significant 1 bit in a word. Assuming word operations are constant time, i.e. in the Word RAM model, the below algorithm takes 27 word operations (not counting copying). When I compiled it with GHC 8.0.1 -O2 the core of the algorithm was 44 straight-line instructions. The theoretically interesting thing is, other than changing the constants, the same algorithm works for any word size. This is demonstrated for <code>Word64</code>, <code>Word32</code>, and <code>Word16</code>.</p>
 <h2 id="code">Code</h2>
-<p>Below is the complete code. You can also download it <a href="./raw/FFS.hs">here</a>.</p>
+<p>Below is the complete code. You can also download it <a href="../posts/raw/FFS.hs">here</a>.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE BangPatterns #-}</span>
 <span class="kw">import </span><span class="dt">Data.Word</span>
 <span class="kw">import </span><span class="dt">Data.Bits</span>
