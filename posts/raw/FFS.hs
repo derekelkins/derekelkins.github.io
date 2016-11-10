@@ -8,21 +8,47 @@ import Data.Bits
 -- Takes 27 (source-level) straight-line word operations.
 indexOfMostSignificant1 :: Word64 -> Word64
 indexOfMostSignificant1 w = idxMsbyte .|. idxMsbit
-    where !wtbs = w .&. 0x8080808080808080 -- top bits of each byte
-          !wbbs = w .&. 0x7F7F7F7F7F7F7F7F -- all but top bits of each byte producing 8 7-bit chunks
-          !pc = parallelCompare 0x8080808080808080 wbbs -- parallel compare of each 7-bit chunk to 0, top bit set in result if 7-bit chunk was not 0
-          !ne = wtbs .|. pc -- top bit of each byte set if the byte has any bits set in w
-          !summary = sketch ne `unsafeShiftR` 1 -- a summary of which bytes are non-zero as an 7-bit bitfield, i.e. top bits collected into bottom byte
-          !cmpp2 = parallelCompare 0xFFBF9F8F87838180 (0x0101010101010101 * summary) -- parallel compare summary to powers of two, ignoring 2^0
-          !idxMsbyte = sumTopBits8 cmpp2 -- index of most significant non-zero byte * 8
-          !msbyte = ((w `unsafeShiftR` (fromIntegral idxMsbyte)) .&. 0xFF) `unsafeShiftR` 1 -- most significant 7-bits of most significant non-zero byte
-          !cmpp2' = parallelCompare 0xFFBF9F8F87838180 (0x0101010101010101 * msbyte) -- parallel compare msbyte to powers of two
-          !idxMsbit = sumTopBits cmpp2' -- index of most significant non-zero bit in msbyte
+    where
+        -- top bits of each byte
+        !wtbs = w .&. 0x8080808080808080
+        
+        -- all but top bits of each byte producing 8 7-bit chunks
+        !wbbs = w .&. 0x7F7F7F7F7F7F7F7F              
 
-          sketch w = (w * 0x2040810204081) `unsafeShiftR` 56
-          parallelCompare w1 w2 = complement (w1 - w2) .&. 0x8080808080808080
-          sumTopBits w = ((w `unsafeShiftR` 7) * 0x0101010101010101) `unsafeShiftR` 56
-          sumTopBits8 w = ((w `unsafeShiftR` 7) * 0x0808080808080808) `unsafeShiftR` 56
+        -- parallel compare of each 7-bit chunk to 0, top bit set in result if 7-bit chunk was not 0
+        !pc = parallelCompare 0x8080808080808080 wbbs
+
+        -- top bit of each byte set if the byte has any bits set in w
+        !ne = wtbs .|. pc                             
+
+        -- a summary of which bytes (except the first) are non-zero as a 7-bit bitfield, i.e. top bits collected into bottom byte
+        !summary = sketch ne `unsafeShiftR` 1
+
+        -- parallel compare summary to powers of two
+        !cmpp2 = parallelCompare 0xFFBF9F8F87838180 (0x0101010101010101 * summary)
+        
+        -- index of most significant non-zero byte * 8
+        !idxMsbyte = sumTopBits8 cmpp2                
+
+        -- most significant 7-bits of most significant non-zero byte
+        !msbyte = ((w `unsafeShiftR` (fromIntegral idxMsbyte)) .&. 0xFF) `unsafeShiftR` 1
+
+        -- parallel compare msbyte to powers of two
+        !cmpp2' = parallelCompare 0xFFBF9F8F87838180 (0x0101010101010101 * msbyte)
+
+        -- index of most significant non-zero bit in msbyte
+        !idxMsbit = sumTopBits cmpp2' 
+
+        -- Maps top bits of each byte into lower byte assuming all other bits are 0.
+        -- 0x2040810204081 = sum [2^j | j <- map (\i -> 49 - 7*i) [0..7]]
+        -- In general if w = 2^(2*k+p) and p = 0 or 1 the formula is:
+        -- sum [2^j | j <- map (\i -> w-(2^k-1) - 2^(k+p) - (2^(k+p) - 1)*i) [0..2^k-1]]
+        -- Followed by shifting right by w - 2^k
+        sketch w = (w * 0x2040810204081) `unsafeShiftR` 56
+
+        parallelCompare w1 w2 = complement (w1 - w2) .&. 0x8080808080808080
+        sumTopBits w = ((w `unsafeShiftR` 7) * 0x0101010101010101) `unsafeShiftR` 56
+        sumTopBits8 w = ((w `unsafeShiftR` 7) * 0x0808080808080808) `unsafeShiftR` 56
 
 indexOfMostSignificant1_w32 :: Word32 -> Word32
 indexOfMostSignificant1_w32 w = idxMsbyte .|. idxMsbit
@@ -34,10 +60,13 @@ indexOfMostSignificant1_w32 w = idxMsbyte .|. idxMsbit
           !cmpp2 = parallelCompare 0xFF838180 (0x01010101 * summary)
           !idxMsbyte = sumTopBits8 cmpp2
           !msbyte = ((w `unsafeShiftR` (fromIntegral idxMsbyte)) .&. 0xFF) `unsafeShiftR` 1
-          !cmpp2' = parallelCompare 0xFF838180 (0x01010101 * msbyte)
-          !idxMsbit = sumTopBits cmpp2'
+          !cmpp2' = parallelCompare 0x87838180 (0x01010101 * msbyte)
 
-          sketch w = (w * 0x020409) `unsafeShiftR` 24
+          -- extra step when w is not an even power of two
+          !cmpp2'' = parallelCompare 0xFFBF9F8F (0x01010101 * msbyte)
+          !idxMsbit = sumTopBits cmpp2' + sumTopBits cmpp2''
+
+          sketch w = (w * 0x204081) `unsafeShiftR` 28
           parallelCompare w1 w2 = complement (w1 - w2) .&. 0x80808080
           sumTopBits w = ((w `unsafeShiftR` 7) * 0x01010101) `unsafeShiftR` 24
           sumTopBits8 w = ((w `unsafeShiftR` 7) * 0x08080808) `unsafeShiftR` 24
