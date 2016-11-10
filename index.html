@@ -46,6 +46,98 @@
           
     <div class="blog-post teaser panel panel-default">
     <div class="panel-heading">
+        <h2 class="blog-post-title"><a href="./posts/find-first-set.html">Constant-time Find First Set</a></h2>
+        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="c90916eb-ab11-4a1f-a1cf-ee18952fffef" href="./posts/find-first-set.html#disqus_thread"></a></h6>
+    </div>
+
+    <div class="panel-body">
+        
+            <h2 id="introduction">Introduction</h2>
+<p>I’ve been watching the <a href="https://courses.csail.mit.edu/6.851/spring14/lectures/">Spring 2012 lectures for MIT 6.851 Advanced Data Structures</a> with Prof. Erik Demaine. In lecture 12, “Fusion Trees”, it mentions a constant time algorithm for <a href="https://en.wikipedia.org/wiki/Find_first_set">find first set bit</a> which finds the index of the first most significant 1 bit in a word. Assuming word operations are constant time, i.e. in the Word RAM model, the below algorithm takes 27 word operations (not counting copying). When I compiled it with GHC 8.0.1 -O2 the core of the algorithm was 44 straight-line instructions. The theoretically interesting thing is, other than changing the constants, the same algorithm works for any word size. This is demonstrated for <code>Word64</code>, <code>Word32</code>, and <code>Word16</code>.</p>
+<h2 id="code">Code</h2>
+<p>Below is the complete code. You can also download it <a href="./raw/FFS.hs">here</a>.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE BangPatterns #-}</span>
+<span class="kw">import </span><span class="dt">Data.Word</span>
+<span class="kw">import </span><span class="dt">Data.Bits</span>
+
+<span class="co">-- Returns 0-based bit index of most significant bit that is 1. Assumes input is non-zero.</span>
+<span class="co">-- That is, 2^indexOfMostSignificant1 x &lt;= x &lt; 2^(indexOfMostSignificant1 x + 1)</span>
+<span class="co">-- From Erik Demaine's presentation in Spring 2012 lectures of MIT 6.851, particularly &quot;Lecture 12: Fusion Trees&quot;.</span>
+<span class="co">-- Takes 27 (source-level) straight-line word operations.</span>
+<span class="ot">indexOfMostSignificant1 ::</span> <span class="dt">Word64</span> <span class="ot">-&gt;</span> <span class="dt">Word64</span>
+indexOfMostSignificant1 w <span class="fu">=</span> idxMsbyte <span class="fu">.|.</span> idxMsbit
+    <span class="kw">where</span> <span class="fu">!</span>wtbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x8080808080808080</span> <span class="co">-- top bits of each byte</span>
+          <span class="fu">!</span>wbbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x7F7F7F7F7F7F7F7F</span> <span class="co">-- all but top bits of each byte producing 8 7-bit chunks</span>
+          <span class="fu">!</span>pc <span class="fu">=</span> parallelCompare <span class="bn">0x8080808080808080</span> wbbs <span class="co">-- parallel compare of each 7-bit chunk to 0, top bit set in result if 7-bit chunk was not 0</span>
+          <span class="fu">!</span>ne <span class="fu">=</span> wtbs <span class="fu">.|.</span> pc <span class="co">-- top bit of each byte set if the byte has any bits set in w</span>
+          <span class="fu">!</span>summary <span class="fu">=</span> sketch ne <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span> <span class="co">-- a summary of which bytes are non-zero as an 7-bit bitfield, i.e. top bits collected into bottom byte</span>
+          <span class="fu">!</span>cmpp2 <span class="fu">=</span> parallelCompare <span class="bn">0xFFBF9F8F87838180</span> (<span class="bn">0x0101010101010101</span> <span class="fu">*</span> summary) <span class="co">-- parallel compare summary to powers of two, ignoring 2^0</span>
+          <span class="fu">!</span>idxMsbyte <span class="fu">=</span> sumTopBits8 cmpp2 <span class="co">-- index of most significant non-zero byte * 8</span>
+          <span class="fu">!</span>msbyte <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> (fromIntegral idxMsbyte)) <span class="fu">.&amp;.</span> <span class="bn">0xFF</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span> <span class="co">-- most significant 7-bits of most significant non-zero byte</span>
+          <span class="fu">!</span>cmpp2' <span class="fu">=</span> parallelCompare <span class="bn">0xFFBF9F8F87838180</span> (<span class="bn">0x0101010101010101</span> <span class="fu">*</span> msbyte) <span class="co">-- parallel compare msbyte to powers of two</span>
+          <span class="fu">!</span>idxMsbit <span class="fu">=</span> sumTopBits cmpp2' <span class="co">-- index of most significant non-zero bit in msbyte</span>
+
+          sketch w <span class="fu">=</span> (w <span class="fu">*</span> <span class="bn">0x2040810204081</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">56</span>
+          parallelCompare w1 w2 <span class="fu">=</span> complement (w1 <span class="fu">-</span> w2) <span class="fu">.&amp;.</span> <span class="bn">0x8080808080808080</span>
+          sumTopBits w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="fu">*</span> <span class="bn">0x0101010101010101</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">56</span>
+          sumTopBits8 w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="fu">*</span> <span class="bn">0x0808080808080808</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">56</span>
+
+<span class="ot">indexOfMostSignificant1_w32 ::</span> <span class="dt">Word32</span> <span class="ot">-&gt;</span> <span class="dt">Word32</span>
+indexOfMostSignificant1_w32 w <span class="fu">=</span> idxMsbyte <span class="fu">.|.</span> idxMsbit
+    <span class="kw">where</span> <span class="fu">!</span>wtbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x80808080</span>
+          <span class="fu">!</span>wbbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x7F7F7F7F</span>
+          <span class="fu">!</span>pc <span class="fu">=</span> parallelCompare <span class="bn">0x80808080</span> wbbs
+          <span class="fu">!</span>ne <span class="fu">=</span> wtbs <span class="fu">.|.</span> pc
+          <span class="fu">!</span>summary <span class="fu">=</span> sketch ne <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span>
+          <span class="fu">!</span>cmpp2 <span class="fu">=</span> parallelCompare <span class="bn">0xFF838180</span> (<span class="bn">0x01010101</span> <span class="fu">*</span> summary)
+          <span class="fu">!</span>idxMsbyte <span class="fu">=</span> sumTopBits8 cmpp2
+          <span class="fu">!</span>msbyte <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> (fromIntegral idxMsbyte)) <span class="fu">.&amp;.</span> <span class="bn">0xFF</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span>
+          <span class="fu">!</span>cmpp2' <span class="fu">=</span> parallelCompare <span class="bn">0xFF838180</span> (<span class="bn">0x01010101</span> <span class="fu">*</span> msbyte)
+          <span class="fu">!</span>idxMsbit <span class="fu">=</span> sumTopBits cmpp2'
+
+          sketch w <span class="fu">=</span> (w <span class="fu">*</span> <span class="bn">0x020409</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">24</span>
+          parallelCompare w1 w2 <span class="fu">=</span> complement (w1 <span class="fu">-</span> w2) <span class="fu">.&amp;.</span> <span class="bn">0x80808080</span>
+          sumTopBits w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="fu">*</span> <span class="bn">0x01010101</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">24</span>
+          sumTopBits8 w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="fu">*</span> <span class="bn">0x08080808</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">24</span>
+
+<span class="ot">indexOfMostSignificant1_w16 ::</span> <span class="dt">Word16</span> <span class="ot">-&gt;</span> <span class="dt">Word16</span>
+indexOfMostSignificant1_w16 w <span class="fu">=</span> idxMsnibble <span class="fu">.|.</span> idxMsbit
+    <span class="kw">where</span> <span class="fu">!</span>wtbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x8888</span>
+          <span class="fu">!</span>wbbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x7777</span>
+          <span class="fu">!</span>pc <span class="fu">=</span> parallelCompare <span class="bn">0x8888</span> wbbs
+          <span class="fu">!</span>ne <span class="fu">=</span> wtbs <span class="fu">.|.</span> pc
+          <span class="fu">!</span>summary <span class="fu">=</span> sketch ne <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span>
+          <span class="fu">!</span>cmpp2 <span class="fu">=</span> parallelCompare <span class="bn">0xFB98</span> (<span class="bn">0x1111</span> <span class="fu">*</span> summary)
+          <span class="fu">!</span>idxMsnibble <span class="fu">=</span> sumTopBits4 cmpp2
+          <span class="fu">!</span>msnibble <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> (fromIntegral idxMsnibble)) <span class="fu">.&amp;.</span> <span class="bn">0xF</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span>
+          <span class="fu">!</span>cmpp2' <span class="fu">=</span> parallelCompare <span class="bn">0xFB98</span> (<span class="bn">0x1111</span> <span class="fu">*</span> msnibble)
+          <span class="fu">!</span>idxMsbit <span class="fu">=</span> sumTopBits cmpp2'
+
+          sketch w <span class="fu">=</span> (w <span class="fu">*</span> <span class="bn">0x249</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">12</span>
+          parallelCompare w1 w2 <span class="fu">=</span> complement (w1 <span class="fu">-</span> w2) <span class="fu">.&amp;.</span> <span class="bn">0x8888</span>
+          sumTopBits w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">3</span>) <span class="fu">*</span> <span class="bn">0x1111</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">12</span>
+          sumTopBits4 w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">3</span>) <span class="fu">*</span> <span class="bn">0x4444</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">12</span></code></pre></div>
+        
+    </div>
+
+    <div class="panel-footer">
+        <h6 class="blog-post-meta">
+            November 10, 2016 07:48 UTC
+            
+            (Last updated on November 10, 2016 07:48 UTC)
+
+            
+                Tags: <a href="./tags/programming.html">programming</a>, <a href="./tags/CS.html">CS</a>
+            
+        </h6>
+    </div>
+
+</div><!-- /.blog-post -->
+
+
+
+    <div class="blog-post teaser panel panel-default">
+    <div class="panel-heading">
         <h2 class="blog-post-title"><a href="./posts/quotient-types-for-programmers.html">Quotient Types for Programmers</a></h2>
         <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="8e5f33ef-46e2-4815-a9b1-5c4c46edc4ee" href="./posts/quotient-types-for-programmers.html#disqus_thread"></a></h6>
     </div>
@@ -532,80 +624,6 @@ ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
 
     <div class="blog-post teaser panel panel-default">
     <div class="panel-heading">
-        <h2 class="blog-post-title"><a href="./posts/nullary-initial-release.html">Initial (not very usable) release of nullary</a></h2>
-        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="568F1A95-B1AE-4CF3-BA7D-60AC3AEC7773" href="./posts/nullary-initial-release.html#disqus_thread"></a></h6>
-    </div>
-
-    <div class="panel-body">
-        
-            <h2 id="introduction">Introduction</h2>
-<p>This provides support for working with nullary type classes and generating instances locally. Everything works except due to the way GHC, and in particular GHCi, handles unsatisfiable constraints, the result is very not ergonomic. Namely, GHC won’t infer these types, and even if you provide them, <code>:t</code> in GHCi will error. This has nothing to do with the nullary aspect but only with the unsatisfiable aspect. The same problem would happen if you put <code class="sourceCode haskell"><span class="dt">Show</span> (<span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span>)</code> in your function’s context.</p>
-<h2 id="quick-start">Quick start</h2>
-<p>If you want a nullary class that can be locally satisfied, do the following:</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- The following four extensions are necessary.</span>
-<span class="co">-- Users don't need any of these extensions.</span>
-<span class="ot">{-# LANGUAGE FlexibleContexts #-}</span>
-<span class="ot">{-# LANGUAGE MultiParamTypeClasses #-}</span>
-<span class="ot">{-# LANGUAGE Rank2Types #-}</span>
-<span class="ot">{-# LANGUAGE UndecidableInstances #-}</span>
-
-<span class="co">-- Not exported unless you want to allow users to opt out of</span>
-<span class="co">-- the checking by making an instance for Tag PartialTag.</span>
-<span class="kw">data</span> <span class="dt">PartialTag</span>
-
-<span class="co">-- The nullary type class. It can have members, but it's not</span>
-<span class="co">-- clear this accomplishes anything.</span>
-<span class="kw">class</span> <span class="dt">Partial</span>
-
-<span class="co">-- Enable this library.  Instances like this unfortunately</span>
-<span class="co">-- require UndecidableInstances.</span>
-<span class="kw">instance</span> <span class="dt">Tag</span> <span class="dt">PartialTag</span> <span class="ot">=&gt;</span> <span class="dt">Partial</span>
-
-<span class="co">-- Wrap unsafeTag for user convenience.</span>
-<span class="ot">partial ::</span> (<span class="dt">Partial</span> <span class="ot">=&gt;</span> a) <span class="ot">-&gt;</span> a
-partial <span class="fu">=</span> unsafeTag (<span class="dt">Proxy</span><span class="ot"> ::</span> <span class="dt">Proxy</span> <span class="dt">PartialTag</span>)
-<span class="ot">{-# INLINE partial #-}</span>
-
-<span class="co">-- Define your functions using the Partial class.</span>
-<span class="co">-- The type signature is, unfortunately, necessary.</span>
-head<span class="ot"> ::</span> <span class="dt">Partial</span> <span class="ot">=&gt;</span> [a] <span class="ot">-&gt;</span> a
-head (x<span class="fu">:</span>xs) <span class="fu">=</span> x
-
-<span class="co">-- ... elsewhere ...</span>
-main <span class="fu">=</span> print (partial (head <span class="st">&quot;hello&quot;</span>))</code></pre></div>
-<h2 id="history">History</h2>
-<p>Nullary type classes have a special place in my heart, because I think I inadvertently led to them being supported by GHC (and maybe to even to PureScript). Lennart Augustsson <a href="http://augustss.blogspot.com/2014/12/a-commentary-on-24-days-of-ghc_19.html">discusses</a> some pre-history uses of nullary type classes, and I <a href="http://augustss.blogspot.com/2014/12/a-commentary-on-24-days-of-ghc_19.html#1149704008111082650">commented</a> on my (probable) involvement in this go around.</p>
-<p>One thing I didn’t mention is the context that I usually brought it up was as a rare example where Haskell (GHC really), didn’t support a degenerate case.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> Did you know <code class="sourceCode haskell"><span class="kw">let</span> <span class="kw">in</span> <span class="dv">3</span></code> is valid Haskell 98?</p>
-<p>One thing I did mention, incorrectly, is that outlawing orphan instances, a notion gaining popularity and implemented in PureScript, would render this feature useless. A PureScript <a href="https://github.com/purescript/purescript/issues/1126">issue</a> ran into this head-on, but it did not come to the conclusion that nullary type classes were rendered useless.</p>
-<h2 id="how-it-works">How it works</h2>
-<p>This uses the same evil trick (uses unsafeCoerce and implementation details) that <a href="https://hackage.haskell.org/package/reflection">Data.Reflection</a> uses to generate instances locally. In normal use, the class <code class="sourceCode haskell"><span class="dt">Tag</span></code> will never have instances. The instance declaration for <code class="sourceCode haskell"><span class="dt">Partial</span></code> states that <em>if</em> such an instance existed then you’d have an instance for <code class="sourceCode haskell"><span class="dt">Partial</span></code>. If GHC would infer the type for <code class="sourceCode haskell">head</code>, the type it would give is actually <code class="sourceCode haskell"><span class="dt">Tag</span> <span class="dt">PartialTag</span> <span class="ot">=&gt;</span> [a] <span class="ot">-&gt;</span> a</code>. Writing <code class="sourceCode haskell"><span class="dt">Partial</span> <span class="ot">=&gt;</span> [a] <span class="ot">-&gt;</span> a</code> is like writing <code class="sourceCode haskell"><span class="ot">(==) ::</span> <span class="dt">Eq</span> [a] <span class="ot">=&gt;</span> [a] <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">Bool</span></code>. Here we can resolve the <code class="sourceCode haskell"><span class="dt">Eq</span> [a]</code> constraint by using the <code class="sourceCode haskell"><span class="dt">Eq</span></code> instance for <code class="sourceCode haskell">[a]</code> albeit then introducing an <code class="sourceCode haskell"><span class="dt">Eq</span> a</code> constraint into our context.</p>
-<div class="footnotes">
-<hr />
-<ol>
-<li id="fn1"><p>Degenerate case statements, incidentally, weren’t then supported either.<a href="#fnref1">↩</a></p></li>
-</ol>
-</div>
-        
-    </div>
-
-    <div class="panel-footer">
-        <h6 class="blog-post-meta">
-            November  4, 2015 01:52 UTC
-            
-            (Last updated on August  3, 2016 19:42 UTC)
-
-            
-                Tags: 
-            
-        </h6>
-    </div>
-
-</div><!-- /.blog-post -->
-
-
-
-    <div class="blog-post teaser panel panel-default">
-    <div class="panel-heading">
         <h2 class="blog-post-title"><a href="./posts/you-know-more-about-presheaves-than-you-think.html">You know more about presheaves than you think</a></h2>
         <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="32F754A2-5428-4404-A21A-759092CC4010" href="./posts/you-know-more-about-presheaves-than-you-think.html#disqus_thread"></a></h6>
     </div>
@@ -716,6 +734,8 @@ main <span class="fu">=</span> print (partial (head <span class="st">&quot;hello
                 <div class="panel-body">
                     <ol class="list-unstyled">
                         
+                          <li><div class="blog-post-link">2016-11-10 - <a href="./posts/find-first-set.html">Constant-time Find First Set</a></div></li>
+                        
                           <li><div class="blog-post-link">2016-09-23 - <a href="./posts/quotient-types-for-programmers.html">Quotient Types for Programmers</a></div></li>
                         
                           <li><div class="blog-post-link">2016-05-07 - <a href="./posts/constructivist-motto.html">Constructivist Motto</a></div></li>
@@ -727,8 +747,6 @@ main <span class="fu">=</span> print (partial (head <span class="st">&quot;hello
                           <li><div class="blog-post-link">2015-12-04 - <a href="./posts/high-dimensional-thought-experiment.html">High dimensional thought experiment from Hamming</a></div></li>
                         
                           <li><div class="blog-post-link">2015-11-17 - <a href="./posts/behavioral-reflection.html">Behavioral Reflection</a></div></li>
-                        
-                          <li><div class="blog-post-link">2015-11-04 - <a href="./posts/nullary-initial-release.html">Initial (not very usable) release of nullary</a></div></li>
                         
                           <li><div class="blog-post-link">2015-11-02 - <a href="./posts/you-know-more-about-presheaves-than-you-think.html">You know more about presheaves than you think</a></div></li>
                         
@@ -744,11 +762,12 @@ main <span class="fu">=</span> print (partial (head <span class="st">&quot;hello
                 <div class="panel-body">
                     <ol class="list-unstyled">
                       <li><a href="./tags/Agda.html">Agda (1)</a></li>
-<li><a href="./tags/CS.html">CS (2)</a></li>
+<li><a href="./tags/CS.html">CS (3)</a></li>
 <li><a href="./tags/category%20theory.html">category theory (2)</a></li>
 <li><a href="./tags/geometric%20algebra.html">geometric algebra (1)</a></li>
 <li><a href="./tags/javascript.html">javascript (1)</a></li>
 <li><a href="./tags/math.html">math (6)</a></li>
+<li><a href="./tags/programming.html">programming (1)</a></li>
 <li><a href="./tags/type%20theory.html">type theory (2)</a></li>
                     </ol>
                 </div>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="A blog mostly on math, physics, and computer science.">
+    <meta name="author" content="Derek Elkins">
+    <!--<link rel="icon" href="/images/favicon.ico">-->
+
+    <title>Constant-time Find First Set</title>
+    <!-- Bootstrap core CSS -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="../css/blog.css" rel="stylesheet">
+    <link href="../css/syntax.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="blog-masthead">
+      <div class="container">
+        <nav class="blog-nav">
+          <a class="blog-nav-item " href="../">Home</a>
+          <a class="blog-nav-item " href="../about.html">About</a>
+          <a class="blog-nav-item " href="../contact.html">Contact</a>
+          <a class="blog-nav-item " href="../readinglist.html">Reading List</a>
+          <a class="blog-nav-item " href="../archive.html">Archive</a>
+          <a class="blog-nav-item pull-right" href="../rss.xml">RSS</a>
+          <a class="blog-nav-item pull-right" href="../atom.xml">Atom</a>
+        </nav>
+      </div>
+    </div>
+
+    <div class="container">
+      
+      
+      <div class="row">
+        
+        <div class="col-sm-12 blog-main">
+        
+          <div class="blog-post">
+    <h2 class="blog-post-title" style="margin-top: 30px;">Constant-time Find First Set</h2>
+    <p class="blog-post-meta">November 10, 2016 07:48 UTC 
+        
+        (Last updated on November 10, 2016 07:48 UTC)
+    </p>
+    <h6 class="blog-post-meta">
+        
+        Tags: <a href="../tags/programming.html">programming</a>, <a href="../tags/CS.html">CS</a>
+        
+    </h6>
+
+    <h2 id="introduction">Introduction</h2>
+<p>I’ve been watching the <a href="https://courses.csail.mit.edu/6.851/spring14/lectures/">Spring 2012 lectures for MIT 6.851 Advanced Data Structures</a> with Prof. Erik Demaine. In lecture 12, “Fusion Trees”, it mentions a constant time algorithm for <a href="https://en.wikipedia.org/wiki/Find_first_set">find first set bit</a> which finds the index of the first most significant 1 bit in a word. Assuming word operations are constant time, i.e. in the Word RAM model, the below algorithm takes 27 word operations (not counting copying). When I compiled it with GHC 8.0.1 -O2 the core of the algorithm was 44 straight-line instructions. The theoretically interesting thing is, other than changing the constants, the same algorithm works for any word size. This is demonstrated for <code>Word64</code>, <code>Word32</code>, and <code>Word16</code>.</p>
+<h2 id="code">Code</h2>
+<p>Below is the complete code. You can also download it <a href="./raw/FFS.hs">here</a>.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE BangPatterns #-}</span>
+<span class="kw">import </span><span class="dt">Data.Word</span>
+<span class="kw">import </span><span class="dt">Data.Bits</span>
+
+<span class="co">-- Returns 0-based bit index of most significant bit that is 1. Assumes input is non-zero.</span>
+<span class="co">-- That is, 2^indexOfMostSignificant1 x &lt;= x &lt; 2^(indexOfMostSignificant1 x + 1)</span>
+<span class="co">-- From Erik Demaine's presentation in Spring 2012 lectures of MIT 6.851, particularly &quot;Lecture 12: Fusion Trees&quot;.</span>
+<span class="co">-- Takes 27 (source-level) straight-line word operations.</span>
+<span class="ot">indexOfMostSignificant1 ::</span> <span class="dt">Word64</span> <span class="ot">-&gt;</span> <span class="dt">Word64</span>
+indexOfMostSignificant1 w <span class="fu">=</span> idxMsbyte <span class="fu">.|.</span> idxMsbit
+    <span class="kw">where</span> <span class="fu">!</span>wtbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x8080808080808080</span> <span class="co">-- top bits of each byte</span>
+          <span class="fu">!</span>wbbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x7F7F7F7F7F7F7F7F</span> <span class="co">-- all but top bits of each byte producing 8 7-bit chunks</span>
+          <span class="fu">!</span>pc <span class="fu">=</span> parallelCompare <span class="bn">0x8080808080808080</span> wbbs <span class="co">-- parallel compare of each 7-bit chunk to 0, top bit set in result if 7-bit chunk was not 0</span>
+          <span class="fu">!</span>ne <span class="fu">=</span> wtbs <span class="fu">.|.</span> pc <span class="co">-- top bit of each byte set if the byte has any bits set in w</span>
+          <span class="fu">!</span>summary <span class="fu">=</span> sketch ne <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span> <span class="co">-- a summary of which bytes are non-zero as an 7-bit bitfield, i.e. top bits collected into bottom byte</span>
+          <span class="fu">!</span>cmpp2 <span class="fu">=</span> parallelCompare <span class="bn">0xFFBF9F8F87838180</span> (<span class="bn">0x0101010101010101</span> <span class="fu">*</span> summary) <span class="co">-- parallel compare summary to powers of two, ignoring 2^0</span>
+          <span class="fu">!</span>idxMsbyte <span class="fu">=</span> sumTopBits8 cmpp2 <span class="co">-- index of most significant non-zero byte * 8</span>
+          <span class="fu">!</span>msbyte <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> (fromIntegral idxMsbyte)) <span class="fu">.&amp;.</span> <span class="bn">0xFF</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span> <span class="co">-- most significant 7-bits of most significant non-zero byte</span>
+          <span class="fu">!</span>cmpp2' <span class="fu">=</span> parallelCompare <span class="bn">0xFFBF9F8F87838180</span> (<span class="bn">0x0101010101010101</span> <span class="fu">*</span> msbyte) <span class="co">-- parallel compare msbyte to powers of two</span>
+          <span class="fu">!</span>idxMsbit <span class="fu">=</span> sumTopBits cmpp2' <span class="co">-- index of most significant non-zero bit in msbyte</span>
+
+          sketch w <span class="fu">=</span> (w <span class="fu">*</span> <span class="bn">0x2040810204081</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">56</span>
+          parallelCompare w1 w2 <span class="fu">=</span> complement (w1 <span class="fu">-</span> w2) <span class="fu">.&amp;.</span> <span class="bn">0x8080808080808080</span>
+          sumTopBits w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="fu">*</span> <span class="bn">0x0101010101010101</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">56</span>
+          sumTopBits8 w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="fu">*</span> <span class="bn">0x0808080808080808</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">56</span>
+
+<span class="ot">indexOfMostSignificant1_w32 ::</span> <span class="dt">Word32</span> <span class="ot">-&gt;</span> <span class="dt">Word32</span>
+indexOfMostSignificant1_w32 w <span class="fu">=</span> idxMsbyte <span class="fu">.|.</span> idxMsbit
+    <span class="kw">where</span> <span class="fu">!</span>wtbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x80808080</span>
+          <span class="fu">!</span>wbbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x7F7F7F7F</span>
+          <span class="fu">!</span>pc <span class="fu">=</span> parallelCompare <span class="bn">0x80808080</span> wbbs
+          <span class="fu">!</span>ne <span class="fu">=</span> wtbs <span class="fu">.|.</span> pc
+          <span class="fu">!</span>summary <span class="fu">=</span> sketch ne <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span>
+          <span class="fu">!</span>cmpp2 <span class="fu">=</span> parallelCompare <span class="bn">0xFF838180</span> (<span class="bn">0x01010101</span> <span class="fu">*</span> summary)
+          <span class="fu">!</span>idxMsbyte <span class="fu">=</span> sumTopBits8 cmpp2
+          <span class="fu">!</span>msbyte <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> (fromIntegral idxMsbyte)) <span class="fu">.&amp;.</span> <span class="bn">0xFF</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span>
+          <span class="fu">!</span>cmpp2' <span class="fu">=</span> parallelCompare <span class="bn">0xFF838180</span> (<span class="bn">0x01010101</span> <span class="fu">*</span> msbyte)
+          <span class="fu">!</span>idxMsbit <span class="fu">=</span> sumTopBits cmpp2'
+
+          sketch w <span class="fu">=</span> (w <span class="fu">*</span> <span class="bn">0x020409</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">24</span>
+          parallelCompare w1 w2 <span class="fu">=</span> complement (w1 <span class="fu">-</span> w2) <span class="fu">.&amp;.</span> <span class="bn">0x80808080</span>
+          sumTopBits w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="fu">*</span> <span class="bn">0x01010101</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">24</span>
+          sumTopBits8 w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="fu">*</span> <span class="bn">0x08080808</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">24</span>
+
+<span class="ot">indexOfMostSignificant1_w16 ::</span> <span class="dt">Word16</span> <span class="ot">-&gt;</span> <span class="dt">Word16</span>
+indexOfMostSignificant1_w16 w <span class="fu">=</span> idxMsnibble <span class="fu">.|.</span> idxMsbit
+    <span class="kw">where</span> <span class="fu">!</span>wtbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x8888</span>
+          <span class="fu">!</span>wbbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x7777</span>
+          <span class="fu">!</span>pc <span class="fu">=</span> parallelCompare <span class="bn">0x8888</span> wbbs
+          <span class="fu">!</span>ne <span class="fu">=</span> wtbs <span class="fu">.|.</span> pc
+          <span class="fu">!</span>summary <span class="fu">=</span> sketch ne <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span>
+          <span class="fu">!</span>cmpp2 <span class="fu">=</span> parallelCompare <span class="bn">0xFB98</span> (<span class="bn">0x1111</span> <span class="fu">*</span> summary)
+          <span class="fu">!</span>idxMsnibble <span class="fu">=</span> sumTopBits4 cmpp2
+          <span class="fu">!</span>msnibble <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> (fromIntegral idxMsnibble)) <span class="fu">.&amp;.</span> <span class="bn">0xF</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span>
+          <span class="fu">!</span>cmpp2' <span class="fu">=</span> parallelCompare <span class="bn">0xFB98</span> (<span class="bn">0x1111</span> <span class="fu">*</span> msnibble)
+          <span class="fu">!</span>idxMsbit <span class="fu">=</span> sumTopBits cmpp2'
+
+          sketch w <span class="fu">=</span> (w <span class="fu">*</span> <span class="bn">0x249</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">12</span>
+          parallelCompare w1 w2 <span class="fu">=</span> complement (w1 <span class="fu">-</span> w2) <span class="fu">.&amp;.</span> <span class="bn">0x8888</span>
+          sumTopBits w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">3</span>) <span class="fu">*</span> <span class="bn">0x1111</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">12</span>
+          sumTopBits4 w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">3</span>) <span class="fu">*</span> <span class="bn">0x4444</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">12</span></code></pre></div>
+
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_shortname = 'hedonisticlearning';
+        var disqus_identifier = 'c90916eb-ab11-4a1f-a1cf-ee18952fffef';
+        var disqus_title = 'Constant-time Find First Set';
+        
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript> 
+</div>
+
+        </div><!-- /.blog-main -->
+        
+        
+      </div><!-- /.row -->
+    </div><!-- /.container -->
+
+    <footer class="blog-footer">
+      <p>Site generated by <a href="http://jaspervdj.be/hakyll">Hakyll</a></p>
+      <p>
+        <a href="#">Back to top</a>
+      </p>
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!--<script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>-->
+    <script type="text/javascript">
+        var disqus_shortname = 'hedonisticlearning';
+        (function () {
+            var s = document.createElement('script'); s.async = true;
+            s.type = 'text/javascript';
+            s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
+            (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+        }());
+    </script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_HTMLorMML.js">
+    </script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+          extensions: ['asciimath2jax.js'],
+          asciimath2jax: {
+              delimiters: [['|','|'], ['#','#']],
+              processClass: 'asciimath'
+            }
+        });
+    </script>
+  </body>
+</html>
