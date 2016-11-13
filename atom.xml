@@ -10,14 +10,14 @@
     </author>
     <updated>2016-11-10T07:48:33Z</updated>
     <entry>
-    <title>Constant-time Find First Set</title>
+    <title>Constant-time Binary Logarithm</title>
     <link href="https://derekelkins.github.io/posts/find-first-set.html" />
     <id>https://derekelkins.github.io/posts/find-first-set.html</id>
     <published>2016-11-10T07:48:33Z</published>
     <updated>2016-11-10T07:48:33Z</updated>
     <summary type="html"><![CDATA[<h2 id="introduction">Introduction</h2>
-<p>I’ve been watching the <a href="https://courses.csail.mit.edu/6.851/spring14/lectures/">Spring 2012 lectures for MIT 6.851 Advanced Data Structures</a> with Prof. Erik Demaine. In lecture 12, “Fusion Trees”, it mentions a constant time algorithm for <a href="https://en.wikipedia.org/wiki/Find_first_set">find first set bit</a> which finds the index of the first most significant 1 bit in a word. Assuming word operations are constant time, i.e. in the Word RAM model, the below algorithm takes 27 word operations (not counting copying). When I compiled it with GHC 8.0.1 -O2 the core of the algorithm was 44 straight-line instructions. The theoretically interesting thing is, other than changing the constants, the same algorithm works for any word size that’s an even power of 2. Odd powers of two need a slight tweak. This is demonstrated for <code>Word64</code>, <code>Word32</code>, and <code>Word16</code>. It should be possible to do this for any arbitrary word size <code>w</code>.</p>
-<p>The <code>clz</code> instruction can be used to implement this function, but this is a potential simulation of that or a similar instruction wasn’t available. It’s probably not the fastest way.</p>
+<p>I’ve been watching the <a href="https://courses.csail.mit.edu/6.851/spring14/lectures/">Spring 2012 lectures for MIT 6.851 Advanced Data Structures</a> with Prof. Erik Demaine. In lecture 12, “Fusion Trees”, it mentions a constant time algorithm for finding the index of the first most significant 1 bit in a word, i.e. the binary logarithm. Assuming word operations are constant time, i.e. in the Word RAM model, the below algorithm takes 27 word operations (not counting copying). When I compiled it with GHC 8.0.1 -O2 the core of the algorithm was 44 straight-line instructions. The theoretically interesting thing is, other than changing the constants, the same algorithm works for any word size that’s an even power of 2. Odd powers of two need a slight tweak. This is demonstrated for <code>Word64</code>, <code>Word32</code>, and <code>Word16</code>. It should be possible to do this for any arbitrary word size <code>w</code>.</p>
+<p>The <code>clz</code> instruction <a href="https://hackage.haskell.org/package/base-4.8.2.0/docs/Data-Bits.html#v:countLeadingZeros">can be used to implement</a> this function, but this is a potential simulation if that or a similar instruction wasn’t available. It’s probably not the fastest way. Similarly, find first set and count trailing zeros <a href="https://en.wikipedia.org/wiki/Find_first_set">can be implemented</a> in terms of this operation.</p>
 <h2 id="code">Code</h2>
 <p>Below is the complete code. You can also download it <a href="/posts/raw/FFS.hs">here</a>.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE BangPatterns #-}</span>
