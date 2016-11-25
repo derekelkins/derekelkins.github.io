@@ -8,8 +8,471 @@
         <name>Derek Elkins</name>
         <email>derek.a.elkins+blog@gmail.com</email>
     </author>
-    <updated>2016-11-10T07:48:33Z</updated>
+    <updated>2016-11-25T06:23:17Z</updated>
     <entry>
+    <title>Category Theory, Syntactically</title>
+    <link href="https://derekelkins.github.io/posts/category-theory-syntactically.html" />
+    <id>https://derekelkins.github.io/posts/category-theory-syntactically.html</id>
+    <published>2016-11-25T06:23:17Z</published>
+    <updated>2016-11-25T06:23:17Z</updated>
+    <summary type="html"><![CDATA[<h4 id="or-how-model-theory-got-scooped-by-category-theory">(or: How Model Theory Got Scooped by Category Theory)</h4>
+<h2 id="overview">Overview</h2>
+<p>This will be a <em>very</em> non-traditional introduction to the ideas behind category theory. It will essentially be a slice through model theory (presented in a more programmer-friendly manner) with an unusual organization. Of course the end result will be <strong>***SPOILER ALERT***</strong> it was category theory all along. A secret decoder ring will be provided at the end. This approach is inspired by the notion of an internal logic/language and by Vaughn Pratt’s paper <a href="http://boole.stanford.edu/pub/yon.pdf">The Yoneda Lemma Without Category Theory</a>. <!-- \* --></p>
+<p>I want to be very clear, though. This is not meant to be an analogy or an example or a guide for intuition. This <em>is</em> category theory. It is simply presented in a different manner.</p>
+<!--more-->
+<h2 id="theories">Theories</h2>
+<p>The first concept we’ll need is that of a theory. If you’ve ever implemented an interpreter for even the simplest language, than most of what follows modulo some terminological differences should be both familiar and very basic. If you are familiar with algebraic semantics, then that is exactly what is happening here only restricting to unary (but multi-sorted) algebraic theories.</p>
+<p>For us, a <strong>theory</strong>, #ccT#, is a collection of <strong>sorts</strong>, a collection of (unary) <strong>function symbols</strong><a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>, and a collection of <strong>equations</strong>. Each function symbol has an input sort and an output sort which we’ll call the <strong>source</strong> and <strong>target</strong> of the function symbol. We’ll write #ttf : A -&gt; B# to say that #ttf# is a function symbol with source #A# and target #B#. We define <code class="asciimath">#&quot;src&quot;(ttf) -= A#</code> and <code class="asciimath">#&quot;tgt&quot;(ttf) -= B#</code>. Sorts and function symbols are just symbols. Something is a sort if it is in the collection of sorts. Nothing else is required. A function symbol is not a function, it’s just a, possibly structured, name. Later, we’ll map those names to functions, but the same name may be mapped to different functions. In programming terms, a theory defines an interface or signature. We’ll write <code class="asciimath">#bb &quot;sort&quot;(ccT)#</code> for the collection of sorts of #ccT# and <code class="asciimath">#bb &quot;fun&quot;(ccT)#</code> for the collection of function symbols.</p>
+<p>A (raw) <strong>term</strong> in a theory is either a <strong>variable</strong> labelled by a sort, #bbx_A#, or it’s a function symbol applied to a term, <code class="asciimath">#tt &quot;f&quot;(t)#</code>, such that the sort of the term #t# matches the source of #ttf#. The sort or target of a term is the sort of the variable if it’s a variable or the target of the outermost function symbol. The source of a term is the sort of the innermost variable. In fact, all terms are just sequences of function symbol applications to a variable, so there will always be exactly one variable. All this is to say the expressions need to be “well-typed” in the obvious way. Given a theory with two function symbols #ttf : A -&gt; B# and #ttg : B -&gt; A#, <code class="asciimath">#bbx_A#</code>, <code class="asciimath">#bbx_B#</code> , <code class="asciimath">#tt &quot;f&quot;(bbx_A)#</code>, and <code class="asciimath">#tt &quot;f&quot;(tt &quot;g&quot;(tt &quot;f&quot;(bbx_A)))#</code> are all examples of terms. <code class="asciimath">#tt &quot;f&quot;(bbx_B)#</code> and <code class="asciimath">#tt &quot;f&quot;(tt &quot;f&quot;(bbx_A))#</code> are not terms because they are not “well-typed”, and #ttf# by itself is not a term simply because it doesn’t match the syntax. Using Haskell syntax, we can define a data type representing this syntax if we ignore the sorting:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Term</span> <span class="fu">=</span> <span class="dt">Var</span> <span class="dt">Sort</span> <span class="fu">|</span> <span class="dt">Apply</span> <span class="dt">FunctionSymbol</span> <span class="dt">Term</span></code></pre></div>
+<p>Using GADTs, we could capture the sorting constraints as well:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Term</span> (<span class="ot">s ::</span> <span class="dt">Sort</span>) (<span class="ot">t ::</span> <span class="dt">Sort</span>) <span class="kw">where</span>
+    <span class="dt">Var</span><span class="ot"> ::</span> <span class="dt">Term</span> t t
+    <span class="dt">Apply</span><span class="ot"> ::</span> <span class="dt">FunctionSymbol</span> x t <span class="ot">-&gt;</span> <span class="dt">Term</span> s x <span class="ot">-&gt;</span> <span class="dt">Term</span> s t</code></pre></div>
+<p>An important operation on terms is <strong>substitution</strong>. Given a term #t_1# with source #A# and a term #t_2# with target #A# we define the substitution of #t_2# into #t_1#, written #t_1[bbx_A |-&gt; t_2]#, as:</p>
+<blockquote>
+<p>If #t_1 = bbx_A# then #bbx_A[bbx_A |-&gt; t_2] -= t_2#.</p>
+<p>If <code class="asciimath">#t_1 = tt &quot;f&quot;(t)#</code> then <code class="asciimath">#tt &quot;f&quot;(t)[bbx_A |-&gt; t_2] -= tt &quot;f&quot;(t[bbx_A |-&gt; t_2])#</code>.</p>
+</blockquote>
+<p>Using the theory from before, we have:</p>
+<blockquote>
+<p><code class="asciimath">#tt &quot;f&quot;(bbx_A)[bbx_A |-&gt; tt &quot;g&quot;(bbx_B)] = tt &quot;f&quot;(tt &quot;g&quot;(bbx_B))#</code></p>
+</blockquote>
+<p>As a shorthand, for arbitrary terms #t_1# and #t_2#, #t_1(t_2)# will mean <code class="asciimath">#t_1[bbx_(&quot;src&quot;(t_1)) |-&gt; t_2]#</code>.</p>
+<p>Finally, equations<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a>. An <strong>equation</strong> is a pair of terms with equal source and target, for example, <code class="asciimath">#(: tt &quot;f&quot;(tt &quot;g&quot;(bbx_B)), bbx_B :)#</code>. The idea is that we want to identify these two terms. To do this we <a href="../posts/quotient-types-for-programmers.html">quotient</a> the set of terms by the congruence generated by these pairs, i.e. by the reflexive-, symmetric-, transitive-closure of the relation generated by the equations which further satisfies “if #s_1 ~~ t_1# and #s_2 ~~ t_2# then <code class="asciimath">#s_1(s_2) ~~ t_1(t_2)#</code>”. From now on, by “terms” I’ll mean this quotient with “raw terms” referring to the unquotiented version. This means that when we say “<code class="asciimath">#tt &quot;f&quot;(tt &quot;g&quot;(bbx_B)) = bbx_B#</code>”, we really mean the two terms are congruent with respect to the congruence generated by the equations. We’ll write #ccT(A, B)# for the collection of terms, in this sense, with source #A# and target #B#. To make things look a little bit more normal, I’ll write #s ~~ t# as a synonym for #(: s, t :)# when the intent is that the pair represents a given equation.</p>
+<p>Expanding the theory from before, we get the <strong>theory of isomorphisms</strong>, <code class="asciimath">#ccT_{:~=:}#</code>, consisting of two sorts, #A# and #B#, two function symbols, #ttf# and #ttg#, and two equations <code class="asciimath">#tt &quot;f&quot;(tt &quot;g&quot;(bbx_B)) ~~ bbx_B#</code> and <code class="asciimath">#tt &quot;g&quot;(tt &quot;f&quot;(bbx_A)) ~~ bbx_A#</code>. The equations lead to equalities like <code class="asciimath">#tt &quot;f&quot;(tt &quot;g&quot;(tt &quot;f&quot;(bbx_A))) = tt &quot;f&quot;(bbx_A)#</code>. In fact, it doesn’t take much work to show that this theory only has four distinct terms: #bbx_A#, #bbx_B#, <code class="asciimath">#tt &quot;f&quot;(bbx_A)#</code>, and <code class="asciimath">#tt &quot;g&quot;(bbx_B)#</code>.</p>
+<p>In traditional model theory or universal algebra we tend to focus on multi-ary operations, i.e. function symbols that can take multiple inputs. By restricting ourselves to only unary function symbols, we expose a duality. For every theory #ccT#, we have the <strong>opposite theory</strong>, #ccT^(op)# defined by using the same sorts and function symbols but swapping the source and target of the function symbols which also requires rewriting the terms in the equations. The rewriting on terms is the obvious thing, e.g. if #ttf : A -&gt; B#, #ttg : B -&gt; C#, and #tth : C -&gt; D#, then the term in #ccT#, <code class="asciimath">#tt &quot;h&quot;(tt &quot;g&quot;(tt &quot;f&quot;(bbx_A)))#</code> would become the term <code class="asciimath">#tt &quot;f&quot;(tt &quot;g&quot;(tt &quot;h&quot;(bbx_D)))#</code> in #ccT^(op)#. From this it should be clear that <code class="asciimath">#(ccT^(op))^(op) = ccT#</code>.</p>
+<h2 id="product-theories">Product Theories</h2>
+<p>Given two theories #ccT_1# and #ccT_2# we can form a new theory #ccT_1 xx ccT_2# called the <strong>product theory</strong> of #ccT_1# and #ccT_2#. The sorts of this theory are pairs of sorts from #ccT_1# and #ccT_2#. The collection of function symbols is the <em>disjoint union</em> <code class="asciimath">#bb &quot;fun&quot;(ccT_1) xx bb &quot;sort&quot;(ccT_2) + bb &quot;sort&quot;(ccT_1) xx bb &quot;fun&quot;(ccT_2)#</code>. A disjoint union is like Haskell’s <code>Either</code> type. Here we’ll write <code class="asciimath">#tt &quot;inl&quot;#</code> and <code class="asciimath">#tt &quot;inr&quot;#</code> for the left and right injections respectively. <code class="asciimath">#tt &quot;inl&quot;#</code> takes a function symbol from #ccT_1# and a sort from #ccT_2# and produces a function symbol of #ccT_1 xx ccT_2# and similarly for <code class="asciimath">#tt &quot;inr&quot;#</code>. If <code class="asciimath">#tt &quot;f&quot; : A -&gt; B#</code> in #ccT_1# and #C# is a sort of #ccT_2#, then <code class="asciimath">#tt &quot;inl&quot;(f, C) : (A, C) -&gt; (B, C)#</code> and similarly for <code class="asciimath">#tt &quot;inr&quot;#</code>.</p>
+<p>The collection of equations for #ccT_1 xx ccT_2# consists of the following:</p>
+<ul>
+<li>for every equation, #l ~~ r# of #ccT_1# and every sort, #C#, of #ccT_2# we produce an equation #l’ ~~ r’# by replacing each function symbol #ttf# in #l# and #r# with <code class="asciimath">#tt &quot;inl&quot;(tt &quot;f&quot;, C)#</code></li>
+<li>similarly for equations of #ccT_2#</li>
+<li>for every pair of function symbols #ttf : A -&gt; B# from #ccT_1# and #ttg : C -&gt; D# from #ccT_2#, we produce the equation <code class="asciimath">#tt &quot;inl&quot;(tt &quot;f&quot;, D)(tt &quot;inr&quot;(A, tt &quot;g&quot;)(bbx_{:(A, C&quot;)&quot;:})) ~~ tt &quot;inr&quot;(B, tt &quot;g&quot;)(&quot;inl&quot;(tt &quot;f&quot;, C)(bbx_{:(A, C&quot;)&quot;:}))#</code></li>
+</ul>
+<p>The above is probably unreadable. If you work through it, you can show that every term of #ccT_1 xx ccT_2# is equivalent to a pair of terms #(t_1, t_2)# where #t_1# is a term in #ccT_1# and #t_2# is a term in #ccT_2#. Using this equivalence, the first bullet is seen to be saying that if #l = r# in #ccT_1# and #C# is a sort in #ccT_2# then #(l, bbx_C) = (r, bbx_C)# in #ccT_1 xx ccT_2#. The second is similar. The third then states</p>
+<blockquote>
+<p><code class="asciimath">#(t_1, bbx_C)((bbx_A, t_2)(bbx_{:&quot;(A, C)&quot;:})) = (t_1, t_2)(bbx_{:&quot;(A, C)&quot;:}) = (bbx_A, t_2)((t_1, bbx_C)(bbx_{:&quot;(A, C)&quot;:}))#</code>.</p>
+</blockquote>
+<p>To establish the equivalence between terms of #ccT_1 xx ccT_2# and pairs of terms from #ccT_1# and #ccT_2#, we use the third bullet to move all the <code class="asciimath">#tt &quot;inl&quot;#</code>s outward at which point we’ll have a sequence of #ccT_1# function symbols followed by a sequence of #ccT_2# function symbols each corresponding to term.</p>
+<p>The above might seem a bit round about. An alternative approach would be to define the function symbols of #ccT_1 xx ccT_2# to be all pairs of all the <em>terms</em> from #ccT_1# and #ccT_2#. The problem with this approach is that it leads to an <em>explosion</em> in the number of function symbols and equations required. In particular, it easily produces an infinitude of function symbols and equations even when provided with theories that only have a finite number of sorts, function symbols, and equations.</p>
+<p>As a concrete and useful example, consider the theory #ccT_bbbN# consisting of a single sort, #0#, a single function symbol, #tts#, and no equations. This theory has a term for each natural number, #n#, corresponding to #n# applications of #tts#. Now let’s articulate #ccT_bbbN xx ccT_bbbN#. It has one sort, #(0, 0)#, two function symbols, <code class="asciimath">#tt &quot;inl&quot;(tt &quot;s&quot;, 0)#</code> and <code class="asciimath">#tt &quot;inr&quot;(0, tt &quot;s&quot;)#</code>, and it has one equation, <code class="asciimath">#tt &quot;inl&quot;(tt &quot;s&quot;, 0)(tt &quot;inr&quot;(0, tt &quot;s&quot;)(bbx_{:(0, 0&quot;)&quot;:})) ~~ tt &quot;inr&quot;(0, tt &quot;s&quot;)(&quot;inl&quot;(tt &quot;s&quot;, 0)(bbx_{:(0, 0&quot;)&quot;:}))#</code>. Unsurprisingly, the terms of this theory correspond to pairs of natural numbers. If we had used the alternative definition, we’d have had an infinite number of function symbols and an infinite number of equations.</p>
+<p>Nevertheless, for clarity I will typically write a term of a product theory as a pair of terms.</p>
+<p>As a relatively easy exercise — easier than the above — you can formulate and define the disjoint sum of two theories #ccT_1 + ccT_2#. The idea is that every term of #ccT_1 + ccT_2# corresponds to either a term of #ccT_1# or a term of #ccT_2#. Don’t forget to define what happens to the equations.</p>
+<p>Related to these, we have the theory #ccT_{:bb1:}#, which consists of one sort and no function symbols or equations, and #ccT_{:bb0:}# which consists of no sorts and thus no possibility for function symbols or equations. #ccT_{:bb1:}# has exactly one term while #ccT_{:bb0:}# has no terms.</p>
+<h2 id="collages">Collages</h2>
+<p>Sometimes we’d like to talk about function symbols whose source is in one theory and target is in another. As a simple example, that we’ll explore in more depth later, we may want function symbols whose sources are in a product theory. This would let us consider terms with multiple inputs.</p>
+<p>The natural way to achieve this is to simply make a new theory that contains sorts from both theories plus the new function symbols. A <strong>collage</strong>, #ccK#, from a theory #ccT_1# to #ccT_2#, written #ccK : ccT_1 ↛ ccT_2#, is a theory whose collection of sorts is the disjoint union of the sorts of #ccT_1# and #ccT_2#. The function symbols of #ccK# consist for each function symbol #ttf : A -&gt; B# in #ccT_1#, a function symbol <code class="asciimath">#tt &quot;inl&quot;(ttf) : tt &quot;inl&quot;(A) -&gt; tt &quot;inl&quot;(B)#</code>, and similarly for function symbols from #ccT_2#. Equations from #ccT_1# and #ccT_2# are likewise taken and lifted appropriately, i.e. #ttf# is replaced with <code class="asciimath">#tt &quot;inl&quot;(ttf)#</code> or <code class="asciimath">#tt &quot;inr&quot;(ttf)#</code> as appropriate. Additional function symbols of the form <code class="asciimath">#k : tt &quot;inl&quot;(A) -&gt; tt &quot;inr&quot;(Z)#</code> where #A# is a sort of #ccT_1# and #Z# is a sort of #ccT_2#, and potentially additional equations involving these function symbols, may be given. (If no additional function symobls are given, then this is exactly the disjoint sum of #ccT_1# and #ccT_2#.) These additional function symbols and equations are what differentiate two collages that have the same source and target theories. Note, there are <em>no</em> function symbols <code class="asciimath">#tt &quot;inr&quot;(Z) -&gt; tt &quot;inl&quot;(A)#</code>, i.e. where #Z# is in #ccT_2# and #A# is in #ccT_1#. That is, there are no function symbols going the “other way”. To avoid clutter, I’ll typically assume that the sorts and function symbols of #ccT_1# and #ccT_2# are disjoint already, and dispense with the <code class="asciimath">#tt &quot;inl&quot;#</code>s and <code class="asciimath">#tt &quot;inr&quot;#</code>s.</p>
+<p>Summarizing, we have <code class="asciimath">#ccK(tt &quot;inl&quot;(A), &quot;inl&quot;(B)) ~= ccT_1(A, B)#</code>, <code class="asciimath">#ccK(tt &quot;inr&quot;(Y), tt &quot;inr&quot;(Z)) ~= ccT_2(Y, Z)#</code>, and <code class="asciimath">#ccK(tt &quot;inr&quot;(Z), tt &quot;inl&quot;(A)) = O/#</code> for all #A#, #B#, #Y#, and #Z#. <code class="asciimath">#ccK(tt &quot;inl&quot;(A), tt &quot;inr&quot;(Z))#</code> for any #A# and #Z# is arbitrary generated. To distinguish them, I’ll call the function symbols that go from one theory to another <strong>bridges</strong>. More generally, an arbitrary term that has it’s source in one theory and target in another will be described as a <strong>bridging term</strong>.</p>
+<p>Here’s a somewhat silly example. Consider #ccK_+ : ccT_bbbN xx ccT_bbbN ↛ ccT_bbbN# that has one bridge <code class="asciimath">#tt &quot;add&quot; : (0, 0) -&gt; 0#</code> with the equations <code class="asciimath">#tt &quot;add&quot;(tt &quot;inl&quot;(tts, 0)(bbx_(&quot;(&quot;0, 0&quot;)&quot;))) ~~ tts(tt &quot;add&quot;(bbx_(&quot;(&quot;0, 0&quot;)&quot;)))#</code> and <code class="asciimath">#tt &quot;add&quot;(tt &quot;inr&quot;(0, tts)(bbx_(&quot;(&quot;0, 0&quot;)&quot;))) ~~ tts(tt &quot;add&quot;(bbx_(&quot;(&quot;0, 0&quot;)&quot;)))#</code>.</p>
+<p>More usefully, if a bit degenerately, every theory induces a collage in the following way. Given a theory #ccT#, we can build the collage #ccK_ccT : ccT ↛ ccT# where the bridges consist of the following. For each sort, #A#, of #ccT#, we have the following bridge: <code class="asciimath">#tt &quot;id&quot;_A : tt &quot;inl&quot;(A) -&gt; tt &quot;inr&quot;(A)#</code>. Then, for every function symbol, #ttf : A -&gt; B# in #ccT#, we have the following equation: <code class="asciimath">#tt &quot;inl&quot;(tt &quot;f&quot;)(tt &quot;id&quot;_A(bbx_(tt &quot;inl&quot;(A)))) ~~ tt &quot;id&quot;_B(tt &quot;inr&quot;(tt &quot;f&quot;)(bbx_(tt &quot;inl&quot;(A))))#</code>. We have <code class="asciimath">#ccK_ccT(tt &quot;inl&quot;(A), tt &quot;inr&quot;(B)) ~= ccT(A, B)#</code>.</p>
+<p>You can think of a bridging term in a collage as a sequence of function symbols partitioned into two parts by a bridge. Naturally, we might consider partitioning into more than two parts by having more than one bridge. It’s easy to generalize the definition of collage to combine an arbitrary number of theories, but I’ll take a different, probably less good, route. Given collages #ccK_1 : ccT_1 ↛ ccT_2# and #ccK_2 : ccT_2 ↛ ccT_3#, we can make the collage #ccK_2 @ ccK_1 : ccT_1 ↛ ccT_3# by defining its bridges to be triples of a bridge of #ccK_1#, #k_1 : A_1 -&gt; A_2#, a term, #t : A_2 -&gt; B_2# of #ccT_2#, and a bridge of #ccK_2#, #k_2 : B_2 -&gt; B_3# which altogether will be a bridge of #ccK_2 @ ccK_1# going from #A_1 -&gt; B_3#. These triples essentially represent a term like <code class="asciimath">#k_2(t(k_1(bbx_(A_1))))#</code>. With this intuition we can formulate the equations. For each equation <code class="asciimath">#t'(k_1(t_1)) ~~ s'(k'_1(s_1))#</code> where #k_1# and <code class="asciimath">#k'_1#</code> are bridges of #ccK_1#, we have for every bridge #k_2# of #ccK_2# and term #t# of the appropriate sorts <code class="asciimath">#(k_2, t(t'(bbx)), k_1)(t_1) ~~ (k_2, t(s'(bbx)), k'_1)(s_1)#</code> and similarly for equations involving the bridges of #ccK_2#.</p>
+<p>This composition is associative… almost. Furthermore, the collages generated by theories, #ccK_ccT#, behave like identities to this composition… almost. It turns out these statements are true, but only up to isomorphism of theories. That is, #(ccK_3 @ ccK_2) @ ccK_1 ~= ccK_3 @ (ccK_2 @ ccK_1)# but is not equal.</p>
+<p>To talk about isomorphism of theories we need the notion of…</p>
+<h2 id="interpretations">Interpretations</h2>
+<p>An interpretation of a theory gives meaning to the syntax of a theory. There are two nearly identical notions of interpretation for us: interpretation (into sets) and interpretation into a theory. I’ll define them in parallel. An <strong>interpretation</strong> (<strong>into a theory</strong>), #ccI#, is a mapping, written #⟦-⟧^ccI# though the superscript will often be omitted, which maps sorts to sets (sorts) and function symbols to functions (terms). The mapping satisfies:</p>
+<blockquote>
+<p><code class="asciimath">#⟦&quot;src&quot;(f)⟧ = &quot;src&quot;(⟦f⟧)#</code> and <code class="asciimath">#⟦&quot;tgt&quot;(f)⟧ = &quot;tgt&quot;(⟦f⟧)#</code> where <code class="asciimath">#&quot;src&quot;#</code> and <code class="asciimath">#&quot;tgt&quot;#</code> on the right are the domain and codomain operations for an interpretation.</p>
+</blockquote>
+<p>We extend the mapping to a mapping on terms via:</p>
+<blockquote>
+<ul>
+<li>#⟦bbx_A⟧ = x |-&gt; x#, i.e. the identity function, or, for interpretation into a theory, <code class="asciimath">#⟦bbx_A⟧ = bbx_{:⟦A⟧:}#</code></li>
+<li><code class="asciimath">#⟦tt &quot;f&quot;(t)⟧ = ⟦tt &quot;f&quot;⟧ @ ⟦t⟧#</code> or, for interpretation into a theory, <code class="asciimath">#⟦tt &quot;f&quot;(t)⟧ = ⟦tt &quot;f&quot;⟧(⟦t⟧)#</code></li>
+</ul>
+</blockquote>
+<p>and we require that for any equation of the theory, #l ~~ r#, #⟦l⟧ = ⟦r⟧#. (Technically, this is implicitly required for the extension of the mapping to terms to be well-defined, but it’s clearer to state it explicitly.) I’ll write <code class="asciimath">#ccI : ccT -&gt; bb &quot;Set&quot;#</code> when #ccI# is an interpretation of #ccT# into sets, and #ccI’ : ccT_1 -&gt; ccT_2# when #ccI’# is an interpretation of #ccT_1# into #ccT_2#.</p>
+<p>An interpretation of the theory of isomorphisms produces a bijection between two specified sets. Spelling out a simple example where #bbbB# is the set of booleans:</p>
+<blockquote>
+<ul>
+<li>#⟦A⟧ -= bbbB#</li>
+<li>#⟦B⟧ -= bbbB#</li>
+<li><code class="asciimath">#⟦tt &quot;f&quot;⟧ -= x |-&gt; not x#</code></li>
+<li><code class="asciimath">#⟦tt &quot;g&quot;⟧ -= x |-&gt; not x#</code></li>
+</ul>
+</blockquote>
+<p>plus the proof #not not x = x#.</p>
+<p>As another simple example, we can interpret the theory of isomorphisms into itself slightly non-trivially.</p>
+<blockquote>
+<ul>
+<li>#⟦A⟧ -= B#</li>
+<li>#⟦B⟧ -= A#</li>
+<li><code class="asciimath">#⟦tt &quot;f&quot;⟧ -= tt &quot;g&quot;(bbx_B)#</code></li>
+<li><code class="asciimath">#⟦tt &quot;g&quot;⟧ -= tt &quot;f&quot;(bbx_A)#</code></li>
+</ul>
+</blockquote>
+<p>As an (easy) exercise, you should define #pi_1 : ccT_1 xx ccT_2 -&gt; ccT_1# and similarly #pi_2#. If you defined #ccT_1 + ccT_2# before, you should define #iota_1 : ccT_1 -&gt; ccT_1 + ccT_2# and similarly for #iota_2#. As another easy exercise, show that an interpretation of <code class="asciimath">#ccT_{:~=:}#</code> is a bijection. In Haskell, an interpretation of #ccT_bbbN# would effectively be <code>foldNat</code>. Something very interesting happens when you consider what an interpretation of the collage generated by a theory, #ccK_ccT#, is. Spell it out. In a different vein, you can show that a collage #ccK : ccT_1 ↛ ccT_2# and an interpretation <code class="asciimath">#ccT_1^(op) xx ccT_2 -&gt; bb &quot;Set&quot;#</code> are essentially the same thing in the sense that each gives rise to the other.</p>
+<p>Two theories are <strong>isomorphic</strong> if there exists interpretations <code class="asciimath">#ccI_1 : ccT_1 -&gt; ccT_2#</code> and <code class="asciimath">#ccI_2 : ccT_2 -&gt; ccT_1#</code> such that <code class="asciimath">#⟦⟦A⟧^(ccI_1)⟧^(ccI_2) = A#</code> and visa versa, and similarly for function symbols. In other words, each is interpretable in the other, and if you go from one interpretation and then back, you end up where you started. Yet another way to say this is that there is a one-to-one correspondence between sorts and terms of each theory, and this correspondence respects substitution.</p>
+<p>As a crucially important example, the set of terms, #ccT(A, B)#, can be extended to an interpretation. In particular, for each sort #A#, <code class="asciimath">#ccT(A, -) : ccT -&gt; bb &quot;Set&quot;#</code>. It’s action on function symbols is the following:</p>
+<blockquote>
+<p><code class="asciimath">#⟦tt &quot;f&quot;⟧^(ccT(A, -)) -= t |-&gt; tt &quot;f&quot;(t)#</code></p>
+</blockquote>
+<p>We have, dually, <code class="asciimath">#ccT(-, A) : ccT^(op) -&gt; bb &quot;Set&quot;#</code> with the following action:</p>
+<blockquote>
+<p><code class="asciimath">#⟦tt &quot;f&quot;⟧^(ccT(-, A)) -= t |-&gt; t(tt &quot;f&quot;(bbx_B))#</code></p>
+</blockquote>
+<p>We can abstract from both parameters making <code class="asciimath">#ccT(-, =) : ccT^(op) xx ccT -&gt; bb &quot;Set&quot;#</code> which, by an early exercise, can be shown to correspond with the collage #ccK_ccT#.</p>
+<p>Via an abuse of notation, I’ll identify #ccT^(op)(A, -)# with #ccT(-, A)#, though technically we only have an isomorphism between the interpretations, and to talk about isomorphisms between interpretations we need the notion of…</p>
+<h2 id="homomorphisms">Homomorphisms</h2>
+<p>The theories we’ve presented are (multi-sorted) universal algebra theories. Universal algebra allows us to specify a general notion of “homomorphism” that generalizes monoid homomorphism or group homomorphism or ring homomorphism or lattice homomorphism.</p>
+<p>In universal algebra, the algebraic theory of groups consists of a single sort, a nullary operation, #1#, a binary operation, <code class="asciimath">#*#</code>, a unary operation, <code class="asciimath">#tt &quot;inv&quot;#</code>, and some equations which are unimportant for us. Operations correspond to our function symbols except that they’re are not restricted to being unary. A particular group is a particular interpretation of the algebraic theory of groups, i.e. it is a set and three functions into the set. A group homomorphism then is a function between those two groups, i.e. between the two interpretations, that preserves the operations. In a traditional presentation this would look like the following:</p>
+<blockquote>
+<p>Say #alpha : G -&gt; K# is a group homomorphism from the group #G# to the group #K# and #g, h in G# then:</p>
+<ul>
+<li>#alpha(1_G) = 1_K#</li>
+<li><code class="asciimath">#alpha(g *_G h) = alpha(g) *_K alpha(h)#</code></li>
+<li><code class="asciimath">#alpha(tt &quot;inv&quot;_G(g)) = tt &quot;inv&quot;_K(alpha(g))#</code></li>
+</ul>
+</blockquote>
+<p>Using something more akin to our notation, it would look like:</p>
+<blockquote>
+<ul>
+<li>#alpha(⟦1⟧^G) = ⟦1⟧^K#</li>
+<li><code class="asciimath">#alpha(⟦*⟧^G(g,h)) = ⟦*⟧^K(alpha(g), alpha(h))#</code></li>
+<li><code class="asciimath">#alpha(⟦tt &quot;inv&quot;⟧^G(g)) = ⟦tt &quot;inv&quot;⟧^K(alpha(g))#</code></li>
+</ul>
+</blockquote>
+<p>The <code class="asciimath">#tt &quot;inv&quot;#</code> case is the most relevant for us as it is unary. However, for us, a function symbol #ttf# may have a different source and target and so we made need a different function on each side of the equation. E.g. for #ttf : A -&gt; B#, #alpha : ccI_1 -&gt; ccI_2#, and #a in ⟦A⟧^(ccI_1)# we’d have:</p>
+<blockquote>
+<p><code class="asciimath">#alpha_B(⟦tt &quot;f&quot;⟧^(ccI_1)(a)) = ⟦tt &quot;f&quot;⟧^(ccI_2)(alpha_A(a))#</code></p>
+</blockquote>
+<p>So a <strong>homomorphism</strong> <code class="asciimath">#alpha : ccI_1 -&gt; ccI_2 : ccT -&gt; bb &quot;Set&quot;#</code> is a <em>family</em> of functions, one for each sort of #ccT#, that satisfies the above equation for every function symbol of #ccT#. We call the individual functions making up #alpha# <strong>components</strong> of #alpha#, and we have <code class="asciimath">#alpha_A : ⟦A⟧^(ccI_1) -&gt; ⟦A⟧^(ccI_2)#</code>. The definition for an interpretation into a theory, #ccT_2#, is identical except the components of #alpha# are terms of #ccT_2# and #a# can be replaced with #bbx_(⟦A⟧^(ccI_1))#. Two interpretations are <strong>isomorphic</strong> if we have homomorphism #alpha : ccI_1 -&gt; ccI_2# such that each component is a bijection. This is the same as requiring a homomorphism #beta : ccI_2 -&gt; ccI_1# such that for each #A#, #alpha_A(beta_A(x)) = x# and #beta_A(alpha_A(x)) = x#. A similar statement can be made for interpretations into theories, just replace #x# with <code class="asciimath">#bbx_(⟦A⟧)#</code>.</p>
+<p>Another way to look at homomorphisms is via collages. A homomorphism <code class="asciimath">#alpha : ccI_1 -&gt; ccI_2 : ccT -&gt; bb &quot;Set&quot;#</code> gives rise to an interpretation of the collage #ccK_ccT#. The interpretation <code class="asciimath">#ccI_alpha : ccK_ccT -&gt; bb &quot;Set&quot;#</code> is defined by:</p>
+<blockquote>
+<ul>
+<li><code class="asciimath">#⟦tt &quot;inl&quot;(A)⟧^(ccI_alpha) -= ⟦A⟧^(ccI_1)#</code></li>
+<li><code class="asciimath">#⟦tt &quot;inr&quot;(A)⟧^(ccI_alpha) -= ⟦A⟧^(ccI_2)#</code></li>
+<li><code class="asciimath">#⟦tt &quot;inl&quot;(ttf)⟧^(ccI_alpha) -= ⟦ttf⟧^(ccI_1)#</code></li>
+<li><code class="asciimath">#⟦tt &quot;inr&quot;(ttf)⟧^(ccI_alpha) -= ⟦ttf⟧^(ccI_2)#</code></li>
+<li><code class="asciimath">#⟦tt &quot;id&quot;_A⟧^(ccI_alpha) -= alpha_A#</code></li>
+</ul>
+</blockquote>
+<p>The homomorphism law guarantees that it satisfies the equation on <code class="asciimath">#tt &quot;id&quot;#</code>. Conversely, given an interpretation of #ccK_ccT#, we have the homomorphism, <code class="asciimath">#⟦tt &quot;id&quot;⟧ : ⟦tt &quot;inl&quot;(-)⟧ -&gt; ⟦tt &quot;inr&quot;(-)⟧ : ccT -&gt; bb &quot;Set&quot;#</code>. and the equation on <code class="asciimath">#tt &quot;id&quot;#</code> is exactly the homomorphism law.</p>
+<h2 id="yoneda">Yoneda</h2>
+<p>Consider a homomorphism #alpha : ccT(A, -) -&gt; ccI#. The #alpha# needs to satisfy for every sort #B# and #C#, every function symbol #ttf : C -&gt; D#, and every term #t : B -&gt; C#:</p>
+<blockquote>
+<p><code class="asciimath">#alpha_D(tt &quot;f&quot;(t)) = ⟦tt &quot;f&quot;⟧^ccI(alpha_C(t))#</code></p>
+</blockquote>
+<p>Looking at this equation, the possibility of viewing it as a recursive “definition” leaps out suggesting that the action of #alpha# is completely determined by it’s action on the variables. Something like this, for example:</p>
+<blockquote>
+<p><code class="asciimath">#alpha_D(tt &quot;f&quot;(tt &quot;g&quot;(tt &quot;h&quot;(bbx_A)))) = ⟦tt &quot;f&quot;⟧(alpha_C(tt &quot;g&quot;(tt &quot;h&quot;(bbx_A)))) = ⟦tt &quot;f&quot;⟧(⟦tt &quot;g&quot;⟧(alpha_B(tt &quot;h&quot;(bbx_A)))) = ⟦tt &quot;f&quot;⟧(⟦tt &quot;g&quot;⟧(⟦tt &quot;h&quot;⟧(alpha_A(bbx_A))))#</code></p>
+</blockquote>
+<p>We can easily establish that there’s a one-to-one correspondence between the set of homomorphisms #ccT(A, -) -&gt; ccI# and the elements of the set #⟦A⟧^ccI#. Given a homomorphism, #alpha#, we get an element of #⟦A⟧^ccI# via #alpha_A(bbx_A)#. Inversely, given an element #a in ⟦A⟧^ccI#, we can define a homomorphism <code class="asciimath">#a^**#</code> via:</p>
+<blockquote>
+<ul>
+<li><code class="asciimath">#a_D^**(tt &quot;f&quot;(t)) -= ⟦tt &quot;f&quot;⟧^ccI(a_C^**(t))#</code></li>
+<li><code class="asciimath">#a_A^**(bbx_A) -= a#</code></li>
+</ul>
+</blockquote>
+<p>which clearly satisfies the condition on homomorphisms by definition. It’s easy to verify that <code class="asciimath">#(alpha_A(bbx_A))^** = alpha#</code> and immediately true that <code class="asciimath">#a^**(bbx_A) = a#</code> establishing the bijection.</p>
+<p>We can state something stronger. Given any homomorphism #alpha : ccT(A, -) -&gt; ccI# and any function symbol #ttg : A -&gt; X#, we can make a new homomorphism #alpha * ttg : ccT(X, -) -&gt; ccI# via the following definition:</p>
+<blockquote>
+<p><code class="asciimath">#(alpha * ttg)(t) = alpha(t(tt &quot;g&quot;(bbx_A)))#</code></p>
+</blockquote>
+<p>Verifying that this is a homomorphism is straightforward:</p>
+<blockquote>
+<p><code class="asciimath">#(alpha * ttg)(tt &quot;f&quot;(t)) = alpha(tt &quot;f&quot;(t(tt &quot;g&quot;(bbx_A)))) = ⟦tt &quot;f&quot;⟧(alpha(t(tt &quot;g&quot;(bbx_A)))) = ⟦tt &quot;f&quot;⟧((alpha * ttg)(t))#</code></p>
+</blockquote>
+<p>and like any homomorphism of this form, as we’ve just established, it is completely determined by it’s action on variables, namely <code class="asciimath">#(alpha * ttg)_A(bbx_A) = alpha_X(tt &quot;g&quot;(bbx_A)) = ⟦tt &quot;g&quot;⟧(alpha_A(bbx_A))#</code>. In particular, if <code class="asciimath">#alpha = a^**#</code>, then we have <code class="asciimath">#a^** * ttg = (⟦tt &quot;g&quot;⟧(a))^**#</code>. Together these facts establish that we have an interpretation <code class="asciimath">#ccY : ccT -&gt; bb &quot;Set&quot;#</code> such that <code class="asciimath">#⟦A⟧^ccY -= (ccT(A, -) -&gt; ccI)#</code>, the <em>set</em> of homomorphisms, and <code class="asciimath">#⟦tt &quot;g&quot;⟧^ccY(alpha) -= alpha * tt &quot;g&quot;#</code>. The work we did before established that we have homomorphisms #(-)(bbx) : ccY -&gt; ccI# and <code class="asciimath">#(-)^** : ccI -&gt; ccY#</code> that are inverses. This is true for all theories and all interpretations as at no point did we use any particular facts about them. This statement is the (dual form of the) Yoneda lemma. To get the usual form simply replace #ccT# with #ccT^(op)#. A particularly important and useful case (so useful it’s usually used tacitly) occurs when we choose #ccI = ccT(B,-)#, we get #(ccT(A, -) -&gt; ccT(B, -)) ~= ccT(B, A)# or, choosing #ccT^(op)# everywhere, #(ccT(-, A) -&gt; ccT(-, B)) ~= ccT(A, B)# which states that a term from #A# to #B# is equivalent to a homomorphism from #ccT(-, A)# to #ccT(-, B)#.</p>
+<p>There is another result, dual in a different way, called the co-Yoneda lemma. It turns out it is a corollary of the fact that for a collage #ccK : ccT_1 ↛ ccT_2#, <code class="asciimath">#ccK_(ccT_2) @ ccK ~= ccK#</code> and the dual is just the composition the other way. To get (closer to) the precise result, we need to be able to turn an interpretation into a collage. Given an interpretation, <code class="asciimath">#ccI : ccT -&gt; bb &quot;Set&quot;#</code>, we can define a collage #ccK_ccI : ccT_bb1 ↛ ccT# whose bridges from #1 -&gt; A# are the elements of #⟦A⟧^ccI#. Given this, the co-Yoneda lemma is the special case, #ccK_ccT @ ccK_ccI ~= ccK_ccI#.</p>
+<p>Note, that the Yoneda and co-Yoneda lemmas only apply to interpretations into sets as #ccY# involves the <em>set</em> of homomorphisms.</p>
+<h2 id="representability">Representability</h2>
+<p>The Yoneda lemma suggests that the interpretations #ccT(A, -)# and #ccT(-, A)# are particularly important and this will be borne out as we continue.</p>
+<p>We call an interpretation, <code class="asciimath">#ccI : ccT^(op) -&gt; bb &quot;Set&quot;#</code> <strong>representable</strong> if #ccI ~= ccT(-, X)# for some sort #X#. We then say that #X# <strong>represents</strong> #ccI#. What this states is that every term of sort #X# corresponds to an element in one of the sets that make up #ccI#, and these transform appropriately. There’s clearly a particularly important element, namely the image of #bbx_X# which corresponds to an element in #⟦X⟧^ccI#. This element is called the <strong>universal element</strong>. The dual concept is, for <code class="asciimath">#ccI : ccT -&gt; bb &quot;Set&quot;#</code>, #ccI# is <strong>co-representable</strong> if #ccI ~= ccT(X, -)#. We will also say #X# represents #ccI# in this case as it actually does when we view #ccI# as an interpretation of <code class="asciimath">#(ccT^(op))^(op)#</code>.</p>
+<p>As a rather liberating exercise, you should establish the following result called <strong>parameterized representability</strong>. Assume we have theories #ccT_1# and #ccT_2#, and a family of sorts of #ccT_2#, #X#, and a family of interpretations of #ccT_2^(op)#, #ccI#, both indexed by sorts of #ccT_1#, such that for each <code class="asciimath">#A in bb &quot;sort&quot;(ccT_1)#</code>, #X_A# represents #ccI_A#, i.e. #ccI_A ~= ccT_2(-, X_A)#. Given all this, then there is a <em>unique</em> interpretation #ccX : ccT_1 -&gt; ccT_2# and <code class="asciimath">#ccI : ccT_1 xx ccT_2^(op) -&gt; bb &quot;Set&quot;#</code> where #⟦A⟧^(ccX) -= X_A# and <code class="asciimath">#&quot;⟦(&quot;A, B&quot;)⟧&quot;^ccI -= ⟦B⟧^(ccI_A)#</code> such that #ccI ~= ccT_2(=,⟦-⟧^ccX)#. To be a bit more clear, the right hand side means #(A, B) |-&gt; ccT_2(B, ⟦A⟧^ccX)#. Simply by choosing #ccT_1# to be a product of multiple theories, we can generalize this result to an arbitrary number of parameters. What makes this result liberating is that we just don’t need to worry about the parameters, they will automatically transform homomorphically. As a technical warning though, since two interpretations may have the same action on sorts but a different action on function symbols, if the family #X_A# was derived from an interpretation #ccJ#, i.e. #X_A -= ⟦A⟧^ccJ#, it may <em>not</em> be the case that #ccX = ccJ#.</p>
+<p>Let’s look at some examples.</p>
+<p>As a not-so-special case of representability, we can consider <code class="asciimath">#ccI -= ccK(tt &quot;inl&quot;(-), tt &quot;inr&quot;(Z))#</code> where #ccK : ccT_1 ↛ ccT_2#. Saying that #A# represents #ccI# in this case is saying that <em>bridging</em> terms of sort <code class="asciimath">#tt &quot;inr&quot;(Z)#</code>, i.e. sort #Z# in #ccT_2#, in #ccK#, correspond to terms of sort #A# in #ccT_1#. We’ll call the universal element of this representation the <strong>universal bridge</strong> (though technically it may be a bridging term, not a bridge). Let’s write #varepsilon# for this universal bridge. What representability states in this case is given <em>any</em> bridging term #k# of sort #Z#, there exists a unique term #|~ k ~|# of sort #A# such that #k = varepsilon(|~ k ~|)#. If we have an interpretation #ccX : ccT_2 -&gt; ccT_1# such that #⟦Z⟧^ccX# represents <code class="asciimath">#ccK(tt &quot;inl&quot;(-), tt &quot;inr&quot;(Z))#</code> for each sort #Z# of #ccT_2# we say we have a <strong>right representation</strong> of #ccK#. Note, that the universal bridges become a family <code class="asciimath">#varepsilon_Z : ⟦Z⟧^ccX -&gt; Z#</code>. Similarly, if <code class="asciimath">#ccK(tt &quot;inl&quot;(A), tt &quot;inr&quot;(-))#</code> is co-representable for each #A#, we say we have a <strong>left representation</strong> of #ccK#. The <strong>co-universal bridge</strong> is then a bridging term #eta_A : A -&gt; ⟦A⟧# such that for any bridging term #k# with source #A#, there exists a unique term <code class="asciimath">#|__ k __|#</code> in #ccT_2# such that <code class="asciimath">#k = |__ k __|(eta_A)#</code>. For reference, we’ll call these equations <strong>universal properties</strong> of the left/right representation. Parameterized representability implies that a left/right representation is essentially unique.</p>
+<center>
+<img src="/posts/raw/left-rep.svg" alt="" width="20%"></img> <img src="/posts/raw/right-rep.svg" alt="" width="20%"></img>
+</center>
+<p>Define #ccI_bb1# via #⟦A⟧^(ccI_bb1) -= bb1# where #bb1# is some one element set. #⟦ttf⟧^(ccI_bb1)# is the identity function for all function symbols #ttf#. We’ll say a theory #ccT# <strong>has a unit sort</strong> or <strong>has a terminal sort</strong> if there is a sort that we’ll also call #bb1# that represents #ccI_bb1#. Spelling out what that means, we first note that there is nothing notable about the universal element as it’s the only element. However, writing the homomorphism #! : ccI_bb1 -&gt; ccT(-, bb1)# and noting that since there’s only one element of #⟦A⟧^(ccI_bb1)# we can, with a slight abuse of notation, also write the term #!# picks out as #!# which gives the equation:</p>
+<blockquote>
+<p><code class="asciimath">#!_B(tt &quot;g&quot;(t)) = !_A(t)#</code> for any function symbol #ttg : A -&gt; B# and term, #t#, of sort #A#, note <code class="asciimath">#!_A : A -&gt; bb1#</code>.</p>
+</blockquote>
+<p>This equation states what the isomorphism also fairly directly states: there is exactly one term of sort #bb1# from any sort #A#, namely <code class="asciimath">#!_A(bbx_A)#</code>. The dual notion is called a <strong>void sort</strong> or an <strong>initial sort</strong> and will usually be notated #bb0#, the analog of #!# will be written as #0#. The resulting equation is:</p>
+<blockquote>
+<p><code class="asciimath">#tt &quot;f&quot;(0_A) = 0_B#</code> for any function symbol #ttf : A -&gt; B#, note #0_A : bb0 -&gt; A#.</p>
+</blockquote>
+<p>For the next example, I’ll leverage collages. Consider the collage #ccK_2 : ccT ↛ ccT xx ccT# whose bridges from #A -&gt; (B, C)# consist of pairs of terms #t_1 : A -&gt; B# and #t_2 : A -&gt; C#. #ccT# <strong>has pairs</strong> if #ccK_2# has a right representation. We’ll write #(B, C) |-&gt; B xx C# for the representing interpretation’s action on sorts. We’ll write the universal bridge as <code class="asciimath">#(tt &quot;fst&quot;(bbx_(B xx C)), tt &quot;snd&quot;(bbx_(B xx C)))#</code>. The universal property then looks like <code class="asciimath">#(tt &quot;fst&quot;(bbx_(B xx C)), tt &quot;snd&quot;(bbx_(B xx C)))((: t_1, t_2 :)) = (t_1, t_2)#</code> where #(: t_1, t_2 :) : A -&gt; B xx C# is the unique term induced by the bridge #(t_1, t_2)#. The universal property implies the following equations:</p>
+<blockquote>
+<ul>
+<li><code class="asciimath">#(: tt &quot;fst&quot;(bbx_(B xx C)), tt &quot;snd&quot;(bbx_(B xx C))) = bbx_(B xx C)#</code></li>
+<li><code class="asciimath">#tt &quot;fst&quot;((: t_1, t_2 :)) = t_1#</code></li>
+<li><code class="asciimath">#tt &quot;snd&quot;((: t_1, t_2 :)) = t_2#</code></li>
+</ul>
+</blockquote>
+<center>
+<img src="/posts/raw/right-rep-pairs.svg" alt="" width="20%"></img>
+</center>
+<p>One aspect of note, is regardless of whether #ccK_2# has a right representation, i.e. regardless of whether #ccT# has pairs, it always has a left representation. The co-universal bridge is #(bbx_A, bbx_A)# and the unique term <code class="asciimath">#|__(t_1, t_2)__|#</code> is <code class="asciimath">#tt &quot;inl&quot;(t_1, bbx_A)(tt &quot;inr&quot;(bbx_A, t_2)(bbx_(&quot;(&quot;A,A&quot;)&quot;)))#</code>.</p>
+<center>
+<img src="/posts/raw/left-rep-pairs.svg" alt="" width="20%"></img>
+</center>
+<p>Define an interpretation #Delta : ccT -&gt; ccT xx ccT# so that #⟦A⟧^Delta -= (A,A)# and similarly for function symbols. #Delta# left represents #ccK_2#. If the interpretation #(B,C) |-&gt; B xx C# right represents #ccK_2#, then we say we have an adjunction between #Delta# and #(- xx =)#, written #Delta ⊣ (- xx =)#, and that #Delta# is left adjoint to #(- xx =)#, and conversely #(- xx =)# is right adjoint #Delta#.</p>
+<center>
+<img src="/posts/raw/left-right-rep-pairs.svg" alt="" width="20%"></img>
+</center>
+<p>More generally, whenever we have the situation <code class="asciimath">#ccT_1(⟦-⟧^(ccI_1), =) ~= ccT_2(-, ⟦=⟧^(ccI_2))#</code> we say that #ccI_1 : ccT_2 -&gt; ccT_1# is <strong>left adjoint</strong> to #ccI_2 : ccT_1 -&gt; ccT_2# or conversely that #ccI_2# is <strong>right adjoint</strong> to #ccI_1#. We call this arrangement an <strong>adjunction</strong> and write #ccI_1 ⊣ ccI_2#. Note that we will always have this situation if #ccI_1# left represents and #ccI_2# right represents the same collage. As we noted above, parameterized representability actually determines one adjoint given (its action on sorts and) the other adjoint. With this we can show that adjoints are unique up to isomorphism, that is, given two left adjoints to an interpretation, they must be isomorphic. Similarly for right adjoints. This means that stating something is a left or right adjoint to some other known interpretation essentially completely characterizes it. One issue with adjunctions is that they tend to be wholesale. Let’s say the pair sort #A xx B# existed but no other pair sorts existed, then the (no longer parameterized) representability approach would work just fine, but the adjunction would no longer exist.</p>
+<p>Here’s a few of exercises using this. First, a moderately challenging one (until you catch the pattern): spell out the details to the left adjoint to #Delta#. We say a theory <strong>has sums</strong> and write those sums as #A + B# if #(- + =) ⊣ Delta#. Recast void and unit sorts using adjunctions and/or left/right representations. As a terminological note, we say a theory <strong>has finite products</strong> if it has unit sorts and pairs. Similarly, a theory <strong>has finite sums</strong> or <strong>has finite coproducts</strong> if it has void sorts and sums. An even more challenging exercise is the following: a theory <strong>has exponentials</strong> if it has finite products and for every sort #A#, #(A xx -) ⊣ (A =&gt; -)# (note, parameterized representability applies to #A#). Spell out the equations characterizing #A =&gt; B#.</p>
+<h2 id="finite-product-theories">Finite Product Theories</h2>
+<p>Finite products start to lift us off the ground. So far the theories we’ve been working with have been extremely basic: a language with only unary functions, all terms being just a sequence of applications of function symbols. It shouldn’t be underestimated though. It’s more than enough to do monoid and group theory. A good amount of graph theory can be done with just this. And obviously we were able to establish several general results assuming only this structure. Nevertheless, while we can talk about specific groups, say, we can’t talk about the <em>theory</em> of groups. Finite products change this.</p>
+<p>A theory with finite products allows us to talk about multi-ary function symbols and terms by considering unary function symbols from products. This allows us to do all of universal algebra. For example, the <strong>theory of groups</strong>, <code class="asciimath">#ccT_(bb &quot;Grp&quot;)#</code>, consists of a sort #S# and all it’s products which we’ll abbreviate as #S^n# with #S^0 -= bb1# and #S^(n+1) -= S xx S^n#. It has three function symbols #tte : bb1 -&gt; S#, #ttm : S^2 -&gt; S#, and #tti : S -&gt; S# plus the ones that having finite products requires. In fact, instead of just heaping an infinite number of sorts and function symbols into our theory — and we haven’t even gotten to equations — let’s define a compact set of data from which we can generate all this data.</p>
+<p>A <strong>signature</strong>, #Sigma#, consists of a collection of sorts, #sigma#, a collection of <em>multi-ary</em> function symbols, and a collection of equations. Equations still remain pairs of terms, but we need to now extend our definition of terms for this context. A <strong>term (in a signature)</strong> is either a variable, <code class="asciimath">#bbx_i^[A_0,A_1,...,A_n]#</code> with #A_i# are sorts and #0 &lt;= i &lt;= n#, the operators <code class="asciimath">#tt &quot;fst&quot;#</code> or <code class="asciimath">#tt &quot;snd&quot;#</code> applied to a term, the unit term written #(::)^A# with sort #A#, a pair of terms written #(: t_1, t_2 :)#, or the (arity correct) application of a multi-ary function symbol to a series of terms, e.g. <code class="asciimath">#tt &quot;f&quot;(t_1, t_2, t_3)#</code>. As a Haskell data declaration, it might look like:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">SigTerm</span>
+    <span class="fu">=</span> <span class="dt">SigVar</span> [<span class="dt">Sort</span>] <span class="dt">Int</span>
+    <span class="fu">|</span> <span class="dt">Fst</span> <span class="dt">SigTerm</span>
+    <span class="fu">|</span> <span class="dt">Snd</span> <span class="dt">SigTerm</span>
+    <span class="fu">|</span> <span class="dt">Unit</span> <span class="dt">Sort</span>
+    <span class="fu">|</span> <span class="dt">Pair</span> <span class="dt">SigTerm</span> <span class="dt">SigTerm</span>
+    <span class="fu">|</span> <span class="dt">SigApply</span> <span class="dt">FunctionSymbol</span> [<span class="dt">SigTerm</span>]</code></pre></div>
+<p>At this point, sorting (i.e. typing) the terms is no longer trivial, though it is still pretty straightforward. Sorts are either #bb1#, or #A xx B# for sorts #A# and #B#, or a sort #A in sigma#. The source of function symbols or terms are <em>lists</em> of sorts.</p>
+<blockquote>
+<ul>
+<li><code class="asciimath">#bbx_i^[A_0, A_1, ..., A_n] : [A_0, A_1, ..., A_n] -&gt; A_i#</code></li>
+<li><code class="asciimath">#(::)^A : [A] -&gt; bb1#</code></li>
+<li><code class="asciimath">#(: t_1, t_2 :) : bar S -&gt; T_1 xx T_2#</code> where #t_i : bar S -&gt; T_i#</li>
+<li><code class="asciimath">#tt &quot;fst&quot;(t) : bar S -&gt; T_1#</code> where #t : bar S -&gt; T_1 xx T_2#</li>
+<li><code class="asciimath">#tt &quot;snd&quot;(t) : bar S -&gt; T_2#</code> where #t : bar S -&gt; T_1 xx T_2#</li>
+<li><code class="asciimath">#tt &quot;f&quot;(t_1, ..., t_n) : bar S -&gt; T#</code> where #t_i : bar S -&gt; T_i# and <code class="asciimath">#ttf : [T_1,...,T_n] -&gt; T#</code></li>
+</ul>
+</blockquote>
+<p>The point of a signature was to represent a theory so we can compile a term of a signature into a term of a theory with finite products. The <strong>theory generated from a signature</strong> #Sigma# has the same sorts as #Sigma#. The equations will be equations of #Sigma#, with the terms compiled as will be described momentarily, plus for every pair of sorts the equations that describe pairs and the equations for #!#. Finally, we need to describe how to take a term of the signature and make a function symbol of the theory, but before we do that we need to explain how to convert those sources of the terms which are lists. That’s just a conversion to right nested pairs, <code class="asciimath">#[A_0,...,A_n] |-&gt; A_0 xx (... xx (A_n xx bb1) ... )#</code>. The compilation of a term #t#, which we’ll write as <code class="asciimath">#ccC[t]#</code>, is defined as follows:</p>
+<blockquote>
+<ul>
+<li><code class="asciimath">#ccC[bbx_i^[A_0, A_1, ..., A_n]] = tt &quot;snd&quot;^i(tt &quot;fst&quot;(bbx_(A_i xx(...))))#</code> where <code class="asciimath">#tt &quot;snd&quot;^i#</code> means the #i#-fold application of <code class="asciimath">#tt &quot;snd&quot;#</code></li>
+<li><code class="asciimath">#ccC[(::)^A] = !_A#</code></li>
+<li><code class="asciimath">#ccC[(: t_1, t_2 :)] = (: ccC[t_1], ccC[t_2] :)#</code></li>
+<li><code class="asciimath">#ccC[tt &quot;fst&quot;(t)] = tt &quot;fst&quot;(ccC[t])#</code></li>
+<li><code class="asciimath">#ccC[tt &quot;snd&quot;(t)] = tt &quot;snd&quot;(ccC[t])#</code></li>
+<li><code class="asciimath">#ccC[tt &quot;f&quot;(t_1, ..., t_n)] = tt &quot;f&quot;((: ccC[t_1], (: ... , (: ccC[t_n], ! :) ... :) :))#</code></li>
+</ul>
+</blockquote>
+<p>As you may have noticed, the generated theory will have an infinite number of sorts, an infinite number of function symbols, and an infinite number of equations no matter what the signature is — even an empty one! Having an infinite number of things isn’t a problem as long as we can algorithmically describe them and this is what the signature provides. Of course, if you’re a (typical) mathematician you nominally don’t care about an algorithmic description. Besides being compact, signatures present a nicer term language. The theories are like a core or assembly language. We could define a slightly nicer variation where we keep a context and manage named variables leading to terms-in-context like:</p>
+<blockquote>
+<p><code class="asciimath">#x:A, y:B |-- tt &quot;f&quot;(x, x, y)#</code></p>
+</blockquote>
+<p>which is</p>
+<blockquote>
+<p><code class="asciimath">#tt &quot;f&quot;(bbx_0^[A,B], bbx_0^[A,B], bbx_1^[A,B])#</code></p>
+</blockquote>
+<p>for our current term language for signatures. Of course, compilation will be (slightly) trickier for the nicer language.</p>
+<p>The benefit of having compiled the signature to a theory, in addition to being able to reuse the results we’ve established for theories, is we only need to define operations on the theory, which is simpler since we only need to deal with pairs and unary function symbols. One example of this is we’d like to extend our notion of interpretation to one that respects the structure of the signature, and we can do that by defining an interpretation of theories that respects finite products.</p>
+<p>A <strong>finite product preserving interpretation (into a finite product theory)</strong>, #ccI#, is an interpretation (into a finite product theory) that additionally satisfies:</p>
+<blockquote>
+<ul>
+<li><code class="asciimath">#⟦bb1⟧^ccI = bb1#</code></li>
+<li><code class="asciimath">#⟦A xx B⟧^ccI = ⟦A⟧^ccI xx ⟦B⟧^ccI#</code></li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li><code class="asciimath">#⟦!_A⟧^ccI = !_(⟦A⟧^ccI)#</code></li>
+<li><code class="asciimath">#⟦tt &quot;fst&quot;(t)⟧^ccI = tt &quot;fst&quot;(⟦t⟧^ccI)#</code></li>
+<li><code class="asciimath">#⟦tt &quot;snd&quot;(t)⟧^ccI = tt &quot;snd&quot;(⟦t⟧^ccI)#</code></li>
+<li><code class="asciimath">#⟦(: t_1, t_2 :)⟧^ccI = (: ⟦t_1⟧^ccI, ⟦t_2⟧^ccI :)#</code></li>
+</ul>
+</blockquote>
+<p>where, for <code class="asciimath">#bb &quot;Set&quot;#</code>, #bb1 -= {{}}#, #xx# is the cartesian product, <code class="asciimath">#tt &quot;fst&quot;#</code> and <code class="asciimath">#tt &quot;snd&quot;#</code> are the projections, <code class="asciimath">#!_A -= x |-&gt; \{\}#</code>, and #(: f, g :) -= x |-&gt; (: f(x), g(x) :)#.</p>
+<p>With signatures, we can return to our theory, now signature, of groups. <code class="asciimath">#Sigma_bb &quot;Grp&quot;#</code> has a single sort #S#, three function symbols <code class="asciimath">#tte : [bb1] -&gt; S#</code>, <code class="asciimath">#tti : [S] -&gt; S#</code>, and <code class="asciimath">#ttm : [S, S] -&gt; S#</code>, with the following equations (written as equations rather than pairs):</p>
+<blockquote>
+<ul>
+<li><code class="asciimath">#tt &quot;m&quot;(tt &quot;e&quot;((::)^S), bbx_0^S) = bbx_0^S#</code></li>
+<li><code class="asciimath">#tt &quot;m&quot;(tt &quot;i&quot;(bbx_0^S), bbx_0^S) = tt &quot;e&quot;((::)^S)#</code></li>
+<li><code class="asciimath">#tt &quot;m&quot;(tt &quot;m&quot;(bbx_0^[S,S,S], bbx_1^[S,S,S]), bbx_2^[S,S,S]) = tt &quot;m&quot;(bbx_0^[S,S,S], tt &quot;m&quot;(bbx_1^[S,S,S], bbx_2^[S,S,S]))#</code></li>
+</ul>
+</blockquote>
+<p>or using the nicer syntax:</p>
+<blockquote>
+<ul>
+<li><code class="asciimath">#x:S |-- tt &quot;m&quot;(tt &quot;e&quot;(), x) = x#</code></li>
+<li><code class="asciimath">#x:S |-- tt &quot;m&quot;(tt &quot;i&quot;(x), x) = tt &quot;e&quot;()#</code></li>
+<li><code class="asciimath">#x:S, y:S, z:S |-- tt &quot;m&quot;(tt &quot;m&quot;(x, y), z) = tt &quot;m&quot;(x, tt &quot;m&quot;(y, z))#</code></li>
+</ul>
+</blockquote>
+<p>An actual group is then just a finite product preserving interpretation of (the theory generated by) this signature. All of universal algebra and much of abstract algebra can be formulated this way.</p>
+<!--
+You can prove (exercise) that compiling a signature and then applying a finite product
+preserving interpretation is equivalent to the following where `#⟦t⟧ -= ⟦ccC[t⟧]^ccI#`{.asciimath}:
+
+> `#⟦tt "f"(t_1, ..., t_n)⟧ = ⟦f⟧^ccI(⟦t_1⟧, ..., ⟦t_n⟧)#`{.asciimath}
+
+and the other terms are handled similarly to `#⟦-⟧^ccI#`{.asciimath}.
+-->
+<h2 id="the-simply-typed-lambda-calculus-and-beyond">The Simply Typed Lambda Calculus and Beyond</h2>
+<p>We can consider additionally assuming that our theory has exponentials. I left articulating exactly what that means as an exercise, but the upshot is we have the following two operations:</p>
+<p>For any term #t : A xx B -&gt; C#, we have the term <code class="asciimath">#tt &quot;curry&quot;(t) : A -&gt; C^B#</code>. We also have the homomorphism <code class="asciimath">#tt &quot;app&quot;_(AB) : B^A xx A -&gt; B#</code>. They satisfy:</p>
+<blockquote>
+<ul>
+<li><code class="asciimath">#tt &quot;curry&quot;(tt &quot;app&quot;(bbx_(B^A xx A))) = bbx_(B^A)#</code></li>
+<li><code class="asciimath">#tt &quot;app&quot;((: tt &quot;curry&quot;(t_1), t_2 :)) = t_1((: bbx_A, t_2 :))#</code> where #t_1 : A xx B -&gt; C# and #t_2 : A -&gt; B#.</li>
+</ul>
+</blockquote>
+<p>We can view these, together with the the product operations, as combinators and it turns out we can compile the simply typed lambda calculus into the above theory. This is exactly what the <a href="https://en.wikipedia.org/wiki/Categorical_abstract_machine">Categorical Abstract Machine</a> did. The “Caml” in “O’Caml” stands for “Categorical Abstract Machine Language”, though O’Caml no longer uses the CAM. Conversely, every term of the theory can be expressed as a simply typed lambda term. This means we can view the simply typed lambda calculus as just a different presentation of the theory.</p>
+<p>At this point, this presentation of category theory starts to connect to the mainstream categorical literature on <a href="https://ncatlab.org/nlab/show/algebraic+theory">universal algebra</a>, <a href="https://ncatlab.org/nlab/show/type+theory#TheInternalLanguageOfACategory">internal languages</a>, <a href="https://ncatlab.org/nlab/show/sketch">sketches</a>, and <a href="https://ncatlab.org/nlab/show/internal+logic">internal logic</a>. This page gives a synopsis of the <a href="https://ncatlab.org/nlab/show/relation+between+type+theory+and+category+theory">relationship between type theory and category theory</a>. For some reason, it is unusual to talk about the internal language of a plain category, but that is exactly what we’ve done here.</p>
+<p>I haven’t talked about finite limits or colimits beyond products and coproducts, nor have I talked about even the infinitary versions of products and coproducts, let alone arbitrary limits and colimits. These can be handled the same way as products and coproducts. Formulating a language like signatures or the simply typed lambda calculus is a bit more complicated, but not that hard. I may make a follow-up article covering this among other things. I also have a side project (don’t hold your breath), that implements the internal language of a category with finite limits. The result looks roughly like a simple version of an algebraic specification language like the <a href="https://cseweb.ucsd.edu/~goguen/sys/obj.html">OBJ family</a>. The <code>RING</code> theory described in the <a href="http://maude.lcc.uma.es/manual271/maude-manualch6.html#x41-880006.3">Maude manual</a> gives an idea of what it would look like. In fact, here’s an example of the current actual syntax I’m using.<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></p>
+<pre><code>theory Categories
+    type O
+    type A
+    given src : A -&gt; O
+    given tgt : A -&gt; O
+
+    given id : O -&gt; A
+    satisfying o:O | src (id o) = o, tgt (id o) = o
+
+    given c : { f:A, g:A | src f = tgt g } -&gt; A
+    satisfying (f, g):{ f:A, g:A | src f = tgt g }
+        | tgt (c (f, g)) = tgt f, src (c (f, g)) = src g
+    satisfying &quot;left unit&quot; (o, f):{ o:O, f:A | tgt f = o }
+        | c (id o, f) = f
+    satisfying &quot;right unit&quot; (o, f):{ o:O, f:A | src f = o }
+        | c (f, id o) = f
+    satisfying &quot;associativity&quot; (f, g, h):{ f:A, g:A, h:A | src f = tgt g, src g = tgt h }
+        | c (c (f, g), h) = c (f, c (g, h))
+endtheory</code></pre>
+<p>It turns out this is a particularly interesting spot in the design space. The fact that the theory of theories with finite limits is itself a theory with finite limits has interesting consequences. It is still relatively weak though. For example, it’s not possible to describe the theory of fields in this language.</p>
+<p>There are other directions one could go. For example, the internal logic of monoidal categories is (a fragment of) ordered linear logic. You can cross this bridge either way. You can look at different languages and consider what categorical structure is needed to support the features of the language, or you can add features to the category and see how that impacts the internal language. The relationship is similar to the source language and a core/intermediate language in a compiler, e.g. GHC Haskell and <a href="https://ghc.haskell.org/trac/ghc/wiki/Commentary/Compiler/FC">System Fc</a>.</p>
+<h2 id="decoder">Decoder</h2>
+<p>If you’ve looked at category theory at all, you can probably make most of the connections without me telling you. The table below outlines the mapping, but there are some subtleties. First, as a somewhat technical detail, my definition of a theory corresponds to a <em>small</em> category, i.e. a category which has a set of objects and a set of arrows. For more programmer types, you should think of “set” as <code>Set</code> in Agda, i.e. similar to the <code>*</code> kind in Haskell. Usually “category” means “locally small category” which may have a proper class of objects and between any two objects a set of arrows (though the union of all those sets may be a proper class). Again, for programmers, the distinction between “class” and “set” is basically the difference between <code>Set</code> and <code>Set1</code> in Agda.<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a> To make my definition of theory closer to this, all that is necessary is instead of having a set of function symbols, have a family of sets indexed by pairs of objects. Here’s what a partial definition in Agda of the two scenarios would look like:</p>
+<div class="sourceCode"><pre class="sourceCode agda"><code class="sourceCode agda"><span class="co">-- Small category (the definition I used)</span>
+<span class="kw">record</span> SmallCategory <span class="ot">:</span> <span class="dt">Set1</span> <span class="kw">where</span>
+    <span class="kw">field</span>
+        objects <span class="ot">:</span> <span class="dt">Set</span>
+        arrows <span class="ot">:</span> <span class="dt">Set</span>
+        src <span class="ot">:</span> arrows <span class="ot">-&gt;</span> objects
+        tgt <span class="ot">:</span> arrows <span class="ot">-&gt;</span> objects
+        <span class="ot">...</span>
+
+<span class="co">-- Locally small category</span>
+<span class="kw">record</span> LocallySmallCategory <span class="ot">:</span> <span class="dt">Set2</span> <span class="kw">where</span>
+    <span class="kw">field</span>
+        objects <span class="ot">:</span> <span class="dt">Set1</span>
+        hom <span class="ot">:</span> objects <span class="ot">-&gt;</span> objects <span class="ot">-&gt;</span> <span class="dt">Set</span>
+        <span class="ot">...</span>
+
+<span class="co">-- Different presentation of a small category</span>
+<span class="kw">record</span> SmallCategory&#39; <span class="ot">:</span> <span class="dt">Set1</span> <span class="kw">where</span>
+    <span class="kw">field</span>
+        objects <span class="ot">:</span> <span class="dt">Set</span>
+        hom <span class="ot">:</span> objects <span class="ot">-&gt;</span> objects <span class="ot">-&gt;</span> <span class="dt">Set</span>
+        <span class="ot">...</span></code></pre></div>
+<p>The benefit of the notion of locally small category is that <code>Set</code> itself is a locally small category. The distinction I was making between interpretations into theories and interpretations into <strong>Set</strong> was due to the fact that <strong>Set</strong> wasn’t a theory. If I used a definition theory corresponding to a locally small category, I could have combined the notions of interpretation by making <strong>Set</strong> a theory. The notion of a small category, though, is still useful. Also, an interpretation into <strong>Set</strong> corresponds to the usual notion of a model or semantics, while interpretations into other theories was a less emphasized concept in traditional model theory and universal algebra.</p>
+<p>A less technical and more significant difference is that my definition of a theory doesn’t correspond to a category, but rather to a <em>presentation</em> of a category, from which a category can be generated. The analog of arrows in a category is <em>terms</em>, not function symbols. This is a bit more natural route from the model theory/universal algebra/programming side. Similarly, having an explicit collection of equations, rather than just an equivalence relation on terms is part of the presentation of the category but not part of the category itself.</p>
+<table class="table table-striped table-sm">
+<thead>
+<tr>
+<th>
+model theory
+</th>
+<th>
+category theory
+</th>
+</thead>
+<tbody>
+<tr>
+<td>
+sort
+</td>
+<td>
+object
+</td>
+</tr>
+<tr>
+<td>
+term
+</td>
+<td>
+arrow
+</td>
+</tr>
+<tr>
+<td>
+function symbol
+</td>
+<td>
+generating arrow
+</td>
+</tr>
+<tr>
+<td>
+theory
+</td>
+<td>
+presentation of a (small) category
+</td>
+</tr>
+<tr>
+<td>
+collage
+</td>
+<td>
+collage, <a href="https://ncatlab.org/nlab/show/cograph+of+a+profunctor">cograph of a profunctor</a>
+</td>
+</tr>
+<tr>
+<td>
+bridge
+</td>
+<td>
+<a href="https://ncatlab.org/nlab/show/heteromorphism">heteromorphism</a>
+</td>
+</tr>
+<tr>
+<td>
+signature
+</td>
+<td>
+presentation of a (small) category with finite products
+</td>
+</tr>
+<tr>
+<td>
+interpretation into sets, aka models
+</td>
+<td>
+a functor into <strong>Set</strong>, a (co)presheaf
+</td>
+</tr>
+<tr>
+<td>
+interpretation into a theory
+</td>
+<td>
+functor
+</td>
+</tr>
+<tr>
+<td>
+homomorphism
+</td>
+<td>
+natural transformation
+</td>
+</tr>
+<tr>
+<td>
+simply typed lambda calculus (with products)
+</td>
+<td>
+a cartesian closed category
+</td>
+</tr>
+</tbody>
+</table>
+<h2 id="conclusion">Conclusion</h2>
+<p>In some ways I’ve stopped just when things were about to get good. I may do a follow-up to elaborate on this good stuff. Some examples are: if I expand the definition so that <strong>Set</strong> becomes a “theory”, then interpretations also form such a “theory”, and these are often what we’re really interested in. The category of finite-product preserving interpretations of the theory of groups essentially <em>is</em> the category of groups. In fact, universal algebra is, in categorical terms, just the study of categories with finite products and finite-product preserving functors from them, particularly into <strong>Set</strong>. It’s easy to generalize this in many directions. It’s also easy to make very general definitions, like a general definition of a free algebraic structure. In general, we’re usually more interested in the interpretations of a theory than the theory itself.</p>
+<p>While I often do advocate thinking in terms of internal languages of categories, I’m not sure that it is a preferable perspective for the very basics of category theory. Nevertheless, there are a few reasons for why I wrote this. First, this very syntactical approach is, I think, more accessible to someone coming from a programming background. From this view, a category is a very simple programming language. Adding structure to the category corresponds to adding features to this programming language. Interpretations are denotational semantics.</p>
+<p>Another aspect about this presentation that is quite different is the use and emphasis on collages. Collages correspond to profunctors, a crucially important and enabling concept that is rarely covered in categorical introductions. The characterization of profunctors as collages in Vaughn Pratt’s paper (not using that name) was one of the things I enjoyed about that paper and part of what prompted me to start writing this. In earlier, drafts of this article, I was unable to incorporate collages in a meaningful way as I was trying to start from profunctors. This approach just didn’t add value. Collages just looked like a bizarre curio and weren’t integrated into the narrative at all. For other reasons, though, I ended up revisiting the idea of a heteromorphism. My (fairly superficial) opinion is that once you have the notion of functors and natural transformations, adding the notion of heteromorphisms has a low power-to-weight ratio, though it does make some things a bit nicer. Nevertheless, in thinking of how best to fit them into this context, it was clear that collages provided the perfect mechanism (which isn’t a big surprise), and the result works rather nicely. When I realized a fact that can be cryptically but compactly represented as #ccK_ccT ≃ bbbI xx ccT# where #bbbI# is the interval category, i.e. two objects with a single arrow joining them, I realized that this is actually an interesting perspective. Since most of this article was written at that point, I wove collages into the narrative replacing some things. If, though, I had started with this perspective from the beginning I suspect I would have made a significantly different article, though the latter sections would likely be similar.</p>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>It’s actually better to organize this as a <em>family</em> of collections of function symbols indexed by pairs of sorts.<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>Instead of having equations that generate an equivalence relation on (raw) terms, we could simply require an equivalence relation on (raw) terms be directly provided.<a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>Collaging is actually quite natural in this context. I already intend to support one theory importing another. A collage is just a theory that imports two others and then adds function symbols between them.<a href="#fnref3">↩</a></p></li>
+<li id="fn4"><p>For programmers familiar with Agda, at least, if you haven’t made this connection, this might help you understand and appreciate what a “class” is versus a “set” and what “size issues” are, which is typically handled extremely vaguely in a lot of the literature.<a href="#fnref4">↩</a></p></li>
+</ol>
+</div>]]></summary>
+</entry>
+<entry>
     <title>Constant-time Binary Logarithm</title>
     <link href="https://derekelkins.github.io/posts/find-first-set.html" />
     <id>https://derekelkins.github.io/posts/find-first-set.html</id>
@@ -1021,23 +1484,6 @@ example4 <span class="fu">=</span> evaluate <span class="fu">$</span> callCC <sp
 <li id="fn1"><p>|{**}| is just some singleton set.<a href="#fnref1">↩</a></p></li>
 </ol>
 </div>]]></summary>
-</entry>
-<entry>
-    <title>Differentiation under the integral</title>
-    <link href="https://derekelkins.github.io/posts/differentiation-under-the-integral.html" />
-    <id>https://derekelkins.github.io/posts/differentiation-under-the-integral.html</id>
-    <published>2015-09-14T07:53:29Z</published>
-    <updated>2015-09-14T07:53:29Z</updated>
-    <summary type="html"><![CDATA[<p><a href="/posts/raw/DiffUnderIntegral.pdf">Here</a> is a PDF with an informal proof of a very general form of <a href="https://en.wikipedia.org/wiki/Differentiation_under_the_integral_sign">differentiation under the integral</a>.</p>
-<p>It’s formulated using geometric algebra and provides a simple demonstration of using some of the basic identities in geometric calculus.</p>
-<p>The end result is:</p>
-<p><img src="/posts/raw/diff-under-integral.svg" alt="d/(dt) int_(D(t)) L_t(x; d^m x) = int_(D(t)) dot L_t(x; (d^m x ^^ (del x)/(del t)) * dot grad_x) + int_(del D(t)) L_t(x; d^(m-1) x ^^ (del x)/(del t)) + int_(D(t))(del L_t(x; d^m x))/(del t)"></img></p>
-<!--
-> `#d/(dt) int_(cc"D"(t)) bb"L"_t(bb"x"; d^m bb"x") 
->    = int_(cc"D"(t)) dot bb"L"_t(bb"x"; (d^m bb"x" ^^ (del x)/(del t)) * dot grad_(bb"x"))#
->  # + int_(del cc"D"(t)) bb"L"_t(bb"x"; d^(m-1) bb"x" ^^ (del x)/(del t))#
->  # + int_(cc"D"(t))(del bb"L"_t(bb"x"; d^m bb"x"))/(del t)#`{.asciimath}
--->]]></summary>
 </entry>
 
 </feed>
