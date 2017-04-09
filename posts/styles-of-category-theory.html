@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">The three styles of category theory</h2>
     <p class="blog-post-meta">September 30, 2015 05:45 UTC 
         
-        (Last updated on September 30, 2015 05:51 UTC)
+        (Last updated on April  5, 2017 05:54 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -73,7 +73,7 @@
 <p>Next we need to show that |eta : {**} -&gt; GX| being a universal arrow implies that |X| co-represents |G|. We immediately have a parameterized bijection namely |(: - :)_Y : GY ~= Hom(X,Y)|. All we need to do is show that it is natural in |Y| which is to say |f @ (:a:)_A = (:Gf(a):)_B| where |f : A -&gt; B|. We have |Gf(a) = Gf(G(:a:)(eta)) = (Gf @ G(:a:))(eta) = G(f @ (:a:))(eta)|. Using |f = (:Gf(eta):)_B| which is a consequence of |eta| being universal, we get |(:Gf(a):)_B = f @ (:a:)_A| as desired.</p>
 <h3 id="initiality-1">Initiality</h3>
 <p>In the initiality style of doing category theory, the main exercise is defining an appropriate category. This is pretty difficult from both a creativity perspective and a notational perspective. Once an appropriate category is defined, though, the proofs are typically not too hard. Perhaps the main tool is the comma category as that allows the compact and flexible specification of many categories, though it can often take a touch of creativity to recognize a category as a comma category. Technically, the proof above implies that for any universal property there’s an appropriate comma category in which the universal object is the initial object.</p>
-<p>This style is often seen in introductions to category theory. If you’ve ever read about categories of (co)cones or wedges, then you’ve seen an example of this style with an ad-hoc definition of the relevant categories. In practice, the categories needed to characterize a specific universal property are of little interest on their own so the effort spent defining them isn’t repaid. The main exception is the category of |F|-algebras for some functor |F|. (Incidentally, the category of |F|-algebras is a full subcategory of a comma category.)</p>
+<p>This style is often seen in introductions to category theory. If you’ve ever read about categories of (co)cones or wedges, then you’ve seen an example of this style with an ad-hoc definition of the relevant categories. In practice, the categories needed to characterize a specific universal property are of little interest on their own so the effort spent defining them isn’t repaid. The main exception is the category of |F|-algebras for some functor |F|. (Incidentally, the category of |F|-algebras is a subcategory of a comma category.)</p>
 <p>The style of proof is to leverage the uniqueness of the mediating morphism to equate two seemingly different things. Lambek’s lemma is an excellent illustration of this proof style.</p>
 <h3 id="set-category-theory"><strong>Set</strong>-category theory</h3>
 <p>The core of this style of category theory is representability and its parameterized variant. Representability alone is already very powerful and ergonomic. Every limit or colimit in a category represents a limit of homsets. This means all the tools and intuitions of set theory are available. This is the basis for my naming of this style: we elucidate the structure of a category by relating it to the structure of the category of sets.</p>

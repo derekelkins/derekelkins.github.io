@@ -134,29 +134,29 @@ cek (<span class="dt">EInject</span> v) _ (<span class="dt">Fun</span> (<span cl
 <p>While this interpreter achieves the goal, it is somewhat limited. We don’t have any means to manipulate the values of these new primitive types, so our manipulation of the interpreter state is limited to replacing a component, e.g. the environment, with some version of it that we got before via <code class="sourceCode haskell">reify</code>. Though it may be limited, it is not trivial. You can implement something close to call/cc if not call/cc itself.</p>
 <p>Still, the scenario above of turning the language into a call-by-name language doesn’t seem possible. Modifying the interpreter to support primitive operations defined in Haskell is a simple matter of programming: you add a constructor for primitive operations to the AST, you make a very slight variant of the <code class="sourceCode haskell"><span class="dt">EInject</span></code> case in <code class="sourceCode haskell">cek</code>, and then you tediously make primitives corresponding to each constructor for each type and a fold for each type. See the linked <a href="../posts/raw/CEK.hs">source file</a> for the details.</p>
 <p>The file additionally defines a pretty printer and a layer using parametric higher-order abstract syntax because humans are terrible with deBruijn indices. The end result is code that looks like this:</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">one <span class="fu">=</span> _<span class="dt">Suc</span> <span class="fu">:@</span> _<span class="dt">Zero</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">one <span class="fu">=</span> _Suc <span class="fu">:@</span> _Zero
 
 identity <span class="fu">=</span> lam (\x <span class="ot">-&gt;</span> x)
 
 loop <span class="fu">=</span> lam (\x <span class="ot">-&gt;</span> x <span class="fu">:@</span> x) <span class="fu">:@</span> lam (\x <span class="ot">-&gt;</span> x <span class="fu">:@</span> x)
 
-tailEnv <span class="fu">=</span> lam (\e <span class="ot">-&gt;</span> paraEnv <span class="fu">:@</span> e <span class="fu">:@</span> _<span class="dt">Nil</span> 
+tailEnv <span class="fu">=</span> lam (\e <span class="ot">-&gt;</span> paraEnv <span class="fu">:@</span> e <span class="fu">:@</span> _Nil 
                                   <span class="fu">:@</span> lam (\_ <span class="ot">-&gt;</span> lam (\x <span class="ot">-&gt;</span> lam (\_ <span class="ot">-&gt;</span> x))))
 
-tailKont <span class="fu">=</span> lam (\k <span class="ot">-&gt;</span> paraKont <span class="fu">:@</span> k <span class="fu">:@</span> _<span class="dt">Done</span>
+tailKont <span class="fu">=</span> lam (\k <span class="ot">-&gt;</span> paraKont <span class="fu">:@</span> k <span class="fu">:@</span> _Done
                                     <span class="fu">:@</span> lam (\_ <span class="ot">-&gt;</span> lam (\_ <span class="ot">-&gt;</span> lam (\x <span class="ot">-&gt;</span> lam (\_ <span class="ot">-&gt;</span> x))))
                                     <span class="fu">:@</span> lam (\_ <span class="ot">-&gt;</span> lam (\x <span class="ot">-&gt;</span> lam (\_ <span class="ot">-&gt;</span> x))))
 
 eval <span class="fu">=</span> lam (\c <span class="ot">-&gt;</span> reify <span class="fu">:@</span> lam (\e <span class="ot">-&gt;</span> lam (\k <span class="ot">-&gt;</span> reflect <span class="fu">:@</span> c <span class="fu">:@</span> (tailEnv <span class="fu">:@</span> e) <span class="fu">:@</span> k)))
 
-quote <span class="fu">=</span> reify <span class="fu">:@</span> lam (\e <span class="ot">-&gt;</span> lam (\k <span class="ot">-&gt;</span> reflect <span class="fu">:@</span> (_<span class="dt">Inject</span> <span class="fu">:@</span> c k) <span class="fu">:@</span> e <span class="fu">:@</span> (tailKont <span class="fu">:@</span> k)))
+quote <span class="fu">=</span> reify <span class="fu">:@</span> lam (\e <span class="ot">-&gt;</span> lam (\k <span class="ot">-&gt;</span> reflect <span class="fu">:@</span> (_Inject <span class="fu">:@</span> c k) <span class="fu">:@</span> e <span class="fu">:@</span> (tailKont <span class="fu">:@</span> k)))
     <span class="kw">where</span> c k <span class="fu">=</span> paraKont <span class="fu">:@</span> k <span class="fu">:@</span> garbage 
                               <span class="fu">:@</span> lam (\x <span class="ot">-&gt;</span> (lam (\_ <span class="ot">-&gt;</span> lam (\_ <span class="ot">-&gt;</span> lam (\_ <span class="ot">-&gt;</span> x))))) 
                               <span class="fu">:@</span> lam (\_ <span class="ot">-&gt;</span> lam (\_ <span class="ot">-&gt;</span> lam (\_ <span class="ot">-&gt;</span> garbage)))
-          garbage <span class="fu">=</span> _<span class="dt">Inject</span> <span class="fu">:@</span> _<span class="dt">Zero</span>
+          garbage <span class="fu">=</span> _Inject <span class="fu">:@</span> _Zero
 
 callCC <span class="fu">=</span> lam (\f <span class="ot">-&gt;</span> reify <span class="fu">:@</span> lam (\e <span class="ot">-&gt;</span> lam (\k <span class="ot">-&gt;</span> 
-            f <span class="fu">:@</span> lam (\a <span class="ot">-&gt;</span> reflect <span class="fu">:@</span> (_<span class="dt">Inject</span> <span class="fu">:@</span> a) <span class="fu">:@</span> (tailEnv <span class="fu">:@</span> e) <span class="fu">:@</span> k))))
+            f <span class="fu">:@</span> lam (\a <span class="ot">-&gt;</span> reflect <span class="fu">:@</span> (_Inject <span class="fu">:@</span> a) <span class="fu">:@</span> (tailEnv <span class="fu">:@</span> e) <span class="fu">:@</span> k))))
 
 example1 <span class="fu">=</span> evaluate <span class="fu">$</span> quote <span class="fu">:@</span> loop <span class="co">-- output looks like: Expr ((\a -&gt; a a) (\a -&gt; a a))</span>
 example2 <span class="fu">=</span> evaluate <span class="fu">$</span> eval <span class="fu">:@</span> (quote <span class="fu">:@</span> loop) <span class="co">-- loops forever</span>

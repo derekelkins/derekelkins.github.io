@@ -46,6 +46,34 @@
           
     <div class="blog-post teaser panel panel-default">
     <div class="panel-heading">
+        <h2 class="blog-post-title"><a href="./posts/djinn.html">Djinn in your browser</a></h2>
+        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="83a60c76-d78b-4fb4-8bfc-f21d55a2e378" href="./posts/djinn.html#disqus_thread"></a></h6>
+    </div>
+
+    <div class="panel-body">
+        
+            <p>I couldn’t find an online version of Djinn, so I ran it through GHCJS with some tweaks, added a basic interface and hosted it <a href="./djinn/">here</a>. It runs in your browser, so go crazy. If you want changes to the default settings or environment, feel free to suggest them. Right now everything is the default settings of the Djinn tool except that multiple results is enabled.</p>
+        
+    </div>
+
+    <div class="panel-footer">
+        <h6 class="blog-post-meta">
+            April  9, 2017 12:35 UTC
+            
+            (Last updated on April  9, 2017 12:39 UTC)
+
+            
+                Tags: 
+            
+        </h6>
+    </div>
+
+</div><!-- /.blog-post -->
+
+
+
+    <div class="blog-post teaser panel panel-default">
+    <div class="panel-heading">
         <h2 class="blog-post-title"><a href="./posts/category-theory-syntactically.html">Category Theory, Syntactically</a></h2>
         <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="5E75F45D-41BB-4B55-B0ED-BF6D46230139" href="./posts/category-theory-syntactically.html#disqus_thread"></a></h6>
     </div>
@@ -65,7 +93,7 @@
         <h6 class="blog-post-meta">
             November 25, 2016 06:23 UTC
             
-            (Last updated on November 25, 2016 06:24 UTC)
+            (Last updated on February 20, 2017 16:04 UTC)
 
             
                 Tags: <a href="./tags/programming.html">programming</a>, <a href="./tags/math.html">math</a>, <a href="./tags/category%20theory.html">category theory</a>
@@ -240,13 +268,13 @@ eq_r(<span class="dt">A</span><span class="kw">,</span> <span class="dt">B</span
 <h3 id="unordered-pairs">Unordered pairs</h3>
 <p>Here’s an example that’s a bit closer to programming. Consider the following equivalence relation on arbitrary pairs: #(a_1, b_1) ~~ (a_2, b_2)# iff #a_1 = a_2 and b_1 = b_2# or #a_1 = b_2 and b_1 = a_2#. This just says that a pair is equivalent to either itself, or a swapped version of itself. It’s interesting to consider what a well-defined function is on this type.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
 <h3 id="gluing-pushouts">Gluing / Pushouts</h3>
-<p>Returning to topology and doing a bit more involved construction, we arrive at gluing or pushouts. In topology, we often want to take two topological spaces and glue them together in some specified way. For example, we may want to take two discs and glue their boundaries together. This gives a sphere. We can combine two spaces into one with the disjoint sum (or coproduct, i.e. Haskell’s <code>Either</code> type.) This produces a space that contains both the input spaces, but they don’t interact in any way. You can visualize them as sitting next to each other but not touching. We now want to say that certain pairs of points, one from each of the spaces, are really the same point. That is, we want to quotient by an equivalence relation that would identify those points. We need some mechanism to specify which points we want to identify. One way to accomplish this is to have a pair of functions, #f : C -&gt; A# and #g : C -&gt; B#, where #A# and #B# are the space we want to glue together. We can then define a relation #R# on the disjoint sum via #R(a, b)# iff there’s a #c : C# such that <code class="asciimath">#a = tt &quot;inl&quot;(f(c)) and b = tt &quot;inr&quot;(g(c))#</code>. This is not an equivalence relation, but we can extend it to one. The quotient we get is then the gluing of #A# and #B# specified by #C# (or really by #f# and #g#). For our example of two discs, #f# and #g# are the same function, namely the inclusion of the boundary of the disc into the disc. We can also glue a space to itself. Just drop the disjoint sum part. Indeed, the circle and torus are examples.</p>
+<p>Returning to topology and doing a bit more involved construction, we arrive at gluing or pushouts. In topology, we often want to take two topological spaces and glue them together in some specified way. For example, we may want to take two discs and glue their boundaries together. This gives a sphere. We can combine two spaces into one with the disjoint sum (or coproduct, i.e. Haskell’s <code>Either</code> type.) This produces a space that contains both the input spaces, but they don’t interact in any way. You can visualize them as sitting next to each other but not touching. We now want to say that certain pairs of points, one from each of the spaces, are really the same point. That is, we want to quotient by an equivalence relation that would identify those points. We need some mechanism to specify which points we want to identify. One way to accomplish this is to have a pair of functions, #f : C -&gt; A# and #g : C -&gt; B#, where #A# and #B# are the spaces we want to glue together. We can then define a relation #R# on the disjoint sum via #R(a, b)# iff there’s a #c : C# such that <code class="asciimath">#a = tt &quot;inl&quot;(f(c)) and b = tt &quot;inr&quot;(g(c))#</code>. This is not an equivalence relation, but we can extend it to one. The quotient we get is then the gluing of #A# and #B# specified by #C# (or really by #f# and #g#). For our example of two discs, #f# and #g# are the same function, namely the inclusion of the boundary of the disc into the disc. We can also glue a space to itself. Just drop the disjoint sum part. Indeed, the circle and torus are examples.</p>
 <h3 id="polynomial-ring-ideals">Polynomial ring ideals</h3>
 <p>We write #RR[X]# for the type of polynomials with one indeterminate #X# with real coefficients. For two indeterminates, we write #RR[X, Y]#. Values of these types are just polynomials such as #X^2 + 1# or #X^2 + Y^2#. We can consider quotienting these types by equivalence relations generated from identifications like #X^2 + 1 ~~ 0# or #X^2 - Y ~~ 0#, but we want more than just the reflexive-, symmetric-, transitive-closure. We want this equivalence relation to also respect the operations we have on polynomials, in particular, addition and multiplication. More precisely, we want if #a ~~ b# and #c ~~ d# then #ac ~~ bd# and similarly for addition. An equivalence relation that respects all operations is called a <strong>congruence</strong>. The standard notation for the quotient of #RR[X, Y]# by a congruence generated by both of the previous identifications is #RR[X, Y]//(X^2 + 1, X^2 - Y)#. Now if #X^2 + 1 = 0# in #RR[X, Y]//(X^2 + 1, X^2 - Y)#, then for <em>any</em> polynomial #P(X, Y)#, we have #P(X, Y)(X^2 + 1) = 0# because #0# times anything is #0#. Similarly, for any polynomial #Q(X, Y)#, #Q(X, Y)(X^2 - Y) = 0#. Of course, #0 + 0 = 0#, so it must be the case that #P(X, Y)(X^2 + 1) + Q(X, Y)(X^2 - Y) = 0# for all polynomials #P# and #Q#. In fact, we can show that all elements in the equivalence class of #0# are of this form. You’ve now motivated the concrete definition of a ring ideal and given it’s significance. An <strong>ideal</strong> is an equivalence class of #0# with respect to some congruence. Let’s work out what #RR[X, Y]//(X^2 + 1, X^2 - Y)# looks like concretely. First, since #X^2 - Y = 0#, we have #Y = X^2# and so we see that values of #RR[X, Y]//(X^2 + 1, X^2 - Y)# will be polynomials in only one indeterminate because we can replace all #Y#s with #X^2#s. Since #X^2 = -1#, we can see that all those polynomials will be linear (i.e. of degree 1) because we can just keep replacing #X^2#s with #-1#s, i.e. #X^(n+2) = X^n X^2 = -X^n#. The end result is that an arbitrary polynomial in #RR[X, Y]//(X^2 + 1, X^2 - Y)# looks like #a + bX# for real numbers #a# and #b# and we have #X^2 = -1#. In other words, #RR[X, Y]//(X^2 + 1, X^2 - Y)# is isomorphic to the complex numbers, #CC#.</p>
 <p>As a reasonably simple exercise, given a polynomial #P(X) : RR[X]#, what does it get mapped to when embedded into #RR[X]//(X - 3)#, i.e. what is #[P(X)] : RR[X]//(X - 3)#?<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
 <h3 id="free-algebras-modulo-an-equational-theory">Free algebras modulo an equational theory</h3>
-<p>Moving much closer to programming, we have a rather broad and important example that a mathematician might describe as free algebras modulo an equational theory. This example covers several of the preceding examples. In programmer-speak, a free algebra is just a type of abstract syntax trees for some language. We’ll call a specific absract syntax tree a <strong>term</strong>. An equational theory is just a collection of pairs of terms with the idea being that we’d like these terms to be considered equal. To be a bit more precise, we will actually allow terms to contain (meta)variables. An example equation for an expression language might be <code>Add(</code>#x#<code>,</code>#x#<code>) = Mul(2,</code>#x#<code>)</code>. We call a term with no variables a <strong>ground term</strong>. We say a ground term <strong>matches</strong> another term if there is a consistent substitution for the variables that makes the latter term syntactically equal to the ground term. E.g. <code>Add(3, 3)</code> matches <code>Add(</code>#x#<code>,</code>#x#<code>)</code> via the substitution #x |-&gt;#<code>3</code>. Now, the equations of our equational theory gives rise to a relation on ground terms #R(t_1, t_2)# iff there exists an equation #l = r# such that #t_1# matches #l# and #t_2# matches #r#. This relation can be extended to an equivalence relation on ground terms, and we can then quotient by that equivalence relation.</p>
-<p>Let’s consider a worked example. We can consider the theory of monoids. We have two operations (types of AST nodes): <code>Mul(</code>#x#<code>,</code>#y#<code>)</code> and <code>1</code>. We have the following three equations: <code>Mul(1,</code>#x#<code>) =</code>#x#, <code>Mul(</code>#x#<code>, 1) =</code>#x#, and <code>Mul(Mul(</code>#x#<code>,</code>#y#<code>),</code>#z#<code>) = Mul(</code>#x#<code>, Mul(</code>#y#<code>,</code>#z#<code>))</code>. We additionally have a bunch of constants subject to no equations. In this case, it turns out we can define a normalization function, what I called #h# far above, and that the quotient type is isomorphic to lists of constants. Now, we can extend this theory to the theory of groups by adding a new operation, <code>Inv(</code>#x#<code>)</code>, and new equations: <code>Inv(Inv(</code>#x#<code>)) =</code>#x#, <code>Inv(Mul(</code>#x#<code>,</code>#y#<code>)) = Mul(Inv(</code>#y#<code>), Inv(</code>#x#<code>))</code>, and <code>Mul(Inv(</code>#x#<code>),</code>#x#<code>) = 1</code>. If we ignore the last of these equations, you can show that we can normalize to a form that is isomorphic to a list of a disjoint sum of the constants, i.e. <code>[Either Const Const]</code> in Haskell if <code>Const</code> were the type of the constant terms. Quotienting this type by the equivalence relation extended with that final equality, corresponds to adding the rule that a <code>Left c</code> cancels out <code>Right c</code> in the list whenever they are adjacent.</p>
+<p>Moving much closer to programming, we have a rather broad and important example that a mathematician might describe as free algebras modulo an equational theory. This example covers several of the preceding examples. In programmer-speak, a free algebra is just a type of abstract syntax trees for some language. We’ll call a specific abstract syntax tree a <strong>term</strong>. An equational theory is just a collection of pairs of terms with the idea being that we’d like these terms to be considered equal. To be a bit more precise, we will actually allow terms to contain (meta)variables. An example equation for an expression language might be <code>Add(</code>#x#<code>,</code>#x#<code>) = Mul(2,</code>#x#<code>)</code>. We call a term with no variables a <strong>ground term</strong>. We say a ground term <strong>matches</strong> another term if there is a consistent substitution for the variables that makes the latter term syntactically equal to the ground term. E.g. <code>Add(3, 3)</code> matches <code>Add(</code>#x#<code>,</code>#x#<code>)</code> via the substitution #x |-&gt;#<code>3</code>. Now, the equations of our equational theory gives rise to a relation on ground terms #R(t_1, t_2)# iff there exists an equation #l = r# such that #t_1# matches #l# and #t_2# matches #r#. This relation can be extended to an equivalence relation on ground terms, and we can then quotient by that equivalence relation.</p>
+<p>Let’s consider a worked example. We can consider the theory of monoids. We have two operations (types of AST nodes): <code>Mul(</code>#x#<code>,</code>#y#<code>)</code> and <code>1</code>. We have the following three equations: <code>Mul(1,</code>#x#<code>) =</code>#x#, <code>Mul(</code>#x#<code>, 1) =</code>#x#, and <code>Mul(Mul(</code>#x#<code>,</code>#y#<code>),</code>#z#<code>) = Mul(</code>#x#<code>, Mul(</code>#y#<code>,</code>#z#<code>))</code>. We additionally have a bunch of constants subject to no equations. In this case, it turns out we can define a normalization function, what I called #h# far above, and that the quotient type is isomorphic to lists of constants. Now, we can extend this theory to the theory of groups by adding a new operation, <code>Inv(</code>#x#<code>)</code>, and new equations: <code>Inv(Inv(</code>#x#<code>)) =</code>#x#, <code>Inv(Mul(</code>#x#<code>,</code>#y#<code>)) = Mul(Inv(</code>#y#<code>), Inv(</code>#x#<code>))</code>, and <code>Mul(Inv(</code>#x#<code>),</code>#x#<code>) = 1</code>. If we ignore the last of these equations, you can show that we can normalize to a form that is isomorphic to a list of a disjoint sum of the constants, i.e. <code>[Either Const Const]</code> in Haskell if <code>Const</code> were the type of the constant terms. Quotienting this type by the equivalence relation extended with that final equality corresponds to adding the rule that a <code>Left c</code> cancels out <code>Right c</code> in the list whenever they are adjacent.</p>
 <p>This overall example is a fairly profound one. Almost all of abstract algebra can be viewed as an instance of this or a closely related variation. When you hear about things defined in terms of “generators and relators”, it is an example of this sort. Indeed, those “relators” are used to define a relation that will be extended to an equivalence relation. Being defined in this way is arguably what it <em>means</em> for something to be “algebraic”.</p>
 <h2 id="postscript">Postscript</h2>
 <p>The <a href="http://www.nuprl.org/book/Introduction_Type_Theory.html">Introduction to Type Theory</a> section of the NuPRL book provides a more comprehensive and somewhat more formal presentation of these and related concepts. While the quotient <em>type</em> view of quotients is conceptually different from the standard set theoretic presentation, it is much more amenable to computation as the #ZZ // n ZZ# example begins to illustrate.</p>
@@ -264,7 +292,7 @@ eq_r(<span class="dt">A</span><span class="kw">,</span> <span class="dt">B</span
         <h6 class="blog-post-meta">
             September 23, 2016 05:21 UTC
             
-            (Last updated on September 29, 2016 04:15 UTC)
+            (Last updated on February 26, 2017 21:27 UTC)
 
             
                 Tags: <a href="./tags/math.html">math</a>, <a href="./tags/type%20theory.html">type theory</a>
@@ -474,7 +502,7 @@ Add
 <span class="op">};</span>
 
 <span class="va">ko</span>.<span class="at">applyBindings</span>(goodViewModel<span class="op">,</span> <span class="va">document</span>.<span class="at">getElementById</span>(<span class="st">'#goodExample'</span>))<span class="op">;</span></code></pre></div>
-<p>One thing to note is that setting <code>allSelected</code> and <code>numberSelected</code> are now both simple operations. A write to an observable on triggers a constant number of writes to other observables. In fact, there are only two (non-computed) observables. On the other hand, <em>reading</em> the <code>selected</code> observable is more expensive. Toggling all items has quadratic complexity. In fact, it had quadratic complexity before due to the feedback. However, unlike the previous code, this <em>also</em> has quadratic complexity when any <em>individual</em> item is toggled. Unlike the previous code, though, this is simply due to a poor choice of data structure. Equipping each item with an “ID” field and using an object as a hash map would reduce the complexity to linear. In practice, for this sort of scenario, it tends not to make a big difference. Also, Knockout won’t trigger dependents if the value doesn’t change, so there’s no risk of the extra work propagating into still more extra work. Nevertheless, while I endorse this solution for this particular problem, in general making <em>finer</em> grained observables can help limit the scope of changes so unnecessary work isn’t done.</p>
+<p>One thing to note is that setting <code>allSelected</code> and <code>numberSelected</code> are now both simple operations. A write to an observable triggers a constant number of writes to other observables. In fact, there are only two (non-computed) observables. On the other hand, <em>reading</em> the <code>selected</code> observable is more expensive. Toggling all items has quadratic complexity. In fact, it had quadratic complexity before due to the feedback. However, unlike the previous code, this <em>also</em> has quadratic complexity when any <em>individual</em> item is toggled. Unlike the previous code, though, this is simply due to a poor choice of data structure. Equipping each item with an “ID” field and using an object as a hash map would reduce the complexity to linear. In practice, for this sort of scenario, it tends not to make a big difference. Also, Knockout won’t trigger dependents if the value doesn’t change, so there’s no risk of the extra work propagating into still more extra work. Nevertheless, while I endorse this solution for this particular problem, in general making <em>finer</em> grained observables can help limit the scope of changes so unnecessary work isn’t done.</p>
 <p>Still, the real concern and benefit of this latter approach isn’t the asymptotic complexity of the operations, but the <em>atomicity</em> of the operations. In the second solution, every update is atomic. There are no intermediate states on the way to a final state. This means that dependents, represented by <code>numberSelected</code> but which are realistically much more complicated, don’t get triggered excessively and don’t need to “compensate” for unintended intermediate values.</p>
 <h3 id="epilogue">Epilogue</h3>
 <p>We could take the coarse-graining to its logical conclusion and have the view model for an application be a single observable holding an object representing the entire view model (and containing no observables of its own). Taking this approach actually does have a lot of benefits, albeit there is little reason to use Knockout at that point. Instead this starts to lead to things like Facebook’s <a href="https://facebook.github.io/flux/">Flux</a> pattern and the pattern perhaps most clearly articulated by <a href="http://cycle.js.org/">Cycle JS</a>.</p>
@@ -573,7 +601,7 @@ ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
         <h6 class="blog-post-meta">
             May  5, 2016 20:38 UTC
             
-            (Last updated on May  5, 2016 20:51 UTC)
+            (Last updated on December 30, 2016 03:31 UTC)
 
             
                 Tags: <a href="./tags/javascript.html">javascript</a>
@@ -717,39 +745,6 @@ ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
 
 
 
-    <div class="blog-post teaser panel panel-default">
-    <div class="panel-heading">
-        <h2 class="blog-post-title"><a href="./posts/styles-of-category-theory.html">The three styles of category theory</a></h2>
-        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="50477F76-898F-444F-AAD6-A4BC20802E5E" href="./posts/styles-of-category-theory.html#disqus_thread"></a></h6>
-    </div>
-
-    <div class="panel-body">
-        
-            <h3 id="introduction">Introduction</h3>
-<p>Arguably (1-)category theory is the study of universal properties. There are three standard formulations of the notion of universal property which are all equivalent. Most introductions to category theory will cover all three and how they relate. By systematically preferring one formulation above the others, three styles of doing category theory arise with distinctive constructions and proof styles.</p>
-<p>I noticed this trichotomy many years ago, but I haven’t heard anyone explicitly identify and compare these styles. Furthermore, in my opinion, one of these styles, the one I call <strong>Set</strong>-category theory, is significantly easier to use than the others, but seems poorly represented in introductions to category theory.</p>
-<p>For myself, it wasn’t until I read <a href="http://www.tac.mta.ca/tac/reprints/articles/10/tr10abs.html">Basic Concepts of Enriched Category Theory</a> by G. M. Kelly and was introduced to indexed (co)limits (aka weighted (co)limits), that I began to recognize and appreciate <strong>Set</strong>-category theory. Indexed (co)limits are virtually absent from category theory introductions, and the closely related notion of (co)ends are also very weakly represented despite being far more useful than (conical) (co)limits. I don’t know why this is. Below I’ll be more focused on comparing the styles than illustrating the usefulness of indexed (co)limits. I may write an article about that in the future; in the mean time you can read “Basic Concepts of Enriched Category Theory” and just ignore the enriched aspect. Admittedly, it is definitely <em>not</em> an introduction to category theory.</p>
-
-            <h6><a href="./posts/styles-of-category-theory.html">Read more...</a></h6>
-        
-    </div>
-
-    <div class="panel-footer">
-        <h6 class="blog-post-meta">
-            September 30, 2015 05:45 UTC
-            
-            (Last updated on September 30, 2015 05:51 UTC)
-
-            
-                Tags: <a href="./tags/math.html">math</a>, <a href="./tags/category%20theory.html">category theory</a>
-            
-        </h6>
-    </div>
-
-</div><!-- /.blog-post -->
-
-
-
 
         </div><!-- /.blog-main -->
         
@@ -759,6 +754,8 @@ ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
                 <div class="panel-heading"><h4>Recent</h4></div>
                 <div class="panel-body">
                     <ol class="list-unstyled">
+                        
+                          <li><div class="blog-post-link">2017-04-09 - <a href="./posts/djinn.html">Djinn in your browser</a></div></li>
                         
                           <li><div class="blog-post-link">2016-11-25 - <a href="./posts/category-theory-syntactically.html">Category Theory, Syntactically</a></div></li>
                         
@@ -777,8 +774,6 @@ ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
                           <li><div class="blog-post-link">2015-11-17 - <a href="./posts/behavioral-reflection.html">Behavioral Reflection</a></div></li>
                         
                           <li><div class="blog-post-link">2015-11-02 - <a href="./posts/you-know-more-about-presheaves-than-you-think.html">You know more about presheaves than you think</a></div></li>
-                        
-                          <li><div class="blog-post-link">2015-09-30 - <a href="./posts/styles-of-category-theory.html">The three styles of category theory</a></div></li>
                         
                     </ol>
                 </div>
