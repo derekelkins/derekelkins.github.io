@@ -14,7 +14,7 @@
         <form class="form-inline text-center lead" onsubmit="return onRequest(event);">
             <div class="form-group col-md-6">
                 <label class="sr-only" for="input">Input</label>
-                <input id="input" class="form-control" style="width: 100%" placeholder="f :: a -> a -> a" type="text" onchange="return onRequest(event);" />
+                <input id="input" class="form-control" style="width: 100%" placeholder="f :: a -> a -> a" type="text" />
             </div>
             <button type="submit" class="btn btn-default" >Submit</button>
             <div class="checkbox">
@@ -25,6 +25,10 @@
         </form>
         <pre id="response">
             Type a type signature, e.g. f :: a -> a -> a.
+
+            You can also use a query parameter e.g. "?q=f::a->a->a" to create a URL that will
+            automatically query Djinn and display the result.
+
             Type :help in Advanced Mode to see a list of commands.
         </pre>
     </div>
@@ -39,13 +43,25 @@ var advancedModeBox = document.getElementById('advancedMode');
 function onRequest(evt) {
     responseBox.innerHTML = '';
     haskell.request(advancedMode.checked ? inputBox.value : ('? '+inputBox.value));
+    inputBox.value = '';
     return false;
 }
+
 function onResponseLine(d) {
     //var br = document.createElement('br');
     responseBox.append(d + '\n');
     //responseBox.append(br);
 }
+
+window.onload = function () {
+    if(URLSearchParams) {
+        var q = new URLSearchParams(document.location.search.substring(1)).get('q');
+        if(q !== null) {
+            responseBox.innerHTML = '';
+            haskell.request('? '+q);
+        }
+    }
+};
 </script>
 </body>
 </html>

@@ -177,9 +177,12 @@ lconvolve <span class="fu">=</span> gconvolve (\as <span class="ot">-&gt;</span>
         MathJax.Hub.Config({
           extensions: ['asciimath2jax.js'],
           asciimath2jax: {
-              delimiters: [['|','|'], ['#','#']],
+              delimiters: [['#','#']],
               processClass: 'asciimath'
-            }
+          },
+          tex2jax: {
+              inlineMath: [['|','|']]
+          }
         });
     </script>
   </body>

@@ -551,9 +551,12 @@ a cartesian closed category
         MathJax.Hub.Config({
           extensions: ['asciimath2jax.js'],
           asciimath2jax: {
-              delimiters: [['|','|'], ['#','#']],
+              delimiters: [['#','#']],
               processClass: 'asciimath'
-            }
+          },
+          tex2jax: {
+              inlineMath: [['|','|']]
+          }
         });
     </script>
   </body>

@@ -239,7 +239,7 @@
 <li><a href="http://bayes.wustl.edu/etj/articles/predictive.pdf">Predictive statistical mechanics</a></li>
 <li><a href="http://bayes.wustl.edu/etj/articles/gibbs.paradox.pdf">The Gibbs Paradox</a></li>
 <li><a href="http://bayes.wustl.edu/etj/articles/macroscopic.prediction.pdf">Macroscopic Prediction</a></li>
-<li><a href="http://bayes.wustl.edu/etj/articles/well.pdf">The Well-Posed Problem</a></li>
+<li><a href="http://bayes.wustl.edu/etj/articles/well.pdf">The Well-Posed Problem</a>, but see <a href="https://arxiv.org/abs/1503.09072">Failure and Uses of Jaynes’ Principle of Transformation Groups</a></li>
 <li><a href="http://bayes.wustl.edu/etj/articles/confidence.pdf">Confidence Intervals vs Bayesian Intervals</a></li>
 </ul></li>
 <li>Judea Pearl “Causality: Models, Reasoning, and Inference”</li>
@@ -389,9 +389,12 @@
         MathJax.Hub.Config({
           extensions: ['asciimath2jax.js'],
           asciimath2jax: {
-              delimiters: [['|','|'], ['#','#']],
+              delimiters: [['#','#']],
               processClass: 'asciimath'
-            }
+          },
+          tex2jax: {
+              inlineMath: [['|','|']]
+          }
         });
     </script>
   </body>

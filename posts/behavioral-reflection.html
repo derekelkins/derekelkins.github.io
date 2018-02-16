@@ -213,9 +213,12 @@ example4 <span class="fu">=</span> evaluate <span class="fu">$</span> callCC <sp
         MathJax.Hub.Config({
           extensions: ['asciimath2jax.js'],
           asciimath2jax: {
-              delimiters: [['|','|'], ['#','#']],
+              delimiters: [['#','#']],
               processClass: 'asciimath'
-            }
+          },
+          tex2jax: {
+              inlineMath: [['|','|']]
+          }
         });
     </script>
   </body>

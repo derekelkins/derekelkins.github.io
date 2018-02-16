@@ -197,9 +197,12 @@ indexOfMostSignificant1_w16 w <span class="fu">=</span> idxMsnibble <span class=
         MathJax.Hub.Config({
           extensions: ['asciimath2jax.js'],
           asciimath2jax: {
-              delimiters: [['|','|'], ['#','#']],
+              delimiters: [['#','#']],
               processClass: 'asciimath'
-            }
+          },
+          tex2jax: {
+              inlineMath: [['|','|']]
+          }
         });
     </script>
   </body>

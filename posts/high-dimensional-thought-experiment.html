@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">High dimensional thought experiment from Hamming</h2>
     <p class="blog-post-meta">December  4, 2015 01:22 UTC 
         
-        (Last updated on November 10, 2016 08:03 UTC)
+        (Last updated on August 13, 2017 06:40 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -51,7 +51,15 @@
         
     </h6>
 
-    <p>This is a simple mathematical thought experiment from Richard Hamming to demonstrate how poor our intuition  for high dimensional spaces is. All that is needed is some basic, middle school level geometry and algebra.  Consider a 2x2 square centered at the origin. In each quadrant place circles as big as possible so that they fit in the square and don’t overlap. They’ll clearly have radius 1/2. See the image below. The question now is what’s the radius of the largest circle centered at the origin that doesn’t overlap the other circles.  <img src="../posts/raw/high-dimensional-diagram.svg" alt />  It’s clear from symmetry that the inner circle is going to touch all the other circles at the same time, and it is clear that it is going to touch along the line from the origin to the center of one of the outer circles. So the radius of the inner circle, #r#, is just the distance from the origin to the center of one of the outer circles minus the radius of the outer circle, namely 1/2. As an equation:  <code class="asciimath">#r = sqrt(1/2^2 + 1/2^2) - 1/2 = sqrt(2)/2 - 1/2 ~~ 0.207106781#</code>  Now if we go to three dimensions we’ll have eight circles instead of four, but everything else is the same except the distances will now be <code class="asciimath">#sqrt(1/2^2 + 1/2^2 + 1/2^2)#</code>. It’s clear that the only  difference for varying dimensions is that in dimension #n# we’ll have #n# #1/2^2# terms under the square root sign. So the general solution is easily shown to be:  <code class="asciimath">#r = sqrt(n)/2 - 1/2#</code>  You should be weirded out now. If you aren’t, here’s a hint: what happens when #n = 10#? Here’s another hint: what happens as #n# approaches #oo#?</p>
+    <p>This is a simple mathematical thought experiment from Richard Hamming to demonstrate how poor our intuition for high dimensional spaces is. All that is needed is some basic, middle school level geometry and algebra.</p>
+<p>Consider a 2x2 square centered at the origin. In each quadrant place circles as big as possible so that they fit in the square and don’t overlap. They’ll clearly have radius 1/2. See the image below. The question now is what’s the radius of the largest circle centered at the origin that doesn’t overlap the other circles.</p>
+<p><img src="../posts/raw/high-dimensional-diagram.svg" alt /></p>
+<p>It’s clear from symmetry that the inner circle is going to touch all the other circles at the same time, and it is clear that it is going to touch along the line from the origin to the center of one of the outer circles. So the radius of the inner circle, #r#, is just the distance from the origin to the center of one of the outer circles minus the radius of the outer circle, namely 1/2. As an equation:</p>
+<p><code class="asciimath">#r = sqrt(1/2^2 + 1/2^2) - 1/2 = sqrt(2)/2 - 1/2 ~~ 0.207106781#</code></p>
+<p>Now if we go to three dimensions we’ll have eight circles instead of four, but everything else is the same except the distances will now be <code class="asciimath">#sqrt(1/2^2 + 1/2^2 + 1/2^2)#</code>. It’s clear that the only difference for varying dimensions is that in dimension #n# we’ll have #n# #1/2^2# terms under the square root sign. So the general solution is easily shown to be:</p>
+<p><code class="asciimath">#r = sqrt(n)/2 - 1/2#</code></p>
+<p>You should be weirded out now. If you aren’t, here’s a hint: what happens when #n = 10#? Here’s another hint: what happens as #n# approaches #oo#?</p>
+<p>3blue1brown has a <a href="https://www.youtube.com/watch?v=zwAD6dRSVyI">video</a> describing this example and presenting one way of regaining intuition about it.</p>
 
     <div id="disqus_thread"></div>
     <script type="text/javascript">
@@ -103,9 +111,12 @@
         MathJax.Hub.Config({
           extensions: ['asciimath2jax.js'],
           asciimath2jax: {
-              delimiters: [['|','|'], ['#','#']],
+              delimiters: [['#','#']],
               processClass: 'asciimath'
-            }
+          },
+          tex2jax: {
+              inlineMath: [['|','|']]
+          }
         });
     </script>
   </body>
