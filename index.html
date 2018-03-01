@@ -46,6 +46,49 @@
           
     <div class="blog-post teaser panel panel-default">
     <div class="panel-heading">
+        <h2 class="blog-post-title"><a href="./posts/the-pedagogy-of-logic-a-rant.html">The Pedagogy of Logic: A Rant</a></h2>
+        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="5c9fe83f-9bc9-4523-9353-e3456a5a1795" href="./posts/the-pedagogy-of-logic-a-rant.html#disqus_thread"></a></h6>
+    </div>
+
+    <div class="panel-body">
+        
+            <h3 id="introduction">Introduction</h3>
+<p>Over the years I’ve seen a lot of confusion about formal logic online. Usually this is from students (but I’ve also seen it with experienced mathematicians) on platforms like the Math or CS StackExchange. Now there is clearly some selection bias where the people asking the questions are the people who are confused, but while the questions <em>about</em> the confusions are common, the confusions are often evident even in questions about other aspects, the confusions are <em>in the (upvoted!) answers</em>, and when you look at the study material they are using it is often completely unsurprising that they are confused. Again, these confusions are also not limited to just “students”, though I’ll use that word in a broad sense below. Finally, on at least one of the points below, the confusion seems to be entirely on the instructors’ side.</p>
+<p>To give an indication of the problem, here is my strong impression of what would happen if I gave a student who had just passed a full year introduction to formal logic the following exercise: “Give me a formal proof of #(neg P =&gt; neg Q) =&gt; (Q =&gt; P)#”. I suspect most would draw up a truth table. When I responded, “that’s not a formal proof,” they would be confused. If you are confused by that response, then this is definitely for you. I’m sure they would completely agree with me that if I asked for the inverse matrix of some matrix #M#, showing that the determinant of #M# is non-zero does not constitute an answer to that question. The parallelism of these scenarios would likely be lost on them though. While I think courses that focus on a syntactic approach to logic will produce students that are much more likely to give an appropriate answer to my exercise, that doesn’t mean they lack the confusions, just that this exercise isn’t a good discriminator for them. For example, if they don’t see the parallelism of the two scenarios I described, or worse, have no idea what truth tables have to do with anything, then they have some gap.</p>
+<p>As a disclaimer, I am not an educator nor even an academic in any professional capacity.</p>
+<p>As a summary, the points I will touch on are:</p>
+<ul>
+<li><a href="#syntax-versus-semantics">Not <em>continually</em> emphasizing the distinction between syntax and semantics</a>.</li>
+<li><a href="#unnecessary-philosophizing">Unnecessary philosophizing</a>.</li>
+<li><a href="#the-complete-absence-of-non-classical-logics">The complete absence of non-classical logics</a>.</li>
+<li><a href="#silly-linguistics">Silly linguistics exercises</a>.</li>
+<li><a href="#the-complete-conflation-of-negation-introduction-with-double-negation-elimination">The complete conflation of negation introduction with double negation elimination</a>.</li>
+<li><a href="#smaller-issues">Some smaller issues that are not so bad and some missed opportunities</a>.</li>
+</ul>
+<p>If anyone reading this is aware of <em>introductory</em> textbooks or other resources (ideally freely available, but I’ll take a reasonably priced textbook too) that avoid most or all of the major issues I list and otherwise do a good job, I would be very interested. My own education on these topics has been piecemeal and eclectic and also strongly dependent on my background in programming. This leaves me with no reasonable recommendations. Please leave a comment or email me, if you have such a recommendation.</p>
+
+            <h6><a href="./posts/the-pedagogy-of-logic-a-rant.html">Read more...</a></h6>
+        
+    </div>
+
+    <div class="panel-footer">
+        <h6 class="blog-post-meta">
+            March  1, 2018 04:35 UTC
+            
+            (Last updated on March  1, 2018 04:35 UTC)
+
+            
+                Tags: <a href="./tags/math.html">math</a>, <a href="./tags/logic.html">logic</a>
+            
+        </h6>
+    </div>
+
+</div><!-- /.blog-post -->
+
+
+
+    <div class="blog-post teaser panel panel-default">
+    <div class="panel-heading">
         <h2 class="blog-post-title"><a href="./posts/djinn.html">Djinn in your browser</a></h2>
         <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="83a60c76-d78b-4fb4-8bfc-f21d55a2e378" href="./posts/djinn.html#disqus_thread"></a></h6>
     </div>
@@ -722,38 +765,6 @@ ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
 
 
 
-    <div class="blog-post teaser panel panel-default">
-    <div class="panel-heading">
-        <h2 class="blog-post-title"><a href="./posts/you-know-more-about-presheaves-than-you-think.html">You know more about presheaves than you think</a></h2>
-        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="32F754A2-5428-4404-A21A-759092CC4010" href="./posts/you-know-more-about-presheaves-than-you-think.html#disqus_thread"></a></h6>
-    </div>
-
-    <div class="panel-body">
-        
-            <h3 id="the-category-of-graphs-as-a-presheaf">The category of graphs as a presheaf</h3>
-<p>Here’s a small example of why people find category theory interesting. Consider the category, call it #ccC#, consisting of two objects, which we’ll imaginatively name #0# and #1#, and two non-identity arrows #s,t : 0 -&gt; 1#. The category of graphs (specifically directed multigraphs with loops) is the category of presheaves over #ccC#, which is to say, it’s the category of contravariant functors from #ccC# to <code class="asciimath">#bb &quot;Set&quot;#</code>. I’ll spell out what that means momentarily, but first think about what has been done. We’ve provided a complete definition of not only graphs but the entire category of graphs and graph homomorphisms given you’re familiar with very basic category theory<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>. This is somewhat magical.</p>
-<p>Spelling things out, #G# is a contravariant functor from #ccC# to <code class="asciimath">#bb &quot;Set&quot;#</code>. This means that #G# takes each object of #ccC# to a set, i.e. #G(0) = V# and #G(1) = E# for arbitrary sets #V# and #E#, but which will represent the vertices and edges of our graph. In addition, #G# takes the arrows in #ccC# to a (set) function, but, because it’s contravariant, it flips the arrows around. So we have, for example, #G(s) : G(1) -&gt; G(0)# or #G(s) : E -&gt; V#, and similarly for #t#. #G(s)# is a function that takes an edge and gives its source vertex, and #G(t)# gives the target. The arrows in the category of graphs are just natural transformations between the functors. In this case, that means if we have two graphs #G# and #H#, a graph homomorphism #f : G -&gt; H# is a pair of functions #f_0 : G(0) -&gt; H(0)# and #f_1 : G(1) -&gt; H(1)# that satisfy #H(s) @ f_1 = f_0 @ G(s)# and #H(t) @ f_1 = f_0 @ G(t)#. With a bit of thought you can see that all this says is that we must map the source and target of an edge #e# to the source and target of the edge #f_1(e)#. You may also have noticed that <em>any</em> pair of sets and pair of functions between them is a graph. In other words, graphs are very simple things. This takes out a lot of the magic, though it is nice that we get the right notion of graph homomorphism for free. Let me turn the magic up to 11.</p>
-
-            <h6><a href="./posts/you-know-more-about-presheaves-than-you-think.html">Read more...</a></h6>
-        
-    </div>
-
-    <div class="panel-footer">
-        <h6 class="blog-post-meta">
-            November  2, 2015 12:04 UTC
-            
-            (Last updated on December 14, 2017 16:25 UTC)
-
-            
-                Tags: <a href="./tags/CS.html">CS</a>, <a href="./tags/category%20theory.html">category theory</a>
-            
-        </h6>
-    </div>
-
-</div><!-- /.blog-post -->
-
-
-
 
         </div><!-- /.blog-main -->
         
@@ -763,6 +774,8 @@ ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
                 <div class="panel-heading"><h4>Recent</h4></div>
                 <div class="panel-body">
                     <ol class="list-unstyled">
+                        
+                          <li><div class="blog-post-link">2018-03-01 - <a href="./posts/the-pedagogy-of-logic-a-rant.html">The Pedagogy of Logic: A Rant</a></div></li>
                         
                           <li><div class="blog-post-link">2017-04-09 - <a href="./posts/djinn.html">Djinn in your browser</a></div></li>
                         
@@ -782,8 +795,6 @@ ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
                         
                           <li><div class="blog-post-link">2015-11-17 - <a href="./posts/behavioral-reflection.html">Behavioral Reflection</a></div></li>
                         
-                          <li><div class="blog-post-link">2015-11-02 - <a href="./posts/you-know-more-about-presheaves-than-you-think.html">You know more about presheaves than you think</a></div></li>
-                        
                     </ol>
                 </div>
               </div>
@@ -796,7 +807,8 @@ ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
 <li><a href="./tags/category%20theory.html">category theory (3)</a></li>
 <li><a href="./tags/geometric%20algebra.html">geometric algebra (1)</a></li>
 <li><a href="./tags/javascript.html">javascript (1)</a></li>
-<li><a href="./tags/math.html">math (7)</a></li>
+<li><a href="./tags/logic.html">logic (1)</a></li>
+<li><a href="./tags/math.html">math (8)</a></li>
 <li><a href="./tags/programming.html">programming (2)</a></li>
 <li><a href="./tags/type%20theory.html">type theory (2)</a></li>
                     </ol>
