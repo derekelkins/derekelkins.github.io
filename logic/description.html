@@ -31,12 +31,12 @@
     The system implement <a href="https://en.wikipedia.org/wiki/Sequent_calculus#Inference_rules">LK</a>. It lacks Cut, 
     so you can only make cut-free proofs (but <a href="https://en.wikipedia.org/wiki/Cut-elimination_theorem">Gentzen's Hauptsatz</a> says
     that's all you need [modulo an exponential difference in size...]). Contraction is also limited to certain cases with
-    quantifiers. There should never be any benefit (or at least need) to perform contraction otherwise.
+    quantifiers. There should never be any benefit (or at least need) to perform contraction otherwise.<br/><br/>
 
     If you find you can repeatably prove something that is false, <a href="https://www.hedonisticlearning.com/contact.html">contact me</a>.<br/><br/>
 
     The parser isn't very friendly yet. Below is the BNF, but basically usual ASCII formulations
-    of logical symbols should work. You will need to fully parenthesize the result. You can use <pre>y_0</pre> to get <i>y<sub>0</sub></i>.
+    of logical symbols should work. You will need to fully parenthesize the result. You can use <code>y_0</code> to get <i>y<sub>0</sub></i>.
     <pre><code>
     Term ::= NAME (LPAREN TermList RPAREN)?
     TermList ::= Term (COMMA Term)*
