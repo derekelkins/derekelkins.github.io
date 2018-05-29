@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Prove something</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="ndjs.css" />
+</head>
+<body>
+
+<div id="goalBox">
+        For now, a purely client-side reimplementation of <a href="http://logitext.mit.edu/main">Logitext</a>.
+        See more description <a href="description.html">here</a>.<br/><br/>
+        Enter goal or formula: <input type="text" id="goalInput" value="((A -> B) -> A) -> A"/>
+</div>
+<div id="container"></div>
+<div id="toast"></div>
+<div id="popup">
+    <div id="popupBody">
+        <input type="text" id="termInput"/><button id="termBtn">Go</button><button id="contractBtn">Contract</button>
+        <p>
+            Enter a term and click Go, or click Contract to perform a contraction.
+        </p>
+    </div>
+</div>
+<script type="text/javascript">
+Array.prototype.flatMap = function(f, t) {
+    const xss = this.map(f, t);
+    let sum = 0;
+    const len = xss.length;
+    for(let i = 0; i < len; ++i) {
+        sum += xss[i].length;
+    }
+    const result = new Array(sum);
+    let k = 0;
+    for(let i = 0; i < len; ++i) {
+        const xs = xss[i];
+        const ilen = xs.length;
+        for(let j = 0; j < ilen; ++j) {
+            result[k++] = xs[j];
+        }
+    }
+    return result;
+};
+</script>
+<script type="text/javascript" src="bundle.js"></script>
+</body>
+</html>

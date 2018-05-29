@@ -1,0 +1,168 @@
+body {
+    font-family: "Roboto","Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+
+#goalBox {
+    text-align: center;
+    margin: 0 auto;
+    margin-top: 2em;
+    width: 100%;
+}
+
+#container {
+    text-align: center;
+    margin: 0 auto;
+    padding-top: 2em;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+#toast {
+    background-color: transparent;
+    color: transparent;
+    display: none;
+}
+
+#toast.shown {
+    animation-duration: 5s;
+    animation-name: throb;
+    background-color: transparent;
+    display: block;
+    color: transparent;
+    text-align: center;
+    min-height: 2ex;
+    padding-top: 2ex;
+    padding-bottom: 1ex;
+    padding-left: 2em;
+    padding-right: 2em;
+    margin-top: 2ex;
+    box-shadow: 2px 2px 4px;
+}
+
+#popup {
+    position: absolute;
+    padding-top: 50px;
+    padding-left: 50px;
+    display: none;
+}
+
+#popupBody {    
+    padding: 0.5em;
+    background-color: black;
+    color: white;
+    width: 18em;
+}
+
+#popupBody > * {
+    margin-right: 1em;
+}
+
+#popup.shown {
+    display: block;
+}
+
+#termInput {
+    width: 3em;
+}
+
+@keyframes throb {
+    from {
+        background-color: transparent;
+        color: transparent;
+    }
+
+    5% {
+        background-color: lightcoral;
+        color: black;
+    }
+
+    90% {
+        background-color: lightcoral;
+        color: black;
+    }
+
+    to {
+        background-color: transparent;
+        color: transparent;
+    }
+}
+
+.row {
+    width: 100%;
+}
+
+.formula {
+    display: inline-block;
+}
+
+.context {
+    display: inline-block;
+}
+
+.occurrence, .boundVariable {
+    font-style: italic;
+}
+
+.boundVariable > sub, .occurrence > sub {
+    font-size: small;
+}
+
+.derivation.first {
+    margin-left: 0;
+    display: inline-block;
+}
+
+#container > .derivation {
+    padding-top: 1em;
+    padding-bottom: 0.5em;
+    padding-left: 2em;
+    padding-right: 2em;
+}
+
+.derivation {
+    margin-left: 2em;
+    display: inline-block;
+    cursor: default;
+}
+
+.derivation.completed {
+    background-color: lightgreen;
+}
+
+.derivation.closed > .ruleConclusion {
+    border-top: 1px solid black;
+}
+
+.turnstile {
+    margin-left: 0.1em;
+    margin-right: 0.1em;
+}
+
+.derivation.closed > .ruleConclusion .turnstile:hover {
+    background-color: lightcoral;
+    cursor: pointer;
+}
+
+.derivation .formula.topLevel:hover {
+    background-color: skyblue;
+    cursor: pointer;
+}
+
+.derivation .formula.topLevel:hover > .connective {
+    color: white;
+    background-color: black;
+    cursor: pointer;
+}
+
+.derivation .formula.topLevel > .connective:hover {
+    cursor: pointer;
+}
+
+.tag {
+    float: right;
+    font-size: smaller;
+    margin-right: -1.5em;
+    margin-top: -1.2ex;
+    color: darkgray;
+}

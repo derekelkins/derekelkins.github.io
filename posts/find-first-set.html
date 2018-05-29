@@ -56,96 +56,96 @@
 <p>The <code>clz</code> instruction <a href="https://hackage.haskell.org/package/base-4.8.2.0/docs/Data-Bits.html#v:countLeadingZeros">can be used to implement</a> this function, but this is a potential simulation if that or a similar instruction wasn’t available. It’s probably not the fastest way. Similarly, find first set and count trailing zeros <a href="https://en.wikipedia.org/wiki/Find_first_set">can be implemented</a> in terms of this operation.</p>
 <h2 id="code">Code</h2>
 <p>Below is the complete code. You can also download it <a href="../posts/raw/FFS.hs">here</a>.</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE BangPatterns #-}</span>
-<span class="kw">import </span><span class="dt">Data.Word</span>
-<span class="kw">import </span><span class="dt">Data.Bits</span>
-
-<span class="co">-- Returns 0-based bit index of most significant bit that is 1. Assumes input is non-zero.</span>
-<span class="co">-- That is, 2^indexOfMostSignificant1 x &lt;= x &lt; 2^(indexOfMostSignificant1 x + 1)</span>
-<span class="co">-- From Erik Demaine's presentation in Spring 2012 lectures of MIT 6.851, particularly &quot;Lecture 12: Fusion Trees&quot;.</span>
-<span class="co">-- Takes 26 (source-level) straight-line word operations.</span>
-<span class="ot">indexOfMostSignificant1 ::</span> <span class="dt">Word64</span> <span class="ot">-&gt;</span> <span class="dt">Word64</span>
-indexOfMostSignificant1 w <span class="fu">=</span> idxMsbyte <span class="fu">.|.</span> idxMsbit
-    <span class="kw">where</span>
-        <span class="co">-- top bits of each byte</span>
-        <span class="fu">!</span>wtbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x8080808080808080</span>
-        
-        <span class="co">-- all but top bits of each byte producing 8 7-bit chunks</span>
-        <span class="fu">!</span>wbbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x7F7F7F7F7F7F7F7F</span>              
-
-        <span class="co">-- parallel compare of each 7-bit chunk to 0, top bit set in result if 7-bit chunk was not 0</span>
-        <span class="fu">!</span>pc <span class="fu">=</span> parallelCompare <span class="bn">0x8080808080808080</span> wbbs
-
-        <span class="co">-- top bit of each byte set if the byte has any bits set in w</span>
-        <span class="fu">!</span>ne <span class="fu">=</span> wtbs <span class="fu">.|.</span> pc                             
-
-        <span class="co">-- a summary of which bytes (except the first) are non-zero as a 7-bit bitfield, i.e. top bits collected into bottom byte</span>
-        <span class="fu">!</span>summary <span class="fu">=</span> sketch ne <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span>
-
-        <span class="co">-- parallel compare summary to powers of two</span>
-        <span class="fu">!</span>cmpp2 <span class="fu">=</span> parallelCompare <span class="bn">0xFFBF9F8F87838180</span> (<span class="bn">0x0101010101010101</span> <span class="fu">*</span> summary)
-        
-        <span class="co">-- index of most significant non-zero byte * 8</span>
-        <span class="fu">!</span>idxMsbyte <span class="fu">=</span> sumTopBits8 cmpp2                
-
-        <span class="co">-- most significant 7-bits of most significant non-zero byte</span>
-        <span class="fu">!</span>msbyte <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> (fromIntegral idxMsbyte)) <span class="fu">.&amp;.</span> <span class="bn">0xFF</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span>
-
-        <span class="co">-- parallel compare msbyte to powers of two</span>
-        <span class="fu">!</span>cmpp2' <span class="fu">=</span> parallelCompare <span class="bn">0xFFBF9F8F87838180</span> (<span class="bn">0x0101010101010101</span> <span class="fu">*</span> msbyte)
-
-        <span class="co">-- index of most significant non-zero bit in msbyte</span>
-        <span class="fu">!</span>idxMsbit <span class="fu">=</span> sumTopBits cmpp2' 
-
-        <span class="co">-- Maps top bits of each byte into lower byte assuming all other bits are 0.</span>
-        <span class="co">-- 0x2040810204081 = sum [2^j | j &lt;- map (\i -&gt; 49 - 7*i) [0..7]]</span>
-        <span class="co">-- In general if w = 2^(2*k+p) and p = 0 or 1 the formula is:</span>
-        <span class="co">-- sum [2^j | j &lt;- map (\i -&gt; w-(2^k-1) - 2^(k+p) - (2^(k+p) - 1)*i) [0..2^k-1]]</span>
-        <span class="co">-- Followed by shifting right by w - 2^k</span>
-        sketch w <span class="fu">=</span> (w <span class="fu">*</span> <span class="bn">0x2040810204081</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">56</span>
-
-        parallelCompare w1 w2 <span class="fu">=</span> complement (w1 <span class="fu">-</span> w2) <span class="fu">.&amp;.</span> <span class="bn">0x8080808080808080</span>
-        sumTopBits w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="fu">*</span> <span class="bn">0x0101010101010101</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">56</span>
-        sumTopBits8 w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="fu">*</span> <span class="bn">0x0808080808080808</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">56</span>
-
-<span class="ot">indexOfMostSignificant1_w32 ::</span> <span class="dt">Word32</span> <span class="ot">-&gt;</span> <span class="dt">Word32</span>
-indexOfMostSignificant1_w32 w <span class="fu">=</span> idxMsbyte <span class="fu">.|.</span> idxMsbit
-    <span class="kw">where</span> <span class="fu">!</span>wtbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x80808080</span>
-          <span class="fu">!</span>wbbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x7F7F7F7F</span>
-          <span class="fu">!</span>pc <span class="fu">=</span> parallelCompare <span class="bn">0x80808080</span> wbbs
-          <span class="fu">!</span>ne <span class="fu">=</span> wtbs <span class="fu">.|.</span> pc
-          <span class="fu">!</span>summary <span class="fu">=</span> sketch ne <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span>
-          <span class="fu">!</span>cmpp2 <span class="fu">=</span> parallelCompare <span class="bn">0xFF838180</span> (<span class="bn">0x01010101</span> <span class="fu">*</span> summary)
-          <span class="fu">!</span>idxMsbyte <span class="fu">=</span> sumTopBits8 cmpp2
-          <span class="fu">!</span>msbyte <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> (fromIntegral idxMsbyte)) <span class="fu">.&amp;.</span> <span class="bn">0xFF</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span>
-          <span class="fu">!</span>cmpp2' <span class="fu">=</span> parallelCompare <span class="bn">0x87838180</span> (<span class="bn">0x01010101</span> <span class="fu">*</span> msbyte)
-
-          <span class="co">-- extra step when w is not an even power of two</span>
-          <span class="fu">!</span>cmpp2'' <span class="fu">=</span> parallelCompare <span class="bn">0xFFBF9F8F</span> (<span class="bn">0x01010101</span> <span class="fu">*</span> msbyte)
-          <span class="fu">!</span>idxMsbit <span class="fu">=</span> sumTopBits cmpp2' <span class="fu">+</span> sumTopBits cmpp2''
-
-          sketch w <span class="fu">=</span> (w <span class="fu">*</span> <span class="bn">0x204081</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">28</span>
-          parallelCompare w1 w2 <span class="fu">=</span> complement (w1 <span class="fu">-</span> w2) <span class="fu">.&amp;.</span> <span class="bn">0x80808080</span>
-          sumTopBits w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="fu">*</span> <span class="bn">0x01010101</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">24</span>
-          sumTopBits8 w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="fu">*</span> <span class="bn">0x08080808</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">24</span>
-
-<span class="ot">indexOfMostSignificant1_w16 ::</span> <span class="dt">Word16</span> <span class="ot">-&gt;</span> <span class="dt">Word16</span>
-indexOfMostSignificant1_w16 w <span class="fu">=</span> idxMsnibble <span class="fu">.|.</span> idxMsbit
-    <span class="kw">where</span> <span class="fu">!</span>wtbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x8888</span>
-          <span class="fu">!</span>wbbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x7777</span>
-          <span class="fu">!</span>pc <span class="fu">=</span> parallelCompare <span class="bn">0x8888</span> wbbs
-          <span class="fu">!</span>ne <span class="fu">=</span> wtbs <span class="fu">.|.</span> pc
-          <span class="fu">!</span>summary <span class="fu">=</span> sketch ne <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span>
-          <span class="fu">!</span>cmpp2 <span class="fu">=</span> parallelCompare <span class="bn">0xFB98</span> (<span class="bn">0x1111</span> <span class="fu">*</span> summary)
-          <span class="fu">!</span>idxMsnibble <span class="fu">=</span> sumTopBits4 cmpp2
-          <span class="fu">!</span>msnibble <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> (fromIntegral idxMsnibble)) <span class="fu">.&amp;.</span> <span class="bn">0xF</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span>
-          <span class="fu">!</span>cmpp2' <span class="fu">=</span> parallelCompare <span class="bn">0xFB98</span> (<span class="bn">0x1111</span> <span class="fu">*</span> msnibble)
-          <span class="fu">!</span>idxMsbit <span class="fu">=</span> sumTopBits cmpp2'
-
-          sketch w <span class="fu">=</span> (w <span class="fu">*</span> <span class="bn">0x249</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">12</span>
-          parallelCompare w1 w2 <span class="fu">=</span> complement (w1 <span class="fu">-</span> w2) <span class="fu">.&amp;.</span> <span class="bn">0x8888</span>
-          sumTopBits w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">3</span>) <span class="fu">*</span> <span class="bn">0x1111</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">12</span>
-          sumTopBits4 w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">3</span>) <span class="fu">*</span> <span class="bn">0x4444</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">12</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="ot">{-# LANGUAGE BangPatterns #-}</span></a>
+<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw">import</span> <span class="dt">Data.Word</span></a>
+<a class="sourceLine" id="cb1-3" data-line-number="3"><span class="kw">import</span> <span class="dt">Data.Bits</span></a>
+<a class="sourceLine" id="cb1-4" data-line-number="4"></a>
+<a class="sourceLine" id="cb1-5" data-line-number="5"><span class="co">-- Returns 0-based bit index of most significant bit that is 1. Assumes input is non-zero.</span></a>
+<a class="sourceLine" id="cb1-6" data-line-number="6"><span class="co">-- That is, 2^indexOfMostSignificant1 x &lt;= x &lt; 2^(indexOfMostSignificant1 x + 1)</span></a>
+<a class="sourceLine" id="cb1-7" data-line-number="7"><span class="co">-- From Erik Demaine's presentation in Spring 2012 lectures of MIT 6.851, particularly &quot;Lecture 12: Fusion Trees&quot;.</span></a>
+<a class="sourceLine" id="cb1-8" data-line-number="8"><span class="co">-- Takes 26 (source-level) straight-line word operations.</span></a>
+<a class="sourceLine" id="cb1-9" data-line-number="9"><span class="ot">indexOfMostSignificant1 ::</span> <span class="dt">Word64</span> <span class="ot">-&gt;</span> <span class="dt">Word64</span></a>
+<a class="sourceLine" id="cb1-10" data-line-number="10">indexOfMostSignificant1 w <span class="fu">=</span> idxMsbyte <span class="fu">.|.</span> idxMsbit</a>
+<a class="sourceLine" id="cb1-11" data-line-number="11">    <span class="kw">where</span></a>
+<a class="sourceLine" id="cb1-12" data-line-number="12">        <span class="co">-- top bits of each byte</span></a>
+<a class="sourceLine" id="cb1-13" data-line-number="13">        <span class="fu">!</span>wtbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x8080808080808080</span></a>
+<a class="sourceLine" id="cb1-14" data-line-number="14">        </a>
+<a class="sourceLine" id="cb1-15" data-line-number="15">        <span class="co">-- all but top bits of each byte producing 8 7-bit chunks</span></a>
+<a class="sourceLine" id="cb1-16" data-line-number="16">        <span class="fu">!</span>wbbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x7F7F7F7F7F7F7F7F</span>              </a>
+<a class="sourceLine" id="cb1-17" data-line-number="17"></a>
+<a class="sourceLine" id="cb1-18" data-line-number="18">        <span class="co">-- parallel compare of each 7-bit chunk to 0, top bit set in result if 7-bit chunk was not 0</span></a>
+<a class="sourceLine" id="cb1-19" data-line-number="19">        <span class="fu">!</span>pc <span class="fu">=</span> parallelCompare <span class="bn">0x8080808080808080</span> wbbs</a>
+<a class="sourceLine" id="cb1-20" data-line-number="20"></a>
+<a class="sourceLine" id="cb1-21" data-line-number="21">        <span class="co">-- top bit of each byte set if the byte has any bits set in w</span></a>
+<a class="sourceLine" id="cb1-22" data-line-number="22">        <span class="fu">!</span>ne <span class="fu">=</span> wtbs <span class="fu">.|.</span> pc                             </a>
+<a class="sourceLine" id="cb1-23" data-line-number="23"></a>
+<a class="sourceLine" id="cb1-24" data-line-number="24">        <span class="co">-- a summary of which bytes (except the first) are non-zero as a 7-bit bitfield, i.e. top bits collected into bottom byte</span></a>
+<a class="sourceLine" id="cb1-25" data-line-number="25">        <span class="fu">!</span>summary <span class="fu">=</span> sketch ne <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span></a>
+<a class="sourceLine" id="cb1-26" data-line-number="26"></a>
+<a class="sourceLine" id="cb1-27" data-line-number="27">        <span class="co">-- parallel compare summary to powers of two</span></a>
+<a class="sourceLine" id="cb1-28" data-line-number="28">        <span class="fu">!</span>cmpp2 <span class="fu">=</span> parallelCompare <span class="bn">0xFFBF9F8F87838180</span> (<span class="bn">0x0101010101010101</span> <span class="fu">*</span> summary)</a>
+<a class="sourceLine" id="cb1-29" data-line-number="29">        </a>
+<a class="sourceLine" id="cb1-30" data-line-number="30">        <span class="co">-- index of most significant non-zero byte * 8</span></a>
+<a class="sourceLine" id="cb1-31" data-line-number="31">        <span class="fu">!</span>idxMsbyte <span class="fu">=</span> sumTopBits8 cmpp2                </a>
+<a class="sourceLine" id="cb1-32" data-line-number="32"></a>
+<a class="sourceLine" id="cb1-33" data-line-number="33">        <span class="co">-- most significant 7-bits of most significant non-zero byte</span></a>
+<a class="sourceLine" id="cb1-34" data-line-number="34">        <span class="fu">!</span>msbyte <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> (fromIntegral idxMsbyte)) <span class="fu">.&amp;.</span> <span class="bn">0xFF</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span></a>
+<a class="sourceLine" id="cb1-35" data-line-number="35"></a>
+<a class="sourceLine" id="cb1-36" data-line-number="36">        <span class="co">-- parallel compare msbyte to powers of two</span></a>
+<a class="sourceLine" id="cb1-37" data-line-number="37">        <span class="fu">!</span>cmpp2' <span class="fu">=</span> parallelCompare <span class="bn">0xFFBF9F8F87838180</span> (<span class="bn">0x0101010101010101</span> <span class="fu">*</span> msbyte)</a>
+<a class="sourceLine" id="cb1-38" data-line-number="38"></a>
+<a class="sourceLine" id="cb1-39" data-line-number="39">        <span class="co">-- index of most significant non-zero bit in msbyte</span></a>
+<a class="sourceLine" id="cb1-40" data-line-number="40">        <span class="fu">!</span>idxMsbit <span class="fu">=</span> sumTopBits cmpp2' </a>
+<a class="sourceLine" id="cb1-41" data-line-number="41"></a>
+<a class="sourceLine" id="cb1-42" data-line-number="42">        <span class="co">-- Maps top bits of each byte into lower byte assuming all other bits are 0.</span></a>
+<a class="sourceLine" id="cb1-43" data-line-number="43">        <span class="co">-- 0x2040810204081 = sum [2^j | j &lt;- map (\i -&gt; 49 - 7*i) [0..7]]</span></a>
+<a class="sourceLine" id="cb1-44" data-line-number="44">        <span class="co">-- In general if w = 2^(2*k+p) and p = 0 or 1 the formula is:</span></a>
+<a class="sourceLine" id="cb1-45" data-line-number="45">        <span class="co">-- sum [2^j | j &lt;- map (\i -&gt; w-(2^k-1) - 2^(k+p) - (2^(k+p) - 1)*i) [0..2^k-1]]</span></a>
+<a class="sourceLine" id="cb1-46" data-line-number="46">        <span class="co">-- Followed by shifting right by w - 2^k</span></a>
+<a class="sourceLine" id="cb1-47" data-line-number="47">        sketch w <span class="fu">=</span> (w <span class="fu">*</span> <span class="bn">0x2040810204081</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">56</span></a>
+<a class="sourceLine" id="cb1-48" data-line-number="48"></a>
+<a class="sourceLine" id="cb1-49" data-line-number="49">        parallelCompare w1 w2 <span class="fu">=</span> complement (w1 <span class="fu">-</span> w2) <span class="fu">.&amp;.</span> <span class="bn">0x8080808080808080</span></a>
+<a class="sourceLine" id="cb1-50" data-line-number="50">        sumTopBits w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="fu">*</span> <span class="bn">0x0101010101010101</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">56</span></a>
+<a class="sourceLine" id="cb1-51" data-line-number="51">        sumTopBits8 w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="fu">*</span> <span class="bn">0x0808080808080808</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">56</span></a>
+<a class="sourceLine" id="cb1-52" data-line-number="52"></a>
+<a class="sourceLine" id="cb1-53" data-line-number="53"><span class="ot">indexOfMostSignificant1_w32 ::</span> <span class="dt">Word32</span> <span class="ot">-&gt;</span> <span class="dt">Word32</span></a>
+<a class="sourceLine" id="cb1-54" data-line-number="54">indexOfMostSignificant1_w32 w <span class="fu">=</span> idxMsbyte <span class="fu">.|.</span> idxMsbit</a>
+<a class="sourceLine" id="cb1-55" data-line-number="55">    <span class="kw">where</span> <span class="fu">!</span>wtbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x80808080</span></a>
+<a class="sourceLine" id="cb1-56" data-line-number="56">          <span class="fu">!</span>wbbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x7F7F7F7F</span></a>
+<a class="sourceLine" id="cb1-57" data-line-number="57">          <span class="fu">!</span>pc <span class="fu">=</span> parallelCompare <span class="bn">0x80808080</span> wbbs</a>
+<a class="sourceLine" id="cb1-58" data-line-number="58">          <span class="fu">!</span>ne <span class="fu">=</span> wtbs <span class="fu">.|.</span> pc</a>
+<a class="sourceLine" id="cb1-59" data-line-number="59">          <span class="fu">!</span>summary <span class="fu">=</span> sketch ne <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span></a>
+<a class="sourceLine" id="cb1-60" data-line-number="60">          <span class="fu">!</span>cmpp2 <span class="fu">=</span> parallelCompare <span class="bn">0xFF838180</span> (<span class="bn">0x01010101</span> <span class="fu">*</span> summary)</a>
+<a class="sourceLine" id="cb1-61" data-line-number="61">          <span class="fu">!</span>idxMsbyte <span class="fu">=</span> sumTopBits8 cmpp2</a>
+<a class="sourceLine" id="cb1-62" data-line-number="62">          <span class="fu">!</span>msbyte <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> (fromIntegral idxMsbyte)) <span class="fu">.&amp;.</span> <span class="bn">0xFF</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span></a>
+<a class="sourceLine" id="cb1-63" data-line-number="63">          <span class="fu">!</span>cmpp2' <span class="fu">=</span> parallelCompare <span class="bn">0x87838180</span> (<span class="bn">0x01010101</span> <span class="fu">*</span> msbyte)</a>
+<a class="sourceLine" id="cb1-64" data-line-number="64"></a>
+<a class="sourceLine" id="cb1-65" data-line-number="65">          <span class="co">-- extra step when w is not an even power of two</span></a>
+<a class="sourceLine" id="cb1-66" data-line-number="66">          <span class="fu">!</span>cmpp2'' <span class="fu">=</span> parallelCompare <span class="bn">0xFFBF9F8F</span> (<span class="bn">0x01010101</span> <span class="fu">*</span> msbyte)</a>
+<a class="sourceLine" id="cb1-67" data-line-number="67">          <span class="fu">!</span>idxMsbit <span class="fu">=</span> sumTopBits cmpp2' <span class="fu">+</span> sumTopBits cmpp2''</a>
+<a class="sourceLine" id="cb1-68" data-line-number="68"></a>
+<a class="sourceLine" id="cb1-69" data-line-number="69">          sketch w <span class="fu">=</span> (w <span class="fu">*</span> <span class="bn">0x204081</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">28</span></a>
+<a class="sourceLine" id="cb1-70" data-line-number="70">          parallelCompare w1 w2 <span class="fu">=</span> complement (w1 <span class="fu">-</span> w2) <span class="fu">.&amp;.</span> <span class="bn">0x80808080</span></a>
+<a class="sourceLine" id="cb1-71" data-line-number="71">          sumTopBits w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="fu">*</span> <span class="bn">0x01010101</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">24</span></a>
+<a class="sourceLine" id="cb1-72" data-line-number="72">          sumTopBits8 w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="fu">*</span> <span class="bn">0x08080808</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">24</span></a>
+<a class="sourceLine" id="cb1-73" data-line-number="73"></a>
+<a class="sourceLine" id="cb1-74" data-line-number="74"><span class="ot">indexOfMostSignificant1_w16 ::</span> <span class="dt">Word16</span> <span class="ot">-&gt;</span> <span class="dt">Word16</span></a>
+<a class="sourceLine" id="cb1-75" data-line-number="75">indexOfMostSignificant1_w16 w <span class="fu">=</span> idxMsnibble <span class="fu">.|.</span> idxMsbit</a>
+<a class="sourceLine" id="cb1-76" data-line-number="76">    <span class="kw">where</span> <span class="fu">!</span>wtbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x8888</span></a>
+<a class="sourceLine" id="cb1-77" data-line-number="77">          <span class="fu">!</span>wbbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x7777</span></a>
+<a class="sourceLine" id="cb1-78" data-line-number="78">          <span class="fu">!</span>pc <span class="fu">=</span> parallelCompare <span class="bn">0x8888</span> wbbs</a>
+<a class="sourceLine" id="cb1-79" data-line-number="79">          <span class="fu">!</span>ne <span class="fu">=</span> wtbs <span class="fu">.|.</span> pc</a>
+<a class="sourceLine" id="cb1-80" data-line-number="80">          <span class="fu">!</span>summary <span class="fu">=</span> sketch ne <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span></a>
+<a class="sourceLine" id="cb1-81" data-line-number="81">          <span class="fu">!</span>cmpp2 <span class="fu">=</span> parallelCompare <span class="bn">0xFB98</span> (<span class="bn">0x1111</span> <span class="fu">*</span> summary)</a>
+<a class="sourceLine" id="cb1-82" data-line-number="82">          <span class="fu">!</span>idxMsnibble <span class="fu">=</span> sumTopBits4 cmpp2</a>
+<a class="sourceLine" id="cb1-83" data-line-number="83">          <span class="fu">!</span>msnibble <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> (fromIntegral idxMsnibble)) <span class="fu">.&amp;.</span> <span class="bn">0xF</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span></a>
+<a class="sourceLine" id="cb1-84" data-line-number="84">          <span class="fu">!</span>cmpp2' <span class="fu">=</span> parallelCompare <span class="bn">0xFB98</span> (<span class="bn">0x1111</span> <span class="fu">*</span> msnibble)</a>
+<a class="sourceLine" id="cb1-85" data-line-number="85">          <span class="fu">!</span>idxMsbit <span class="fu">=</span> sumTopBits cmpp2'</a>
+<a class="sourceLine" id="cb1-86" data-line-number="86"></a>
+<a class="sourceLine" id="cb1-87" data-line-number="87">          sketch w <span class="fu">=</span> (w <span class="fu">*</span> <span class="bn">0x249</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">12</span></a>
+<a class="sourceLine" id="cb1-88" data-line-number="88">          parallelCompare w1 w2 <span class="fu">=</span> complement (w1 <span class="fu">-</span> w2) <span class="fu">.&amp;.</span> <span class="bn">0x8888</span></a>
+<a class="sourceLine" id="cb1-89" data-line-number="89">          sumTopBits w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">3</span>) <span class="fu">*</span> <span class="bn">0x1111</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">12</span></a>
+<a class="sourceLine" id="cb1-90" data-line-number="90">          sumTopBits4 w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">3</span>) <span class="fu">*</span> <span class="bn">0x4444</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">12</span></a></code></pre></div>
 
     <div id="disqus_thread"></div>
     <script type="text/javascript">
@@ -178,7 +178,7 @@ indexOfMostSignificant1_w16 w <span class="fu">=</span> idxMsnibble <span class=
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js" integrity="sha384-6ePHh72Rl3hKio4HiJ841psfsRJveeS+aLoaEf3BWfS+gTF0XdAqku2ka8VddikM" crossorigin="anonymous"></script>
     <script src="../js/bootstrap.min.js"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <!--<script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>-->
@@ -191,7 +191,7 @@ indexOfMostSignificant1_w16 w <span class="fu">=</span> idxMsnibble <span class=
             (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
         }());
     </script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_HTMLorMML.js">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_HTMLorMML.js" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous">
     </script>
     <script type="text/x-mathjax-config">
         MathJax.Hub.Config({

@@ -64,7 +64,7 @@
 <h4 id="representability">Representability</h4>
 <p>Representability isn’t as simple or intuitive as initiality, but it is still pretty simple.</p>
 <p>A functor <code class="asciimath">#F : ccC^(op) -&gt; bb &quot;Set&quot;#</code> is <strong>representable</strong> iff <code class="asciimath">#F ~= &quot;Hom&quot;(-,Y)#</code> for some #Y#. Note that this is an isomorphism between functors, i.e. a natural isomorphism. We say #Y# <strong>represents</strong> the functor #F#. A functor <code class="asciimath">#G : ccC -&gt; bb &quot;Set&quot;#</code> is <strong>co-representable</strong> iff <code class="asciimath">#G ~= &quot;Hom&quot;(X,-)#</code> for some #X#. Similarly we say #X# <strong>(co-)represents</strong> the functor #G#. Representable and co-representable aren’t actually different; if we set #ccD = ccC^(op)# then we could say #F# is co-representable as a functor from #ccD# and it would mean the same thing.</p>
-<p>Now we need to prove initiality and (co-)representability equivalent. One direction is easy, #0# co-represents the functor #lambda C . {**}#.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> It’s easy to show that this says exactly that #0# is initial.</p>
+<p>Now we need to prove initiality and (co-)representability equivalent. One direction is easy, #0# co-represents the functor #lambda C . {**}#.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> It’s easy to show that this says exactly that #0# is initial.</p>
 <p>I’ll hold off on the other direction and instead prove the circular implication: <strong>Representability</strong> #=&gt;quad# <strong>Initiality</strong> #=&gt;quad# <strong>Universal Arrow</strong> #=&gt;quad# <strong>Representability</strong>. Right now we’ve done the first step; we can recast initiality as representability. Next we’ll show that we can recast universal arrows as initiality and representability as a universal arrow and we’ll have shown them all equivalent.</p>
 <h4 id="universal-arrow">Universal arrow</h4>
 <p>Let #U : ccC -&gt; ccD# be a functor. #eta : A -&gt; UX# is a <strong>universal arrow</strong> iff for all #f : A -&gt; UY# there exists a unique arrow #(:f:) : X -&gt; Y# such that #f = U(:f:) @ eta#. Dually, let #F : ccC -&gt; ccD# be a functor, then #epsilon : FX -&gt; A# is a <strong>co-universal arrow</strong> iff for all #g : FY -&gt; A# there exists a unique arrow #(:g:) : Y -&gt; X# such that #g = epsilon @ F(:g:)#. Again, these are equivalent notions. A co-universal arrow is just a universal arrow in the opposite category.</p>
@@ -104,12 +104,12 @@
 <li><a href="http://www.dcs.ed.ac.uk/home/dt/CT/categories.pdf">Category Theory Lecture Notes</a> by Daniele Turi</li>
 </ul></li>
 </ul>
-<div class="footnotes">
+<section class="footnotes">
 <hr />
 <ol>
-<li id="fn1"><p>#{**}# is just some singleton set.<a href="#fnref1">↩</a></p></li>
+<li id="fn1"><p>#{**}# is just some singleton set.<a href="#fnref1" class="footnote-back">↩</a></p></li>
 </ol>
-</div>
+</section>
 
     <div id="disqus_thread"></div>
     <script type="text/javascript">
@@ -142,7 +142,7 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js" integrity="sha384-6ePHh72Rl3hKio4HiJ841psfsRJveeS+aLoaEf3BWfS+gTF0XdAqku2ka8VddikM" crossorigin="anonymous"></script>
     <script src="../js/bootstrap.min.js"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <!--<script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>-->
@@ -155,7 +155,7 @@
             (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
         }());
     </script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_HTMLorMML.js">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_HTMLorMML.js" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous">
     </script>
     <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
