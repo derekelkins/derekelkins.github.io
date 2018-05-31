@@ -9750,7 +9750,9 @@ var ndjs = (function (exports) {
         Predicate.prototype.toJson = function () {
             return [this.predicate].concat(this.terms.map(function (t) { return t.toJson(); }));
         };
-        Predicate.prototype.toDisplayString = function (topLevel) { return this.predicate + '(' + this.terms.map(function (t) { return t.toDisplayString(true); }).join(', ') + ')'; };
+        Predicate.prototype.toDisplayString = function (topLevel) {
+            return this.terms.length === 0 ? '' + this.predicate : this.predicate + '(' + this.terms.map(function (t) { return t.toDisplayString(true); }).join(', ') + ')';
+        };
         Predicate.prototype.freeVariables = function () {
             return Set.union(this.terms.map(function (t) { return t.freeVariables(); }));
         };
