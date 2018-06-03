@@ -10666,7 +10666,7 @@ var ndjs = (function (exports) {
                 else {
                     if (leftRight === void (0))
                         return new Failed('Select left or right subformula.');
-                    return new NewGoals("\u2228R_" + (leftRight ? '1' : '2'), [new Goal(goal.premises, [leftRight ? lf : rf])]);
+                    return new NewGoals('∨R', [new Goal(goal.premises, [leftRight ? lf : rf])]);
                 }
             case IMP_SYMBOL:
                 if (inPremises) {
