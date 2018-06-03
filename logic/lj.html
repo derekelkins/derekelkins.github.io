@@ -8,12 +8,12 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="ndjs.css" />
 </head>
-<body class="lk">
+<body class="lj">
 
 <div id="preamble">
     For now, a purely client-side reimplementation of <a href="http://logitext.mit.edu/main">Logitext</a>.
-    This is an implementation of the classical system LK. For an implementation of the intuitionistic LJ, see <a href="lj.html">here</a>.
-    See more description <a href="description.html">here</a>.<br/><br/>
+    This is an implementation of the intuitionistic system LJ. For an implementation of the classical LK, see <a href="index.html">here</a>.
+    See more description <a href="ljDescription.html">here</a>.<br/><br/>
 </div>
 <div id="container"></div>
 <script type="text/javascript">
@@ -37,6 +37,6 @@ Array.prototype.flatMap = Array.prototype.flatMap || function(f, t) {
 };
 </script>
 <script type="text/javascript" src="bundle.js"></script>
-<script type="text/javascript">ndjs.main('container', {logic: 'lk', toLaTeX: false, showInput: true});</script>
+<script type="text/javascript">ndjs.main('container', {logic: 'lj', toLaTeX: false, showInput: true});</script>
 </body>
 </html>

@@ -9628,13 +9628,22 @@ var ndjs = (function (exports) {
         var len = xs.length;
         var result = new Array(len);
         for (var i = 0; i < len; ++i) {
-            var y_1 = f(xs[i]);
-            if (y_1 === null)
+            var y = f(xs[i]);
+            if (y === null)
                 return null;
-            result[i] = y_1;
+            result[i] = y;
         }
         return result;
     }
+    var BOT_SYMBOL = '⊥';
+    var TOP_SYMBOL = '⊤';
+    var NOT_SYMBOL = '¬';
+    var AND_SYMBOL = '∧';
+    var OR_SYMBOL = '∨';
+    var IMP_SYMBOL = '→';
+    var FORALL_SYMBOL = '∀';
+    var EXISTS_SYMBOL = '∃';
+    var connectiveToLaTeX = (_a = {}, _a[BOT_SYMBOL] = '\\bot{}', _a[TOP_SYMBOL] = '\\top{}', _a[NOT_SYMBOL] = '\\neg{}', _a[AND_SYMBOL] = '\\land{}', _a[OR_SYMBOL] = '\\lor{}', _a[IMP_SYMBOL] = '\\to{}', _a[FORALL_SYMBOL] = '\\forall{}', _a[EXISTS_SYMBOL] = '\\exists{}', _a);
     var Variable = (function () {
         function Variable(variable) {
             this.variable = variable;
@@ -9646,6 +9655,7 @@ var ndjs = (function (exports) {
             return this.variable.toJson();
         };
         Variable.prototype.toDisplayString = function (topLevel) { return this.variable.toDisplayString(true); };
+        Variable.prototype.toLaTeX = function (topLevel) { return this.variable.toLaTeX(true); };
         Variable.prototype.freeVariables = function () {
             return Set.of(this.variable);
         };
@@ -9681,6 +9691,7 @@ var ndjs = (function (exports) {
             return [this.operator].concat(this.terms.map(function (t) { return t.toJson(); }));
         };
         Operator.prototype.toDisplayString = function (topLevel) { return this.operator + '(' + this.terms.map(function (t) { return t.toDisplayString(true); }).join(', ') + ')'; };
+        Operator.prototype.toLaTeX = function (topLevel) { return '\\mathsf{' + this.operator + '}(' + this.terms.map(function (t) { return t.toLaTeX(true); }).join(', ') + ')'; };
         Operator.prototype.freeVariables = function () {
             return Set.union(this.terms.map(function (t) { return t.freeVariables(); }));
         };
@@ -9753,6 +9764,9 @@ var ndjs = (function (exports) {
         Predicate.prototype.toDisplayString = function (topLevel) {
             return this.terms.length === 0 ? '' + this.predicate : this.predicate + '(' + this.terms.map(function (t) { return t.toDisplayString(true); }).join(', ') + ')';
         };
+        Predicate.prototype.toLaTeX = function (topLevel) {
+            return this.terms.length === 0 ? '\\mathrm{' + this.predicate + '}' : '\\mathrm{' + this.predicate + '}(' + this.terms.map(function (t) { return t.toLaTeX(true); }).join(', ') + ')';
+        };
         Predicate.prototype.freeVariables = function () {
             return Set.union(this.terms.map(function (t) { return t.freeVariables(); }));
         };
@@ -9785,6 +9799,7 @@ var ndjs = (function (exports) {
             return this.connective;
         };
         NullaryConnective.prototype.toDisplayString = function (topLevel) { return '' + this.connective; };
+        NullaryConnective.prototype.toLaTeX = function (topLevel) { return connectiveToLaTeX['' + this.connective]; };
         NullaryConnective.prototype.freeVariables = function () {
             return Set();
         };
@@ -9812,6 +9827,14 @@ var ndjs = (function (exports) {
             }
             else {
                 return '(' + this.connective + this.formula.toDisplayString(false) + ')';
+            }
+        };
+        UnaryConnective.prototype.toLaTeX = function (topLevel) {
+            if (topLevel) {
+                return connectiveToLaTeX['' + this.connective] + this.formula.toLaTeX(false);
+            }
+            else {
+                return '(' + connectiveToLaTeX['' + this.connective] + this.formula.toLaTeX(false) + ')';
             }
         };
         UnaryConnective.prototype.freeVariables = function () {
@@ -9850,6 +9873,14 @@ var ndjs = (function (exports) {
                 return '(' + this.leftFormula.toDisplayString(false) + this.connective + this.rightFormula.toDisplayString(false) + ')';
             }
         };
+        BinaryConnective.prototype.toLaTeX = function (topLevel) {
+            if (topLevel) {
+                return this.leftFormula.toLaTeX(false) + connectiveToLaTeX['' + this.connective] + this.rightFormula.toLaTeX(false);
+            }
+            else {
+                return '(' + this.leftFormula.toLaTeX(false) + connectiveToLaTeX['' + this.connective] + this.rightFormula.toLaTeX(false) + ')';
+            }
+        };
         BinaryConnective.prototype.freeVariables = function () {
             return this.leftFormula.freeVariables().union(this.rightFormula.freeVariables());
         };
@@ -9883,7 +9914,15 @@ var ndjs = (function (exports) {
                 return this.quantifier + this.variable.toDisplayString(false) + '.' + this.formula.toDisplayString(false);
             }
             else {
-                return '(' + this.quantifier + this.variable.toDisplayString(false) + '.' + this.formula.toDisplayString(false) + ')';
+                return '(' + this.quantifier + this.variable.toDisplayString(false) + '.' + this.formula.toDisplayString(true) + ')';
+            }
+        };
+        Quantifier.prototype.toLaTeX = function (topLevel) {
+            if (topLevel) {
+                return connectiveToLaTeX['' + this.quantifier] + this.variable.toLaTeX(false) + '.' + this.formula.toLaTeX(false);
+            }
+            else {
+                return '(' + connectiveToLaTeX['' + this.quantifier] + this.variable.toLaTeX(false) + '.' + this.formula.toLaTeX(true) + ')';
             }
         };
         Quantifier.prototype.freeVariables = function () {
@@ -9970,6 +10009,9 @@ var ndjs = (function (exports) {
         Goal.prototype.toDisplayString = function (topLevel) {
             return this.premises.map(function (p) { return p.toDisplayString(true); }).join(', ') + ' ⊢ ' + this.consequences.map(function (c) { return c.toDisplayString(true); }).join(', ');
         };
+        Goal.prototype.toLaTeX = function (topLevel) {
+            return this.premises.map(function (p) { return p.toLaTeX(true); }).join(', ') + '\\vdash ' + this.consequences.map(function (c) { return c.toLaTeX(true); }).join(', ');
+        };
         Goal.prototype.toJson = function () {
             return [this.premises.map(function (p) { return p.toJson(); }), this.consequences.map(function (c) { return c.toJson(); })];
         };
@@ -10051,7 +10093,7 @@ var ndjs = (function (exports) {
         Lexer.IMP_TOKEN = 'IMPLIES';
         Lexer.FORALL_TOKEN = 'FORALL';
         Lexer.EXISTS_TOKEN = 'EXISTS';
-        Lexer.lexTable = (_a = {}, _a[Lexer.NAME_TOKEN] = /^\s*([a-zA-Z][a-zA-Z0-9]*(_[0-9]+)?)/giu, _a[Lexer.LPAREN_TOKEN] = /^\s*(\()/giu, _a[Lexer.RPAREN_TOKEN] = /^\s*(\))/giu, _a[Lexer.COMMA_TOKEN] = /^\s*(,)/giu, _a[Lexer.PERIOD_TOKEN] = /^\s*(\.)/giu, _a[Lexer.TURNSTILE_TOKEN] = /^\s*(\|-|⊢)/giu, _a[Lexer.BOT_TOKEN] = /^\s*(false|_\|_|⊥)/giu, _a[Lexer.TOP_TOKEN] = /^\s*(true|⊤)/giu, _a[Lexer.NOT_TOKEN] = /^\s*(~|¬)/giu, _a[Lexer.AND_TOKEN] = /^\s*(\/\\|∧)/giu, _a[Lexer.OR_TOKEN] = /^\s*(\\\/|∨)/giu, _a[Lexer.IMP_TOKEN] = /^\s*(->|=>|⇒|→)/giu, _a[Lexer.FORALL_TOKEN] = /^\s*(forall|∀)/giu, _a[Lexer.EXISTS_TOKEN] = /^\s*(exists|∃)/giu, _a);
+        Lexer.lexTable = (_b = {}, _b[Lexer.NAME_TOKEN] = /^\s*([a-zA-Z][a-zA-Z0-9]*(_[0-9]+)?)/giu, _b[Lexer.LPAREN_TOKEN] = /^\s*(\()/giu, _b[Lexer.RPAREN_TOKEN] = /^\s*(\))/giu, _b[Lexer.COMMA_TOKEN] = /^\s*(,)/giu, _b[Lexer.PERIOD_TOKEN] = /^\s*(\.)/giu, _b[Lexer.TURNSTILE_TOKEN] = /^\s*(\|-|⊢)/giu, _b[Lexer.BOT_TOKEN] = /^\s*(false|_\|_|⊥)/giu, _b[Lexer.TOP_TOKEN] = /^\s*(true|⊤)/giu, _b[Lexer.NOT_TOKEN] = /^\s*(~|¬)/giu, _b[Lexer.AND_TOKEN] = /^\s*(\/\\|∧)/giu, _b[Lexer.OR_TOKEN] = /^\s*(\\\/|∨)/giu, _b[Lexer.IMP_TOKEN] = /^\s*(->|=>|⇒|→)/giu, _b[Lexer.FORALL_TOKEN] = /^\s*(forall|∀)/giu, _b[Lexer.EXISTS_TOKEN] = /^\s*(exists|∃)/giu, _b);
         Lexer.spaceRegExp = /^\s*$/gu;
         return Lexer;
     }());
@@ -10112,82 +10154,90 @@ var ndjs = (function (exports) {
             return null;
         return term;
     }
+    var nullaryConnectives = (_c = {}, _c[Lexer.TOP_TOKEN] = TOP_SYMBOL, _c[Lexer.BOT_TOKEN] = BOT_SYMBOL, _c);
+    var unaryConnectives = (_d = {}, _d[Lexer.NOT_TOKEN] = NOT_SYMBOL, _d);
+    var binaryConnectives = (_e = {}, _e[Lexer.AND_TOKEN] = AND_SYMBOL, _e[Lexer.OR_TOKEN] = OR_SYMBOL, _e[Lexer.IMP_TOKEN] = IMP_SYMBOL, _e);
+    var quantifiers = (_f = {}, _f[Lexer.FORALL_TOKEN] = FORALL_SYMBOL, _f[Lexer.EXISTS_TOKEN] = EXISTS_SYMBOL, _f);
     function parseFormula(lexer) {
         var leadToken = lexer.peek();
         if (leadToken === null)
             return null;
-        switch (leadToken[0]) {
-            case Lexer.NOT_TOKEN:
-                lexer.next();
-                var f = parseAtomicFormula(lexer);
-                if (f === null)
-                    return null;
-                return new UnaryConnective(NOT_SYMBOL, f);
-            case Lexer.FORALL_TOKEN:
-            case Lexer.EXISTS_TOKEN:
-                var nameToken = lexer.next();
-                if (nameToken === 'done' || nameToken === 'error' || nameToken[0] !== Lexer.NAME_TOKEN)
-                    return null;
-                var periodToken = lexer.next();
-                if (periodToken === 'done' || periodToken === 'error' || periodToken[0] !== Lexer.PERIOD_TOKEN)
-                    return null;
-                lexer.next();
-                var formula = parseAtomicFormula(lexer);
-                if (formula === null)
-                    return null;
-                var v = parseVariable(nameToken[1]);
-                if (v === null)
-                    return null;
-                return new Quantifier(leadToken[0] === Lexer.FORALL_TOKEN ? FORALL_SYMBOL : EXISTS_SYMBOL, v, formula);
-            default:
-                var lf = parseAtomicFormula(lexer);
-                if (lf === null)
-                    return null;
-                var rf = parseFormulaTail(lexer);
-                if (rf === null)
-                    return lf;
-                var conn = rf[0] === Lexer.AND_TOKEN ? AND_SYMBOL : rf[0] === Lexer.OR_TOKEN ? OR_SYMBOL : IMP_SYMBOL;
-                return new BinaryConnective(lf, conn, rf[1]);
+        var tokenType = leadToken[0];
+        if (unaryConnectives[tokenType] !== void (0)) {
+            lexer.next();
+            var f = parseAtomicFormula(lexer);
+            if (f === null)
+                return null;
+            return new UnaryConnective(unaryConnectives[tokenType], f);
+        }
+        else if (quantifiers[tokenType] !== void (0)) {
+            var nameToken = lexer.next();
+            if (nameToken === 'done' || nameToken === 'error' || nameToken[0] !== Lexer.NAME_TOKEN)
+                return null;
+            var periodToken = lexer.next();
+            if (periodToken === 'done' || periodToken === 'error' || periodToken[0] !== Lexer.PERIOD_TOKEN)
+                return null;
+            lexer.next();
+            var formula = parseAtomicFormula(lexer);
+            if (formula === null)
+                return null;
+            var v = parseVariable(nameToken[1]);
+            if (v === null)
+                return null;
+            return new Quantifier(quantifiers[tokenType], v, formula);
+        }
+        else {
+            var lf = parseAtomicFormula(lexer);
+            if (lf === null)
+                return null;
+            var rf = parseFormulaTail(lexer);
+            if (rf === null)
+                return lf;
+            var conn = binaryConnectives[rf[0]];
+            if (conn === void (0))
+                return null;
+            return new BinaryConnective(lf, conn, rf[1]);
         }
     }
     function parseAtomicFormula(lexer) {
         var leadToken = lexer.peek();
         if (leadToken === null)
             return null;
-        switch (leadToken[0]) {
-            case Lexer.TOP_TOKEN:
-                lexer.next();
-                return new NullaryConnective(TOP_SYMBOL);
-            case Lexer.BOT_TOKEN:
-                lexer.next();
-                return new NullaryConnective(BOT_SYMBOL);
-            case Lexer.NAME_TOKEN:
-                var lparenToken = lexer.next();
-                if (lparenToken === 'error')
+        var tokenType = leadToken[0];
+        if (nullaryConnectives[tokenType] !== void (0)) {
+            lexer.next();
+            return new NullaryConnective(nullaryConnectives[tokenType]);
+        }
+        else {
+            switch (tokenType) {
+                case Lexer.NAME_TOKEN:
+                    var lparenToken = lexer.next();
+                    if (lparenToken === 'error')
+                        return null;
+                    if (lparenToken === 'done' || lparenToken[0] !== Lexer.LPAREN_TOKEN)
+                        return new Predicate(leadToken[1]);
+                    lexer.next();
+                    var terms = parseTermList(lexer);
+                    if (terms === null)
+                        return null;
+                    var rparenToken = lexer.peek();
+                    if (rparenToken === null || rparenToken[0] !== Lexer.RPAREN_TOKEN)
+                        return null;
+                    lexer.next();
+                    return new (Predicate.bind.apply(Predicate, [void 0, leadToken[1]].concat(terms)))();
+                case Lexer.LPAREN_TOKEN:
+                    lexer.next();
+                    var formula = parseFormula(lexer);
+                    if (formula === null)
+                        return null;
+                    var rparenToken2 = lexer.peek();
+                    if (rparenToken2 === null || rparenToken2[0] !== Lexer.RPAREN_TOKEN)
+                        return null;
+                    lexer.next();
+                    return formula;
+                default:
                     return null;
-                if (lparenToken === 'done' || lparenToken[0] !== Lexer.LPAREN_TOKEN)
-                    return new Predicate(leadToken[1]);
-                lexer.next();
-                var terms = parseTermList(lexer);
-                if (terms === null)
-                    return null;
-                var rparenToken = lexer.peek();
-                if (rparenToken === null || rparenToken[0] !== Lexer.RPAREN_TOKEN)
-                    return null;
-                lexer.next();
-                return new (Predicate.bind.apply(Predicate, [void 0, leadToken[1]].concat(terms)))();
-            case Lexer.LPAREN_TOKEN:
-                lexer.next();
-                var formula = parseFormula(lexer);
-                if (formula === null)
-                    return null;
-                var rparenToken2 = lexer.peek();
-                if (rparenToken2 === null || rparenToken2[0] !== Lexer.RPAREN_TOKEN)
-                    return null;
-                lexer.next();
-                return formula;
-            default:
-                return null;
+            }
         }
     }
     function parseFormulaTail(lexer) {
@@ -10254,6 +10304,9 @@ var ndjs = (function (exports) {
         OpenDerivation.prototype.toJson = function () {
             return { c: this.conclusion.toJson() };
         };
+        OpenDerivation.prototype.toLaTeX = function (topLevel) {
+            return this.conclusion.toLaTeX(true);
+        };
         OpenDerivation.prototype.isCompleted = function () { return false; };
         return OpenDerivation;
     }());
@@ -10268,6 +10321,9 @@ var ndjs = (function (exports) {
         };
         Inference.prototype.toJson = function () {
             return { n: this.name, c: this.conclusion.toJson(), p: this.premises.map(function (p) { return p.toJson(); }) };
+        };
+        Inference.prototype.toLaTeX = function (topLevel) {
+            return '\\dfrac{' + this.premises.map(function (p) { return p.toLaTeX(true); }).join('\\qquad ') + '}{' + this.conclusion.toLaTeX(true) + '}\\rlap{(' + this.name + ')}';
         };
         Inference.prototype.isCompleted = function () { return this.premises.every(function (p) { return p.isCompleted(); }); };
         return Inference;
@@ -10358,7 +10414,8 @@ var ndjs = (function (exports) {
         Var.prototype.toJson = function () {
             return this.subscript === -1 ? this.name : this.name + '.' + this.subscript;
         };
-        Var.prototype.toDisplayString = function () { return this.name; };
+        Var.prototype.toDisplayString = function () { return this.subscript === -1 ? this.name : this.name + '_' + this.subscript; };
+        Var.prototype.toLaTeX = function () { return this.subscript === -1 ? this.name : this.name + '_{' + this.subscript + '}'; };
         Var.prototype.hashCode = function () {
             return (hash(this.name) + hash(this.subscript)) | 0;
         };
@@ -10382,7 +10439,7 @@ var ndjs = (function (exports) {
                 ")"])), o, ts.flatMap(function (t, i) { return i + 1 === ts.length ? [renderTerm(t)] : [renderTerm(t), wire()(templateObject_4 || (templateObject_4 = __makeTemplateObject([", "], [", "])))]; }));
         });
     }
-    function renderFormula(f, path, inPremises, extender) {
+    function renderFormula(f, path, inPremises, extraClasses, extender) {
         var id = path.toString();
         if (extender !== void (0)) {
             var extraData_1 = { extender: extender, formula: f, inPremises: inPremises };
@@ -10391,15 +10448,14 @@ var ndjs = (function (exports) {
                 for (var _i = 1; _i < arguments.length; _i++) {
                     ts[_i - 1] = arguments[_i];
                 }
-                return wire(f, id)(templateObject_5 || (templateObject_5 = __makeTemplateObject(["<div id=\"", "\" data=", " class=\"formula topLevel\"><!--\n                                         --><span class=\"predicate\"><span class=\"predicateSymbol\">", "</span>", "", "", "</span></div>"], ["<div id=\"", "\" data=", " class=\"formula topLevel\"><!--\n                                         --><span class=\"predicate\"><span class=\"predicateSymbol\">", "</span>",
-                    "",
-                    "", "</span></div>"])), id, extraData_1, p, ts.length === 0 ? '' : '(', ts.flatMap(function (t, i) { return i + 1 === ts.length ? [renderTerm(t)]
+                return wire(f, id)(templateObject_5 || (templateObject_5 = __makeTemplateObject(["<div id=\"", "\" data=", " class=\"", "\"><!--\n                --><span class=\"predicate\"><span class=\"predicateSymbol\">", "</span>", "", "", "</span></div>"], ["<div id=\"", "\" data=", " class=\"", "\"><!--\n                --><span class=\"predicate\"><span class=\"predicateSymbol\">", "</span>", "",
+                    "", "</span></div>"])), id, extraData_1, 'formula active ' + extraClasses, p, ts.length === 0 ? '' : '(', ts.flatMap(function (t, i) { return i + 1 === ts.length ? [renderTerm(t)]
                     : [renderTerm(t), wire()(templateObject_6 || (templateObject_6 = __makeTemplateObject([", "], [", "])))]; }), ts.length === 0 ? '' : ')');
-            }, function (c) { return wire(f, id)(templateObject_7 || (templateObject_7 = __makeTemplateObject(["<div id=\"", "\" data=", " class=\"formula topLevel\"><span class=\"connective nullary\">", "</span></div>"], ["<div id=\"", "\" data=", " class=\"formula topLevel\"><span class=\"connective nullary\">", "</span></div>"])), id, extraData_1, c); }, function (c, f) { return wire(f, id)(templateObject_8 || (templateObject_8 = __makeTemplateObject(["<div id=\"", "\" data=", " class=\"formula topLevel\"><!--\n                                     --><span class=\"connective unary\">", "</span>", "</div>"], ["<div id=\"", "\" data=", " class=\"formula topLevel\"><!--\n                                     --><span class=\"connective unary\">", "</span>",
-                "</div>"])), id, extraData_1, c, renderFormula(f, path.extend(1), inPremises)); }, function (lf, c, rf) { return wire(f, id)(templateObject_9 || (templateObject_9 = __makeTemplateObject(["<div id=\"", "\" data=", " class=\"formula topLevel\">", "<span class=\"connective binary\">", "</span>", "</div>"], ["<div id=\"", "\" data=", " class=\"formula topLevel\">",
+            }, function (c) { return wire(f, id)(templateObject_7 || (templateObject_7 = __makeTemplateObject(["<div id=\"", "\" data=", " class=\"", "\"><span class=\"connective nullary\">", "</span></div>"], ["<div id=\"", "\" data=", " class=\"", "\"><span class=\"connective nullary\">", "</span></div>"])), id, extraData_1, 'formula active ' + extraClasses, c); }, function (c, f) { return wire(f, id)(templateObject_8 || (templateObject_8 = __makeTemplateObject(["<div id=\"", "\" data=", " class=\"", "\"><!--\n                --><span class=\"connective unary\">", "</span>", "</div>"], ["<div id=\"", "\" data=", " class=\"", "\"><!--\n                --><span class=\"connective unary\">", "</span>",
+                "</div>"])), id, extraData_1, 'formula active ' + extraClasses, c, renderFormula(f, path.extend(1), inPremises, '')); }, function (lf, c, rf) { return wire(f, id)(templateObject_9 || (templateObject_9 = __makeTemplateObject(["<div id=\"", "\" data=", " class=\"", "\">", "<span class=\"connective binary\">", "</span>", "</div>"], ["<div id=\"", "\" data=", " class=\"", "\">",
                 "<span class=\"connective binary\">", "</span>",
-                "</div>"])), id, extraData_1, renderFormula(lf, path.extend(1), inPremises), c, renderFormula(rf, path.extend(2), inPremises)); }, function (q, v, f) { return wire(f, id)(templateObject_10 || (templateObject_10 = __makeTemplateObject(["<div id=\"", "\" data=", " class=\"formula topLevel quantifier\"><!--\n                                     --><span class=\"connective quantifier\">", "</span><!--\n                                     --><span class=\"boundVariable\">", "", "</span><!--\n                                     --><span class=\"quantifierSeparator\">.</span>", "</div>"], ["<div id=\"", "\" data=", " class=\"formula topLevel quantifier\"><!--\n                                     --><span class=\"connective quantifier\">", "</span><!--\n                                     --><span class=\"boundVariable\">", "", "</span><!--\n                                     --><span class=\"quantifierSeparator\">.</span>",
-                "</div>"])), id, extraData_1, q, v.name, v.subscript !== -1 ? [wire()(templateObject_11 || (templateObject_11 = __makeTemplateObject(["<sub>", "</sub>"], ["<sub>", "</sub>"])), v.subscript)] : [], renderFormula(f, path.extend(1), inPremises)); });
+                "</div>"])), id, extraData_1, 'formula active ' + extraClasses, renderFormula(lf, path.extend(1), inPremises, 'left'), c, renderFormula(rf, path.extend(2), inPremises, 'right')); }, function (q, v, f) { return wire(f, id)(templateObject_10 || (templateObject_10 = __makeTemplateObject(["<div id=\"", "\" data=", " class=\"", "\"><!--\n                --><span class=\"connective quantifier\">", "</span><!--\n                --><span class=\"boundVariable\">", "", "</span><!--\n                --><span class=\"quantifierSeparator\">.</span>", "</div>"], ["<div id=\"", "\" data=", " class=\"", "\"><!--\n                --><span class=\"connective quantifier\">", "</span><!--\n                --><span class=\"boundVariable\">", "", "</span><!--\n                --><span class=\"quantifierSeparator\">.</span>",
+                "</div>"])), id, extraData_1, 'formula active quantifier ' + extraClasses, q, v.name, v.subscript !== -1 ? [wire()(templateObject_11 || (templateObject_11 = __makeTemplateObject(["<sub>", "</sub>"], ["<sub>", "</sub>"])), v.subscript)] : [], renderFormula(f, path.extend(1), inPremises, '')); });
         }
         else {
             return f.match(function (p) {
@@ -10407,15 +10463,14 @@ var ndjs = (function (exports) {
                 for (var _i = 1; _i < arguments.length; _i++) {
                     ts[_i - 1] = arguments[_i];
                 }
-                return wire(f, id)(templateObject_12 || (templateObject_12 = __makeTemplateObject(["<div id=\"", "\" class=\"formula\"><!--\n                                         --><span class=\"predicate\"><span class=\"predicateSymbol\">", "</span>", "", "", "</span></div>"], ["<div id=\"", "\" class=\"formula\"><!--\n                                         --><span class=\"predicate\"><span class=\"predicateSymbol\">", "</span>",
-                    "",
-                    "", "</span></div>"])), id, p, ts.length === 0 ? '' : '(', ts.flatMap(function (t, i) { return i + 1 === ts.length ? [renderTerm(t)]
+                return wire(f, id)(templateObject_12 || (templateObject_12 = __makeTemplateObject(["<div id=\"", "\" class=\"", "\"><!--\n                --><span class=\"predicate\"><span class=\"predicateSymbol\">", "</span>", "", "", "</span></div>"], ["<div id=\"", "\" class=\"", "\"><!--\n                --><span class=\"predicate\"><span class=\"predicateSymbol\">", "</span>", "",
+                    "", "</span></div>"])), id, 'formula ' + extraClasses, p, ts.length === 0 ? '' : '(', ts.flatMap(function (t, i) { return i + 1 === ts.length ? [renderTerm(t)]
                     : [renderTerm(t), wire()(templateObject_13 || (templateObject_13 = __makeTemplateObject([", "], [", "])))]; }), ts.length === 0 ? '' : ')');
-            }, function (c) { return wire(f, id)(templateObject_14 || (templateObject_14 = __makeTemplateObject(["<div id=\"", "\" class=\"formula\"><span class=\"connective nullary\">", "</span></div>"], ["<div id=\"", "\" class=\"formula\"><span class=\"connective nullary\">", "</span></div>"])), id, c); }, function (c, f) { return wire(f, id)(templateObject_15 || (templateObject_15 = __makeTemplateObject(["<div id=\"", "\" class=\"formula\">(<!--\n                                     --><span class=\"connective unary\">", "</span>", ")</div>"], ["<div id=\"", "\" class=\"formula\">(<!--\n                                     --><span class=\"connective unary\">", "</span>",
-                ")</div>"])), id, c, renderFormula(f, path.extend(1), inPremises)); }, function (lf, c, rf) { return wire(f, id)(templateObject_16 || (templateObject_16 = __makeTemplateObject(["<div id=\"", "\" class=\"formula\">(", "<span class=\"connective binary\">", "</span>", ")</div>"], ["<div id=\"", "\" class=\"formula\">(",
+            }, function (c) { return wire(f, id)(templateObject_14 || (templateObject_14 = __makeTemplateObject(["<div id=\"", "\" class=\"", "\"><span class=\"connective nullary\">", "</span></div>"], ["<div id=\"", "\" class=\"", "\"><span class=\"connective nullary\">", "</span></div>"])), id, 'formula ' + extraClasses, c); }, function (c, f) { return wire(f, id)(templateObject_15 || (templateObject_15 = __makeTemplateObject(["<div id=\"", "\" class=\"", "\">(<!--\n                    --><span class=\"connective unary\">", "</span>", ")</div>"], ["<div id=\"", "\" class=\"", "\">(<!--\n                    --><span class=\"connective unary\">", "</span>",
+                ")</div>"])), id, 'formula ' + extraClasses, c, renderFormula(f, path.extend(1), inPremises, '')); }, function (lf, c, rf) { return wire(f, id)(templateObject_16 || (templateObject_16 = __makeTemplateObject(["<div id=\"", "\" class=\"", "\">(", "<span class=\"connective binary\">", "</span>", ")</div>"], ["<div id=\"", "\" class=\"", "\">(",
                 "<span class=\"connective binary\">", "</span>",
-                ")</div>"])), id, renderFormula(lf, path.extend(1), inPremises), c, renderFormula(rf, path.extend(2), inPremises)); }, function (q, v, f) { return wire(f, id)(templateObject_17 || (templateObject_17 = __makeTemplateObject(["<div id=\"", "\" class=\"formula quantifier\">(<!--\n                                     --><span class=\"connective quantifier\">", "</span><!--\n                                     --><span class=\"boundVariable\">", "", "</span><!--\n                                     --><span class=\"quantifierSeparator\">.</span>", ")</div>"], ["<div id=\"", "\" class=\"formula quantifier\">(<!--\n                                     --><span class=\"connective quantifier\">", "</span><!--\n                                     --><span class=\"boundVariable\">", "", "</span><!--\n                                     --><span class=\"quantifierSeparator\">.</span>",
-                ")</div>"])), id, q, v.name, v.subscript !== -1 ? [wire()(templateObject_18 || (templateObject_18 = __makeTemplateObject(["<sub>", "</sub>"], ["<sub>", "</sub>"])), v.subscript)] : [], renderFormula(f, path.extend(1), inPremises)); });
+                ")</div>"])), id, 'formula ' + extraClasses, renderFormula(lf, path.extend(1), inPremises, ''), c, renderFormula(rf, path.extend(2), inPremises, '')); }, function (q, v, f) { return wire(f, id)(templateObject_17 || (templateObject_17 = __makeTemplateObject(["<div id=\"", "\" class=\"", "\">(<!--\n                    --><span class=\"connective quantifier\">", "</span><!--\n                    --><span class=\"boundVariable\">", "", "</span><!--\n                    --><span class=\"quantifierSeparator\">.</span>", ")</div>"], ["<div id=\"", "\" class=\"", "\">(<!--\n                    --><span class=\"connective quantifier\">", "</span><!--\n                    --><span class=\"boundVariable\">", "", "</span><!--\n                    --><span class=\"quantifierSeparator\">.</span>",
+                ")</div>"])), id, 'formula quantifier ' + extraClasses, q, v.name, v.subscript !== -1 ? [wire()(templateObject_18 || (templateObject_18 = __makeTemplateObject(["<sub>", "</sub>"], ["<sub>", "</sub>"])), v.subscript)] : [], renderFormula(f, path.extend(1), inPremises, '')); });
         }
     }
     function renderGoal(g, path, extender) {
@@ -10427,10 +10482,10 @@ var ndjs = (function (exports) {
             return wire(g, id)(templateObject_19 || (templateObject_19 = __makeTemplateObject(["<div id=\"", "\" class=\"goal\">", "<span class=\"turnstile\" title=\"reset\" data=", ">\u22A2</span>", "</div>"], ["<div id=\"", "\" class=\"goal\">",
                 "<span class=\"turnstile\" title=\"reset\" data=", ">\u22A2</span>",
                 "</div>"])), id, wire(ps, id)(templateObject_20 || (templateObject_20 = __makeTemplateObject(["<div id=\"", "\" class=\"premises context\">", "</div>"], ["<div id=\"", "\" class=\"premises context\">",
-                "</div>"])), id + "premises", ps.flatMap(function (p, i) { return i === psLenm1 ? [renderFormula(p, path.extend(i), true, extender)]
-                : [renderFormula(p, path.extend(i), true, extender), wire()(templateObject_21 || (templateObject_21 = __makeTemplateObject([", "], [", "])))]; })), { extender: extender }, wire(cs, id)(templateObject_22 || (templateObject_22 = __makeTemplateObject(["<div id=\"", "\" class=\"consequences context\">", "</div>"], ["<div id=\"", "\" class=\"consequences context\">",
-                "</div>"])), id + "consequences", cs.flatMap(function (c, i) { return i === csLenm1 ? [renderFormula(c, path.extend(i + psLen), false, extender)]
-                : [renderFormula(c, path.extend(i + psLen), false, extender), wire()(templateObject_23 || (templateObject_23 = __makeTemplateObject([", "], [", "])))]; })));
+                "</div>"])), id + "premises", ps.flatMap(function (p, i) { return i === psLenm1 ? [renderFormula(p, path.extend(i), true, 'topLevel', extender)]
+                : [renderFormula(p, path.extend(i), true, 'topLevel', extender), wire()(templateObject_21 || (templateObject_21 = __makeTemplateObject([", "], [", "])))]; })), { extender: extender }, wire(cs, id)(templateObject_22 || (templateObject_22 = __makeTemplateObject(["<div id=\"", "\" class=\"consequences context\">", "</div>"], ["<div id=\"", "\" class=\"consequences context\">",
+                "</div>"])), id + "consequences", cs.flatMap(function (c, i) { return i === csLenm1 ? [renderFormula(c, path.extend(i + psLen), false, 'topLevel', extender)]
+                : [renderFormula(c, path.extend(i + psLen), false, 'topLevel', extender), wire()(templateObject_23 || (templateObject_23 = __makeTemplateObject([", "], [", "])))]; })));
         });
     }
     function renderDerivation(d, path, extender, first, root) {
@@ -10439,8 +10494,8 @@ var ndjs = (function (exports) {
         var id = path.toString();
         var classes = (first ? 'derivation first' : 'derivation') + (root && d.isCompleted() ? ' completed' : '');
         return d.match(function (c) { return wire(d, id)(templateObject_24 || (templateObject_24 = __makeTemplateObject(["<div id=\"", "\" class=\"", "\">", "</div>"], ["<div id=\"", "\" class=\"", "\">", "</div>"])), id, classes + ' open', renderGoal(c, path, extender)); }, function (n, ps, c) {
-            return wire(d, id)(templateObject_25 || (templateObject_25 = __makeTemplateObject(["<div id=\"", "\" class=\"", "\"><!--\n                         --><div class=\"row rulePremise\">", "</div><!--\n                         --><div class=\"tag\" title=\"", "\">", "</div><!--\n                         --><div class=\"row ruleConclusion\">", "</div></div>"], ["<div id=\"", "\" class=\"", "\"><!--\n                         --><div class=\"row rulePremise\">",
-                "</div><!--\n                         --><div class=\"tag\" title=\"", "\">", "</div><!--\n                         --><div class=\"row ruleConclusion\">",
+            return wire(d, id)(templateObject_25 || (templateObject_25 = __makeTemplateObject(["<div id=\"", "\" class=\"", "\"><!--\n            --><div class=\"row rulePremise\">", "</div><!--\n            --><div class=\"tag\" title=\"", "\">", "</div><!--\n            --><div class=\"row ruleConclusion\">", "</div></div>"], ["<div id=\"", "\" class=\"", "\"><!--\n            --><div class=\"row rulePremise\">",
+                "</div><!--\n            --><div class=\"tag\" title=\"", "\">", "</div><!--\n            --><div class=\"row ruleConclusion\">",
                 "</div></div>"])), id, classes + ' closed', ps.map(function (p, i) {
                 var newExtender = new InferenceExtender(n, ps.slice(0, i), p.conclusion, ps.slice(i + 1), extender);
                 return renderDerivation(p, path.extend(i), newExtender, i === 0);
@@ -10471,36 +10526,16 @@ var ndjs = (function (exports) {
     function renderTagTitle(name) {
         return tagNameToDescription[name] || '';
     }
-    var BOT_SYMBOL = '⊥';
-    var TOP_SYMBOL = '⊤';
-    var NOT_SYMBOL = '¬';
-    var AND_SYMBOL = '∧';
-    var OR_SYMBOL = '∨';
-    var IMP_SYMBOL = '⇒';
-    var FORALL_SYMBOL = '∀';
-    var EXISTS_SYMBOL = '∃';
-    function predicate(p) {
-        var ts = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            ts[_i - 1] = arguments[_i];
-        }
-        return new (Predicate.bind.apply(Predicate, [void 0, p].concat(ts)))();
-    }
-    function implies(lf, rf) {
-        return new BinaryConnective(lf, IMP_SYMBOL, rf);
-    }
     function open(conclusion) { return new OpenDerivation(conclusion); }
-    function entails(premises, consequences) {
-        return new Goal(premises, consequences);
-    }
     var ApplyTactic = (function () {
-        function ApplyTactic(goal, formula, inPremises) {
+        function ApplyTactic(goal, formula, inPremises, leftRight) {
             this.goal = goal;
             this.formula = formula;
             this.inPremises = inPremises;
+            this.leftRight = leftRight;
         }
         ApplyTactic.prototype.match = function (applyTacticCase, contractCase, instantiateCase) {
-            return applyTacticCase(this.goal, this.formula, this.inPremises);
+            return applyTacticCase(this.goal, this.formula, this.inPremises, this.leftRight);
         };
         return ApplyTactic;
     }());
@@ -10557,6 +10592,133 @@ var ndjs = (function (exports) {
         };
         return ContractOrInstantiate;
     }());
+    var ljCalculus = function (input$$1) { return input$$1.match(function (goal, formula, inPremises, leftRight) { return formula.match(function (predicate) {
+        var terms = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            terms[_i - 1] = arguments[_i];
+        }
+        if (inPremises) {
+            if (goal.consequences[0].matches(predicate, terms)) {
+                return new NewGoals('Ax', []);
+            }
+            else {
+                return new Failed('Formula does not match conclusion.');
+            }
+        }
+        else {
+            if (goal.premises.some(function (c) { return c.matches(predicate, terms); })) {
+                return new NewGoals('Ax', []);
+            }
+            else {
+                return new Failed('Formula not found in premises.');
+            }
+        }
+    }, function (connective) {
+        switch (connective) {
+            case TOP_SYMBOL:
+                if (inPremises) {
+                    return new NewGoals('⊤L', [new Goal(goal.premises.filter(function (f) { return f !== formula; }), goal.consequences)]);
+                }
+                else {
+                    return new NewGoals('⊤R', []);
+                }
+            case BOT_SYMBOL:
+                if (inPremises) {
+                    return new NewGoals('⊥L', []);
+                }
+                else {
+                    if (goal.premises.some(function (p) { return p instanceof NullaryConnective && p.connective === BOT_SYMBOL; })) {
+                        return new NewGoals('⊥L', []);
+                    }
+                    else {
+                        return new Failed('Didn\'t find ⊥ in premises.');
+                    }
+                }
+            default:
+                throw 'Not implemented.';
+        }
+    }, function (connective, f2) {
+        switch (connective) {
+            case NOT_SYMBOL:
+                if (inPremises) {
+                    return new NewGoals('¬L', [new Goal(goal.premises, [f2])]);
+                }
+                else {
+                    return new NewGoals('¬R', [new Goal(goal.premises.concat(f2), [new NullaryConnective(BOT_SYMBOL)])]);
+                }
+            default:
+                throw 'Not implemented.';
+        }
+    }, function (lf, connective, rf) {
+        switch (connective) {
+            case AND_SYMBOL:
+                if (inPremises) {
+                    return new NewGoals('∧L', [new Goal(goal.premises.flatMap(function (f) { return f === formula ? [lf, rf] : [f]; }), goal.consequences)]);
+                }
+                else {
+                    return new NewGoals('∧R', [new Goal(goal.premises, [lf]), new Goal(goal.premises, [rf])]);
+                }
+            case OR_SYMBOL:
+                if (inPremises) {
+                    return new NewGoals('∨L', [new Goal(goal.premises.map(function (f) { return f === formula ? lf : f; }), goal.consequences),
+                        new Goal(goal.premises.map(function (f) { return f === formula ? lf : f; }), goal.consequences)]);
+                }
+                else {
+                    if (leftRight === void (0))
+                        return new Failed('Select left or right subformula.');
+                    return new NewGoals("\u2228R_" + (leftRight ? '1' : '2'), [new Goal(goal.premises, [leftRight ? lf : rf])]);
+                }
+            case IMP_SYMBOL:
+                if (inPremises) {
+                    return new NewGoals('⇒L', [new Goal(goal.premises, [lf]),
+                        new Goal(goal.premises.map(function (f) { return f === formula ? rf : f; }), goal.consequences)]);
+                }
+                else {
+                    return new NewGoals('⇒R', [new Goal(goal.premises.concat(lf), [rf])]);
+                }
+            default:
+                throw 'Not implemented.';
+        }
+    }, function (quantifier, v, f2) {
+        switch (quantifier) {
+            case FORALL_SYMBOL:
+                if (inPremises) {
+                    return new ContractOrInstantiate(goal, formula, inPremises);
+                }
+                else {
+                    var variableContext = goal.freeVariables();
+                    var f3 = variableContext.has(v) ? f2.alphaRename(v, v.freshen(variableContext)) : f2;
+                    return new NewGoals('∀R', [new Goal(goal.premises, [f3])]);
+                }
+            case EXISTS_SYMBOL:
+                if (inPremises) {
+                    var variableContext = goal.freeVariables();
+                    var f3_1 = variableContext.has(v) ? f2.alphaRename(v, v.freshen(variableContext)) : f2;
+                    return new NewGoals('∃L', [new Goal(goal.premises.map(function (f) { return f === formula ? f3_1 : f; }), goal.consequences)]);
+                }
+                else {
+                    return new ContractOrInstantiate(goal, formula, inPremises);
+                }
+            default:
+                throw 'Not implemented.';
+        }
+    }); }, function (goal, formula, inPremises) {
+        if (!inPremises)
+            throw 'Should never happen.';
+        return new NewGoals('CL', [new Goal(goal.premises.concat(formula), goal.consequences)]);
+    }, function (goal, formula, inPremises, term) {
+        if (!(formula instanceof Quantifier))
+            throw 'Quantified formula expected.';
+        if (inPremises) {
+            var first_1 = 0;
+            var f2_1 = formula.formula.substitute(formula.variable, term);
+            return new NewGoals('∀L', [new Goal(goal.premises.map(function (f) { return f === formula && first_1++ === 0 ? f2_1 : f; }), goal.consequences)]);
+        }
+        else {
+            var f2 = formula.formula.substitute(formula.variable, term);
+            return new NewGoals('∃R', [new Goal(goal.premises, [f2])]);
+        }
+    }); };
     var classicalSequentCalculus = function (input$$1) { return input$$1.match(function (goal, formula, inPremises) { return formula.match(function (predicate) {
         var terms = [];
         for (var _i = 1; _i < arguments.length; _i++) {
@@ -10613,30 +10775,27 @@ var ndjs = (function (exports) {
         switch (connective) {
             case AND_SYMBOL:
                 if (inPremises) {
-                    return new NewGoals('∧L', [new Goal(goal.premises.filter(function (f) { return f !== formula; }).concat(lf, rf), goal.consequences)]);
+                    return new NewGoals('∧L', [new Goal(goal.premises.flatMap(function (f) { return f === formula ? [lf, rf] : [f]; }), goal.consequences)]);
                 }
                 else {
-                    var cs = goal.consequences.filter(function (f) { return f !== formula; });
-                    return new NewGoals('∧R', [new Goal(goal.premises, cs.concat(lf)),
-                        new Goal(goal.premises, cs.concat(rf))]);
+                    return new NewGoals('∧R', [new Goal(goal.premises, goal.consequences.map(function (f) { return f === formula ? lf : f; })),
+                        new Goal(goal.premises, goal.consequences.map(function (f) { return f === formula ? rf : f; }))]);
                 }
             case OR_SYMBOL:
                 if (inPremises) {
-                    var ps = goal.premises.filter(function (f) { return f !== formula; });
-                    return new NewGoals('∨L', [new Goal(ps.concat(lf), goal.consequences),
-                        new Goal(ps.concat(rf), goal.consequences)]);
+                    return new NewGoals('∨L', [new Goal(goal.premises.map(function (f) { return f === formula ? lf : f; }), goal.consequences),
+                        new Goal(goal.premises.map(function (f) { return f === formula ? rf : f; }), goal.consequences)]);
                 }
                 else {
-                    return new NewGoals('∨R', [new Goal(goal.premises, goal.consequences.filter(function (f) { return f !== formula; }).concat(lf, rf))]);
+                    return new NewGoals('∨R', [new Goal(goal.premises, goal.consequences.flatMap(function (f) { return f === formula ? [lf, rf] : [f]; }))]);
                 }
             case IMP_SYMBOL:
                 if (inPremises) {
-                    var ps = goal.premises.filter(function (f) { return f !== formula; });
-                    return new NewGoals('⇒L', [new Goal(ps, goal.consequences.concat(lf)),
-                        new Goal(ps.concat(rf), goal.consequences)]);
+                    return new NewGoals('⇒L', [new Goal(goal.premises.filter(function (f) { return f !== formula; }), goal.consequences.concat(lf)),
+                        new Goal(goal.premises.map(function (f) { return f === formula ? rf : f; }), goal.consequences)]);
                 }
                 else {
-                    return new NewGoals('⇒R', [new Goal(goal.premises.concat(lf), goal.consequences.filter(function (f) { return f !== formula; }).concat(rf))]);
+                    return new NewGoals('⇒R', [new Goal(goal.premises.concat(lf), goal.consequences.map(function (f) { return f === formula ? rf : f; }))]);
                 }
             default:
                 throw 'Not implemented.';
@@ -10649,14 +10808,14 @@ var ndjs = (function (exports) {
                 }
                 else {
                     var variableContext = goal.freeVariables();
-                    var f3 = variableContext.has(v) ? f2.alphaRename(v, v.freshen(variableContext)) : f2;
-                    return new NewGoals('∀R', [new Goal(goal.premises, goal.consequences.filter(function (f) { return f !== formula; }).concat(f3))]);
+                    var f3_2 = variableContext.has(v) ? f2.alphaRename(v, v.freshen(variableContext)) : f2;
+                    return new NewGoals('∀R', [new Goal(goal.premises, goal.consequences.map(function (f) { return f === formula ? f3_2 : f; }))]);
                 }
             case EXISTS_SYMBOL:
                 if (inPremises) {
                     var variableContext = goal.freeVariables();
-                    var f3 = variableContext.has(v) ? f2.alphaRename(v, v.freshen(variableContext)) : f2;
-                    return new NewGoals('∃L', [new Goal(goal.premises.filter(function (f) { return f !== formula; }).concat(f3), goal.consequences)]);
+                    var f3_3 = variableContext.has(v) ? f2.alphaRename(v, v.freshen(variableContext)) : f2;
+                    return new NewGoals('∃L', [new Goal(goal.premises.map(function (f) { return f === formula ? f3_3 : f; }), goal.consequences)]);
                 }
                 else {
                     return new ContractOrInstantiate(goal, formula, inPremises);
@@ -10675,150 +10834,163 @@ var ndjs = (function (exports) {
         if (!(formula instanceof Quantifier))
             throw 'Quantified formula expected.';
         if (inPremises) {
-            var first_1 = 0;
-            var f2 = formula.formula.substitute(formula.variable, term);
-            return new NewGoals('∀L', [new Goal(goal.premises.filter(function (f) { return f !== formula || first_1++ !== 0; }).concat(f2), goal.consequences)]);
+            var first_2 = 0;
+            var f2_2 = formula.formula.substitute(formula.variable, term);
+            return new NewGoals('∀L', [new Goal(goal.premises.map(function (f) { return f === formula && first_2++ === 0 ? f2_2 : f; }), goal.consequences)]);
         }
         else {
-            var first_2 = 0;
-            var f2 = formula.formula.substitute(formula.variable, term);
-            return new NewGoals('∃R', [new Goal(goal.premises, goal.consequences.filter(function (f) { return f !== formula || first_2++ !== 0; }).concat(f2))]);
+            var first_3 = 0;
+            var f2_3 = formula.formula.substitute(formula.variable, term);
+            return new NewGoals('∃R', [new Goal(goal.premises, goal.consequences.map(function (f) { return f === formula && first_3++ === 0 ? f2_3 : f; }))]);
         }
     }); };
-    var A = predicate('A');
-    var B = predicate('B');
-    var x = new Var('x');
-    var y = new Var('y');
-    var example = open(entails([], [implies(implies(implies(A, B), A), A)]));
-    var container = document.getElementById('container');
-    var toast = document.getElementById('toast');
-    var popup = document.getElementById('popup');
-    var goalInput = document.getElementById('goalInput');
-    var termInput = document.getElementById('termInput');
-    var termBtn = document.getElementById('termBtn');
-    var contractBtn = document.getElementById('contractBtn');
-    if (popup === null)
-        throw 'Popup missing.';
-    if (toast === null)
-        throw 'Toast missing.';
-    if (goalInput === null)
-        throw 'Goal Input missing.';
-    if (termInput === null)
-        throw 'Term Input missing.';
-    if (termBtn === null)
-        throw 'Term button missing.';
-    if (contractBtn === null)
-        throw 'Contract button missing.';
-    if (container === null)
-        throw 'Container missing.';
-    var derivationFromHash = function () {
-        try {
-            var derivationJson = JSON.parse(decompressFromEncodedURIComponent(location.hash.slice(1)));
-            if (derivationJson !== void (0)) {
-                var json = expandCse(derivationJson);
-                var derivation = derivationFromJson(json);
-                if (derivation !== null) {
-                    example = derivation;
-                    goalInput.value = '';
-                }
-                else {
-                    console.log({ expanded: json, unexpanded: derivationJson, string: location.hash.slice(1) });
+    var logics = {
+        lk: classicalSequentCalculus,
+        lj: ljCalculus
+    };
+    function main(containerId, options) {
+        var container = document.getElementById(containerId);
+        if (container === null)
+            throw "Container missing. Element with " + containerId + " not found.";
+        var defaultGoalString = options.defaultGoal || '((A \\/ B) -> C) -> ((A -> C) /\\ (B -> C))';
+        var defaultGoal = goalFromString(defaultGoalString);
+        if (defaultGoal === null)
+            throw "Error parsing default goal: " + defaultGoalString;
+        var example = open(defaultGoal);
+        var goalInput = wire()(templateObject_26 || (templateObject_26 = __makeTemplateObject(["<input type=\"text\" id=\"goalInput\" value=\"", "\"/>"], ["<input type=\"text\" id=\"goalInput\" value=\"", "\"/>"])), defaultGoalString);
+        var toast = wire()(templateObject_27 || (templateObject_27 = __makeTemplateObject(["<div id=\"toast\"></div>"], ["<div id=\"toast\"></div>"])));
+        var termInput = wire()(templateObject_28 || (templateObject_28 = __makeTemplateObject(["<input type=\"text\" id=\"termInput\"/>"], ["<input type=\"text\" id=\"termInput\"/>"])));
+        var termBtn = wire()(templateObject_29 || (templateObject_29 = __makeTemplateObject(["<button id=\"termBtn\">Go</button>"], ["<button id=\"termBtn\">Go</button>"])));
+        var contractBtn = wire()(templateObject_30 || (templateObject_30 = __makeTemplateObject(["<button id=\"contractBtn\">Contract</button>"], ["<button id=\"contractBtn\">Contract</button>"])));
+        var popup = wire()(templateObject_31 || (templateObject_31 = __makeTemplateObject(["<div id=\"popup\"><div id=\"popupBody\">", "<p>Enter a term and click Go, or click Contract to perform a contraction.</p></div></div>"], ["<div id=\"popup\"><div id=\"popupBody\">", "<p>Enter a term and click Go, or click Contract to perform a contraction.</p></div></div>"])), [termInput, termBtn, contractBtn]);
+        var latexBtn = wire()(templateObject_32 || (templateObject_32 = __makeTemplateObject(["<button id=\"latexBtn\">LaTeX</button>"], ["<button id=\"latexBtn\">LaTeX</button>"])));
+        var latex = wire()(templateObject_33 || (templateObject_33 = __makeTemplateObject(["<code id=\"latex\"></code>"], ["<code id=\"latex\"></code>"])));
+        var latexContainer = wire()(templateObject_34 || (templateObject_34 = __makeTemplateObject(["<div class=\"", "\">", "<pre>", "</pre></div>"], ["<div class=\"", "\">", "<pre>", "</pre></div>"])), options.toLaTeX ? '' : 'hidden', latexBtn, latex);
+        var logic = options.logic === void (0) ? classicalSequentCalculus : logics[options.logic];
+        var derivationFromHash = function () {
+            try {
+                var derivationJson = JSON.parse(decompressFromEncodedURIComponent(location.hash.slice(1)));
+                if (derivationJson !== void (0)) {
+                    var json = expandCse(derivationJson);
+                    var derivation = derivationFromJson(json);
+                    if (derivation !== null) {
+                        example = derivation;
+                        goalInput.value = '';
+                    }
+                    else {
+                        console.log({ expanded: json, unexpanded: derivationJson, string: location.hash.slice(1) });
+                    }
                 }
             }
-        }
-        catch (SyntaxError) { }
-    };
-    var refresh = function (changeHash) {
-        if (changeHash === void 0) { changeHash = true; }
-        document.title = 'Proving ' + example.conclusion.toDisplayString(true);
-        if (changeHash)
-            location.hash = '#' + compressToEncodedURIComponent(JSON.stringify(cse(example.toJson())));
-        bind(container)(templateObject_26 || (templateObject_26 = __makeTemplateObject(["", ""], ["", ""])), renderDerivation(example, new StartPath('root.'), new GoalExtender(example.conclusion), true, true));
-    };
-    var onClick = function (event) {
-        var target = event.target;
-        var extraData = target.data;
-        if (target.data === void (0)) {
-            var closest = target.closest('.topLevel');
-            if (closest === null)
-                return;
-            extraData = closest.data;
-        }
-        if (extraData.formula === void (0)) {
-            example = extraData.extender.open();
-        }
-        else {
-            var output = classicalSequentCalculus(new ApplyTactic(extraData.extender.goal, extraData.formula, extraData.inPremises));
-            example = output.match(function (message) {
-                toast.textContent = message;
-                toast.className = 'shown';
-                return example;
-            }, function (name, goals) { return extraData.extender.extend(name, goals.map(function (g) { return new OpenDerivation(g); })); }, function (goal, formula, inPremises) {
-                popup.data = extraData;
-                popup.style.left = (event.pageX - 45) + 'px';
-                popup.style.top = (event.pageY - 40) + 'px';
-                popup.className = 'shown';
-                termInput.focus();
-                return example;
-            });
-        }
-        refresh();
-    };
-    var onTermInput = function (event) {
-        var extraData = popup.data;
-        var output;
-        if (event.target === contractBtn) {
-            output = classicalSequentCalculus(new Contract(extraData.extender.goal, extraData.formula, extraData.inPremises));
-        }
-        else {
-            var termString = termInput.value;
-            var term = termFromString(termString);
-            if (term === null) {
-                output = new Failed("Failed to parse term: " + termString);
+            catch (SyntaxError) { }
+        };
+        var dummy = {};
+        var refresh = function (changeHash) {
+            if (changeHash === void 0) { changeHash = true; }
+            document.title = 'Proving ' + example.conclusion.toDisplayString(true);
+            if (changeHash)
+                location.hash = '#' + compressToEncodedURIComponent(JSON.stringify(cse(example.toJson())));
+            bind(container)(templateObject_35 || (templateObject_35 = __makeTemplateObject(["", ""], ["",
+                ""])), [
+                wire(dummy, 'goalBox')(templateObject_36 || (templateObject_36 = __makeTemplateObject(["<div id=\"goalBox\" class=\"", "\">Enter goal or formula: ", "</div>"], ["<div id=\"goalBox\" class=\"", "\">Enter goal or formula: ", "</div>"])), options.showInput ? '' : 'hidden', goalInput),
+                toast,
+                wire(dummy, 'wrapper')(templateObject_37 || (templateObject_37 = __makeTemplateObject(["<div id=\"derivationWrapper\">", "</div>"], ["<div id=\"derivationWrapper\">", "</div>"])), renderDerivation(example, new StartPath('root.'), new GoalExtender(example.conclusion), true, true)),
+                popup,
+                latexContainer
+            ]);
+        };
+        var SHOWN_CLASS = 'shown';
+        var FORALL_CLASS = 'forall';
+        var EXISTS_CLASS = 'exists';
+        var onClick = function (event) {
+            var target = event.target;
+            var extraData = target.data;
+            if (target.data === void (0)) {
+                var closest = target.closest('.active');
+                if (closest === null)
+                    return;
+                extraData = closest.data;
+            }
+            if (extraData.formula === void (0)) {
+                example = extraData.extender.open();
             }
             else {
-                output = classicalSequentCalculus(new Instantiate(extraData.extender.goal, extraData.formula, extraData.inPremises, term));
+                var leftRight = target.closest('.left') ? true : target.closest('.right') ? false : void (0);
+                var output = logic(new ApplyTactic(extraData.extender.goal, extraData.formula, extraData.inPremises, leftRight));
+                example = output.match(function (message) {
+                    toast.textContent = message;
+                    toast.classList.add(SHOWN_CLASS);
+                    return example;
+                }, function (name, goals) { return extraData.extender.extend(name, goals.map(function (g) { return new OpenDerivation(g); })); }, function (goal, formula, inPremises) {
+                    popup.data = extraData;
+                    popup.style.left = (event.pageX - 45) + 'px';
+                    popup.style.top = (event.pageY - 40) + 'px';
+                    popup.className = 'shown ' + (inPremises ? FORALL_CLASS : EXISTS_CLASS);
+                    termInput.focus();
+                    return example;
+                });
             }
-        }
-        termInput.value = '';
-        popup.className = '';
-        example = output.match(function (message) {
-            toast.textContent = message;
-            toast.className = 'shown';
-            return example;
-        }, function (name, goals) { return extraData.extender.extend(name, goals.map(function (g) { return new OpenDerivation(g); })); }, function (goal, formula, inPremises) {
-            throw "Shouldn't happen";
-        });
-        refresh();
-    };
-    var onGoalInput = function (event) {
-        var goalText = goalInput.value;
-        var goal = goalFromString(goalText);
-        if (goal === null) {
-            toast.textContent = 'Failed to parse goal.';
-            toast.className = 'shown';
-        }
-        else {
-            example = new OpenDerivation(goal);
             refresh();
-        }
-    };
-    var onAnimationEnd = function (event) { return toast.className = ''; };
-    var onMouseLeave = function (event) { popup.data = void (0); popup.className = ''; };
-    var onHashChange = function (event) { derivationFromHash(); refresh(false); };
-    var scheduler = newDefaultScheduler$2();
-    runEffects$$1(tap$$1(onClick, click(container, true)), scheduler);
-    runEffects$$1(tap$$1(onTermInput, merge$$1(change(termInput), merge$$1(click(termBtn), click(contractBtn)))), scheduler);
-    runEffects$$1(tap$$1(onGoalInput, change(goalInput)), scheduler);
-    runEffects$$1(tap$$1(onAnimationEnd, domEvent('animationend', toast)), scheduler);
-    runEffects$$1(tap$$1(onMouseLeave, mouseleave(popup)), scheduler);
-    runEffects$$1(tap$$1(onHashChange, hashchange(window)), scheduler);
-    derivationFromHash();
-    refresh(false);
-    var templateObject_2, templateObject_1, templateObject_4, templateObject_3, templateObject_6, templateObject_5, templateObject_7, templateObject_8, templateObject_9, templateObject_11, templateObject_10, templateObject_13, templateObject_12, templateObject_14, templateObject_15, templateObject_16, templateObject_18, templateObject_17, templateObject_21, templateObject_20, templateObject_23, templateObject_22, templateObject_19, templateObject_24, templateObject_25, templateObject_26;
-    var _a;
+        };
+        var onTermInput = function (event) {
+            var extraData = popup.data;
+            var output;
+            if (event.target === contractBtn) {
+                output = logic(new Contract(extraData.extender.goal, extraData.formula, extraData.inPremises));
+            }
+            else {
+                var termString = termInput.value;
+                var term = termFromString(termString);
+                if (term === null) {
+                    output = new Failed("Failed to parse term: " + termString);
+                }
+                else {
+                    output = logic(new Instantiate(extraData.extender.goal, extraData.formula, extraData.inPremises, term));
+                }
+            }
+            termInput.value = '';
+            popup.className = '';
+            example = output.match(function (message) {
+                toast.textContent = message;
+                toast.classList.add(SHOWN_CLASS);
+                return example;
+            }, function (name, goals) { return extraData.extender.extend(name, goals.map(function (g) { return new OpenDerivation(g); })); }, function (goal, formula, inPremises) {
+                throw 'Shouldn\'t happen';
+            });
+            refresh();
+        };
+        var onGoalInput = function (event) {
+            var goalText = goalInput.value;
+            var goal = goalFromString(goalText);
+            if (goal === null || (options.logic === 'lj' && goal.consequences.length !== 1)) {
+                toast.textContent = 'Failed to parse goal.';
+                toast.classList.add(SHOWN_CLASS);
+            }
+            else {
+                example = new OpenDerivation(goal);
+                refresh();
+            }
+        };
+        var onAnimationEnd = function (event) { return toast.classList.remove(SHOWN_CLASS); };
+        var onMouseLeave = function (event) { popup.data = void (0); popup.className = ''; };
+        var onHashChange = function (event) { derivationFromHash(); refresh(false); };
+        var onLaTeX = function (event) { latex.textContent = example.toLaTeX(true); };
+        var scheduler = newDefaultScheduler$2();
+        runEffects$$1(tap$$1(onClick, click(container, true)), scheduler);
+        runEffects$$1(tap$$1(onTermInput, merge$$1(change(termInput), merge$$1(click(termBtn), click(contractBtn)))), scheduler);
+        runEffects$$1(tap$$1(onGoalInput, change(goalInput)), scheduler);
+        runEffects$$1(tap$$1(onAnimationEnd, domEvent('animationend', toast)), scheduler);
+        runEffects$$1(tap$$1(onMouseLeave, mouseleave(popup)), scheduler);
+        runEffects$$1(tap$$1(onHashChange, hashchange(window)), scheduler);
+        runEffects$$1(tap$$1(onLaTeX, click(latexBtn)), scheduler);
+        derivationFromHash();
+        refresh(false);
+    }
+    var templateObject_2, templateObject_1, templateObject_4, templateObject_3, templateObject_6, templateObject_5, templateObject_7, templateObject_8, templateObject_9, templateObject_11, templateObject_10, templateObject_13, templateObject_12, templateObject_14, templateObject_15, templateObject_16, templateObject_18, templateObject_17, templateObject_21, templateObject_20, templateObject_23, templateObject_22, templateObject_19, templateObject_24, templateObject_25, templateObject_26, templateObject_27, templateObject_28, templateObject_29, templateObject_30, templateObject_31, templateObject_32, templateObject_33, templateObject_34, templateObject_36, templateObject_37, templateObject_35;
+    var _a, _b, _c, _d, _e, _f;
 
     exports.Lexer = Lexer;
+    exports.main = main;
 
     return exports;
 

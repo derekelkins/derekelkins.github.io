@@ -8,18 +8,18 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="ndjs.css" />
 </head>
-<body class="lk">
+<body class="lj">
 
 <div id="preamble">
     For now, a purely client-side reimplementation of <a href="http://logitext.mit.edu/main">Logitext</a>.
-    This is an implementation of the classical system LK. For an implementation of the intuitionistic LJ, see <a href="lj.html">here</a>.<br/><br/>
+    This is an implementation of the intuitionistic system LJ. For an implementation of the classical LK, see <a href="index.html">here</a>.<br/><br/>
 </div>
 <div id="container"></div>
 <div id="syntaxDescription">
     As you work the URL changes and you can give someone else your current URL to give them a link to
     the derivation exactly as you currently have it.<br/><br/>
 
-    The system implements <a href="https://en.wikipedia.org/wiki/Sequent_calculus#Inference_rules">LK</a>. It lacks Cut, 
+    The system implements <a href="https://en.wikipedia.org/wiki/Sequent_calculus#Intuitionistic_sequent_calculus:_System_LJ">LJ</a>. It lacks Cut, 
     so you can only make cut-free proofs (but <a href="https://en.wikipedia.org/wiki/Cut-elimination_theorem">Gentzen's Hauptsatz</a> says
     that's all you need [modulo an exponential difference in size...]). Contraction is also limited to certain cases with
     quantifiers. There should never be any benefit (or at least need) to perform contraction otherwise.<br/><br/>
@@ -45,7 +45,7 @@
     BinaryConnective ::= AND | OR | IMPLIES
     Quantifier ::= FORALL | EXISTS
 
-    Goal ::= FormulaList TURNSTILE FormulaList
+    Goal ::= FormulaList TURNSTILE Formula
     FormulaList ::= Formula (COMMA Formula)*
                   | EMPTY
 
@@ -86,6 +86,6 @@ Array.prototype.flatMap = Array.prototype.flatMap || function(f, t) {
 };
 </script>
 <script type="text/javascript" src="bundle.js"></script>
-<script type="text/javascript">ndjs.main('container', {logic: 'lk', toLaTeX: false, showInput: true});</script>
+<script type="text/javascript">ndjs.main('container', {logic: 'lj', toLaTeX: false, showInput: true});</script>
 </body>
 </html>
