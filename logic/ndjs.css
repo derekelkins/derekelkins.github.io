@@ -31,6 +31,8 @@ a:hover {
 #derivationWrapper {
     text-align: center;
     margin: 0 auto;
+    padding-top: 2ex;
+    padding-bottom: 2ex;
     width: 100%;
     overflow-x: auto;
     white-space: nowrap;
