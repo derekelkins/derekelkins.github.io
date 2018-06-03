@@ -31,8 +31,10 @@ a:hover {
 #derivationWrapper {
     text-align: center;
     margin: 0 auto;
-    padding-top: 2em;
-    padding-bottom: 2em;
+    padding-top: 1em;
+    padding-bottom: 0.5em;
+    padding-left: 2em;
+    padding-right: 2em;
     width: 100%;
     overflow-x: auto;
     white-space: nowrap;
@@ -135,13 +137,6 @@ a:hover {
 .derivation.first {
     margin-left: 0;
     display: inline-block;
-}
-
-#container > .derivation {
-    padding-top: 1em;
-    padding-bottom: 0.5em;
-    padding-left: 2em;
-    padding-right: 2em;
 }
 
 .derivation {
