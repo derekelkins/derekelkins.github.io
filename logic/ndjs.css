@@ -31,13 +31,16 @@ a:hover {
 #derivationWrapper {
     text-align: center;
     margin: 0 auto;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+#derivationWrapper > .derivation {
     padding-top: 1em;
     padding-bottom: 0.5em;
     padding-left: 2em;
     padding-right: 2em;
-    width: 100%;
-    overflow-x: auto;
-    white-space: nowrap;
 }
 
 #toast {
