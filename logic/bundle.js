@@ -10893,8 +10893,8 @@ var ndjs = (function (exports) {
             bind(container)(templateObject_35 || (templateObject_35 = __makeTemplateObject(["", ""], ["",
                 ""])), [
                 wire(dummy, 'goalBox')(templateObject_36 || (templateObject_36 = __makeTemplateObject(["<div id=\"goalBox\" class=\"", "\">Enter goal or formula: ", "</div>"], ["<div id=\"goalBox\" class=\"", "\">Enter goal or formula: ", "</div>"])), options.showInput ? '' : 'hidden', goalInput),
-                toast,
                 wire(dummy, 'wrapper')(templateObject_37 || (templateObject_37 = __makeTemplateObject(["<div id=\"derivationWrapper\">", "</div>"], ["<div id=\"derivationWrapper\">", "</div>"])), renderDerivation(example, new StartPath('root.'), new GoalExtender(example.conclusion), true, true)),
+                toast,
                 popup,
                 latexContainer
             ]);
