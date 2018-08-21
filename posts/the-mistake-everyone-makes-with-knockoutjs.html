@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">The Mistake Everyone Makes with KnockoutJS</h2>
     <p class="blog-post-meta">May  5, 2016 20:38 UTC 
         
-        (Last updated on May  9, 2018 00:51 UTC)
+        (Last updated on August 21, 2018 17:22 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -215,7 +215,7 @@ Add
 <p>Still, the real concern and benefit of this latter approach isn’t the asymptotic complexity of the operations, but the <em>atomicity</em> of the operations. In the second solution, every update is atomic. There are no intermediate states on the way to a final state. This means that dependents, represented by <code>numberSelected</code> but which are realistically much more complicated, don’t get triggered excessively and don’t need to “compensate” for unintended intermediate values.</p>
 <h3 id="epilogue">Epilogue</h3>
 <p>We could take the coarse-graining to its logical conclusion and have the view model for an application be a single observable holding an object representing the entire view model (and containing no observables of its own). Taking this approach actually does have a lot of benefits, albeit there is little reason to use Knockout at that point. Instead this starts to lead to things like Facebook’s <a href="https://facebook.github.io/flux/">Flux</a> pattern and the pattern perhaps most clearly articulated by <a href="http://cycle.js.org/">Cycle JS</a>.</p>
-<script lang="text/javascript" src="http://ajax.aspnetcdn.com/ajax/knockout/knockout-3.3.0.js" integrity="sha384-bpY4Nxr8KotrByPQIhZdNw6qY1QFNMhtBX0QfW7o0e75Z3HAyJ4yeJByRGMMQ6I+" crossorigin="anonymous"></script>
+<script lang="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.3.0/knockout-min.js" integrity="sha384-bpY4Nxr8KotrByPQIhZdNw6qY1QFNMhtBX0QfW7o0e75Z3HAyJ4yeJByRGMMQ6I+" crossorigin="anonymous"></script>
 <script lang="text/javascript">
 // Bad View Model
 
