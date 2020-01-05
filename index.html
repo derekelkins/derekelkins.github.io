@@ -63,7 +63,7 @@
         <h6 class="blog-post-meta">
             May 18, 2019 23:59 UTC
             
-            (Last updated on May 18, 2019 23:59 UTC)
+            (Last updated on January  5, 2020 01:54 UTC)
 
             
                 Tags: <a href="./tags/math.html">math</a>, <a href="./tags/category%20theory.html">category theory</a>
@@ -99,7 +99,7 @@
         <h6 class="blog-post-meta">
             March 26, 2018 07:57 UTC
             
-            (Last updated on June  3, 2018 21:57 UTC)
+            (Last updated on August 24, 2019 21:37 UTC)
 
             
                 Tags: <a href="./tags/math.html">math</a>, <a href="./tags/logic.html">logic</a>
@@ -147,7 +147,7 @@
         <h6 class="blog-post-meta">
             March  1, 2018 04:35 UTC
             
-            (Last updated on May 18, 2019 23:58 UTC)
+            (Last updated on August 24, 2019 21:37 UTC)
 
             
                 Tags: <a href="./tags/math.html">math</a>, <a href="./tags/logic.html">logic</a>
@@ -175,7 +175,7 @@
         <h6 class="blog-post-meta">
             April  9, 2017 12:35 UTC
             
-            (Last updated on April  9, 2017 12:39 UTC)
+            (Last updated on August 24, 2019 21:37 UTC)
 
             
                 Tags: 
@@ -209,7 +209,7 @@
         <h6 class="blog-post-meta">
             November 25, 2016 06:23 UTC
             
-            (Last updated on October 10, 2018 19:21 UTC)
+            (Last updated on August 24, 2019 21:37 UTC)
 
             
                 Tags: <a href="./tags/programming.html">programming</a>, <a href="./tags/math.html">math</a>, <a href="./tags/category%20theory.html">category theory</a>
@@ -234,96 +234,96 @@
 <p>The <code>clz</code> instruction <a href="https://hackage.haskell.org/package/base-4.8.2.0/docs/Data-Bits.html#v:countLeadingZeros">can be used to implement</a> this function, but this is a potential simulation if that or a similar instruction wasn’t available. It’s probably not the fastest way. Similarly, find first set and count trailing zeros <a href="https://en.wikipedia.org/wiki/Find_first_set">can be implemented</a> in terms of this operation.</p>
 <h2 id="code">Code</h2>
 <p>Below is the complete code. You can also download it <a href="./posts/raw/FFS.hs">here</a>.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="ot">{-# LANGUAGE BangPatterns #-}</span></a>
-<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw">import</span> <span class="dt">Data.Word</span></a>
-<a class="sourceLine" id="cb1-3" data-line-number="3"><span class="kw">import</span> <span class="dt">Data.Bits</span></a>
-<a class="sourceLine" id="cb1-4" data-line-number="4"></a>
-<a class="sourceLine" id="cb1-5" data-line-number="5"><span class="co">-- Returns 0-based bit index of most significant bit that is 1. Assumes input is non-zero.</span></a>
-<a class="sourceLine" id="cb1-6" data-line-number="6"><span class="co">-- That is, 2^indexOfMostSignificant1 x &lt;= x &lt; 2^(indexOfMostSignificant1 x + 1)</span></a>
-<a class="sourceLine" id="cb1-7" data-line-number="7"><span class="co">-- From Erik Demaine's presentation in Spring 2012 lectures of MIT 6.851, particularly &quot;Lecture 12: Fusion Trees&quot;.</span></a>
-<a class="sourceLine" id="cb1-8" data-line-number="8"><span class="co">-- Takes 26 (source-level) straight-line word operations.</span></a>
-<a class="sourceLine" id="cb1-9" data-line-number="9"><span class="ot">indexOfMostSignificant1 ::</span> <span class="dt">Word64</span> <span class="ot">-&gt;</span> <span class="dt">Word64</span></a>
-<a class="sourceLine" id="cb1-10" data-line-number="10">indexOfMostSignificant1 w <span class="fu">=</span> idxMsbyte <span class="fu">.|.</span> idxMsbit</a>
-<a class="sourceLine" id="cb1-11" data-line-number="11">    <span class="kw">where</span></a>
-<a class="sourceLine" id="cb1-12" data-line-number="12">        <span class="co">-- top bits of each byte</span></a>
-<a class="sourceLine" id="cb1-13" data-line-number="13">        <span class="fu">!</span>wtbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x8080808080808080</span></a>
-<a class="sourceLine" id="cb1-14" data-line-number="14">        </a>
-<a class="sourceLine" id="cb1-15" data-line-number="15">        <span class="co">-- all but top bits of each byte producing 8 7-bit chunks</span></a>
-<a class="sourceLine" id="cb1-16" data-line-number="16">        <span class="fu">!</span>wbbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x7F7F7F7F7F7F7F7F</span>              </a>
-<a class="sourceLine" id="cb1-17" data-line-number="17"></a>
-<a class="sourceLine" id="cb1-18" data-line-number="18">        <span class="co">-- parallel compare of each 7-bit chunk to 0, top bit set in result if 7-bit chunk was not 0</span></a>
-<a class="sourceLine" id="cb1-19" data-line-number="19">        <span class="fu">!</span>pc <span class="fu">=</span> parallelCompare <span class="bn">0x8080808080808080</span> wbbs</a>
-<a class="sourceLine" id="cb1-20" data-line-number="20"></a>
-<a class="sourceLine" id="cb1-21" data-line-number="21">        <span class="co">-- top bit of each byte set if the byte has any bits set in w</span></a>
-<a class="sourceLine" id="cb1-22" data-line-number="22">        <span class="fu">!</span>ne <span class="fu">=</span> wtbs <span class="fu">.|.</span> pc                             </a>
-<a class="sourceLine" id="cb1-23" data-line-number="23"></a>
-<a class="sourceLine" id="cb1-24" data-line-number="24">        <span class="co">-- a summary of which bytes (except the first) are non-zero as a 7-bit bitfield, i.e. top bits collected into bottom byte</span></a>
-<a class="sourceLine" id="cb1-25" data-line-number="25">        <span class="fu">!</span>summary <span class="fu">=</span> sketch ne <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span></a>
-<a class="sourceLine" id="cb1-26" data-line-number="26"></a>
-<a class="sourceLine" id="cb1-27" data-line-number="27">        <span class="co">-- parallel compare summary to powers of two</span></a>
-<a class="sourceLine" id="cb1-28" data-line-number="28">        <span class="fu">!</span>cmpp2 <span class="fu">=</span> parallelCompare <span class="bn">0xFFBF9F8F87838180</span> (<span class="bn">0x0101010101010101</span> <span class="fu">*</span> summary)</a>
-<a class="sourceLine" id="cb1-29" data-line-number="29">        </a>
-<a class="sourceLine" id="cb1-30" data-line-number="30">        <span class="co">-- index of most significant non-zero byte * 8</span></a>
-<a class="sourceLine" id="cb1-31" data-line-number="31">        <span class="fu">!</span>idxMsbyte <span class="fu">=</span> sumTopBits8 cmpp2                </a>
-<a class="sourceLine" id="cb1-32" data-line-number="32"></a>
-<a class="sourceLine" id="cb1-33" data-line-number="33">        <span class="co">-- most significant 7-bits of most significant non-zero byte</span></a>
-<a class="sourceLine" id="cb1-34" data-line-number="34">        <span class="fu">!</span>msbyte <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> (fromIntegral idxMsbyte)) <span class="fu">.&amp;.</span> <span class="bn">0xFF</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span></a>
-<a class="sourceLine" id="cb1-35" data-line-number="35"></a>
-<a class="sourceLine" id="cb1-36" data-line-number="36">        <span class="co">-- parallel compare msbyte to powers of two</span></a>
-<a class="sourceLine" id="cb1-37" data-line-number="37">        <span class="fu">!</span>cmpp2' <span class="fu">=</span> parallelCompare <span class="bn">0xFFBF9F8F87838180</span> (<span class="bn">0x0101010101010101</span> <span class="fu">*</span> msbyte)</a>
-<a class="sourceLine" id="cb1-38" data-line-number="38"></a>
-<a class="sourceLine" id="cb1-39" data-line-number="39">        <span class="co">-- index of most significant non-zero bit in msbyte</span></a>
-<a class="sourceLine" id="cb1-40" data-line-number="40">        <span class="fu">!</span>idxMsbit <span class="fu">=</span> sumTopBits cmpp2' </a>
-<a class="sourceLine" id="cb1-41" data-line-number="41"></a>
-<a class="sourceLine" id="cb1-42" data-line-number="42">        <span class="co">-- Maps top bits of each byte into lower byte assuming all other bits are 0.</span></a>
-<a class="sourceLine" id="cb1-43" data-line-number="43">        <span class="co">-- 0x2040810204081 = sum [2^j | j &lt;- map (\i -&gt; 49 - 7*i) [0..7]]</span></a>
-<a class="sourceLine" id="cb1-44" data-line-number="44">        <span class="co">-- In general if w = 2^(2*k+p) and p = 0 or 1 the formula is:</span></a>
-<a class="sourceLine" id="cb1-45" data-line-number="45">        <span class="co">-- sum [2^j | j &lt;- map (\i -&gt; w-(2^k-1) - 2^(k+p) - (2^(k+p) - 1)*i) [0..2^k-1]]</span></a>
-<a class="sourceLine" id="cb1-46" data-line-number="46">        <span class="co">-- Followed by shifting right by w - 2^k</span></a>
-<a class="sourceLine" id="cb1-47" data-line-number="47">        sketch w <span class="fu">=</span> (w <span class="fu">*</span> <span class="bn">0x2040810204081</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">56</span></a>
-<a class="sourceLine" id="cb1-48" data-line-number="48"></a>
-<a class="sourceLine" id="cb1-49" data-line-number="49">        parallelCompare w1 w2 <span class="fu">=</span> complement (w1 <span class="fu">-</span> w2) <span class="fu">.&amp;.</span> <span class="bn">0x8080808080808080</span></a>
-<a class="sourceLine" id="cb1-50" data-line-number="50">        sumTopBits w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="fu">*</span> <span class="bn">0x0101010101010101</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">56</span></a>
-<a class="sourceLine" id="cb1-51" data-line-number="51">        sumTopBits8 w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="fu">*</span> <span class="bn">0x0808080808080808</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">56</span></a>
-<a class="sourceLine" id="cb1-52" data-line-number="52"></a>
-<a class="sourceLine" id="cb1-53" data-line-number="53"><span class="ot">indexOfMostSignificant1_w32 ::</span> <span class="dt">Word32</span> <span class="ot">-&gt;</span> <span class="dt">Word32</span></a>
-<a class="sourceLine" id="cb1-54" data-line-number="54">indexOfMostSignificant1_w32 w <span class="fu">=</span> idxMsbyte <span class="fu">.|.</span> idxMsbit</a>
-<a class="sourceLine" id="cb1-55" data-line-number="55">    <span class="kw">where</span> <span class="fu">!</span>wtbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x80808080</span></a>
-<a class="sourceLine" id="cb1-56" data-line-number="56">          <span class="fu">!</span>wbbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x7F7F7F7F</span></a>
-<a class="sourceLine" id="cb1-57" data-line-number="57">          <span class="fu">!</span>pc <span class="fu">=</span> parallelCompare <span class="bn">0x80808080</span> wbbs</a>
-<a class="sourceLine" id="cb1-58" data-line-number="58">          <span class="fu">!</span>ne <span class="fu">=</span> wtbs <span class="fu">.|.</span> pc</a>
-<a class="sourceLine" id="cb1-59" data-line-number="59">          <span class="fu">!</span>summary <span class="fu">=</span> sketch ne <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span></a>
-<a class="sourceLine" id="cb1-60" data-line-number="60">          <span class="fu">!</span>cmpp2 <span class="fu">=</span> parallelCompare <span class="bn">0xFF838180</span> (<span class="bn">0x01010101</span> <span class="fu">*</span> summary)</a>
-<a class="sourceLine" id="cb1-61" data-line-number="61">          <span class="fu">!</span>idxMsbyte <span class="fu">=</span> sumTopBits8 cmpp2</a>
-<a class="sourceLine" id="cb1-62" data-line-number="62">          <span class="fu">!</span>msbyte <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> (fromIntegral idxMsbyte)) <span class="fu">.&amp;.</span> <span class="bn">0xFF</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span></a>
-<a class="sourceLine" id="cb1-63" data-line-number="63">          <span class="fu">!</span>cmpp2' <span class="fu">=</span> parallelCompare <span class="bn">0x87838180</span> (<span class="bn">0x01010101</span> <span class="fu">*</span> msbyte)</a>
-<a class="sourceLine" id="cb1-64" data-line-number="64"></a>
-<a class="sourceLine" id="cb1-65" data-line-number="65">          <span class="co">-- extra step when w is not an even power of two</span></a>
-<a class="sourceLine" id="cb1-66" data-line-number="66">          <span class="fu">!</span>cmpp2'' <span class="fu">=</span> parallelCompare <span class="bn">0xFFBF9F8F</span> (<span class="bn">0x01010101</span> <span class="fu">*</span> msbyte)</a>
-<a class="sourceLine" id="cb1-67" data-line-number="67">          <span class="fu">!</span>idxMsbit <span class="fu">=</span> sumTopBits cmpp2' <span class="fu">+</span> sumTopBits cmpp2''</a>
-<a class="sourceLine" id="cb1-68" data-line-number="68"></a>
-<a class="sourceLine" id="cb1-69" data-line-number="69">          sketch w <span class="fu">=</span> (w <span class="fu">*</span> <span class="bn">0x204081</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">28</span></a>
-<a class="sourceLine" id="cb1-70" data-line-number="70">          parallelCompare w1 w2 <span class="fu">=</span> complement (w1 <span class="fu">-</span> w2) <span class="fu">.&amp;.</span> <span class="bn">0x80808080</span></a>
-<a class="sourceLine" id="cb1-71" data-line-number="71">          sumTopBits w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="fu">*</span> <span class="bn">0x01010101</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">24</span></a>
-<a class="sourceLine" id="cb1-72" data-line-number="72">          sumTopBits8 w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="fu">*</span> <span class="bn">0x08080808</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">24</span></a>
-<a class="sourceLine" id="cb1-73" data-line-number="73"></a>
-<a class="sourceLine" id="cb1-74" data-line-number="74"><span class="ot">indexOfMostSignificant1_w16 ::</span> <span class="dt">Word16</span> <span class="ot">-&gt;</span> <span class="dt">Word16</span></a>
-<a class="sourceLine" id="cb1-75" data-line-number="75">indexOfMostSignificant1_w16 w <span class="fu">=</span> idxMsnibble <span class="fu">.|.</span> idxMsbit</a>
-<a class="sourceLine" id="cb1-76" data-line-number="76">    <span class="kw">where</span> <span class="fu">!</span>wtbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x8888</span></a>
-<a class="sourceLine" id="cb1-77" data-line-number="77">          <span class="fu">!</span>wbbs <span class="fu">=</span> w <span class="fu">.&amp;.</span> <span class="bn">0x7777</span></a>
-<a class="sourceLine" id="cb1-78" data-line-number="78">          <span class="fu">!</span>pc <span class="fu">=</span> parallelCompare <span class="bn">0x8888</span> wbbs</a>
-<a class="sourceLine" id="cb1-79" data-line-number="79">          <span class="fu">!</span>ne <span class="fu">=</span> wtbs <span class="fu">.|.</span> pc</a>
-<a class="sourceLine" id="cb1-80" data-line-number="80">          <span class="fu">!</span>summary <span class="fu">=</span> sketch ne <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span></a>
-<a class="sourceLine" id="cb1-81" data-line-number="81">          <span class="fu">!</span>cmpp2 <span class="fu">=</span> parallelCompare <span class="bn">0xFB98</span> (<span class="bn">0x1111</span> <span class="fu">*</span> summary)</a>
-<a class="sourceLine" id="cb1-82" data-line-number="82">          <span class="fu">!</span>idxMsnibble <span class="fu">=</span> sumTopBits4 cmpp2</a>
-<a class="sourceLine" id="cb1-83" data-line-number="83">          <span class="fu">!</span>msnibble <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> (fromIntegral idxMsnibble)) <span class="fu">.&amp;.</span> <span class="bn">0xF</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span></a>
-<a class="sourceLine" id="cb1-84" data-line-number="84">          <span class="fu">!</span>cmpp2' <span class="fu">=</span> parallelCompare <span class="bn">0xFB98</span> (<span class="bn">0x1111</span> <span class="fu">*</span> msnibble)</a>
-<a class="sourceLine" id="cb1-85" data-line-number="85">          <span class="fu">!</span>idxMsbit <span class="fu">=</span> sumTopBits cmpp2'</a>
-<a class="sourceLine" id="cb1-86" data-line-number="86"></a>
-<a class="sourceLine" id="cb1-87" data-line-number="87">          sketch w <span class="fu">=</span> (w <span class="fu">*</span> <span class="bn">0x249</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">12</span></a>
-<a class="sourceLine" id="cb1-88" data-line-number="88">          parallelCompare w1 w2 <span class="fu">=</span> complement (w1 <span class="fu">-</span> w2) <span class="fu">.&amp;.</span> <span class="bn">0x8888</span></a>
-<a class="sourceLine" id="cb1-89" data-line-number="89">          sumTopBits w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">3</span>) <span class="fu">*</span> <span class="bn">0x1111</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">12</span></a>
-<a class="sourceLine" id="cb1-90" data-line-number="90">          sumTopBits4 w <span class="fu">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">3</span>) <span class="fu">*</span> <span class="bn">0x4444</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">12</span></a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1"></a><span class="ot">{-# LANGUAGE BangPatterns #-}</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">import</span> <span class="dt">Data.Word</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="kw">import</span> <span class="dt">Data.Bits</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a></span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="co">-- Returns 0-based bit index of most significant bit that is 1. Assumes input is non-zero.</span></span>
+<span id="cb1-6"><a href="#cb1-6"></a><span class="co">-- That is, 2^indexOfMostSignificant1 x &lt;= x &lt; 2^(indexOfMostSignificant1 x + 1)</span></span>
+<span id="cb1-7"><a href="#cb1-7"></a><span class="co">-- From Erik Demaine's presentation in Spring 2012 lectures of MIT 6.851, particularly &quot;Lecture 12: Fusion Trees&quot;.</span></span>
+<span id="cb1-8"><a href="#cb1-8"></a><span class="co">-- Takes 26 (source-level) straight-line word operations.</span></span>
+<span id="cb1-9"><a href="#cb1-9"></a><span class="ot">indexOfMostSignificant1 ::</span> <span class="dt">Word64</span> <span class="ot">-&gt;</span> <span class="dt">Word64</span></span>
+<span id="cb1-10"><a href="#cb1-10"></a>indexOfMostSignificant1 w <span class="ot">=</span> idxMsbyte <span class="op">.|.</span> idxMsbit</span>
+<span id="cb1-11"><a href="#cb1-11"></a>    <span class="kw">where</span></span>
+<span id="cb1-12"><a href="#cb1-12"></a>        <span class="co">-- top bits of each byte</span></span>
+<span id="cb1-13"><a href="#cb1-13"></a>        <span class="op">!</span>wtbs <span class="ot">=</span> w <span class="op">.&amp;.</span> <span class="bn">0x8080808080808080</span></span>
+<span id="cb1-14"><a href="#cb1-14"></a>        </span>
+<span id="cb1-15"><a href="#cb1-15"></a>        <span class="co">-- all but top bits of each byte producing 8 7-bit chunks</span></span>
+<span id="cb1-16"><a href="#cb1-16"></a>        <span class="op">!</span>wbbs <span class="ot">=</span> w <span class="op">.&amp;.</span> <span class="bn">0x7F7F7F7F7F7F7F7F</span>              </span>
+<span id="cb1-17"><a href="#cb1-17"></a></span>
+<span id="cb1-18"><a href="#cb1-18"></a>        <span class="co">-- parallel compare of each 7-bit chunk to 0, top bit set in result if 7-bit chunk was not 0</span></span>
+<span id="cb1-19"><a href="#cb1-19"></a>        <span class="op">!</span>pc <span class="ot">=</span> parallelCompare <span class="bn">0x8080808080808080</span> wbbs</span>
+<span id="cb1-20"><a href="#cb1-20"></a></span>
+<span id="cb1-21"><a href="#cb1-21"></a>        <span class="co">-- top bit of each byte set if the byte has any bits set in w</span></span>
+<span id="cb1-22"><a href="#cb1-22"></a>        <span class="op">!</span>ne <span class="ot">=</span> wtbs <span class="op">.|.</span> pc                             </span>
+<span id="cb1-23"><a href="#cb1-23"></a></span>
+<span id="cb1-24"><a href="#cb1-24"></a>        <span class="co">-- a summary of which bytes (except the first) are non-zero as a 7-bit bitfield, i.e. top bits collected into bottom byte</span></span>
+<span id="cb1-25"><a href="#cb1-25"></a>        <span class="op">!</span>summary <span class="ot">=</span> sketch ne <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span></span>
+<span id="cb1-26"><a href="#cb1-26"></a></span>
+<span id="cb1-27"><a href="#cb1-27"></a>        <span class="co">-- parallel compare summary to powers of two</span></span>
+<span id="cb1-28"><a href="#cb1-28"></a>        <span class="op">!</span>cmpp2 <span class="ot">=</span> parallelCompare <span class="bn">0xFFBF9F8F87838180</span> (<span class="bn">0x0101010101010101</span> <span class="op">*</span> summary)</span>
+<span id="cb1-29"><a href="#cb1-29"></a>        </span>
+<span id="cb1-30"><a href="#cb1-30"></a>        <span class="co">-- index of most significant non-zero byte * 8</span></span>
+<span id="cb1-31"><a href="#cb1-31"></a>        <span class="op">!</span>idxMsbyte <span class="ot">=</span> sumTopBits8 cmpp2                </span>
+<span id="cb1-32"><a href="#cb1-32"></a></span>
+<span id="cb1-33"><a href="#cb1-33"></a>        <span class="co">-- most significant 7-bits of most significant non-zero byte</span></span>
+<span id="cb1-34"><a href="#cb1-34"></a>        <span class="op">!</span>msbyte <span class="ot">=</span> ((w <span class="ot">`unsafeShiftR`</span> (<span class="fu">fromIntegral</span> idxMsbyte)) <span class="op">.&amp;.</span> <span class="bn">0xFF</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span></span>
+<span id="cb1-35"><a href="#cb1-35"></a></span>
+<span id="cb1-36"><a href="#cb1-36"></a>        <span class="co">-- parallel compare msbyte to powers of two</span></span>
+<span id="cb1-37"><a href="#cb1-37"></a>        <span class="op">!</span>cmpp2' <span class="ot">=</span> parallelCompare <span class="bn">0xFFBF9F8F87838180</span> (<span class="bn">0x0101010101010101</span> <span class="op">*</span> msbyte)</span>
+<span id="cb1-38"><a href="#cb1-38"></a></span>
+<span id="cb1-39"><a href="#cb1-39"></a>        <span class="co">-- index of most significant non-zero bit in msbyte</span></span>
+<span id="cb1-40"><a href="#cb1-40"></a>        <span class="op">!</span>idxMsbit <span class="ot">=</span> sumTopBits cmpp2' </span>
+<span id="cb1-41"><a href="#cb1-41"></a></span>
+<span id="cb1-42"><a href="#cb1-42"></a>        <span class="co">-- Maps top bits of each byte into lower byte assuming all other bits are 0.</span></span>
+<span id="cb1-43"><a href="#cb1-43"></a>        <span class="co">-- 0x2040810204081 = sum [2^j | j &lt;- map (\i -&gt; 49 - 7*i) [0..7]]</span></span>
+<span id="cb1-44"><a href="#cb1-44"></a>        <span class="co">-- In general if w = 2^(2*k+p) and p = 0 or 1 the formula is:</span></span>
+<span id="cb1-45"><a href="#cb1-45"></a>        <span class="co">-- sum [2^j | j &lt;- map (\i -&gt; w-(2^k-1) - 2^(k+p) - (2^(k+p) - 1)*i) [0..2^k-1]]</span></span>
+<span id="cb1-46"><a href="#cb1-46"></a>        <span class="co">-- Followed by shifting right by w - 2^k</span></span>
+<span id="cb1-47"><a href="#cb1-47"></a>        sketch w <span class="ot">=</span> (w <span class="op">*</span> <span class="bn">0x2040810204081</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">56</span></span>
+<span id="cb1-48"><a href="#cb1-48"></a></span>
+<span id="cb1-49"><a href="#cb1-49"></a>        parallelCompare w1 w2 <span class="ot">=</span> complement (w1 <span class="op">-</span> w2) <span class="op">.&amp;.</span> <span class="bn">0x8080808080808080</span></span>
+<span id="cb1-50"><a href="#cb1-50"></a>        sumTopBits w <span class="ot">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="op">*</span> <span class="bn">0x0101010101010101</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">56</span></span>
+<span id="cb1-51"><a href="#cb1-51"></a>        sumTopBits8 w <span class="ot">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="op">*</span> <span class="bn">0x0808080808080808</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">56</span></span>
+<span id="cb1-52"><a href="#cb1-52"></a></span>
+<span id="cb1-53"><a href="#cb1-53"></a><span class="ot">indexOfMostSignificant1_w32 ::</span> <span class="dt">Word32</span> <span class="ot">-&gt;</span> <span class="dt">Word32</span></span>
+<span id="cb1-54"><a href="#cb1-54"></a>indexOfMostSignificant1_w32 w <span class="ot">=</span> idxMsbyte <span class="op">.|.</span> idxMsbit</span>
+<span id="cb1-55"><a href="#cb1-55"></a>    <span class="kw">where</span> <span class="op">!</span>wtbs <span class="ot">=</span> w <span class="op">.&amp;.</span> <span class="bn">0x80808080</span></span>
+<span id="cb1-56"><a href="#cb1-56"></a>          <span class="op">!</span>wbbs <span class="ot">=</span> w <span class="op">.&amp;.</span> <span class="bn">0x7F7F7F7F</span></span>
+<span id="cb1-57"><a href="#cb1-57"></a>          <span class="op">!</span>pc <span class="ot">=</span> parallelCompare <span class="bn">0x80808080</span> wbbs</span>
+<span id="cb1-58"><a href="#cb1-58"></a>          <span class="op">!</span>ne <span class="ot">=</span> wtbs <span class="op">.|.</span> pc</span>
+<span id="cb1-59"><a href="#cb1-59"></a>          <span class="op">!</span>summary <span class="ot">=</span> sketch ne <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span></span>
+<span id="cb1-60"><a href="#cb1-60"></a>          <span class="op">!</span>cmpp2 <span class="ot">=</span> parallelCompare <span class="bn">0xFF838180</span> (<span class="bn">0x01010101</span> <span class="op">*</span> summary)</span>
+<span id="cb1-61"><a href="#cb1-61"></a>          <span class="op">!</span>idxMsbyte <span class="ot">=</span> sumTopBits8 cmpp2</span>
+<span id="cb1-62"><a href="#cb1-62"></a>          <span class="op">!</span>msbyte <span class="ot">=</span> ((w <span class="ot">`unsafeShiftR`</span> (<span class="fu">fromIntegral</span> idxMsbyte)) <span class="op">.&amp;.</span> <span class="bn">0xFF</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span></span>
+<span id="cb1-63"><a href="#cb1-63"></a>          <span class="op">!</span>cmpp2' <span class="ot">=</span> parallelCompare <span class="bn">0x87838180</span> (<span class="bn">0x01010101</span> <span class="op">*</span> msbyte)</span>
+<span id="cb1-64"><a href="#cb1-64"></a></span>
+<span id="cb1-65"><a href="#cb1-65"></a>          <span class="co">-- extra step when w is not an even power of two</span></span>
+<span id="cb1-66"><a href="#cb1-66"></a>          <span class="op">!</span>cmpp2'' <span class="ot">=</span> parallelCompare <span class="bn">0xFFBF9F8F</span> (<span class="bn">0x01010101</span> <span class="op">*</span> msbyte)</span>
+<span id="cb1-67"><a href="#cb1-67"></a>          <span class="op">!</span>idxMsbit <span class="ot">=</span> sumTopBits cmpp2' <span class="op">+</span> sumTopBits cmpp2''</span>
+<span id="cb1-68"><a href="#cb1-68"></a></span>
+<span id="cb1-69"><a href="#cb1-69"></a>          sketch w <span class="ot">=</span> (w <span class="op">*</span> <span class="bn">0x204081</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">28</span></span>
+<span id="cb1-70"><a href="#cb1-70"></a>          parallelCompare w1 w2 <span class="ot">=</span> complement (w1 <span class="op">-</span> w2) <span class="op">.&amp;.</span> <span class="bn">0x80808080</span></span>
+<span id="cb1-71"><a href="#cb1-71"></a>          sumTopBits w <span class="ot">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="op">*</span> <span class="bn">0x01010101</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">24</span></span>
+<span id="cb1-72"><a href="#cb1-72"></a>          sumTopBits8 w <span class="ot">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="op">*</span> <span class="bn">0x08080808</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">24</span></span>
+<span id="cb1-73"><a href="#cb1-73"></a></span>
+<span id="cb1-74"><a href="#cb1-74"></a><span class="ot">indexOfMostSignificant1_w16 ::</span> <span class="dt">Word16</span> <span class="ot">-&gt;</span> <span class="dt">Word16</span></span>
+<span id="cb1-75"><a href="#cb1-75"></a>indexOfMostSignificant1_w16 w <span class="ot">=</span> idxMsnibble <span class="op">.|.</span> idxMsbit</span>
+<span id="cb1-76"><a href="#cb1-76"></a>    <span class="kw">where</span> <span class="op">!</span>wtbs <span class="ot">=</span> w <span class="op">.&amp;.</span> <span class="bn">0x8888</span></span>
+<span id="cb1-77"><a href="#cb1-77"></a>          <span class="op">!</span>wbbs <span class="ot">=</span> w <span class="op">.&amp;.</span> <span class="bn">0x7777</span></span>
+<span id="cb1-78"><a href="#cb1-78"></a>          <span class="op">!</span>pc <span class="ot">=</span> parallelCompare <span class="bn">0x8888</span> wbbs</span>
+<span id="cb1-79"><a href="#cb1-79"></a>          <span class="op">!</span>ne <span class="ot">=</span> wtbs <span class="op">.|.</span> pc</span>
+<span id="cb1-80"><a href="#cb1-80"></a>          <span class="op">!</span>summary <span class="ot">=</span> sketch ne <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span></span>
+<span id="cb1-81"><a href="#cb1-81"></a>          <span class="op">!</span>cmpp2 <span class="ot">=</span> parallelCompare <span class="bn">0xFB98</span> (<span class="bn">0x1111</span> <span class="op">*</span> summary)</span>
+<span id="cb1-82"><a href="#cb1-82"></a>          <span class="op">!</span>idxMsnibble <span class="ot">=</span> sumTopBits4 cmpp2</span>
+<span id="cb1-83"><a href="#cb1-83"></a>          <span class="op">!</span>msnibble <span class="ot">=</span> ((w <span class="ot">`unsafeShiftR`</span> (<span class="fu">fromIntegral</span> idxMsnibble)) <span class="op">.&amp;.</span> <span class="bn">0xF</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span></span>
+<span id="cb1-84"><a href="#cb1-84"></a>          <span class="op">!</span>cmpp2' <span class="ot">=</span> parallelCompare <span class="bn">0xFB98</span> (<span class="bn">0x1111</span> <span class="op">*</span> msnibble)</span>
+<span id="cb1-85"><a href="#cb1-85"></a>          <span class="op">!</span>idxMsbit <span class="ot">=</span> sumTopBits cmpp2'</span>
+<span id="cb1-86"><a href="#cb1-86"></a></span>
+<span id="cb1-87"><a href="#cb1-87"></a>          sketch w <span class="ot">=</span> (w <span class="op">*</span> <span class="bn">0x249</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">12</span></span>
+<span id="cb1-88"><a href="#cb1-88"></a>          parallelCompare w1 w2 <span class="ot">=</span> complement (w1 <span class="op">-</span> w2) <span class="op">.&amp;.</span> <span class="bn">0x8888</span></span>
+<span id="cb1-89"><a href="#cb1-89"></a>          sumTopBits w <span class="ot">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">3</span>) <span class="op">*</span> <span class="bn">0x1111</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">12</span></span>
+<span id="cb1-90"><a href="#cb1-90"></a>          sumTopBits4 w <span class="ot">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">3</span>) <span class="op">*</span> <span class="bn">0x4444</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">12</span></span></code></pre></div>
         
     </div>
 
@@ -331,7 +331,7 @@
         <h6 class="blog-post-meta">
             November 10, 2016 07:48 UTC
             
-            (Last updated on November 13, 2016 00:50 UTC)
+            (Last updated on August 24, 2019 21:37 UTC)
 
             
                 Tags: <a href="./tags/programming.html">programming</a>, <a href="./tags/CS.html">CS</a>
@@ -353,6 +353,7 @@
         
             <h2 id="introduction">Introduction</h2>
 <p>Programmers in typed languages with higher order functions and algebraic data types are already comfortable with most of the basic constructions of set/type theory. In categorical terms, those programmers are familiar with finite products and coproducts and (monoidal/cartesian) closed structure. The main omissions are subset types (equalizers/pullbacks) and quotient types (coequalizers/pushouts) which would round out limits and colimits. Not having a good grasp on either of these constructions dramatically shrinks the world of mathematics that is understandable, but while subset types are fairly straightforward, quotient types are quite a bit less intuitive.</p>
+<p>See <a href="https://stackoverflow.com/questions/23596225/how-can-quotient-types-help-safely-expose-module-internals/39765173#39765173">this StackOverflow answer</a> by me which provides a more software engineering perspective.</p>
 <h2 id="subset-types">Subset Types</h2>
 <p>In my opinion, most programmers can more or less immediately understand the notion of a subset type at an intuitive level.<br />
 A <strong>subset type</strong> is just a type combined with a predicate on that type that specifies which values of the type we want. For example, we may have something like <code>{ n:Nat | n /= 0 }</code> meaning the type of naturals not equal to #0#. We may use this in the type of the division function for the denominator. Consuming a value of a subset type is easy, a natural not equal to #0# is still just a natural, and we can treat it as such. The difficult part is producing a value of a subset type. To do this, we must, of course, produce a value of the underlying type — <code>Nat</code> in our example — but then we must further convince the type checker that the predicate holds (e.g. that the value does not equal #0#). Most languages provide no mechanism to prove potentially arbitrary facts about code, and this is why they do not support subset types. Dependently typed languages do provide such mechanisms and thus either have or can encode subset types. Outside of dependently typed languages the typical solution is to use an abstract data type and use a runtime check when values of that abstract data type are created.</p>
@@ -361,18 +362,18 @@ A <strong>subset type</strong> is just a type combined with a predicate on that 
 <p>For mathematicians, the type of integers mod #n# is represented by the quotient type #ZZ//n ZZ#. The idea is that the values of #ZZ // n ZZ# are integers except that we agree that any two integers #a# and #b# are treated as equal if #a - b = kn# for some integer #k#. For #ZZ // 3 ZZ#, #… -6 = -3 = 0 = 3 = 6 = …# and #… = -5 = -2 = 1 = 4 = 7 = …# and #… = -4 = -1 = 2 = 5 = 8 = …#.</p>
 <h2 id="equivalence-relations">Equivalence Relations</h2>
 <p>To start to formalize this, we need the notion of an equivalence relation. An <strong>equivalence relation</strong> is a binary relation <code class="asciimath">#(~~)#</code> which is <strong>reflexive</strong> (#x ~~ x# for all #x#), <strong>symmetric</strong> (if <code class="asciimath">#x ~~ y#</code> then <code class="asciimath">#y ~~ x#</code>), and <strong>transitive</strong> (if <code class="asciimath">#x ~~ y#</code> and <code class="asciimath">#y ~~ z#</code> then <code class="asciimath">#x ~~ z#</code>). We can check that “#a ~~ b# iff there exists an integer #k# such that #a-b = kn#” defines an equivalence relation on the integers for any given #n#. For reflexivity we have #a - a = 0n#. For symmetry we have if #a - b = kn# then #b - a = -kn#. Finally, for transitivity we have if #a - b = k_1 n# and #b - c = k_2 n# then #a - c = (k_1 + k_2)n# which we get by adding the preceding two equations.</p>
-<p>Any relation can be extended to an equivalence relation. This is called the reflexive-, symmetric-, transitive-closure of the relation. For an arbitrary binary relation #R# we can define the equivalence relation #(~~_R)# via &quot;#a ~~_R b# iff #a = b# or #R(a, b)# or #b ~~_R a# or #a ~~_R c and c ~~_R b# for some #c#&quot;. To be precise, #~~_R# is the smallest relation satisfying those constraints. In Datalog syntax, this looks like:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode prolog"><code class="sourceCode prolog"><a class="sourceLine" id="cb1-1" data-line-number="1">eq_r(<span class="dt">A</span><span class="kw">,</span> <span class="dt">A</span>)<span class="kw">.</span></a>
-<a class="sourceLine" id="cb1-2" data-line-number="2">eq_r(<span class="dt">A</span><span class="kw">,</span> <span class="dt">B</span>) <span class="kw">:-</span> r(<span class="dt">A</span><span class="kw">,</span> <span class="dt">B</span>)<span class="kw">.</span></a>
-<a class="sourceLine" id="cb1-3" data-line-number="3">eq_r(<span class="dt">A</span><span class="kw">,</span> <span class="dt">B</span>) <span class="kw">:-</span> eq_r(<span class="dt">B</span><span class="kw">,</span> <span class="dt">A</span>)<span class="kw">.</span></a>
-<a class="sourceLine" id="cb1-4" data-line-number="4">eq_r(<span class="dt">A</span><span class="kw">,</span> <span class="dt">B</span>) <span class="kw">:-</span> eq_r(<span class="dt">A</span><span class="kw">,</span> <span class="dt">C</span>)<span class="kw">,</span> eq_r(<span class="dt">C</span><span class="kw">,</span> <span class="dt">B</span>)<span class="kw">.</span></a></code></pre></div>
+<p>Any relation can be extended to an equivalence relation. This is called the reflexive-, symmetric-, transitive-closure of the relation. For an arbitrary binary relation #R# we can define the equivalence relation #(~~_R)# via "#a ~~_R b# iff #a = b# or #R(a, b)# or #b ~~_R a# or #a ~~_R c and c ~~_R b# for some #c#". To be precise, #~~_R# is the smallest relation satisfying those constraints. In Datalog syntax, this looks like:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode prolog"><code class="sourceCode prolog"><span id="cb1-1"><a href="#cb1-1"></a>eq_r(<span class="dt">A</span><span class="kw">,</span> <span class="dt">A</span>)<span class="kw">.</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a>eq_r(<span class="dt">A</span><span class="kw">,</span> <span class="dt">B</span>) <span class="kw">:-</span> r(<span class="dt">A</span><span class="kw">,</span> <span class="dt">B</span>)<span class="kw">.</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>eq_r(<span class="dt">A</span><span class="kw">,</span> <span class="dt">B</span>) <span class="kw">:-</span> eq_r(<span class="dt">B</span><span class="kw">,</span> <span class="dt">A</span>)<span class="kw">.</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a>eq_r(<span class="dt">A</span><span class="kw">,</span> <span class="dt">B</span>) <span class="kw">:-</span> eq_r(<span class="dt">A</span><span class="kw">,</span> <span class="dt">C</span>)<span class="kw">,</span> eq_r(<span class="dt">C</span><span class="kw">,</span> <span class="dt">B</span>)<span class="kw">.</span></span></code></pre></div>
 <h2 id="quotient-types-the-type-theory-view">Quotient Types: the Type Theory view</h2>
 <p>If #T# is a type, and <code class="asciimath">#(~~)#</code> is an equivalence relation, we use #T // ~~# as the notation for the <strong>quotient type</strong>, which we read as “#T# quotiented by the equivalence relation <code class="asciimath">#(~~)#</code>”. We call #T# the <strong>underlying type</strong> of the quotient type. We then say #a = b# at type #T // ~~# iff #a ~~ b#. Dual to subset types, to produce a value of a quotient type is easy. Any value of the underlying type is a value of the quotient type. (In type theory, this produces the perhaps surprising result that #ZZ# is a <em>subtype</em> of #ZZ // n ZZ#.) As expected, consuming a value of a quotient type is more complicated. To explain this, we need to explain what a function #f : T // ~~ -&gt; X# is for some type #X#. A function #f : T // ~~ -&gt; X# is a function #g : T -&gt; X# which satisfies #g(a) = g(b)# for all #a# and #b# such that #a ~~ b#. We call #f# (or #g#, they are often conflated) <strong>well-defined</strong> if #g# satisfies this condition. In other words, any well-defined function that consumes a quotient type isn’t allowed to produce an output that distinguishes between equivalent inputs. A better way to understand this is that quotient types allow us to change what the notion of equality is for a type. From this perspective, a function being well-defined just means that it is a function. Taking equal inputs to equal outputs is one of the defining characteristics of a function.</p>
 <p>Sometimes we can finesse needing to check the side condition. Any function #h : T -&gt; B# gives rise to an equivalence relation on #T# via #a ~~ b# iff #h(a) = h(b)#. In this case, any function #g : B -&gt; X# gives rise to a function #f : T // ~~ -&gt; X# via #f = g @ h#. In particular, when #B = T# we are guaranteed to have a suitable #g# for any function #f : T // ~~ -&gt; X#. In this case, we can implement quotient types in a manner quite similar subset types, namely we make an abstract type and we normalize with the #h# function as we either produce or consume values of the abstract type. A common example of this is rational numbers. We can reduce a rational number to lowest terms either when it’s produced or when the numerator or denominator get accessed, so that we don’t accidentally write functions which distinguish between #1/2# and #2/4#. For modular arithmetic, the mod by #n# function is a suitable #h#.</p>
 <h2 id="quotient-types-the-set-theory-view">Quotient Types: the Set Theory view</h2>
-<p>In set theory such an #h# function can always be made by mapping the elements of #T# to the equivalence classes that contain them, i.e. #a# gets mapped to #{b | a ~~ b}# which is called the <strong>equivalence class</strong> of #a#. In fact, in set theory, #T // ~~# is usually defined to <em>be</em> the set of equivalence classes of <code class="asciimath">#(~~)#</code>. So, for the example of #ZZ // 3 ZZ#, in set theory, it is a set of exactly three elements: the elements are #{ 3n+k | n in ZZ}# for #k = 0, 1, 2#. Equivalence classes are also called <strong>partitions</strong> and are said to partition the underlying set. Elements of these equivalence classes are called <strong>representatives</strong> of the equivalence class. Often a notation like #[a]# is used for the equivalence class of #a#.</p>
+<p>In set theory such an #h# function can always be made by mapping the elements of #T# to the equivalence classes that contain them, i.e. #a# gets mapped to #{b | a ~~ b}# which is called the <strong>equivalence class</strong> of #a#. In fact, in set theory, #T // ~~# is usually defined to <em>be</em> the set of equivalence classes of <code class="asciimath">#(~~)#</code>. So, for the example of #ZZ // 3 ZZ#, in set theory, it is a set of exactly three elements: the elements are #{ 3n+k | n in ZZ}# for #k = 0, 1, 2#. Equivalence classes are also called <strong>partitions</strong> and are said to partition the underlying set. Elements of these equivalence classes are called <strong>representatives</strong> of the equivalence class. Often a notation like #[a]# is used for the equivalence class of #a#.</p>
 <h2 id="more-examples">More Examples</h2>
-<p>Here is a quick run-through of some significant applications of quotient types. I’ll give the underlying type and the equivalence relation and what the quotient type produces. I’ll leave it as an exercise to verify that the equivalence relations really are equivalence relations, i.e. reflexive, symmetric, and transitive. I’ll start with more basic examples. You should work through them to be sure you understand how they work.</p>
+<p>Here is a quick run-through of some significant applications of quotient types. I’ll give the underlying type and the equivalence relation and what the quotient type produces. I’ll leave it as an exercise to verify that the equivalence relations really are equivalence relations, i.e. reflexive, symmetric, and transitive. I’ll start with more basic examples. You should work through them to be sure you understand how they work.</p>
 <h3 id="integers">Integers</h3>
 <p>Integers can be presented as pairs of naturals #(n, m)# with the idea being that the pair represents “#n - m#”. Of course, #1 - 2# should be the same as #2 - 3#. This is expressed as #(n_1, m_1) ~~ (n_2, m_2)# iff #n_1 + m_2 = n_2 + m_1#. Note how this definition only relies on operations on natural numbers. You can explore how to define addition, subtraction, multiplication, and other operations on this representation in a well-defined manner.</p>
 <h3 id="rationals">Rationals</h3>
@@ -382,23 +383,23 @@ A <strong>subset type</strong> is just a type combined with a predicate on that 
 <h3 id="torii">Torii</h3>
 <p>Doing the previous example in 2D gives a torus. Specifically, we have pairs of real numbers and the equivalence relation #(x_1, y_1) ~~ (x_2, y_2)# iff #x_1 - x_2 = k# and #y_1 - y_2 = l# for some integers #k# and #l#. Quite a bit of topology relies on similar constructions as will be expanded upon on the section on gluing.</p>
 <h3 id="unordered-pairs">Unordered pairs</h3>
-<p>Here’s an example that’s a bit closer to programming. Consider the following equivalence relation on arbitrary pairs: #(a_1, b_1) ~~ (a_2, b_2)# iff #a_1 = a_2 and b_1 = b_2# or #a_1 = b_2 and b_1 = a_2#. This just says that a pair is equivalent to either itself, or a swapped version of itself. It’s interesting to consider what a well-defined function is on this type.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></p>
+<p>Here’s an example that’s a bit closer to programming. Consider the following equivalence relation on arbitrary pairs: #(a_1, b_1) ~~ (a_2, b_2)# iff #a_1 = a_2 and b_1 = b_2# or #a_1 = b_2 and b_1 = a_2#. This just says that a pair is equivalent to either itself, or a swapped version of itself. It’s interesting to consider what a well-defined function is on this type.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
 <h3 id="gluing-pushouts">Gluing / Pushouts</h3>
-<p>Returning to topology and doing a bit more involved construction, we arrive at gluing or pushouts. In topology, we often want to take two topological spaces and glue them together in some specified way. For example, we may want to take two discs and glue their boundaries together. This gives a sphere. We can combine two spaces into one with the disjoint sum (or coproduct, i.e. Haskell’s <code>Either</code> type.) This produces a space that contains both the input spaces, but they don’t interact in any way. You can visualize them as sitting next to each other but not touching. We now want to say that certain pairs of points, one from each of the spaces, are really the same point. That is, we want to quotient by an equivalence relation that would identify those points. We need some mechanism to specify which points we want to identify. One way to accomplish this is to have a pair of functions, #f : C -&gt; A# and #g : C -&gt; B#, where #A# and #B# are the spaces we want to glue together. We can then define a relation #R# on the disjoint sum via #R(a, b)# iff there’s a #c : C# such that <code class="asciimath">#a = tt &quot;inl&quot;(f(c)) and b = tt &quot;inr&quot;(g(c))#</code>. This is not an equivalence relation, but we can extend it to one. The quotient we get is then the gluing of #A# and #B# specified by #C# (or really by #f# and #g#). For our example of two discs, #f# and #g# are the same function, namely the inclusion of the boundary of the disc into the disc. We can also glue a space to itself. Just drop the disjoint sum part. Indeed, the circle and torus are examples.</p>
+<p>Returning to topology and doing a bit more involved construction, we arrive at gluing or pushouts. In topology, we often want to take two topological spaces and glue them together in some specified way. For example, we may want to take two discs and glue their boundaries together. This gives a sphere. We can combine two spaces into one with the disjoint sum (or coproduct, i.e. Haskell’s <code>Either</code> type.) This produces a space that contains both the input spaces, but they don’t interact in any way. You can visualize them as sitting next to each other but not touching. We now want to say that certain pairs of points, one from each of the spaces, are really the same point. That is, we want to quotient by an equivalence relation that would identify those points. We need some mechanism to specify which points we want to identify. One way to accomplish this is to have a pair of functions, #f : C -&gt; A# and #g : C -&gt; B#, where #A# and #B# are the spaces we want to glue together. We can then define a relation #R# on the disjoint sum via #R(a, b)# iff there’s a #c : C# such that <code class="asciimath">#a = tt "inl"(f(c)) and b = tt "inr"(g(c))#</code>. This is not an equivalence relation, but we can extend it to one. The quotient we get is then the gluing of #A# and #B# specified by #C# (or really by #f# and #g#). For our example of two discs, #f# and #g# are the same function, namely the inclusion of the boundary of the disc into the disc. We can also glue a space to itself. Just drop the disjoint sum part. Indeed, the circle and torus are examples.</p>
 <h3 id="polynomial-ring-ideals">Polynomial ring ideals</h3>
-<p>We write #RR[X]# for the type of polynomials with one indeterminate #X# with real coefficients. For two indeterminates, we write #RR[X, Y]#. Values of these types are just polynomials such as #X^2 + 1# or #X^2 + Y^2#. We can consider quotienting these types by equivalence relations generated from identifications like #X^2 + 1 ~~ 0# or #X^2 - Y ~~ 0#, but we want more than just the reflexive-, symmetric-, transitive-closure. We want this equivalence relation to also respect the operations we have on polynomials, in particular, addition and multiplication. More precisely, we want if #a ~~ b# and #c ~~ d# then #ac ~~ bd# and similarly for addition. An equivalence relation that respects all operations is called a <strong>congruence</strong>. The standard notation for the quotient of #RR[X, Y]# by a congruence generated by both of the previous identifications is #RR[X, Y]//(X^2 + 1, X^2 - Y)#. Now if #X^2 + 1 = 0# in #RR[X, Y]//(X^2 + 1, X^2 - Y)#, then for <em>any</em> polynomial #P(X, Y)#, we have #P(X, Y)(X^2 + 1) = 0# because #0# times anything is #0#. Similarly, for any polynomial #Q(X, Y)#, #Q(X, Y)(X^2 - Y) = 0#. Of course, #0 + 0 = 0#, so it must be the case that #P(X, Y)(X^2 + 1) + Q(X, Y)(X^2 - Y) = 0# for all polynomials #P# and #Q#. In fact, we can show that all elements in the equivalence class of #0# are of this form. You’ve now motivated the concrete definition of a ring ideal and given it’s significance. An <strong>ideal</strong> is an equivalence class of #0# with respect to some congruence. Let’s work out what #RR[X, Y]//(X^2 + 1, X^2 - Y)# looks like concretely. First, since #X^2 - Y = 0#, we have #Y = X^2# and so we see that values of #RR[X, Y]//(X^2 + 1, X^2 - Y)# will be polynomials in only one indeterminate because we can replace all #Y#s with #X^2#s. Since #X^2 = -1#, we can see that all those polynomials will be linear (i.e. of degree 1) because we can just keep replacing #X^2#s with #-1#s, i.e. #X^(n+2) = X^n X^2 = -X^n#. The end result is that an arbitrary polynomial in #RR[X, Y]//(X^2 + 1, X^2 - Y)# looks like #a + bX# for real numbers #a# and #b# and we have #X^2 = -1#. In other words, #RR[X, Y]//(X^2 + 1, X^2 - Y)# is isomorphic to the complex numbers, #CC#.</p>
-<p>As a reasonably simple exercise, given a polynomial #P(X) : RR[X]#, what does it get mapped to when embedded into #RR[X]//(X - 3)#, i.e. what is #[P(X)] : RR[X]//(X - 3)#?<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a></p>
+<p>We write #RR[X]# for the type of polynomials with one indeterminate #X# with real coefficients. For two indeterminates, we write #RR[X, Y]#. Values of these types are just polynomials such as #X^2 + 1# or #X^2 + Y^2#. We can consider quotienting these types by equivalence relations generated from identifications like #X^2 + 1 ~~ 0# or #X^2 - Y ~~ 0#, but we want more than just the reflexive-, symmetric-, transitive-closure. We want this equivalence relation to also respect the operations we have on polynomials, in particular, addition and multiplication. More precisely, we want if #a ~~ b# and #c ~~ d# then #ac ~~ bd# and similarly for addition. An equivalence relation that respects all operations is called a <strong>congruence</strong>. The standard notation for the quotient of #RR[X, Y]# by a congruence generated by both of the previous identifications is #RR[X, Y]//(X^2 + 1, X^2 - Y)#. Now if #X^2 + 1 = 0# in #RR[X, Y]//(X^2 + 1, X^2 - Y)#, then for <em>any</em> polynomial #P(X, Y)#, we have #P(X, Y)(X^2 + 1) = 0# because #0# times anything is #0#. Similarly, for any polynomial #Q(X, Y)#, #Q(X, Y)(X^2 - Y) = 0#. Of course, #0 + 0 = 0#, so it must be the case that #P(X, Y)(X^2 + 1) + Q(X, Y)(X^2 - Y) = 0# for all polynomials #P# and #Q#. In fact, we can show that all elements in the equivalence class of #0# are of this form. You’ve now motivated the concrete definition of a ring ideal and given it’s significance. An <strong>ideal</strong> is an equivalence class of #0# with respect to some congruence. Let’s work out what #RR[X, Y]//(X^2 + 1, X^2 - Y)# looks like concretely. First, since #X^2 - Y = 0#, we have #Y = X^2# and so we see that values of #RR[X, Y]//(X^2 + 1, X^2 - Y)# will be polynomials in only one indeterminate because we can replace all #Y#s with #X^2#s. Since #X^2 = -1#, we can see that all those polynomials will be linear (i.e. of degree 1) because we can just keep replacing #X^2#s with #-1#s, i.e. #X^(n+2) = X^n X^2 = -X^n#. The end result is that an arbitrary polynomial in #RR[X, Y]//(X^2 + 1, X^2 - Y)# looks like #a + bX# for real numbers #a# and #b# and we have #X^2 = -1#. In other words, #RR[X, Y]//(X^2 + 1, X^2 - Y)# is isomorphic to the complex numbers, #CC#.</p>
+<p>As a reasonably simple exercise, given a polynomial #P(X) : RR[X]#, what does it get mapped to when embedded into #RR[X]//(X - 3)#, i.e. what is #[P(X)] : RR[X]//(X - 3)#?<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
 <h3 id="free-algebras-modulo-an-equational-theory">Free algebras modulo an equational theory</h3>
 <p>Moving much closer to programming, we have a rather broad and important example that a mathematician might describe as free algebras modulo an equational theory. This example covers several of the preceding examples. In programmer-speak, a free algebra is just a type of abstract syntax trees for some language. We’ll call a specific abstract syntax tree a <strong>term</strong>. An equational theory is just a collection of pairs of terms with the idea being that we’d like these terms to be considered equal. To be a bit more precise, we will actually allow terms to contain (meta)variables. An example equation for an expression language might be <code>Add(</code>#x#<code>,</code>#x#<code>) = Mul(2,</code>#x#<code>)</code>. We call a term with no variables a <strong>ground term</strong>. We say a ground term <strong>matches</strong> another term if there is a consistent substitution for the variables that makes the latter term syntactically equal to the ground term. E.g. <code>Add(3, 3)</code> matches <code>Add(</code>#x#<code>,</code>#x#<code>)</code> via the substitution #x |-&gt;#<code>3</code>. Now, the equations of our equational theory gives rise to a relation on ground terms #R(t_1, t_2)# iff there exists an equation #l = r# such that #t_1# matches #l# and #t_2# matches #r#. This relation can be extended to an equivalence relation on ground terms, and we can then quotient by that equivalence relation.</p>
-<p>Let’s consider a worked example. We can consider the theory of monoids. We have two operations (types of AST nodes): <code>Mul(</code>#x#<code>,</code>#y#<code>)</code> and <code>1</code>. We have the following three equations: <code>Mul(1,</code>#x#<code>) =</code>#x#, <code>Mul(</code>#x#<code>, 1) =</code>#x#, and <code>Mul(Mul(</code>#x#<code>,</code>#y#<code>),</code>#z#<code>) = Mul(</code>#x#<code>, Mul(</code>#y#<code>,</code>#z#<code>))</code>. We additionally have a bunch of constants subject to no equations. In this case, it turns out we can define a normalization function, what I called #h# far above, and that the quotient type is isomorphic to lists of constants. Now, we can extend this theory to the theory of groups by adding a new operation, <code>Inv(</code>#x#<code>)</code>, and new equations: <code>Inv(Inv(</code>#x#<code>)) =</code>#x#, <code>Inv(Mul(</code>#x#<code>,</code>#y#<code>)) = Mul(Inv(</code>#y#<code>), Inv(</code>#x#<code>))</code>, and <code>Mul(Inv(</code>#x#<code>),</code>#x#<code>) = 1</code>. If we ignore the last of these equations, you can show that we can normalize to a form that is isomorphic to a list of a disjoint sum of the constants, i.e. <code>[Either Const Const]</code> in Haskell if <code>Const</code> were the type of the constant terms. Quotienting this type by the equivalence relation extended with that final equality corresponds to adding the rule that a <code>Left c</code> cancels out <code>Right c</code> in the list whenever they are adjacent.</p>
+<p>Let’s consider a worked example. We can consider the theory of monoids. We have two operations (types of AST nodes): <code>Mul(</code>#x#<code>,</code>#y#<code>)</code> and <code>1</code>. We have the following three equations: <code>Mul(1,</code>#x#<code>) =</code>#x#, <code>Mul(</code>#x#<code>, 1) =</code>#x#, and <code>Mul(Mul(</code>#x#<code>,</code>#y#<code>),</code>#z#<code>) = Mul(</code>#x#<code>, Mul(</code>#y#<code>,</code>#z#<code>))</code>. We additionally have a bunch of constants subject to no equations. In this case, it turns out we can define a normalization function, what I called #h# far above, and that the quotient type is isomorphic to lists of constants. Now, we can extend this theory to the theory of groups by adding a new operation, <code>Inv(</code>#x#<code>)</code>, and new equations: <code>Inv(Inv(</code>#x#<code>)) =</code>#x#, <code>Inv(Mul(</code>#x#<code>,</code>#y#<code>)) = Mul(Inv(</code>#y#<code>), Inv(</code>#x#<code>))</code>, and <code>Mul(Inv(</code>#x#<code>),</code>#x#<code>) = 1</code>. If we ignore the last of these equations, you can show that we can normalize to a form that is isomorphic to a list of a disjoint sum of the constants, i.e. <code>[Either Const Const]</code> in Haskell if <code>Const</code> were the type of the constant terms. Quotienting this type by the equivalence relation extended with that final equality corresponds to adding the rule that a <code>Left c</code> cancels out <code>Right c</code> in the list whenever they are adjacent.</p>
 <p>This overall example is a fairly profound one. Almost all of abstract algebra can be viewed as an instance of this or a closely related variation. When you hear about things defined in terms of “generators and relators”, it is an example of this sort. Indeed, those “relators” are used to define a relation that will be extended to an equivalence relation. Being defined in this way is arguably what it <em>means</em> for something to be “algebraic”.</p>
 <h2 id="postscript">Postscript</h2>
 <p>The <a href="http://www.nuprl.org/book/Introduction_Type_Theory.html">Introduction to Type Theory</a> section of the NuPRL book provides a more comprehensive and somewhat more formal presentation of these and related concepts. While the quotient <em>type</em> view of quotients is conceptually different from the standard set theoretic presentation, it is much more amenable to computation as the #ZZ // n ZZ# example begins to illustrate.</p>
-<section class="footnotes">
+<section class="footnotes" role="doc-endnotes">
 <hr />
 <ol>
-<li id="fn1"><p>It’s a commutative function.<a href="#fnref1" class="footnote-back">↩</a></p></li>
-<li id="fn2"><p>It gets mapped to it’s value at #3#, i.e. #P(3)#.<a href="#fnref2" class="footnote-back">↩</a></p></li>
+<li id="fn1" role="doc-endnote"><p>It’s a commutative function.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p>It gets mapped to it’s value at #3#, i.e. #P(3)#.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
         
@@ -408,7 +409,7 @@ A <strong>subset type</strong> is just a type combined with a predicate on that 
         <h6 class="blog-post-meta">
             September 23, 2016 05:21 UTC
             
-            (Last updated on February 26, 2017 21:27 UTC)
+            (Last updated on August 24, 2019 22:52 UTC)
 
             
                 Tags: <a href="./tags/math.html">math</a>, <a href="./tags/type%20theory.html">type theory</a>
@@ -438,7 +439,7 @@ A <strong>subset type</strong> is just a type combined with a predicate on that 
         <h6 class="blog-post-meta">
             May  7, 2016 18:12 UTC
             
-            (Last updated on May  7, 2016 18:17 UTC)
+            (Last updated on August 24, 2019 21:37 UTC)
 
             
                 Tags: <a href="./tags/math.html">math</a>
@@ -493,56 +494,56 @@ Add
 </table>
 </div>
 <p>Here, the number selected is an overly simple example of using the selected items. More realistically, the selected items will trigger other items to show up and/or trigger AJAX requests to update the data or populate other data. The HTML for this example is completely straightforward.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode html"><code class="sourceCode html"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw">&lt;div</span><span class="ot"> id=</span><span class="st">&quot;#badExample&quot;</span><span class="kw">&gt;</span></a>
-<a class="sourceLine" id="cb1-2" data-line-number="2">    Number selected: <span class="kw">&lt;span</span><span class="ot"> data-bind=</span><span class="st">&quot;text: $data.numberSelected()&quot;</span><span class="kw">&gt;&lt;/span&gt;</span></a>
-<a class="sourceLine" id="cb1-3" data-line-number="3">    <span class="kw">&lt;table&gt;</span></a>
-<a class="sourceLine" id="cb1-4" data-line-number="4">        <span class="kw">&lt;tr&gt;&lt;th&gt;&lt;input</span><span class="ot"> type=</span><span class="st">&quot;checkbox&quot;</span><span class="ot"> data-bind=</span><span class="st">&quot;checked: $data.allSelected&quot;</span><span class="kw">/&gt;&lt;/th&gt;&lt;th&gt;</span>Item<span class="kw">&lt;/th&gt;&lt;/tr&gt;</span></a>
-<a class="sourceLine" id="cb1-5" data-line-number="5">        <span class="co">&lt;!-- ko foreach: { data: $data.items(), as: '$item' } --&gt;</span></a>
-<a class="sourceLine" id="cb1-6" data-line-number="6">        <span class="kw">&lt;tr&gt;&lt;td&gt;&lt;input</span><span class="ot"> type=</span><span class="st">&quot;checkbox&quot;</span><span class="ot"> data-bind=</span><span class="st">&quot;checked: $data.selected&quot;</span><span class="kw">/&gt;&lt;/td&gt;&lt;td</span><span class="ot"> data-bind=</span><span class="st">&quot;text: 'Item number: '+$data.body&quot;</span><span class="kw">&gt;&lt;/td&gt;&lt;/tr&gt;</span></a>
-<a class="sourceLine" id="cb1-7" data-line-number="7">        <span class="co">&lt;!-- /ko --&gt;</span></a>
-<a class="sourceLine" id="cb1-8" data-line-number="8">        <span class="kw">&lt;tr&gt;&lt;td&gt;&lt;button</span><span class="ot"> data-bind=</span><span class="st">&quot;click: function() { $data.add(); }&quot;</span><span class="kw">&gt;</span>Add<span class="kw">&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;</span></a>
-<a class="sourceLine" id="cb1-9" data-line-number="9">    <span class="kw">&lt;/table&gt;</span></a>
-<a class="sourceLine" id="cb1-10" data-line-number="10"><span class="kw">&lt;/div&gt;</span></a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">&lt;div</span><span class="ot"> id=</span><span class="st">&quot;#badExample&quot;</span><span class="kw">&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a>    Number selected: <span class="kw">&lt;span</span><span class="ot"> data-bind=</span><span class="st">&quot;text: $data.numberSelected()&quot;</span><span class="kw">&gt;&lt;/span&gt;</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>    <span class="kw">&lt;table&gt;</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a>        <span class="kw">&lt;tr&gt;&lt;th&gt;&lt;input</span><span class="ot"> type=</span><span class="st">&quot;checkbox&quot;</span><span class="ot"> data-bind=</span><span class="st">&quot;checked: $data.allSelected&quot;</span><span class="kw">/&gt;&lt;/th&gt;&lt;th&gt;</span>Item<span class="kw">&lt;/th&gt;&lt;/tr&gt;</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a>        <span class="co">&lt;!-- ko foreach: { data: $data.items(), as: '$item' } --&gt;</span></span>
+<span id="cb1-6"><a href="#cb1-6"></a>        <span class="kw">&lt;tr&gt;&lt;td&gt;&lt;input</span><span class="ot"> type=</span><span class="st">&quot;checkbox&quot;</span><span class="ot"> data-bind=</span><span class="st">&quot;checked: $data.selected&quot;</span><span class="kw">/&gt;&lt;/td&gt;&lt;td</span><span class="ot"> data-bind=</span><span class="st">&quot;text: 'Item number: '+$data.body&quot;</span><span class="kw">&gt;&lt;/td&gt;&lt;/tr&gt;</span></span>
+<span id="cb1-7"><a href="#cb1-7"></a>        <span class="co">&lt;!-- /ko --&gt;</span></span>
+<span id="cb1-8"><a href="#cb1-8"></a>        <span class="kw">&lt;tr&gt;&lt;td&gt;&lt;button</span><span class="ot"> data-bind=</span><span class="st">&quot;click: function() { $data.add(); }&quot;</span><span class="kw">&gt;</span>Add<span class="kw">&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;</span></span>
+<span id="cb1-9"><a href="#cb1-9"></a>    <span class="kw">&lt;/table&gt;</span></span>
+<span id="cb1-10"><a href="#cb1-10"></a><span class="kw">&lt;/div&gt;</span></span></code></pre></div>
 <p>The way nearly everyone (including me) first thinks to implement this is by adding a <code>selected</code> observable to each item and then having <code>allSelected</code> depend on all of the <code>selected</code> observables. Since we also want to write to <code>allSelected</code> to change the state of the <code>selected</code> observables we use a <a href="http://knockoutjs.com/documentation/computed-writable.html">writable computed observable</a>. This computed observable will loop through all the items and check to see if they are all set to determine it’s state. When it is updated, it will loop through all the <code>selected</code> observables and set them to the appropriate state. Here’s the full code listing.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode javascript"><code class="sourceCode javascript"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="kw">var</span> badViewModel <span class="op">=</span> <span class="op">{</span></a>
-<a class="sourceLine" id="cb2-2" data-line-number="2">    <span class="dt">counter</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span></a>
-<a class="sourceLine" id="cb2-3" data-line-number="3">    <span class="dt">items</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observableArray</span>()</a>
-<a class="sourceLine" id="cb2-4" data-line-number="4"><span class="op">};</span></a>
-<a class="sourceLine" id="cb2-5" data-line-number="5"></a>
-<a class="sourceLine" id="cb2-6" data-line-number="6"><span class="va">badViewModel</span>.<span class="at">allSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="op">{</span></a>
-<a class="sourceLine" id="cb2-7" data-line-number="7">    <span class="dt">read</span><span class="op">:</span> <span class="kw">function</span>() <span class="op">{</span></a>
-<a class="sourceLine" id="cb2-8" data-line-number="8">        <span class="kw">var</span> items <span class="op">=</span> <span class="va">badViewModel</span>.<span class="at">items</span>()<span class="op">;</span></a>
-<a class="sourceLine" id="cb2-9" data-line-number="9">        <span class="kw">var</span> allSelected <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></a>
-<a class="sourceLine" id="cb2-10" data-line-number="10">        <span class="cf">for</span>(<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="va">items</span>.<span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) <span class="op">{</span> <span class="co">// Need to make sure we depend on each item, so don't break out of loop early</span></a>
-<a class="sourceLine" id="cb2-11" data-line-number="11">            allSelected <span class="op">=</span> allSelected <span class="op">&amp;&amp;</span> items[i].<span class="at">selected</span>()<span class="op">;</span></a>
-<a class="sourceLine" id="cb2-12" data-line-number="12">        <span class="op">}</span></a>
-<a class="sourceLine" id="cb2-13" data-line-number="13">        <span class="cf">return</span> allSelected<span class="op">;</span></a>
-<a class="sourceLine" id="cb2-14" data-line-number="14">    <span class="op">},</span></a>
-<a class="sourceLine" id="cb2-15" data-line-number="15">    <span class="dt">write</span><span class="op">:</span> <span class="kw">function</span>(newValue) <span class="op">{</span></a>
-<a class="sourceLine" id="cb2-16" data-line-number="16">        <span class="kw">var</span> items <span class="op">=</span> <span class="va">badViewModel</span>.<span class="at">items</span>()<span class="op">;</span></a>
-<a class="sourceLine" id="cb2-17" data-line-number="17">        <span class="cf">for</span>(<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="va">items</span>.<span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) <span class="op">{</span></a>
-<a class="sourceLine" id="cb2-18" data-line-number="18">            items[i].<span class="at">selected</span>(newValue)<span class="op">;</span></a>
-<a class="sourceLine" id="cb2-19" data-line-number="19">        <span class="op">}</span></a>
-<a class="sourceLine" id="cb2-20" data-line-number="20">    <span class="op">}</span></a>
-<a class="sourceLine" id="cb2-21" data-line-number="21"><span class="op">}</span>)<span class="op">;</span></a>
-<a class="sourceLine" id="cb2-22" data-line-number="22"></a>
-<a class="sourceLine" id="cb2-23" data-line-number="23"><span class="va">badViewModel</span>.<span class="at">numberSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="kw">function</span>() <span class="op">{</span></a>
-<a class="sourceLine" id="cb2-24" data-line-number="24">    <span class="kw">var</span> count <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></a>
-<a class="sourceLine" id="cb2-25" data-line-number="25">    <span class="kw">var</span> items <span class="op">=</span> <span class="va">badViewModel</span>.<span class="at">items</span>()<span class="op">;</span></a>
-<a class="sourceLine" id="cb2-26" data-line-number="26">    <span class="cf">for</span>(<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="va">items</span>.<span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) <span class="op">{</span></a>
-<a class="sourceLine" id="cb2-27" data-line-number="27">        <span class="cf">if</span>(items[i].<span class="at">selected</span>()) count<span class="op">++;</span></a>
-<a class="sourceLine" id="cb2-28" data-line-number="28">    <span class="op">}</span></a>
-<a class="sourceLine" id="cb2-29" data-line-number="29">    <span class="cf">return</span> count<span class="op">;</span></a>
-<a class="sourceLine" id="cb2-30" data-line-number="30"><span class="op">}</span>)<span class="op">;</span></a>
-<a class="sourceLine" id="cb2-31" data-line-number="31"></a>
-<a class="sourceLine" id="cb2-32" data-line-number="32"><span class="va">badViewModel</span>.<span class="at">add</span> <span class="op">=</span> <span class="kw">function</span>() <span class="op">{</span></a>
-<a class="sourceLine" id="cb2-33" data-line-number="33">    <span class="va">badViewModel</span>.<span class="va">items</span>.<span class="at">push</span>(<span class="op">{</span></a>
-<a class="sourceLine" id="cb2-34" data-line-number="34">        <span class="dt">body</span><span class="op">:</span> <span class="va">badViewModel</span>.<span class="at">counter</span><span class="op">++,</span></a>
-<a class="sourceLine" id="cb2-35" data-line-number="35">        <span class="dt">selected</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observable</span>(<span class="kw">false</span>)</a>
-<a class="sourceLine" id="cb2-36" data-line-number="36">    <span class="op">}</span>)<span class="op">;</span></a>
-<a class="sourceLine" id="cb2-37" data-line-number="37"><span class="op">};</span></a>
-<a class="sourceLine" id="cb2-38" data-line-number="38"></a>
-<a class="sourceLine" id="cb2-39" data-line-number="39"><span class="va">ko</span>.<span class="at">applyBindings</span>(badViewModel<span class="op">,</span> <span class="va">document</span>.<span class="at">getElementById</span>(<span class="st">'#badExample'</span>))<span class="op">;</span></a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">var</span> badViewModel <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>    <span class="dt">counter</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a>    <span class="dt">items</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observableArray</span>()</span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="op">};</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a></span>
+<span id="cb2-6"><a href="#cb2-6"></a><span class="va">badViewModel</span>.<span class="at">allSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="op">{</span></span>
+<span id="cb2-7"><a href="#cb2-7"></a>    <span class="dt">read</span><span class="op">:</span> <span class="kw">function</span>() <span class="op">{</span></span>
+<span id="cb2-8"><a href="#cb2-8"></a>        <span class="kw">var</span> items <span class="op">=</span> <span class="va">badViewModel</span>.<span class="at">items</span>()<span class="op">;</span></span>
+<span id="cb2-9"><a href="#cb2-9"></a>        <span class="kw">var</span> allSelected <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb2-10"><a href="#cb2-10"></a>        <span class="cf">for</span>(<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="va">items</span>.<span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) <span class="op">{</span> <span class="co">// Need to make sure we depend on each item, so don't break out of loop early</span></span>
+<span id="cb2-11"><a href="#cb2-11"></a>            allSelected <span class="op">=</span> allSelected <span class="op">&amp;&amp;</span> items[i].<span class="at">selected</span>()<span class="op">;</span></span>
+<span id="cb2-12"><a href="#cb2-12"></a>        <span class="op">}</span></span>
+<span id="cb2-13"><a href="#cb2-13"></a>        <span class="cf">return</span> allSelected<span class="op">;</span></span>
+<span id="cb2-14"><a href="#cb2-14"></a>    <span class="op">},</span></span>
+<span id="cb2-15"><a href="#cb2-15"></a>    <span class="dt">write</span><span class="op">:</span> <span class="kw">function</span>(newValue) <span class="op">{</span></span>
+<span id="cb2-16"><a href="#cb2-16"></a>        <span class="kw">var</span> items <span class="op">=</span> <span class="va">badViewModel</span>.<span class="at">items</span>()<span class="op">;</span></span>
+<span id="cb2-17"><a href="#cb2-17"></a>        <span class="cf">for</span>(<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="va">items</span>.<span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) <span class="op">{</span></span>
+<span id="cb2-18"><a href="#cb2-18"></a>            items[i].<span class="at">selected</span>(newValue)<span class="op">;</span></span>
+<span id="cb2-19"><a href="#cb2-19"></a>        <span class="op">}</span></span>
+<span id="cb2-20"><a href="#cb2-20"></a>    <span class="op">}</span></span>
+<span id="cb2-21"><a href="#cb2-21"></a><span class="op">}</span>)<span class="op">;</span></span>
+<span id="cb2-22"><a href="#cb2-22"></a></span>
+<span id="cb2-23"><a href="#cb2-23"></a><span class="va">badViewModel</span>.<span class="at">numberSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="kw">function</span>() <span class="op">{</span></span>
+<span id="cb2-24"><a href="#cb2-24"></a>    <span class="kw">var</span> count <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb2-25"><a href="#cb2-25"></a>    <span class="kw">var</span> items <span class="op">=</span> <span class="va">badViewModel</span>.<span class="at">items</span>()<span class="op">;</span></span>
+<span id="cb2-26"><a href="#cb2-26"></a>    <span class="cf">for</span>(<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="va">items</span>.<span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) <span class="op">{</span></span>
+<span id="cb2-27"><a href="#cb2-27"></a>        <span class="cf">if</span>(items[i].<span class="at">selected</span>()) count<span class="op">++;</span></span>
+<span id="cb2-28"><a href="#cb2-28"></a>    <span class="op">}</span></span>
+<span id="cb2-29"><a href="#cb2-29"></a>    <span class="cf">return</span> count<span class="op">;</span></span>
+<span id="cb2-30"><a href="#cb2-30"></a><span class="op">}</span>)<span class="op">;</span></span>
+<span id="cb2-31"><a href="#cb2-31"></a></span>
+<span id="cb2-32"><a href="#cb2-32"></a><span class="va">badViewModel</span>.<span class="at">add</span> <span class="op">=</span> <span class="kw">function</span>() <span class="op">{</span></span>
+<span id="cb2-33"><a href="#cb2-33"></a>    <span class="va">badViewModel</span>.<span class="va">items</span>.<span class="at">push</span>(<span class="op">{</span></span>
+<span id="cb2-34"><a href="#cb2-34"></a>        <span class="dt">body</span><span class="op">:</span> <span class="va">badViewModel</span>.<span class="at">counter</span><span class="op">++,</span></span>
+<span id="cb2-35"><a href="#cb2-35"></a>        <span class="dt">selected</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observable</span>(<span class="kw">false</span>)</span>
+<span id="cb2-36"><a href="#cb2-36"></a>    <span class="op">}</span>)<span class="op">;</span></span>
+<span id="cb2-37"><a href="#cb2-37"></a><span class="op">};</span></span>
+<span id="cb2-38"><a href="#cb2-38"></a></span>
+<span id="cb2-39"><a href="#cb2-39"></a><span class="va">ko</span>.<span class="at">applyBindings</span>(badViewModel<span class="op">,</span> <span class="va">document</span>.<span class="at">getElementById</span>(<span class="st">'#badExample'</span>))<span class="op">;</span></span></code></pre></div>
 <p>This should be relatively straightforward, and it works, so what’s the problem? The problem can be seen in <code>numberSelected</code> (and it also comes up with <code>allSelected</code> which I’ll get to momentarily). <code>numberSelected</code> depends on <em>each</em> <code>selected</code> observable and so it will be fired <em>each</em> time <em>each</em> one updates. That means if you have 100 items, and you use the select all checkbox, <code>numberSelected</code> will be called 100 times. For this example, that doesn’t really matter. For a more realistic example than <code>numberSelected</code>, this may mean rendering one, then two, then three, … then 100 HTML fragments or making 100 AJAX requests. In fact, this same behavior is present in <code>allSelected</code>. When it is written, as it’s writing to the <code>selected</code> observables, it is also triggering <em>itself</em>.</p>
 <p>So the problem is updating <code>allSelected</code> or <code>numberSelected</code> can’t be done all at once, or to use database terminology, it can’t be updated atomically. One possible solution in newer versions of Knockout is to use <code>deferredUpdates</code> or, what I did back in the much earlier versions of Knockout, abuse the rate limiting features. The problem with this solution is that it makes updates asynchronous. If you’ve written your code to not care whether it was called synchronously or asynchronously, then this will work fine. If you haven’t, doing this throws you into a world of shared state concurrency and race conditions. In this case, this solution is far worse than the disease.</p>
 <h3 id="the-solution">The Solution</h3>
@@ -577,47 +578,47 @@ Add
 </table>
 </div>
 <p>And here’s the code behind this second example:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode javascript"><code class="sourceCode javascript"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="kw">var</span> goodViewModel <span class="op">=</span> <span class="op">{</span></a>
-<a class="sourceLine" id="cb3-2" data-line-number="2">    <span class="dt">counter</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span></a>
-<a class="sourceLine" id="cb3-3" data-line-number="3">    <span class="dt">selectedItems</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observableArray</span>()<span class="op">,</span></a>
-<a class="sourceLine" id="cb3-4" data-line-number="4">    <span class="dt">items</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observableArray</span>()</a>
-<a class="sourceLine" id="cb3-5" data-line-number="5"><span class="op">};</span></a>
-<a class="sourceLine" id="cb3-6" data-line-number="6"></a>
-<a class="sourceLine" id="cb3-7" data-line-number="7"><span class="va">goodViewModel</span>.<span class="at">allSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="op">{</span></a>
-<a class="sourceLine" id="cb3-8" data-line-number="8">    <span class="dt">read</span><span class="op">:</span> <span class="kw">function</span>() <span class="op">{</span></a>
-<a class="sourceLine" id="cb3-9" data-line-number="9">        <span class="cf">return</span> <span class="va">goodViewModel</span>.<span class="at">items</span>().<span class="at">length</span> <span class="op">===</span> <span class="va">goodViewModel</span>.<span class="at">selectedItems</span>().<span class="at">length</span><span class="op">;</span></a>
-<a class="sourceLine" id="cb3-10" data-line-number="10">    <span class="op">},</span></a>
-<a class="sourceLine" id="cb3-11" data-line-number="11">    <span class="dt">write</span><span class="op">:</span> <span class="kw">function</span>(newValue) <span class="op">{</span></a>
-<a class="sourceLine" id="cb3-12" data-line-number="12">        <span class="cf">if</span>(newValue) <span class="op">{</span></a>
-<a class="sourceLine" id="cb3-13" data-line-number="13">            <span class="va">goodViewModel</span>.<span class="at">selectedItems</span>(<span class="va">goodViewModel</span>.<span class="at">items</span>().<span class="at">slice</span>(<span class="dv">0</span>))<span class="op">;</span> <span class="co">// Need a copy!</span></a>
-<a class="sourceLine" id="cb3-14" data-line-number="14">        <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></a>
-<a class="sourceLine" id="cb3-15" data-line-number="15">            <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">removeAll</span>()<span class="op">;</span></a>
-<a class="sourceLine" id="cb3-16" data-line-number="16">        <span class="op">}</span></a>
-<a class="sourceLine" id="cb3-17" data-line-number="17">    <span class="op">}</span></a>
-<a class="sourceLine" id="cb3-18" data-line-number="18"><span class="op">}</span>)<span class="op">;</span></a>
-<a class="sourceLine" id="cb3-19" data-line-number="19"></a>
-<a class="sourceLine" id="cb3-20" data-line-number="20"><span class="va">goodViewModel</span>.<span class="at">numberSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="kw">function</span>() <span class="op">{</span></a>
-<a class="sourceLine" id="cb3-21" data-line-number="21">    <span class="cf">return</span> <span class="va">goodViewModel</span>.<span class="at">selectedItems</span>().<span class="at">length</span><span class="op">;</span></a>
-<a class="sourceLine" id="cb3-22" data-line-number="22"><span class="op">}</span>)<span class="op">;</span></a>
-<a class="sourceLine" id="cb3-23" data-line-number="23"></a>
-<a class="sourceLine" id="cb3-24" data-line-number="24"><span class="va">goodViewModel</span>.<span class="at">add</span> <span class="op">=</span> <span class="kw">function</span>() <span class="op">{</span></a>
-<a class="sourceLine" id="cb3-25" data-line-number="25">    <span class="kw">var</span> item <span class="op">=</span> <span class="op">{</span> <span class="dt">body</span><span class="op">:</span> <span class="va">goodViewModel</span>.<span class="at">counter</span><span class="op">++</span> <span class="op">}</span></a>
-<a class="sourceLine" id="cb3-26" data-line-number="26">    <span class="va">item</span>.<span class="at">selected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="op">{</span></a>
-<a class="sourceLine" id="cb3-27" data-line-number="27">        <span class="dt">read</span><span class="op">:</span> <span class="kw">function</span>() <span class="op">{</span></a>
-<a class="sourceLine" id="cb3-28" data-line-number="28">            <span class="cf">return</span> <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">indexOf</span>(item) <span class="op">&gt;</span> <span class="dv">-1</span><span class="op">;</span></a>
-<a class="sourceLine" id="cb3-29" data-line-number="29">        <span class="op">},</span></a>
-<a class="sourceLine" id="cb3-30" data-line-number="30">        <span class="dt">write</span><span class="op">:</span> <span class="kw">function</span>(newValue) <span class="op">{</span></a>
-<a class="sourceLine" id="cb3-31" data-line-number="31">            <span class="cf">if</span>(newValue) <span class="op">{</span></a>
-<a class="sourceLine" id="cb3-32" data-line-number="32">                <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">push</span>(item)<span class="op">;</span></a>
-<a class="sourceLine" id="cb3-33" data-line-number="33">            <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></a>
-<a class="sourceLine" id="cb3-34" data-line-number="34">                <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">remove</span>(item)<span class="op">;</span></a>
-<a class="sourceLine" id="cb3-35" data-line-number="35">            <span class="op">}</span></a>
-<a class="sourceLine" id="cb3-36" data-line-number="36">        <span class="op">}</span></a>
-<a class="sourceLine" id="cb3-37" data-line-number="37">    <span class="op">}</span>)<span class="op">;</span></a>
-<a class="sourceLine" id="cb3-38" data-line-number="38">    <span class="va">goodViewModel</span>.<span class="va">items</span>.<span class="at">push</span>(item)<span class="op">;</span></a>
-<a class="sourceLine" id="cb3-39" data-line-number="39"><span class="op">};</span></a>
-<a class="sourceLine" id="cb3-40" data-line-number="40"></a>
-<a class="sourceLine" id="cb3-41" data-line-number="41"><span class="va">ko</span>.<span class="at">applyBindings</span>(goodViewModel<span class="op">,</span> <span class="va">document</span>.<span class="at">getElementById</span>(<span class="st">'#goodExample'</span>))<span class="op">;</span></a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">var</span> goodViewModel <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a>    <span class="dt">counter</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a>    <span class="dt">selectedItems</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observableArray</span>()<span class="op">,</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a>    <span class="dt">items</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observableArray</span>()</span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="op">};</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a></span>
+<span id="cb3-7"><a href="#cb3-7"></a><span class="va">goodViewModel</span>.<span class="at">allSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="op">{</span></span>
+<span id="cb3-8"><a href="#cb3-8"></a>    <span class="dt">read</span><span class="op">:</span> <span class="kw">function</span>() <span class="op">{</span></span>
+<span id="cb3-9"><a href="#cb3-9"></a>        <span class="cf">return</span> <span class="va">goodViewModel</span>.<span class="at">items</span>().<span class="at">length</span> <span class="op">===</span> <span class="va">goodViewModel</span>.<span class="at">selectedItems</span>().<span class="at">length</span><span class="op">;</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a>    <span class="op">},</span></span>
+<span id="cb3-11"><a href="#cb3-11"></a>    <span class="dt">write</span><span class="op">:</span> <span class="kw">function</span>(newValue) <span class="op">{</span></span>
+<span id="cb3-12"><a href="#cb3-12"></a>        <span class="cf">if</span>(newValue) <span class="op">{</span></span>
+<span id="cb3-13"><a href="#cb3-13"></a>            <span class="va">goodViewModel</span>.<span class="at">selectedItems</span>(<span class="va">goodViewModel</span>.<span class="at">items</span>().<span class="at">slice</span>(<span class="dv">0</span>))<span class="op">;</span> <span class="co">// Need a copy!</span></span>
+<span id="cb3-14"><a href="#cb3-14"></a>        <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
+<span id="cb3-15"><a href="#cb3-15"></a>            <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">removeAll</span>()<span class="op">;</span></span>
+<span id="cb3-16"><a href="#cb3-16"></a>        <span class="op">}</span></span>
+<span id="cb3-17"><a href="#cb3-17"></a>    <span class="op">}</span></span>
+<span id="cb3-18"><a href="#cb3-18"></a><span class="op">}</span>)<span class="op">;</span></span>
+<span id="cb3-19"><a href="#cb3-19"></a></span>
+<span id="cb3-20"><a href="#cb3-20"></a><span class="va">goodViewModel</span>.<span class="at">numberSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="kw">function</span>() <span class="op">{</span></span>
+<span id="cb3-21"><a href="#cb3-21"></a>    <span class="cf">return</span> <span class="va">goodViewModel</span>.<span class="at">selectedItems</span>().<span class="at">length</span><span class="op">;</span></span>
+<span id="cb3-22"><a href="#cb3-22"></a><span class="op">}</span>)<span class="op">;</span></span>
+<span id="cb3-23"><a href="#cb3-23"></a></span>
+<span id="cb3-24"><a href="#cb3-24"></a><span class="va">goodViewModel</span>.<span class="at">add</span> <span class="op">=</span> <span class="kw">function</span>() <span class="op">{</span></span>
+<span id="cb3-25"><a href="#cb3-25"></a>    <span class="kw">var</span> item <span class="op">=</span> <span class="op">{</span> <span class="dt">body</span><span class="op">:</span> <span class="va">goodViewModel</span>.<span class="at">counter</span><span class="op">++</span> <span class="op">}</span></span>
+<span id="cb3-26"><a href="#cb3-26"></a>    <span class="va">item</span>.<span class="at">selected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="op">{</span></span>
+<span id="cb3-27"><a href="#cb3-27"></a>        <span class="dt">read</span><span class="op">:</span> <span class="kw">function</span>() <span class="op">{</span></span>
+<span id="cb3-28"><a href="#cb3-28"></a>            <span class="cf">return</span> <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">indexOf</span>(item) <span class="op">&gt;</span> <span class="dv">-1</span><span class="op">;</span></span>
+<span id="cb3-29"><a href="#cb3-29"></a>        <span class="op">},</span></span>
+<span id="cb3-30"><a href="#cb3-30"></a>        <span class="dt">write</span><span class="op">:</span> <span class="kw">function</span>(newValue) <span class="op">{</span></span>
+<span id="cb3-31"><a href="#cb3-31"></a>            <span class="cf">if</span>(newValue) <span class="op">{</span></span>
+<span id="cb3-32"><a href="#cb3-32"></a>                <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">push</span>(item)<span class="op">;</span></span>
+<span id="cb3-33"><a href="#cb3-33"></a>            <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
+<span id="cb3-34"><a href="#cb3-34"></a>                <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">remove</span>(item)<span class="op">;</span></span>
+<span id="cb3-35"><a href="#cb3-35"></a>            <span class="op">}</span></span>
+<span id="cb3-36"><a href="#cb3-36"></a>        <span class="op">}</span></span>
+<span id="cb3-37"><a href="#cb3-37"></a>    <span class="op">}</span>)<span class="op">;</span></span>
+<span id="cb3-38"><a href="#cb3-38"></a>    <span class="va">goodViewModel</span>.<span class="va">items</span>.<span class="at">push</span>(item)<span class="op">;</span></span>
+<span id="cb3-39"><a href="#cb3-39"></a><span class="op">};</span></span>
+<span id="cb3-40"><a href="#cb3-40"></a></span>
+<span id="cb3-41"><a href="#cb3-41"></a><span class="va">ko</span>.<span class="at">applyBindings</span>(goodViewModel<span class="op">,</span> <span class="va">document</span>.<span class="at">getElementById</span>(<span class="st">'#goodExample'</span>))<span class="op">;</span></span></code></pre></div>
 <p>One thing to note is that setting <code>allSelected</code> and <code>numberSelected</code> are now both simple operations. A write to an observable triggers a constant number of writes to other observables. In fact, there are only two (non-computed) observables. On the other hand, <em>reading</em> the <code>selected</code> observable is more expensive. Toggling all items has quadratic complexity. In fact, it had quadratic complexity before due to the feedback. However, unlike the previous code, this <em>also</em> has quadratic complexity when any <em>individual</em> item is toggled. Unlike the previous code, though, this is simply due to a poor choice of data structure. Equipping each item with an “ID” field and using an object as a hash map would reduce the complexity to linear. In practice, for this sort of scenario, it tends not to make a big difference. Also, Knockout won’t trigger dependents if the value doesn’t change, so there’s no risk of the extra work propagating into still more extra work. Nevertheless, while I endorse this solution for this particular problem, in general making <em>finer</em> grained observables can help limit the scope of changes so unnecessary work isn’t done.</p>
 <p>Still, the real concern and benefit of this latter approach isn’t the asymptotic complexity of the operations, but the <em>atomicity</em> of the operations. In the second solution, every update is atomic. There are no intermediate states on the way to a final state. This means that dependents, represented by <code>numberSelected</code> but which are realistically much more complicated, don’t get triggered excessively and don’t need to “compensate” for unintended intermediate values.</p>
 <h3 id="epilogue">Epilogue</h3>
@@ -717,7 +718,7 @@ ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
         <h6 class="blog-post-meta">
             May  5, 2016 20:38 UTC
             
-            (Last updated on August 21, 2018 17:22 UTC)
+            (Last updated on August 24, 2019 21:37 UTC)
 
             
                 Tags: <a href="./tags/javascript.html">javascript</a>
@@ -742,7 +743,7 @@ ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
 <p><code class="asciimath">#frac(Gamma,x:tau_1 |--_Sigma e : tau_2)(Gamma |--_Sigma (lambda x:tau_1.e) : tau_1 -&gt; tau_2) -&gt;I#</code></p>
 <p><code class="asciimath">#frac(Gamma |--_Sigma f : tau_1 -&gt; tau_2 \qquad Gamma |--_Sigma x : tau_1)(Gamma |--_Sigma f x : tau_2) -&gt;E#</code></p>
 <p>Since this notation is ubiquitous, authors (reasonably) expect readers to already be familiar with it and thus provide no explanation. Because the notation is ubiquitous, the beginner looking for alternate resources will not escape it. All they will find is that the notation is everywhere but exists in myriad minor variations which may or may not indicate significant differences. At this point the options are: 1) to muddle on and hope understanding the notation isn’t too important, 2) look for introductory resources which typically take the form of $50+ 500+ page textbooks, or 3) give up.</p>
-<p>The goal of this article is to explain the notation part-by-part in common realizations, and to cover the main idea behind the notation which is the idea of an inductively defined relation. To eliminate ambiguity and make hand-waving impossible, I’ll ground the explanations in code, in particular, in <a href="http://wiki.portal.chalmers.se/agda/pmwiki.php">Agda</a>. That means for each example of the informal notation, there will be how it would be realized in Agda.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> It will become clear that I’m am not (just) using Agda as a formal notation to talk about these concepts, but that Agda’s<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> data type mechanism directly captures them<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a>. The significance of this is that programmers are already familiar with many of the ideas behind the informal notation, and the notation is just obscuring this familiarity. Admittedly, Agda is itself pretty intimidating. I hope most of this article is accessible to those with familiarity with algebraic data types as they appear in Haskell, ML, Rust, or Swift with little to no need to look up details about Agda. Nevertheless, Agda at least has the benefit, when compared to the informal notation, of having a clear place to go to learn more, an unambiguous meaning, and tools that allow playing around with the ideas.</p>
+<p>The goal of this article is to explain the notation part-by-part in common realizations, and to cover the main idea behind the notation which is the idea of an inductively defined relation. To eliminate ambiguity and make hand-waving impossible, I’ll ground the explanations in code, in particular, in <a href="http://wiki.portal.chalmers.se/agda/pmwiki.php">Agda</a>. That means for each example of the informal notation, there will be how it would be realized in Agda.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> It will become clear that I’m am not (just) using Agda as a formal notation to talk about these concepts, but that Agda’s<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> data type mechanism directly captures them<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>. The significance of this is that programmers are already familiar with many of the ideas behind the informal notation, and the notation is just obscuring this familiarity. Admittedly, Agda is itself pretty intimidating. I hope most of this article is accessible to those with familiarity with algebraic data types as they appear in Haskell, ML, Rust, or Swift with little to no need to look up details about Agda. Nevertheless, Agda at least has the benefit, when compared to the informal notation, of having a clear place to go to learn more, an unambiguous meaning, and tools that allow playing around with the ideas.</p>
 
             <h6><a href="./posts/understanding-typing-judgments.html">Read more...</a></h6>
         
@@ -752,7 +753,7 @@ ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
         <h6 class="blog-post-meta">
             April 13, 2016 02:41 UTC
             
-            (Last updated on November 10, 2016 08:03 UTC)
+            (Last updated on August 24, 2019 21:37 UTC)
 
             
                 Tags: <a href="./tags/Agda.html">Agda</a>, <a href="./tags/type%20theory.html">type theory</a>

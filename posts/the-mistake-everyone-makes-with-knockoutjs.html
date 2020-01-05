@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">The Mistake Everyone Makes with KnockoutJS</h2>
     <p class="blog-post-meta">May  5, 2016 20:38 UTC 
         
-        (Last updated on August 21, 2018 17:22 UTC)
+        (Last updated on August 24, 2019 21:37 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -86,56 +86,56 @@ Add
 </table>
 </div>
 <p>Here, the number selected is an overly simple example of using the selected items. More realistically, the selected items will trigger other items to show up and/or trigger AJAX requests to update the data or populate other data. The HTML for this example is completely straightforward.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode html"><code class="sourceCode html"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw">&lt;div</span><span class="ot"> id=</span><span class="st">&quot;#badExample&quot;</span><span class="kw">&gt;</span></a>
-<a class="sourceLine" id="cb1-2" data-line-number="2">    Number selected: <span class="kw">&lt;span</span><span class="ot"> data-bind=</span><span class="st">&quot;text: $data.numberSelected()&quot;</span><span class="kw">&gt;&lt;/span&gt;</span></a>
-<a class="sourceLine" id="cb1-3" data-line-number="3">    <span class="kw">&lt;table&gt;</span></a>
-<a class="sourceLine" id="cb1-4" data-line-number="4">        <span class="kw">&lt;tr&gt;&lt;th&gt;&lt;input</span><span class="ot"> type=</span><span class="st">&quot;checkbox&quot;</span><span class="ot"> data-bind=</span><span class="st">&quot;checked: $data.allSelected&quot;</span><span class="kw">/&gt;&lt;/th&gt;&lt;th&gt;</span>Item<span class="kw">&lt;/th&gt;&lt;/tr&gt;</span></a>
-<a class="sourceLine" id="cb1-5" data-line-number="5">        <span class="co">&lt;!-- ko foreach: { data: $data.items(), as: '$item' } --&gt;</span></a>
-<a class="sourceLine" id="cb1-6" data-line-number="6">        <span class="kw">&lt;tr&gt;&lt;td&gt;&lt;input</span><span class="ot"> type=</span><span class="st">&quot;checkbox&quot;</span><span class="ot"> data-bind=</span><span class="st">&quot;checked: $data.selected&quot;</span><span class="kw">/&gt;&lt;/td&gt;&lt;td</span><span class="ot"> data-bind=</span><span class="st">&quot;text: 'Item number: '+$data.body&quot;</span><span class="kw">&gt;&lt;/td&gt;&lt;/tr&gt;</span></a>
-<a class="sourceLine" id="cb1-7" data-line-number="7">        <span class="co">&lt;!-- /ko --&gt;</span></a>
-<a class="sourceLine" id="cb1-8" data-line-number="8">        <span class="kw">&lt;tr&gt;&lt;td&gt;&lt;button</span><span class="ot"> data-bind=</span><span class="st">&quot;click: function() { $data.add(); }&quot;</span><span class="kw">&gt;</span>Add<span class="kw">&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;</span></a>
-<a class="sourceLine" id="cb1-9" data-line-number="9">    <span class="kw">&lt;/table&gt;</span></a>
-<a class="sourceLine" id="cb1-10" data-line-number="10"><span class="kw">&lt;/div&gt;</span></a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">&lt;div</span><span class="ot"> id=</span><span class="st">&quot;#badExample&quot;</span><span class="kw">&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a>    Number selected: <span class="kw">&lt;span</span><span class="ot"> data-bind=</span><span class="st">&quot;text: $data.numberSelected()&quot;</span><span class="kw">&gt;&lt;/span&gt;</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>    <span class="kw">&lt;table&gt;</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a>        <span class="kw">&lt;tr&gt;&lt;th&gt;&lt;input</span><span class="ot"> type=</span><span class="st">&quot;checkbox&quot;</span><span class="ot"> data-bind=</span><span class="st">&quot;checked: $data.allSelected&quot;</span><span class="kw">/&gt;&lt;/th&gt;&lt;th&gt;</span>Item<span class="kw">&lt;/th&gt;&lt;/tr&gt;</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a>        <span class="co">&lt;!-- ko foreach: { data: $data.items(), as: '$item' } --&gt;</span></span>
+<span id="cb1-6"><a href="#cb1-6"></a>        <span class="kw">&lt;tr&gt;&lt;td&gt;&lt;input</span><span class="ot"> type=</span><span class="st">&quot;checkbox&quot;</span><span class="ot"> data-bind=</span><span class="st">&quot;checked: $data.selected&quot;</span><span class="kw">/&gt;&lt;/td&gt;&lt;td</span><span class="ot"> data-bind=</span><span class="st">&quot;text: 'Item number: '+$data.body&quot;</span><span class="kw">&gt;&lt;/td&gt;&lt;/tr&gt;</span></span>
+<span id="cb1-7"><a href="#cb1-7"></a>        <span class="co">&lt;!-- /ko --&gt;</span></span>
+<span id="cb1-8"><a href="#cb1-8"></a>        <span class="kw">&lt;tr&gt;&lt;td&gt;&lt;button</span><span class="ot"> data-bind=</span><span class="st">&quot;click: function() { $data.add(); }&quot;</span><span class="kw">&gt;</span>Add<span class="kw">&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;</span></span>
+<span id="cb1-9"><a href="#cb1-9"></a>    <span class="kw">&lt;/table&gt;</span></span>
+<span id="cb1-10"><a href="#cb1-10"></a><span class="kw">&lt;/div&gt;</span></span></code></pre></div>
 <p>The way nearly everyone (including me) first thinks to implement this is by adding a <code>selected</code> observable to each item and then having <code>allSelected</code> depend on all of the <code>selected</code> observables. Since we also want to write to <code>allSelected</code> to change the state of the <code>selected</code> observables we use a <a href="http://knockoutjs.com/documentation/computed-writable.html">writable computed observable</a>. This computed observable will loop through all the items and check to see if they are all set to determine it’s state. When it is updated, it will loop through all the <code>selected</code> observables and set them to the appropriate state. Here’s the full code listing.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode javascript"><code class="sourceCode javascript"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="kw">var</span> badViewModel <span class="op">=</span> <span class="op">{</span></a>
-<a class="sourceLine" id="cb2-2" data-line-number="2">    <span class="dt">counter</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span></a>
-<a class="sourceLine" id="cb2-3" data-line-number="3">    <span class="dt">items</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observableArray</span>()</a>
-<a class="sourceLine" id="cb2-4" data-line-number="4"><span class="op">};</span></a>
-<a class="sourceLine" id="cb2-5" data-line-number="5"></a>
-<a class="sourceLine" id="cb2-6" data-line-number="6"><span class="va">badViewModel</span>.<span class="at">allSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="op">{</span></a>
-<a class="sourceLine" id="cb2-7" data-line-number="7">    <span class="dt">read</span><span class="op">:</span> <span class="kw">function</span>() <span class="op">{</span></a>
-<a class="sourceLine" id="cb2-8" data-line-number="8">        <span class="kw">var</span> items <span class="op">=</span> <span class="va">badViewModel</span>.<span class="at">items</span>()<span class="op">;</span></a>
-<a class="sourceLine" id="cb2-9" data-line-number="9">        <span class="kw">var</span> allSelected <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></a>
-<a class="sourceLine" id="cb2-10" data-line-number="10">        <span class="cf">for</span>(<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="va">items</span>.<span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) <span class="op">{</span> <span class="co">// Need to make sure we depend on each item, so don't break out of loop early</span></a>
-<a class="sourceLine" id="cb2-11" data-line-number="11">            allSelected <span class="op">=</span> allSelected <span class="op">&amp;&amp;</span> items[i].<span class="at">selected</span>()<span class="op">;</span></a>
-<a class="sourceLine" id="cb2-12" data-line-number="12">        <span class="op">}</span></a>
-<a class="sourceLine" id="cb2-13" data-line-number="13">        <span class="cf">return</span> allSelected<span class="op">;</span></a>
-<a class="sourceLine" id="cb2-14" data-line-number="14">    <span class="op">},</span></a>
-<a class="sourceLine" id="cb2-15" data-line-number="15">    <span class="dt">write</span><span class="op">:</span> <span class="kw">function</span>(newValue) <span class="op">{</span></a>
-<a class="sourceLine" id="cb2-16" data-line-number="16">        <span class="kw">var</span> items <span class="op">=</span> <span class="va">badViewModel</span>.<span class="at">items</span>()<span class="op">;</span></a>
-<a class="sourceLine" id="cb2-17" data-line-number="17">        <span class="cf">for</span>(<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="va">items</span>.<span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) <span class="op">{</span></a>
-<a class="sourceLine" id="cb2-18" data-line-number="18">            items[i].<span class="at">selected</span>(newValue)<span class="op">;</span></a>
-<a class="sourceLine" id="cb2-19" data-line-number="19">        <span class="op">}</span></a>
-<a class="sourceLine" id="cb2-20" data-line-number="20">    <span class="op">}</span></a>
-<a class="sourceLine" id="cb2-21" data-line-number="21"><span class="op">}</span>)<span class="op">;</span></a>
-<a class="sourceLine" id="cb2-22" data-line-number="22"></a>
-<a class="sourceLine" id="cb2-23" data-line-number="23"><span class="va">badViewModel</span>.<span class="at">numberSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="kw">function</span>() <span class="op">{</span></a>
-<a class="sourceLine" id="cb2-24" data-line-number="24">    <span class="kw">var</span> count <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></a>
-<a class="sourceLine" id="cb2-25" data-line-number="25">    <span class="kw">var</span> items <span class="op">=</span> <span class="va">badViewModel</span>.<span class="at">items</span>()<span class="op">;</span></a>
-<a class="sourceLine" id="cb2-26" data-line-number="26">    <span class="cf">for</span>(<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="va">items</span>.<span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) <span class="op">{</span></a>
-<a class="sourceLine" id="cb2-27" data-line-number="27">        <span class="cf">if</span>(items[i].<span class="at">selected</span>()) count<span class="op">++;</span></a>
-<a class="sourceLine" id="cb2-28" data-line-number="28">    <span class="op">}</span></a>
-<a class="sourceLine" id="cb2-29" data-line-number="29">    <span class="cf">return</span> count<span class="op">;</span></a>
-<a class="sourceLine" id="cb2-30" data-line-number="30"><span class="op">}</span>)<span class="op">;</span></a>
-<a class="sourceLine" id="cb2-31" data-line-number="31"></a>
-<a class="sourceLine" id="cb2-32" data-line-number="32"><span class="va">badViewModel</span>.<span class="at">add</span> <span class="op">=</span> <span class="kw">function</span>() <span class="op">{</span></a>
-<a class="sourceLine" id="cb2-33" data-line-number="33">    <span class="va">badViewModel</span>.<span class="va">items</span>.<span class="at">push</span>(<span class="op">{</span></a>
-<a class="sourceLine" id="cb2-34" data-line-number="34">        <span class="dt">body</span><span class="op">:</span> <span class="va">badViewModel</span>.<span class="at">counter</span><span class="op">++,</span></a>
-<a class="sourceLine" id="cb2-35" data-line-number="35">        <span class="dt">selected</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observable</span>(<span class="kw">false</span>)</a>
-<a class="sourceLine" id="cb2-36" data-line-number="36">    <span class="op">}</span>)<span class="op">;</span></a>
-<a class="sourceLine" id="cb2-37" data-line-number="37"><span class="op">};</span></a>
-<a class="sourceLine" id="cb2-38" data-line-number="38"></a>
-<a class="sourceLine" id="cb2-39" data-line-number="39"><span class="va">ko</span>.<span class="at">applyBindings</span>(badViewModel<span class="op">,</span> <span class="va">document</span>.<span class="at">getElementById</span>(<span class="st">'#badExample'</span>))<span class="op">;</span></a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">var</span> badViewModel <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>    <span class="dt">counter</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a>    <span class="dt">items</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observableArray</span>()</span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="op">};</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a></span>
+<span id="cb2-6"><a href="#cb2-6"></a><span class="va">badViewModel</span>.<span class="at">allSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="op">{</span></span>
+<span id="cb2-7"><a href="#cb2-7"></a>    <span class="dt">read</span><span class="op">:</span> <span class="kw">function</span>() <span class="op">{</span></span>
+<span id="cb2-8"><a href="#cb2-8"></a>        <span class="kw">var</span> items <span class="op">=</span> <span class="va">badViewModel</span>.<span class="at">items</span>()<span class="op">;</span></span>
+<span id="cb2-9"><a href="#cb2-9"></a>        <span class="kw">var</span> allSelected <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb2-10"><a href="#cb2-10"></a>        <span class="cf">for</span>(<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="va">items</span>.<span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) <span class="op">{</span> <span class="co">// Need to make sure we depend on each item, so don't break out of loop early</span></span>
+<span id="cb2-11"><a href="#cb2-11"></a>            allSelected <span class="op">=</span> allSelected <span class="op">&amp;&amp;</span> items[i].<span class="at">selected</span>()<span class="op">;</span></span>
+<span id="cb2-12"><a href="#cb2-12"></a>        <span class="op">}</span></span>
+<span id="cb2-13"><a href="#cb2-13"></a>        <span class="cf">return</span> allSelected<span class="op">;</span></span>
+<span id="cb2-14"><a href="#cb2-14"></a>    <span class="op">},</span></span>
+<span id="cb2-15"><a href="#cb2-15"></a>    <span class="dt">write</span><span class="op">:</span> <span class="kw">function</span>(newValue) <span class="op">{</span></span>
+<span id="cb2-16"><a href="#cb2-16"></a>        <span class="kw">var</span> items <span class="op">=</span> <span class="va">badViewModel</span>.<span class="at">items</span>()<span class="op">;</span></span>
+<span id="cb2-17"><a href="#cb2-17"></a>        <span class="cf">for</span>(<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="va">items</span>.<span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) <span class="op">{</span></span>
+<span id="cb2-18"><a href="#cb2-18"></a>            items[i].<span class="at">selected</span>(newValue)<span class="op">;</span></span>
+<span id="cb2-19"><a href="#cb2-19"></a>        <span class="op">}</span></span>
+<span id="cb2-20"><a href="#cb2-20"></a>    <span class="op">}</span></span>
+<span id="cb2-21"><a href="#cb2-21"></a><span class="op">}</span>)<span class="op">;</span></span>
+<span id="cb2-22"><a href="#cb2-22"></a></span>
+<span id="cb2-23"><a href="#cb2-23"></a><span class="va">badViewModel</span>.<span class="at">numberSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="kw">function</span>() <span class="op">{</span></span>
+<span id="cb2-24"><a href="#cb2-24"></a>    <span class="kw">var</span> count <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb2-25"><a href="#cb2-25"></a>    <span class="kw">var</span> items <span class="op">=</span> <span class="va">badViewModel</span>.<span class="at">items</span>()<span class="op">;</span></span>
+<span id="cb2-26"><a href="#cb2-26"></a>    <span class="cf">for</span>(<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="va">items</span>.<span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) <span class="op">{</span></span>
+<span id="cb2-27"><a href="#cb2-27"></a>        <span class="cf">if</span>(items[i].<span class="at">selected</span>()) count<span class="op">++;</span></span>
+<span id="cb2-28"><a href="#cb2-28"></a>    <span class="op">}</span></span>
+<span id="cb2-29"><a href="#cb2-29"></a>    <span class="cf">return</span> count<span class="op">;</span></span>
+<span id="cb2-30"><a href="#cb2-30"></a><span class="op">}</span>)<span class="op">;</span></span>
+<span id="cb2-31"><a href="#cb2-31"></a></span>
+<span id="cb2-32"><a href="#cb2-32"></a><span class="va">badViewModel</span>.<span class="at">add</span> <span class="op">=</span> <span class="kw">function</span>() <span class="op">{</span></span>
+<span id="cb2-33"><a href="#cb2-33"></a>    <span class="va">badViewModel</span>.<span class="va">items</span>.<span class="at">push</span>(<span class="op">{</span></span>
+<span id="cb2-34"><a href="#cb2-34"></a>        <span class="dt">body</span><span class="op">:</span> <span class="va">badViewModel</span>.<span class="at">counter</span><span class="op">++,</span></span>
+<span id="cb2-35"><a href="#cb2-35"></a>        <span class="dt">selected</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observable</span>(<span class="kw">false</span>)</span>
+<span id="cb2-36"><a href="#cb2-36"></a>    <span class="op">}</span>)<span class="op">;</span></span>
+<span id="cb2-37"><a href="#cb2-37"></a><span class="op">};</span></span>
+<span id="cb2-38"><a href="#cb2-38"></a></span>
+<span id="cb2-39"><a href="#cb2-39"></a><span class="va">ko</span>.<span class="at">applyBindings</span>(badViewModel<span class="op">,</span> <span class="va">document</span>.<span class="at">getElementById</span>(<span class="st">'#badExample'</span>))<span class="op">;</span></span></code></pre></div>
 <p>This should be relatively straightforward, and it works, so what’s the problem? The problem can be seen in <code>numberSelected</code> (and it also comes up with <code>allSelected</code> which I’ll get to momentarily). <code>numberSelected</code> depends on <em>each</em> <code>selected</code> observable and so it will be fired <em>each</em> time <em>each</em> one updates. That means if you have 100 items, and you use the select all checkbox, <code>numberSelected</code> will be called 100 times. For this example, that doesn’t really matter. For a more realistic example than <code>numberSelected</code>, this may mean rendering one, then two, then three, … then 100 HTML fragments or making 100 AJAX requests. In fact, this same behavior is present in <code>allSelected</code>. When it is written, as it’s writing to the <code>selected</code> observables, it is also triggering <em>itself</em>.</p>
 <p>So the problem is updating <code>allSelected</code> or <code>numberSelected</code> can’t be done all at once, or to use database terminology, it can’t be updated atomically. One possible solution in newer versions of Knockout is to use <code>deferredUpdates</code> or, what I did back in the much earlier versions of Knockout, abuse the rate limiting features. The problem with this solution is that it makes updates asynchronous. If you’ve written your code to not care whether it was called synchronously or asynchronously, then this will work fine. If you haven’t, doing this throws you into a world of shared state concurrency and race conditions. In this case, this solution is far worse than the disease.</p>
 <h3 id="the-solution">The Solution</h3>
@@ -170,47 +170,47 @@ Add
 </table>
 </div>
 <p>And here’s the code behind this second example:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode javascript"><code class="sourceCode javascript"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="kw">var</span> goodViewModel <span class="op">=</span> <span class="op">{</span></a>
-<a class="sourceLine" id="cb3-2" data-line-number="2">    <span class="dt">counter</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span></a>
-<a class="sourceLine" id="cb3-3" data-line-number="3">    <span class="dt">selectedItems</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observableArray</span>()<span class="op">,</span></a>
-<a class="sourceLine" id="cb3-4" data-line-number="4">    <span class="dt">items</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observableArray</span>()</a>
-<a class="sourceLine" id="cb3-5" data-line-number="5"><span class="op">};</span></a>
-<a class="sourceLine" id="cb3-6" data-line-number="6"></a>
-<a class="sourceLine" id="cb3-7" data-line-number="7"><span class="va">goodViewModel</span>.<span class="at">allSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="op">{</span></a>
-<a class="sourceLine" id="cb3-8" data-line-number="8">    <span class="dt">read</span><span class="op">:</span> <span class="kw">function</span>() <span class="op">{</span></a>
-<a class="sourceLine" id="cb3-9" data-line-number="9">        <span class="cf">return</span> <span class="va">goodViewModel</span>.<span class="at">items</span>().<span class="at">length</span> <span class="op">===</span> <span class="va">goodViewModel</span>.<span class="at">selectedItems</span>().<span class="at">length</span><span class="op">;</span></a>
-<a class="sourceLine" id="cb3-10" data-line-number="10">    <span class="op">},</span></a>
-<a class="sourceLine" id="cb3-11" data-line-number="11">    <span class="dt">write</span><span class="op">:</span> <span class="kw">function</span>(newValue) <span class="op">{</span></a>
-<a class="sourceLine" id="cb3-12" data-line-number="12">        <span class="cf">if</span>(newValue) <span class="op">{</span></a>
-<a class="sourceLine" id="cb3-13" data-line-number="13">            <span class="va">goodViewModel</span>.<span class="at">selectedItems</span>(<span class="va">goodViewModel</span>.<span class="at">items</span>().<span class="at">slice</span>(<span class="dv">0</span>))<span class="op">;</span> <span class="co">// Need a copy!</span></a>
-<a class="sourceLine" id="cb3-14" data-line-number="14">        <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></a>
-<a class="sourceLine" id="cb3-15" data-line-number="15">            <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">removeAll</span>()<span class="op">;</span></a>
-<a class="sourceLine" id="cb3-16" data-line-number="16">        <span class="op">}</span></a>
-<a class="sourceLine" id="cb3-17" data-line-number="17">    <span class="op">}</span></a>
-<a class="sourceLine" id="cb3-18" data-line-number="18"><span class="op">}</span>)<span class="op">;</span></a>
-<a class="sourceLine" id="cb3-19" data-line-number="19"></a>
-<a class="sourceLine" id="cb3-20" data-line-number="20"><span class="va">goodViewModel</span>.<span class="at">numberSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="kw">function</span>() <span class="op">{</span></a>
-<a class="sourceLine" id="cb3-21" data-line-number="21">    <span class="cf">return</span> <span class="va">goodViewModel</span>.<span class="at">selectedItems</span>().<span class="at">length</span><span class="op">;</span></a>
-<a class="sourceLine" id="cb3-22" data-line-number="22"><span class="op">}</span>)<span class="op">;</span></a>
-<a class="sourceLine" id="cb3-23" data-line-number="23"></a>
-<a class="sourceLine" id="cb3-24" data-line-number="24"><span class="va">goodViewModel</span>.<span class="at">add</span> <span class="op">=</span> <span class="kw">function</span>() <span class="op">{</span></a>
-<a class="sourceLine" id="cb3-25" data-line-number="25">    <span class="kw">var</span> item <span class="op">=</span> <span class="op">{</span> <span class="dt">body</span><span class="op">:</span> <span class="va">goodViewModel</span>.<span class="at">counter</span><span class="op">++</span> <span class="op">}</span></a>
-<a class="sourceLine" id="cb3-26" data-line-number="26">    <span class="va">item</span>.<span class="at">selected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="op">{</span></a>
-<a class="sourceLine" id="cb3-27" data-line-number="27">        <span class="dt">read</span><span class="op">:</span> <span class="kw">function</span>() <span class="op">{</span></a>
-<a class="sourceLine" id="cb3-28" data-line-number="28">            <span class="cf">return</span> <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">indexOf</span>(item) <span class="op">&gt;</span> <span class="dv">-1</span><span class="op">;</span></a>
-<a class="sourceLine" id="cb3-29" data-line-number="29">        <span class="op">},</span></a>
-<a class="sourceLine" id="cb3-30" data-line-number="30">        <span class="dt">write</span><span class="op">:</span> <span class="kw">function</span>(newValue) <span class="op">{</span></a>
-<a class="sourceLine" id="cb3-31" data-line-number="31">            <span class="cf">if</span>(newValue) <span class="op">{</span></a>
-<a class="sourceLine" id="cb3-32" data-line-number="32">                <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">push</span>(item)<span class="op">;</span></a>
-<a class="sourceLine" id="cb3-33" data-line-number="33">            <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></a>
-<a class="sourceLine" id="cb3-34" data-line-number="34">                <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">remove</span>(item)<span class="op">;</span></a>
-<a class="sourceLine" id="cb3-35" data-line-number="35">            <span class="op">}</span></a>
-<a class="sourceLine" id="cb3-36" data-line-number="36">        <span class="op">}</span></a>
-<a class="sourceLine" id="cb3-37" data-line-number="37">    <span class="op">}</span>)<span class="op">;</span></a>
-<a class="sourceLine" id="cb3-38" data-line-number="38">    <span class="va">goodViewModel</span>.<span class="va">items</span>.<span class="at">push</span>(item)<span class="op">;</span></a>
-<a class="sourceLine" id="cb3-39" data-line-number="39"><span class="op">};</span></a>
-<a class="sourceLine" id="cb3-40" data-line-number="40"></a>
-<a class="sourceLine" id="cb3-41" data-line-number="41"><span class="va">ko</span>.<span class="at">applyBindings</span>(goodViewModel<span class="op">,</span> <span class="va">document</span>.<span class="at">getElementById</span>(<span class="st">'#goodExample'</span>))<span class="op">;</span></a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">var</span> goodViewModel <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a>    <span class="dt">counter</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a>    <span class="dt">selectedItems</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observableArray</span>()<span class="op">,</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a>    <span class="dt">items</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observableArray</span>()</span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="op">};</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a></span>
+<span id="cb3-7"><a href="#cb3-7"></a><span class="va">goodViewModel</span>.<span class="at">allSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="op">{</span></span>
+<span id="cb3-8"><a href="#cb3-8"></a>    <span class="dt">read</span><span class="op">:</span> <span class="kw">function</span>() <span class="op">{</span></span>
+<span id="cb3-9"><a href="#cb3-9"></a>        <span class="cf">return</span> <span class="va">goodViewModel</span>.<span class="at">items</span>().<span class="at">length</span> <span class="op">===</span> <span class="va">goodViewModel</span>.<span class="at">selectedItems</span>().<span class="at">length</span><span class="op">;</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a>    <span class="op">},</span></span>
+<span id="cb3-11"><a href="#cb3-11"></a>    <span class="dt">write</span><span class="op">:</span> <span class="kw">function</span>(newValue) <span class="op">{</span></span>
+<span id="cb3-12"><a href="#cb3-12"></a>        <span class="cf">if</span>(newValue) <span class="op">{</span></span>
+<span id="cb3-13"><a href="#cb3-13"></a>            <span class="va">goodViewModel</span>.<span class="at">selectedItems</span>(<span class="va">goodViewModel</span>.<span class="at">items</span>().<span class="at">slice</span>(<span class="dv">0</span>))<span class="op">;</span> <span class="co">// Need a copy!</span></span>
+<span id="cb3-14"><a href="#cb3-14"></a>        <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
+<span id="cb3-15"><a href="#cb3-15"></a>            <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">removeAll</span>()<span class="op">;</span></span>
+<span id="cb3-16"><a href="#cb3-16"></a>        <span class="op">}</span></span>
+<span id="cb3-17"><a href="#cb3-17"></a>    <span class="op">}</span></span>
+<span id="cb3-18"><a href="#cb3-18"></a><span class="op">}</span>)<span class="op">;</span></span>
+<span id="cb3-19"><a href="#cb3-19"></a></span>
+<span id="cb3-20"><a href="#cb3-20"></a><span class="va">goodViewModel</span>.<span class="at">numberSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="kw">function</span>() <span class="op">{</span></span>
+<span id="cb3-21"><a href="#cb3-21"></a>    <span class="cf">return</span> <span class="va">goodViewModel</span>.<span class="at">selectedItems</span>().<span class="at">length</span><span class="op">;</span></span>
+<span id="cb3-22"><a href="#cb3-22"></a><span class="op">}</span>)<span class="op">;</span></span>
+<span id="cb3-23"><a href="#cb3-23"></a></span>
+<span id="cb3-24"><a href="#cb3-24"></a><span class="va">goodViewModel</span>.<span class="at">add</span> <span class="op">=</span> <span class="kw">function</span>() <span class="op">{</span></span>
+<span id="cb3-25"><a href="#cb3-25"></a>    <span class="kw">var</span> item <span class="op">=</span> <span class="op">{</span> <span class="dt">body</span><span class="op">:</span> <span class="va">goodViewModel</span>.<span class="at">counter</span><span class="op">++</span> <span class="op">}</span></span>
+<span id="cb3-26"><a href="#cb3-26"></a>    <span class="va">item</span>.<span class="at">selected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="op">{</span></span>
+<span id="cb3-27"><a href="#cb3-27"></a>        <span class="dt">read</span><span class="op">:</span> <span class="kw">function</span>() <span class="op">{</span></span>
+<span id="cb3-28"><a href="#cb3-28"></a>            <span class="cf">return</span> <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">indexOf</span>(item) <span class="op">&gt;</span> <span class="dv">-1</span><span class="op">;</span></span>
+<span id="cb3-29"><a href="#cb3-29"></a>        <span class="op">},</span></span>
+<span id="cb3-30"><a href="#cb3-30"></a>        <span class="dt">write</span><span class="op">:</span> <span class="kw">function</span>(newValue) <span class="op">{</span></span>
+<span id="cb3-31"><a href="#cb3-31"></a>            <span class="cf">if</span>(newValue) <span class="op">{</span></span>
+<span id="cb3-32"><a href="#cb3-32"></a>                <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">push</span>(item)<span class="op">;</span></span>
+<span id="cb3-33"><a href="#cb3-33"></a>            <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
+<span id="cb3-34"><a href="#cb3-34"></a>                <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">remove</span>(item)<span class="op">;</span></span>
+<span id="cb3-35"><a href="#cb3-35"></a>            <span class="op">}</span></span>
+<span id="cb3-36"><a href="#cb3-36"></a>        <span class="op">}</span></span>
+<span id="cb3-37"><a href="#cb3-37"></a>    <span class="op">}</span>)<span class="op">;</span></span>
+<span id="cb3-38"><a href="#cb3-38"></a>    <span class="va">goodViewModel</span>.<span class="va">items</span>.<span class="at">push</span>(item)<span class="op">;</span></span>
+<span id="cb3-39"><a href="#cb3-39"></a><span class="op">};</span></span>
+<span id="cb3-40"><a href="#cb3-40"></a></span>
+<span id="cb3-41"><a href="#cb3-41"></a><span class="va">ko</span>.<span class="at">applyBindings</span>(goodViewModel<span class="op">,</span> <span class="va">document</span>.<span class="at">getElementById</span>(<span class="st">'#goodExample'</span>))<span class="op">;</span></span></code></pre></div>
 <p>One thing to note is that setting <code>allSelected</code> and <code>numberSelected</code> are now both simple operations. A write to an observable triggers a constant number of writes to other observables. In fact, there are only two (non-computed) observables. On the other hand, <em>reading</em> the <code>selected</code> observable is more expensive. Toggling all items has quadratic complexity. In fact, it had quadratic complexity before due to the feedback. However, unlike the previous code, this <em>also</em> has quadratic complexity when any <em>individual</em> item is toggled. Unlike the previous code, though, this is simply due to a poor choice of data structure. Equipping each item with an “ID” field and using an object as a hash map would reduce the complexity to linear. In practice, for this sort of scenario, it tends not to make a big difference. Also, Knockout won’t trigger dependents if the value doesn’t change, so there’s no risk of the extra work propagating into still more extra work. Nevertheless, while I endorse this solution for this particular problem, in general making <em>finer</em> grained observables can help limit the scope of changes so unnecessary work isn’t done.</p>
 <p>Still, the real concern and benefit of this latter approach isn’t the asymptotic complexity of the operations, but the <em>atomicity</em> of the operations. In the second solution, every update is atomic. There are no intermediate states on the way to a final state. This means that dependents, represented by <code>numberSelected</code> but which are realistically much more complicated, don’t get triggered excessively and don’t need to “compensate” for unintended intermediate values.</p>
 <h3 id="epilogue">Epilogue</h3>

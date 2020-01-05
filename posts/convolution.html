@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">A better way to write convolution</h2>
     <p class="blog-post-meta">September 14, 2015 06:12 UTC 
         
-        (Last updated on September 14, 2015 07:55 UTC)
+        (Last updated on August 24, 2019 21:37 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -81,25 +81,25 @@
 </blockquote>
 <p>Usually #o+# is taken to be an operation of a group, and this makes sense when you need to support the equivalent of #n-k#, but there’s really nothing keeping it from being a monoid, and the unit isn’t doing anything so why not a semigroup, and we only really need associativity if we want the convolution to be associative, and nothing requires #n# to be the same type as #j# or #k# or for them to be the same type as each other for that matter… Of course having a group structure reduces the often sticky problem of factoring #n# into all the pairs of #j# and #k# such that #j o+ k = n# to the problem of “simply” enumerating the group.</p>
 <p>Here’s some code for the free monoid (i.e. lists) case:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw">import</span> <span class="dt">Data.Monoid</span></a>
-<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw">import</span> <span class="dt">Data.List</span></a>
-<a class="sourceLine" id="cb1-3" data-line-number="3"></a>
-<a class="sourceLine" id="cb1-4" data-line-number="4"><span class="kw">class</span> <span class="dt">Monoid</span> m <span class="ot">=&gt;</span> <span class="dt">CommutativeMonoid</span> m</a>
-<a class="sourceLine" id="cb1-5" data-line-number="5"><span class="kw">instance</span> <span class="dt">Num</span> a <span class="ot">=&gt;</span> <span class="dt">CommutativeMonoid</span> (<span class="dt">Sum</span> a)</a>
-<a class="sourceLine" id="cb1-6" data-line-number="6"></a>
-<a class="sourceLine" id="cb1-7" data-line-number="7"><span class="co">-- Overly generalized convolve</span></a>
-<a class="sourceLine" id="cb1-8" data-line-number="8"><span class="ot">ogconvolve ::</span> (<span class="dt">CommutativeMonoid</span> m) <span class="ot">=&gt;</span> (a <span class="ot">-&gt;</span> b <span class="ot">-&gt;</span> m) <span class="ot">-&gt;</span> (n <span class="ot">-&gt;</span> [(j,k)]) <span class="ot">-&gt;</span> (j <span class="ot">-&gt;</span> a) <span class="ot">-&gt;</span> (k <span class="ot">-&gt;</span> b) <span class="ot">-&gt;</span> n <span class="ot">-&gt;</span> m</a>
-<a class="sourceLine" id="cb1-9" data-line-number="9">ogconvolve mul factor f g n <span class="fu">=</span> mconcat (map (uncurry (\j k <span class="ot">-&gt;</span> mul (f j) (g k))) (factor n))</a>
-<a class="sourceLine" id="cb1-10" data-line-number="10"></a>
-<a class="sourceLine" id="cb1-11" data-line-number="11"><span class="ot">gconvolve ::</span> <span class="dt">Num</span> m <span class="ot">=&gt;</span> (n <span class="ot">-&gt;</span> [(n,n)]) <span class="ot">-&gt;</span> (n <span class="ot">-&gt;</span> m) <span class="ot">-&gt;</span> (n <span class="ot">-&gt;</span> m) <span class="ot">-&gt;</span> n <span class="ot">-&gt;</span> m</a>
-<a class="sourceLine" id="cb1-12" data-line-number="12">gconvolve factor f g n <span class="fu">=</span> getSum (ogconvolve (\a b <span class="ot">-&gt;</span> <span class="dt">Sum</span> (a<span class="fu">*</span>b)) factor f g n)</a>
-<a class="sourceLine" id="cb1-13" data-line-number="13"></a>
-<a class="sourceLine" id="cb1-14" data-line-number="14"><span class="ot">lconvolve ::</span> <span class="dt">Num</span> m <span class="ot">=&gt;</span> ([a] <span class="ot">-&gt;</span> m) <span class="ot">-&gt;</span> ([a] <span class="ot">-&gt;</span> m) <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> m</a>
-<a class="sourceLine" id="cb1-15" data-line-number="15">lconvolve <span class="fu">=</span> gconvolve (\as <span class="ot">-&gt;</span> zip (inits as) (tails as))</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">import</span> <span class="dt">Data.Monoid</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">import</span> <span class="dt">Data.List</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="kw">class</span> <span class="dt">Monoid</span> m <span class="ot">=&gt;</span> <span class="dt">CommutativeMonoid</span> m</span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="kw">instance</span> <span class="dt">Num</span> a <span class="ot">=&gt;</span> <span class="dt">CommutativeMonoid</span> (<span class="dt">Sum</span> a)</span>
+<span id="cb1-6"><a href="#cb1-6"></a></span>
+<span id="cb1-7"><a href="#cb1-7"></a><span class="co">-- Overly generalized convolve</span></span>
+<span id="cb1-8"><a href="#cb1-8"></a><span class="ot">ogconvolve ::</span> (<span class="dt">CommutativeMonoid</span> m) <span class="ot">=&gt;</span> (a <span class="ot">-&gt;</span> b <span class="ot">-&gt;</span> m) <span class="ot">-&gt;</span> (n <span class="ot">-&gt;</span> [(j,k)]) <span class="ot">-&gt;</span> (j <span class="ot">-&gt;</span> a) <span class="ot">-&gt;</span> (k <span class="ot">-&gt;</span> b) <span class="ot">-&gt;</span> n <span class="ot">-&gt;</span> m</span>
+<span id="cb1-9"><a href="#cb1-9"></a>ogconvolve mul factor f g n <span class="ot">=</span> <span class="fu">mconcat</span> (<span class="fu">map</span> (<span class="fu">uncurry</span> (\j k <span class="ot">-&gt;</span> mul (f j) (g k))) (factor n))</span>
+<span id="cb1-10"><a href="#cb1-10"></a></span>
+<span id="cb1-11"><a href="#cb1-11"></a><span class="ot">gconvolve ::</span> <span class="dt">Num</span> m <span class="ot">=&gt;</span> (n <span class="ot">-&gt;</span> [(n,n)]) <span class="ot">-&gt;</span> (n <span class="ot">-&gt;</span> m) <span class="ot">-&gt;</span> (n <span class="ot">-&gt;</span> m) <span class="ot">-&gt;</span> n <span class="ot">-&gt;</span> m</span>
+<span id="cb1-12"><a href="#cb1-12"></a>gconvolve factor f g n <span class="ot">=</span> getSum (ogconvolve (\a b <span class="ot">-&gt;</span> <span class="dt">Sum</span> (a<span class="op">*</span>b)) factor f g n)</span>
+<span id="cb1-13"><a href="#cb1-13"></a></span>
+<span id="cb1-14"><a href="#cb1-14"></a><span class="ot">lconvolve ::</span> <span class="dt">Num</span> m <span class="ot">=&gt;</span> ([a] <span class="ot">-&gt;</span> m) <span class="ot">-&gt;</span> ([a] <span class="ot">-&gt;</span> m) <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> m</span>
+<span id="cb1-15"><a href="#cb1-15"></a>lconvolve <span class="ot">=</span> gconvolve (\as <span class="ot">-&gt;</span> <span class="fu">zip</span> (inits as) (tails as))</span></code></pre></div>
 <p>You may have noticed that we never actually use #o+# anywhere. It’s only significance is to define the valid factorizations. I.e. there’s an implicit constraint in the above code that</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb2-1" data-line-number="1">all (\(j,k) <span class="ot">-&gt;</span> n <span class="fu">==</span> j <span class="ot">`oplus`</span> k) (factor n)</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1"></a><span class="fu">all</span> (\(j,k) <span class="ot">-&gt;</span> n <span class="op">==</span> j <span class="ot">`oplus`</span> k) (factor n)</span></code></pre></div>
 <p>and also that</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb3-1" data-line-number="1">factor n <span class="fu">==</span> nub (factor n)</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1"></a>factor n <span class="op">==</span> nub (factor n)</span></code></pre></div>
 <p>i.e. no duplicates. (Conceptually, factor spits out a set, indeed the graph of the relation #(j,k)|-&gt;j o+ k=n#.)</p>
 <p>The commutative monoid constraint and <code>mul</code> function were just for the heck of it, but why a commutative monoid and not an arbitrary monoid? Well, we don’t want the result to depend on how <code>factor</code> spits out the factors. In other words, if it actually did return a set then we can’t depend on the order of the elements in the set if we want a well-defined function.</p>
 <p>Here’s where I tell you that <code>lconvolve</code> is an important function for something. I suspect it or a variant probably is, but I don’t know. Here’s another monoid case, commutative this time, that definitely is important and interesting: <a href="https://en.wikipedia.org/wiki/Dirichlet_convolution">Dirichlet convolution</a>.</p>
@@ -117,15 +117,15 @@
 </blockquote>
 <p>then it’s pretty easy to see that it is right. We can start doing a lot of number theory with the above combined with the <a href="https://en.wikipedia.org/wiki/Euler_product">Euler product</a> formula:</p>
 <blockquote>
-<p><code class="asciimath">#sum_(n=1)^oo f(n)n^(-s) = prod_(p\ &quot;prime&quot;) sum_(n=0)^oo f(p^n)p^(-ns)#</code></p>
+<p><code class="asciimath">#sum_(n=1)^oo f(n)n^(-s) = prod_(p\ "prime") sum_(n=0)^oo f(p^n)p^(-ns)#</code></p>
 </blockquote>
 <p>where #f# is multiplicative, which means #f(ab) = f(a)f(b)# when #a# and #b# are coprime. (The real significance of #f# being multiplicative is that it is equivalent to #f# being completely determined by its values on prime powers.) It turns out it is surprisingly easy and fun to derive various <a href="https://en.wikipedia.org/wiki/Arithmetic_function">arithmetic functions</a> and identities between them. Here’s a brief teaser.</p>
 <p>#1(n) = 1# is a multiplicative function and this gives:</p>
 <blockquote>
-<p><code class="asciimath">#zeta(s) = sum_(n=1)^oo n^(-s) = prod_(p\ &quot;prime&quot;) 1/(1-p^(-s))#</code></p>
+<p><code class="asciimath">#zeta(s) = sum_(n=1)^oo n^(-s) = prod_(p\ "prime") 1/(1-p^(-s))#</code></p>
 </blockquote>
 <p>where we’ve used the formula for the sum of a geometric series.</p>
-<p>So <code class="asciimath">#1/(zeta(s)) = prod_(p\ &quot;prime&quot;) 1-p^(-s) = sum_(n=1)^oo mu(n)n^(-s)#</code>. The question is now, what is #mu#? Well, all we need to do is say what it is on prime powers and comparing the Euler product formula to the above we see, for prime #p#, #mu(p) = -1# and #mu(p^n) = 0# for #n &gt; 1#. This is the <a href="https://en.wikipedia.org/wiki/M%C3%B6bius_function">Möbius function</a>. Because #zeta(s) * (1/(zeta(s))) = 1# we have #(1 *** mu)(n) = sum_(d|n) mu(d) = 0# for #n &gt; 1#. Continuing in this vein leads to analytic number theory and the Riemann hypothesis, though you may want to pick up the <a href="https://en.wikipedia.org/wiki/Mellin_transform">Mellin transform</a> along the way.</p>
+<p>So <code class="asciimath">#1/(zeta(s)) = prod_(p\ "prime") 1-p^(-s) = sum_(n=1)^oo mu(n)n^(-s)#</code>. The question is now, what is #mu#? Well, all we need to do is say what it is on prime powers and comparing the Euler product formula to the above we see, for prime #p#, #mu(p) = -1# and #mu(p^n) = 0# for #n &gt; 1#. This is the <a href="https://en.wikipedia.org/wiki/M%C3%B6bius_function">Möbius function</a>. Because #zeta(s) * (1/(zeta(s))) = 1# we have #(1 *** mu)(n) = sum_(d|n) mu(d) = 0# for #n &gt; 1#. Continuing in this vein leads to analytic number theory and the Riemann hypothesis, though you may want to pick up the <a href="https://en.wikipedia.org/wiki/Mellin_transform">Mellin transform</a> along the way.</p>
 
     <div id="disqus_thread"></div>
     <script type="text/javascript">
