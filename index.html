@@ -46,6 +46,54 @@
           
     <div class="blog-post teaser panel panel-default">
     <div class="panel-heading">
+        <h2 class="blog-post-title"><a href="./posts/beck-chevalley.html">Beck-Chevalley</a></h2>
+        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="a9d4a228-c165-4744-9421-1dca09ac596d" href="./posts/beck-chevalley.html#disqus_thread"></a></h6>
+    </div>
+
+    <div class="panel-body">
+        
+            <p>This is a fairly technical article. This article will most likely not have any significance for you if you haven’t heard of the Beck-Chevalley condition before.</p>
+<h2 id="introduction">Introduction</h2>
+<p>When one talks about “indexed (co)products” in an indexed category, it is often described as follows:</p>
+<p>Let |\mathcal C| be an <a href="https://ncatlab.org/nlab/show/indexed+category"><strong>|\mathbf S|-indexed category</strong></a>, i.e. a <a href="https://ncatlab.org/nlab/show/pseudofunctor">pseudofunctor</a> |\mathbf S^{op} \to \mathbf{Cat}| where |\mathbf S| is an ordinary category. Write |\mathcal C^I| for |\mathcal C(I)| and |f^* : \mathcal C^J \to \mathcal C^I| for |\mathcal C(f)| where |f : I \to J|. The functors |f^*| will be called <strong>reindexing functors</strong>. |\mathcal C| has <strong>|\mathbf S|-indexed coproducts</strong> whenever</p>
+<ol type="1">
+<li>each reindexing functor |f^*| has a left adjoint |\Sigma_f|, and</li>
+<li>the Beck-Chevalley condition holds, i.e. whenever <br /><span class="math display">$$\require{AMScd}\begin{CD}
+   I @&gt;h&gt;&gt; J \\
+   @VkVV @VVfV \\
+   K @&gt;&gt;g&gt; L
+\end{CD}$$</span><br /> is a pullback square in |\mathbf S|, then the canonical morphism |\Sigma_k \circ h^* \to g^* \circ \Sigma_f| is an isomorphism.</li>
+</ol>
+<p>The first condition is reasonable, especially motivated with some examples, but the second condition is more mysterious. It’s clear that you’d need <em>something</em> more than simply a family of adjunctions, but it’s not clear how you could calculate the particular condition quoted. That’s the goal of this article. I will not cover what the Beck-Chevalley condition is intuitively saying. I cover that in <a href="https://math.stackexchange.com/a/2203383">this Stack Exchange answer</a> from a logical perspective, though there are definitely other possible perspectives as well.</p>
+<p>Some questions are:</p>
+<ol type="1">
+<li>Where does the Beck-Chevalley condition come from?</li>
+<li>What is this “canonical morphism”?</li>
+<li>Why do we care about pullback squares in particular?</li>
+</ol>
+
+            <h6><a href="./posts/beck-chevalley.html">Read more...</a></h6>
+        
+    </div>
+
+    <div class="panel-footer">
+        <h6 class="blog-post-meta">
+            February 23, 2020 07:59 UTC
+            
+            (Last updated on February 23, 2020 07:59 UTC)
+
+            
+                Tags: <a href="./tags/math.html">math</a>, <a href="./tags/category%20theory.html">category theory</a>
+            
+        </h6>
+    </div>
+
+</div><!-- /.blog-post -->
+
+
+
+    <div class="blog-post teaser panel panel-default">
+    <div class="panel-heading">
         <h2 class="blog-post-title"><a href="./posts/absolute-colimits.html">Absolute Colimits</a></h2>
         <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="c2e1db83-0e86-4416-8d4e-b072ca537560" href="./posts/absolute-colimits.html#disqus_thread"></a></h6>
     </div>
@@ -730,41 +778,6 @@ ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
 
 
 
-    <div class="blog-post teaser panel panel-default">
-    <div class="panel-heading">
-        <h2 class="blog-post-title"><a href="./posts/understanding-typing-judgments.html">Understanding typing judgments</a></h2>
-        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="EE49D35E-A547-46A0-86F3-9419AFCEA309" href="./posts/understanding-typing-judgments.html#disqus_thread"></a></h6>
-    </div>
-
-    <div class="panel-body">
-        
-            <h3 id="introduction">Introduction</h3>
-<p>For many people interested in type systems and type theory, their first encounter with the literature presents them with this:</p>
-<p><code class="asciimath">#frac(Gamma,x:tau_1 |--_Sigma e : tau_2)(Gamma |--_Sigma (lambda x:tau_1.e) : tau_1 -&gt; tau_2) -&gt;I#</code></p>
-<p><code class="asciimath">#frac(Gamma |--_Sigma f : tau_1 -&gt; tau_2 \qquad Gamma |--_Sigma x : tau_1)(Gamma |--_Sigma f x : tau_2) -&gt;E#</code></p>
-<p>Since this notation is ubiquitous, authors (reasonably) expect readers to already be familiar with it and thus provide no explanation. Because the notation is ubiquitous, the beginner looking for alternate resources will not escape it. All they will find is that the notation is everywhere but exists in myriad minor variations which may or may not indicate significant differences. At this point the options are: 1) to muddle on and hope understanding the notation isn’t too important, 2) look for introductory resources which typically take the form of $50+ 500+ page textbooks, or 3) give up.</p>
-<p>The goal of this article is to explain the notation part-by-part in common realizations, and to cover the main idea behind the notation which is the idea of an inductively defined relation. To eliminate ambiguity and make hand-waving impossible, I’ll ground the explanations in code, in particular, in <a href="http://wiki.portal.chalmers.se/agda/pmwiki.php">Agda</a>. That means for each example of the informal notation, there will be how it would be realized in Agda.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> It will become clear that I’m am not (just) using Agda as a formal notation to talk about these concepts, but that Agda’s<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> data type mechanism directly captures them<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>. The significance of this is that programmers are already familiar with many of the ideas behind the informal notation, and the notation is just obscuring this familiarity. Admittedly, Agda is itself pretty intimidating. I hope most of this article is accessible to those with familiarity with algebraic data types as they appear in Haskell, ML, Rust, or Swift with little to no need to look up details about Agda. Nevertheless, Agda at least has the benefit, when compared to the informal notation, of having a clear place to go to learn more, an unambiguous meaning, and tools that allow playing around with the ideas.</p>
-
-            <h6><a href="./posts/understanding-typing-judgments.html">Read more...</a></h6>
-        
-    </div>
-
-    <div class="panel-footer">
-        <h6 class="blog-post-meta">
-            April 13, 2016 02:41 UTC
-            
-            (Last updated on August 24, 2019 21:37 UTC)
-
-            
-                Tags: <a href="./tags/Agda.html">Agda</a>, <a href="./tags/type%20theory.html">type theory</a>
-            
-        </h6>
-    </div>
-
-</div><!-- /.blog-post -->
-
-
-
 
         </div><!-- /.blog-main -->
         
@@ -774,6 +787,8 @@ ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
                 <div class="panel-heading"><h4>Recent</h4></div>
                 <div class="panel-body">
                     <ol class="list-unstyled">
+                        
+                          <li><div class="blog-post-link">2020-02-23 - <a href="./posts/beck-chevalley.html">Beck-Chevalley</a></div></li>
                         
                           <li><div class="blog-post-link">2019-05-18 - <a href="./posts/absolute-colimits.html">Absolute Colimits</a></div></li>
                         
@@ -793,8 +808,6 @@ ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
                         
                           <li><div class="blog-post-link">2016-05-05 - <a href="./posts/the-mistake-everyone-makes-with-knockoutjs.html">The Mistake Everyone Makes with KnockoutJS</a></div></li>
                         
-                          <li><div class="blog-post-link">2016-04-13 - <a href="./posts/understanding-typing-judgments.html">Understanding typing judgments</a></div></li>
-                        
                     </ol>
                 </div>
               </div>
@@ -804,11 +817,11 @@ ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
                     <ol class="list-unstyled">
                       <li><a href="./tags/Agda.html">Agda (1)</a></li>
 <li><a href="./tags/CS.html">CS (3)</a></li>
-<li><a href="./tags/category%20theory.html">category theory (4)</a></li>
+<li><a href="./tags/category%20theory.html">category theory (5)</a></li>
 <li><a href="./tags/geometric%20algebra.html">geometric algebra (1)</a></li>
 <li><a href="./tags/javascript.html">javascript (1)</a></li>
 <li><a href="./tags/logic.html">logic (2)</a></li>
-<li><a href="./tags/math.html">math (10)</a></li>
+<li><a href="./tags/math.html">math (11)</a></li>
 <li><a href="./tags/programming.html">programming (2)</a></li>
 <li><a href="./tags/type%20theory.html">type theory (2)</a></li>
                     </ol>
