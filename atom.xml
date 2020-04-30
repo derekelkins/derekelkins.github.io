@@ -8,8 +8,241 @@
         <name>Derek Elkins</name>
         <email>derek.a.elkins+blog@gmail.com</email>
     </author>
-    <updated>2020-02-23T07:59:28Z</updated>
+    <updated>2020-04-30T06:06:52Z</updated>
     <entry>
+    <title>Recursive Helping</title>
+    <link href="https://derekelkins.github.io/posts/recursive-helping.html" />
+    <id>https://derekelkins.github.io/posts/recursive-helping.html</id>
+    <published>2020-04-29 23:06:52-07:00</published>
+    <updated>2020-04-30T06:06:52Z</updated>
+    <summary type="html"><![CDATA[<h2 id="introduction">Introduction</h2>
+<p>Recursive helping is a technique for implementing lock-free concurrent data structures and algorithms. I’m going to illustrate this in the case of implementing a multi-variable compare-and-swap (MCAS) in terms of a single variable compare-and-swap. Basically everything I’m going to talk about comes from Keir Fraser’s PhD Thesis, <a href="https://www.cl.cam.ac.uk/techreports/UCAM-CL-TR-579.html">Practical Lock-Freedom</a> (2004) which I <strong>strongly</strong> recommend. Fraser’s thesis goes much further than this, e.g. fine-grained lock-free implementations of software transactional memory (STM)<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. Fraser went on to contribute to the initial implementations of STM in Haskell, though his thesis uses C++.</p>
+<!--more-->
+<p>First, some prerequisites.</p>
+<h2 id="terms">Terms</h2>
+<p>I imagine most developers when they hear the term “lock-free” take it to mean a concurrent algorithm implemented without using locks. It, however, has a technical definition. Assuming a concurrent application is functionally correct, e.g. it does the right thing if it terminates no matter how things are scheduled, we still have three liveness problems in decreasing order of severity:</p>
+<ul>
+<li><strong>Deadlock</strong> - the application getting stuck in state where no subprocesses can be scheduled</li>
+<li><strong>Livelock</strong> - the application fails to make progress despite subprocesses being scheduled, e.g. endlessly retrying</li>
+<li><strong>Starvation</strong> - some subprocesses never make progress even though the application as a whole makes progress</li>
+</ul>
+<p>In parallel, we have three properties corresponding to programs that cannot exhibit the above behaviors:</p>
+<ul>
+<li><strong>Obstruction-free</strong> - no deadlock, you’ll get this if you don’t use locks</li>
+<li><strong>Lock-free</strong> - obstruction-free and no livelock</li>
+<li><strong>Wait-free</strong> - lock-free and no starvation</li>
+</ul>
+<p>Wait-freedom is the most desirable property but was difficult to achieve with reasonable efficiency. However, <a href="https://dl.acm.org/doi/10.1145/2692916.2555261">relatively recent techniques</a> (2014) may do for wait-free algorithms what Fraser’s thesis did for lock-free algorithms, namely reduce a research problem to an exercise. These techniques, however, still start from a lock-free algorithm. Obstruction-freedom is usually what you get from concurrency control mechanisms that abort and retry in the case of conflicts. To achieve lock-freedom, we need to avoid losing and redoing work, or at least doing so repeatedly indefinitely.</p>
+<p>See Fraser’s thesis for more formal definitions.</p>
+<p>I’ll use “<strong>lockless</strong>” to mean an algorithm implemented without using locks.</p>
+<h2 id="compare-and-swap">Compare-and-Swap</h2>
+<p>The usual primitive used to implement and describe lockless algorithms is <a href="https://en.wikipedia.org/wiki/Compare-and-swap">compare-and-swap</a>, often just called <code>cas</code>. There are other possibilities, but <code>cas</code> is <a href="https://dl.acm.org/doi/10.1145/114005.102808">universal</a>, relatively simple, and widely implemented, e.g. as the <code>cmpxchg</code> operation for the x86 architecture. The following is a specification of a <code>cas</code> operation in Haskell with the additional note that this intended to be performed atomically (which it would not be in Haskell).</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1"></a><span class="ot">cas ::</span> (<span class="dt">Eq</span> a) <span class="ot">=&gt;</span> <span class="dt">IORef</span> a <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> a</span>
+<span id="cb1-2"><a href="#cb1-2"></a>cas ref old new <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>    curr <span class="ot">&lt;-</span> readIORef ref</span>
+<span id="cb1-4"><a href="#cb1-4"></a>    <span class="kw">if</span> curr <span class="op">==</span> old <span class="kw">then</span> <span class="kw">do</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a>        writeIORef ref new</span>
+<span id="cb1-6"><a href="#cb1-6"></a>        <span class="fu">return</span> curr</span>
+<span id="cb1-7"><a href="#cb1-7"></a>    <span class="kw">else</span> <span class="kw">do</span></span>
+<span id="cb1-8"><a href="#cb1-8"></a>        <span class="fu">return</span> curr</span></code></pre></div>
+<h2 id="specification-of-multiple-compare-and-swap">Specification of Multiple Compare-and-Swap</h2>
+<p>The specification of multiple compare-and-swap is the straightforward extension to the above to several variables.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1"></a><span class="ot">mcasSpec ::</span> (<span class="dt">Eq</span> a) <span class="ot">=&gt;</span> [(<span class="dt">IORef</span> a, a, a)] <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">Bool</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>mcasSpec entries <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a>    eqs <span class="ot">&lt;-</span> forM entries <span class="op">$</span> \(ref, old, _) <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a>        curr <span class="ot">&lt;-</span> readIORef ref</span>
+<span id="cb2-5"><a href="#cb2-5"></a>        <span class="fu">return</span> (curr <span class="op">==</span> old)</span>
+<span id="cb2-6"><a href="#cb2-6"></a>    <span class="kw">if</span> <span class="fu">and</span> eqs <span class="kw">then</span> <span class="kw">do</span> <span class="co">-- if all equal</span></span>
+<span id="cb2-7"><a href="#cb2-7"></a>        forM_ entries <span class="op">$</span> \(ref, _, new) <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb2-8"><a href="#cb2-8"></a>            writeIORef ref new</span>
+<span id="cb2-9"><a href="#cb2-9"></a>        <span class="fu">return</span> <span class="dt">True</span></span>
+<span id="cb2-10"><a href="#cb2-10"></a>    <span class="kw">else</span> <span class="kw">do</span></span>
+<span id="cb2-11"><a href="#cb2-11"></a>        <span class="fu">return</span> <span class="dt">False</span></span></code></pre></div>
+<p>The above is, again, intended to be executed atomically. It will be convenient to allow a bit more flexibility in the type producing the type:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1"></a><span class="ot">mcas ::</span> (<span class="dt">Eq</span> a) <span class="ot">=&gt;</span> [(<span class="dt">MCASRef</span> a, a, a)] <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">Bool</span></span></code></pre></div>
+<p>where we have</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1"></a><span class="co">-- Abstract.</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="kw">newtype</span> <span class="dt">MCASRef</span> a <span class="ot">=</span> <span class="dt">MCASRef</span> {<span class="ot"> unMCASRef ::</span> <span class="dt">IORef</span> (<span class="dt">Either</span> (<span class="dt">T</span> a) a) } <span class="kw">deriving</span> ( <span class="dt">Eq</span> )</span>
+<span id="cb4-3"><a href="#cb4-3"></a></span>
+<span id="cb4-4"><a href="#cb4-4"></a><span class="ot">newMCASRef ::</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">MCASRef</span> a)</span>
+<span id="cb4-5"><a href="#cb4-5"></a>newMCASRef v <span class="ot">=</span> <span class="dt">MCASRef</span> <span class="op">&lt;$&gt;</span> newIORef (<span class="dt">Right</span> v)</span>
+<span id="cb4-6"><a href="#cb4-6"></a></span>
+<span id="cb4-7"><a href="#cb4-7"></a><span class="ot">readMCASRef ::</span> <span class="dt">MCASRef</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> a</span>
+<span id="cb4-8"><a href="#cb4-8"></a><span class="co">-- Will be implemented below.</span></span></code></pre></div>
+<p>The idea here is that, in addition to values of type <code>a</code>, we can also store values of type <code>T a</code> into the pointers for internal use, and we can unambiguously distinguish them from values of type <code>a</code>. <code>T a</code> can be any type constructor you like.</p>
+<p>In the code below, I will assume <code>IORef</code>s have an <code>Ord</code> instance, i.e. that they can be sorted. This is <em>not</em> true, but an approach as in <a href="https://hackage.haskell.org/package/ioref-stable-0.1.1.0">ioref-stable</a> could be used to accomplish this. Alternatively, <code>Ptr</code>s to <code>StablePtr</code>s could be used.</p>
+<p>We won’t worry about memory consistency concerns here. That is, we’ll assume sequential consistency where all CPU cores see all updates immediately.</p>
+<p>I recommend stopping here and thinking about how you would implement <code>mcas</code> in terms of <code>cas</code> while, of course, achieving the desired atomicity. The solution I’ll present – the one from Fraser’s thesis – is moderately involved, so if the approach you come up with is very simple, then you’ve probably made a mistake. Unsurprisingly, the solution I’ll present makes use of the additional flexibility in the type and the ability to sort <code>IORef</code>s. I’m not claiming it is impossible to accomplish this without these though. For example, you could apply a universal construction which witnesses the universality of <code>cas</code>.</p>
+<h2 id="recursive-helping">Recursive Helping</h2>
+<p>Lockless algorithms typically proceed by attempting an operation and detecting conflicts, e.g. as in multi-version concurrency control. This requires storing enough information to tell that a conflicting operation has occurred/is occurring. Once a conflict is detected, the simplest solution is typically to abort and retry hoping that there isn’t a conflict the next time. This clearly leads to the possibility of livelock.</p>
+<p>Instead of aborting, the later invocation of the operation could instead help the earlier one to complete, thereby getting it out of its way. This ensures that the first invocation will always, eventually complete giving us lock-freedom. However, this doesn’t guarantee that once the second invocation finishes helping the first invocation that a third invocation won’t jump in before the second invocation gets a chance to start on its own work. In this case, the second invocation will help the third invocation to complete before attempting to start itself. A process can end up spending all its time helping other processes while never getting its own work done, leading to starvation.</p>
+<p>To perform recursive helping, we need an invocation to store enough information so that subsequent, overlapping invocations are able to assist. To accomplish this, we’ll store a (pointer to a) “descriptor” containing the parameters of the invocation being helped and potentially additional information<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>. This is what we’ll use for the <code>T</code> type constructor.</p>
+<p>The general approach will be: at the beginning of the operation we will attempt to “install” a descriptor in the first field we touch utilizing <code>cas</code>. There are then three possible outcomes. If we fail and find a value, then the operation has failed. If we fail and find an existing descriptor, then we (potentially recursively) help that descriptor. If we succeed, then we have successfully “acquired” the field and we “help” ourselves. We can have many processes all trying to help the same invocation at the same time, so it is still important that multiple identical help calls don’t interfere with each other. Just because we’re helping an invocation of an operation doesn’t mean that that the original process isn’t still executing.</p>
+<p>Since we’ll be replacing pointers to values with pointers to descriptors, reading the value becomes non-trivial. In particular, if when we read a pointer we get a descriptor, we’ll need to help the invocation described to completion. We will need to keep doing this until we successfully read a value.</p>
+<h2 id="conditional-compare-and-swap">Conditional Compare-and-Swap</h2>
+<p>An operation we’ll use in the implementations of <code>mcas</code> is a conditional compare-and-swap (CCAS) where we only perform the swap if, additionally, an additional variable is set to a given value. It has the following specification.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1"></a><span class="co">-- Specification. Implementations should perform this atomically.</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="ot">ccasSpec ::</span> (<span class="dt">Eq</span> a, <span class="dt">Eq</span> c) <span class="ot">=&gt;</span> <span class="dt">IORef</span> a <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">IORef</span> c <span class="ot">-&gt;</span> c <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb5-3"><a href="#cb5-3"></a>ccasSpec ref old new condRef check <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a>    curr <span class="ot">&lt;-</span> readIORef ref</span>
+<span id="cb5-5"><a href="#cb5-5"></a>    cond <span class="ot">&lt;-</span> readIORef condRef</span>
+<span id="cb5-6"><a href="#cb5-6"></a>    <span class="kw">if</span> cond <span class="op">==</span> check <span class="op">&amp;&amp;</span> curr <span class="op">==</span> old <span class="kw">then</span> <span class="kw">do</span></span>
+<span id="cb5-7"><a href="#cb5-7"></a>        writeIORef ref new</span>
+<span id="cb5-8"><a href="#cb5-8"></a>    <span class="kw">else</span> <span class="kw">do</span></span>
+<span id="cb5-9"><a href="#cb5-9"></a>        <span class="fu">return</span> ()</span></code></pre></div>
+<p>We’ll need to show that this can be implemented in terms of <code>cas</code>, or rather a version with modifications similar to those mentioned for <code>mcas</code>. This will be a simple instance of the recursive helping approach that will be applied in the implementation of <code>mcas</code>.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">type</span> <span class="dt">CCASDescriptor</span> a c <span class="ot">=</span> <span class="dt">IORef</span> (<span class="dt">CCASRef</span> a c, a, a, <span class="dt">IORef</span> c, c)</span>
+<span id="cb6-2"><a href="#cb6-2"></a></span>
+<span id="cb6-3"><a href="#cb6-3"></a><span class="kw">newtype</span> <span class="dt">CCASRef</span> a c <span class="ot">=</span> <span class="dt">CCASRef</span> {<span class="ot"> unCCASRef ::</span> <span class="dt">IORef</span> (<span class="dt">Either</span> (<span class="dt">CCASDescriptor</span> a c) a) } <span class="kw">deriving</span> ( <span class="dt">Eq</span>, <span class="dt">Ord</span> )</span></code></pre></div>
+<p>We begin with the types. As described above, a <code>CCASRef</code> is just an <code>IORef</code> that holds either a value or a descriptor, and the descriptor is just an <code>IORef</code> pointing at a tuple holding the arguments to <code>ccas</code>. We won’t actually modify this latter <code>IORef</code> and instead are just using it for its object identity. It could be replaced with a read-only <code>IVar</code> or a <code>Unique</code> could be allocated and used as an identifier instead. In a lower-level language, this <code>IORef</code> corresponds to having a pointer to the descriptor.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1"></a><span class="ot">newCCASRef ::</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">CCASRef</span> a c)</span>
+<span id="cb7-2"><a href="#cb7-2"></a>newCCASRef v <span class="ot">=</span> <span class="dt">CCASRef</span> <span class="op">&lt;$&gt;</span> newIORef (<span class="dt">Right</span> v)</span>
+<span id="cb7-3"><a href="#cb7-3"></a></span>
+<span id="cb7-4"><a href="#cb7-4"></a><span class="ot">readCCASRef ::</span> (<span class="dt">Eq</span> a, <span class="dt">Eq</span> c) <span class="ot">=&gt;</span> <span class="dt">CCASRef</span> a c <span class="ot">-&gt;</span> <span class="dt">IO</span> a</span>
+<span id="cb7-5"><a href="#cb7-5"></a>readCCASRef ref <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb7-6"><a href="#cb7-6"></a>    x <span class="ot">&lt;-</span> readIORef (unCCASRef ref)</span>
+<span id="cb7-7"><a href="#cb7-7"></a>    <span class="kw">case</span> x <span class="kw">of</span></span>
+<span id="cb7-8"><a href="#cb7-8"></a>        <span class="dt">Right</span> v <span class="ot">-&gt;</span> <span class="fu">return</span> v</span>
+<span id="cb7-9"><a href="#cb7-9"></a>        <span class="dt">Left</span> d <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb7-10"><a href="#cb7-10"></a>            ccasHelp d</span>
+<span id="cb7-11"><a href="#cb7-11"></a>            readCCASRef ref</span>
+<span id="cb7-12"><a href="#cb7-12"></a></span>
+<span id="cb7-13"><a href="#cb7-13"></a><span class="co">-- Not atomic. This CAS can fail even when it would be impossible if `ccas` was truly atomic.</span></span>
+<span id="cb7-14"><a href="#cb7-14"></a><span class="co">-- Example: ccas a reference to the same value but where the condRef is False. The ccas fails</span></span>
+<span id="cb7-15"><a href="#cb7-15"></a><span class="co">-- and thus should behave as a no-op, but if a `casCCASRef` occurs during the course of the ccas,</span></span>
+<span id="cb7-16"><a href="#cb7-16"></a><span class="co">-- the `casCCASRef` can fail even though it should succeed in all cases.</span></span>
+<span id="cb7-17"><a href="#cb7-17"></a><span class="ot">casCCASRef ::</span> (<span class="dt">Eq</span> a) <span class="ot">=&gt;</span> <span class="dt">CCASRef</span> a c <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">Bool</span></span>
+<span id="cb7-18"><a href="#cb7-18"></a>casCCASRef (<span class="dt">CCASRef</span> ref) old new <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb7-19"><a href="#cb7-19"></a>    curr <span class="ot">&lt;-</span> cas ref (<span class="dt">Right</span> old) (<span class="dt">Right</span> new)</span>
+<span id="cb7-20"><a href="#cb7-20"></a>    <span class="fu">return</span> (curr <span class="op">==</span> <span class="dt">Right</span> old)</span>
+<span id="cb7-21"><a href="#cb7-21"></a></span>
+<span id="cb7-22"><a href="#cb7-22"></a><span class="ot">tryReadCCASRef ::</span> <span class="dt">CCASRef</span> a c <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Maybe</span> a)</span>
+<span id="cb7-23"><a href="#cb7-23"></a>tryReadCCASRef ref <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb7-24"><a href="#cb7-24"></a>    x <span class="ot">&lt;-</span> readIORef (unCCASRef ref)</span>
+<span id="cb7-25"><a href="#cb7-25"></a>    <span class="fu">return</span> (<span class="kw">case</span> x <span class="kw">of</span> <span class="dt">Left</span> _ <span class="ot">-&gt;</span> <span class="dt">Nothing</span>; <span class="dt">Right</span> v <span class="ot">-&gt;</span> <span class="dt">Just</span> v)</span></code></pre></div>
+<p>To get them out of the way, the following functions implement the reference-like aspects of a <code>CCASRef</code>. The descriptor is an internal implementation detail. The interface is meant to look like a normal reference to a value of type <code>a</code>. The main notes are:</p>
+<ul>
+<li>since the <code>CCASRef</code> may not contain a value when we read, we loop helping to complete the <code>ccas</code> until it does,</li>
+<li><code>casCCASRef</code> is a slightly simplified <code>cas</code> used in<code>mcas</code> but should be not be considered part of the interface, and</li>
+<li><code>tryReadCCASRef</code> is used in the implementation of <code>mcas</code>, but you quite possibly wouldn’t provide it otherwise.</li>
+</ul>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1"></a><span class="ot">ccas ::</span> (<span class="dt">Eq</span> a, <span class="dt">Eq</span> c) <span class="ot">=&gt;</span> <span class="dt">CCASRef</span> a c <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">IORef</span> c <span class="ot">-&gt;</span> c <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb8-2"><a href="#cb8-2"></a>ccas ref old new condRef check <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb8-3"><a href="#cb8-3"></a>    d <span class="ot">&lt;-</span> newIORef (ref, old, new, condRef, check)</span>
+<span id="cb8-4"><a href="#cb8-4"></a>    v <span class="ot">&lt;-</span> cas (unCCASRef ref) (<span class="dt">Right</span> old) (<span class="dt">Left</span> d)</span>
+<span id="cb8-5"><a href="#cb8-5"></a>    go d v</span>
+<span id="cb8-6"><a href="#cb8-6"></a>  <span class="kw">where</span> go d (<span class="dt">Left</span> d&#39;) <span class="ot">=</span> <span class="kw">do</span> <span class="co">-- descriptor already there</span></span>
+<span id="cb8-7"><a href="#cb8-7"></a>            ccasHelp d&#39;</span>
+<span id="cb8-8"><a href="#cb8-8"></a>            v <span class="ot">&lt;-</span> cas (unCCASRef ref) (<span class="dt">Right</span> old) (<span class="dt">Left</span> d)</span>
+<span id="cb8-9"><a href="#cb8-9"></a>            go d v</span>
+<span id="cb8-10"><a href="#cb8-10"></a>        go d (<span class="dt">Right</span> curr) <span class="op">|</span> curr <span class="op">==</span> old <span class="ot">=</span> ccasHelp d <span class="co">-- we succeeded</span></span>
+<span id="cb8-11"><a href="#cb8-11"></a>                          <span class="op">|</span> <span class="fu">otherwise</span> <span class="ot">=</span> <span class="fu">return</span> ()   <span class="co">-- we failed</span></span>
+<span id="cb8-12"><a href="#cb8-12"></a>    </span>
+<span id="cb8-13"><a href="#cb8-13"></a><span class="ot">ccasHelp ::</span> (<span class="dt">Eq</span> a, <span class="dt">Eq</span> c) <span class="ot">=&gt;</span> <span class="dt">CCASDescriptor</span> a c <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb8-14"><a href="#cb8-14"></a>ccasHelp d <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb8-15"><a href="#cb8-15"></a>    (<span class="dt">CCASRef</span> ref, old, new, condRef, check) <span class="ot">&lt;-</span> readIORef d</span>
+<span id="cb8-16"><a href="#cb8-16"></a>    cond <span class="ot">&lt;-</span> readIORef condRef</span>
+<span id="cb8-17"><a href="#cb8-17"></a>    _ <span class="ot">&lt;-</span> cas ref (<span class="dt">Left</span> d) (<span class="dt">Right</span> <span class="op">$!</span> <span class="kw">if</span> cond <span class="op">==</span> check <span class="kw">then</span> new <span class="kw">else</span> old)</span>
+<span id="cb8-18"><a href="#cb8-18"></a>    <span class="fu">return</span> ()</span></code></pre></div>
+<p>Here we illustrate the (not so recursive) helping pattern. <code>ccas</code> allocates a descriptor and then attempts to “acquire” the reference. There are three possibilities.</p>
+<ol type="1">
+<li>We find a descriptor already there, in which case we help it and then try to acquire the reference again.</li>
+<li>The CAS succeeds and thus we successfully “acquire” the reference. We then “help ourselves”.</li>
+<li>The CAS fails with an unexpected (non-descriptor) value. Thus, the CCAS fails and we do nothing.</li>
+</ol>
+<p>Helping, implemented by <code>ccasHelp</code>, just performs the logic of CCAS. If we’ve gotten to <code>ccasHelp</code>, we know the invocation described by the descriptor did, in fact, find the expected value there. By installing our descriptor, we’ve effectively “locked out” any other calls to <code>ccas</code> until we complete. We can thus check the <code>condRef</code> at our leisure. As long as our descriptor is still in the <code>CCASRef</code>, which we check via a <code>cas</code>, we know that there have been no intervening operations, including other processes completing this <code>ccas</code>. <code>ccasHelp</code> is idempotent in the sense that running it multiple times, even in parallel, with the same descriptor is the same as running it once. This is due to the fact that we only (successfully) CAS in the descriptor once, so we can only CAS it out at most once.</p>
+<h2 id="multiple-compare-and-swap">Multiple Compare-and-Swap</h2>
+<p>The setup for MCAS is much the same as CCAS. The main additional complexity comes from the fact that we need to simultaneously “acquire” multiple references. This is handled by a two-phase approach. In the first phase, we attempt to “acquire” each reference. We proceed to the second phase once we’ve either seen that the MCAS is going to fail, or we have successfully “acquired” each reference. In the second phase, we either reset all the “acquired” references to their old values if the MCAS failed or to their new values if it succeeded. The MCAS will be considered to have occurred atomically at the point we record this decision, via a CAS, i.e. between the two phases.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">data</span> <span class="dt">MCASStatus</span> <span class="ot">=</span> <span class="dt">UNDECIDED</span> <span class="op">|</span> <span class="dt">FAILED</span> <span class="op">|</span> <span class="dt">SUCCESSFUL</span> <span class="kw">deriving</span> ( <span class="dt">Eq</span> )</span>
+<span id="cb9-2"><a href="#cb9-2"></a></span>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="kw">data</span> <span class="dt">MCASDescriptor&#39;</span> a <span class="ot">=</span> <span class="dt">MCASDescriptor</span> [(<span class="dt">MCASRef</span> a, a, a)] (<span class="dt">IORef</span> <span class="dt">MCASStatus</span>)</span>
+<span id="cb9-4"><a href="#cb9-4"></a><span class="kw">type</span> <span class="dt">MCASDescriptor</span> a <span class="ot">=</span> <span class="dt">IORef</span> (<span class="dt">MCASDescriptor&#39;</span> a)</span>
+<span id="cb9-5"><a href="#cb9-5"></a></span>
+<span id="cb9-6"><a href="#cb9-6"></a><span class="kw">newtype</span> <span class="dt">MCASRef</span> a <span class="ot">=</span> <span class="dt">MCASRef</span> {<span class="ot"> unMCASRef ::</span> <span class="dt">CCASRef</span> (<span class="dt">Either</span> (<span class="dt">MCASDescriptor</span> a) a) <span class="dt">MCASStatus</span> }</span>
+<span id="cb9-7"><a href="#cb9-7"></a>    <span class="kw">deriving</span> ( <span class="dt">Eq</span>, <span class="dt">Ord</span> )</span></code></pre></div>
+<p>As with CCAS, an <code>MCASRef</code> is a reference, in this case a <code>CCASRef</code>, that either holds a value or a descriptor. The descriptor holds the arguments of <code>mcas</code>, as with <code>ccas</code>, but it additionally holds a status reference. This status reference will be used as the condition reference of the CCAS. In particular, as we’ll see, we will only perform <code>ccas</code>’s when the status is <code>UNDECIDED</code>.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb10-1"><a href="#cb10-1"></a><span class="ot">newMCASRef ::</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">MCASRef</span> a)</span>
+<span id="cb10-2"><a href="#cb10-2"></a>newMCASRef v <span class="ot">=</span> <span class="dt">MCASRef</span> <span class="op">&lt;$&gt;</span> newCCASRef (<span class="dt">Right</span> v)</span>
+<span id="cb10-3"><a href="#cb10-3"></a></span>
+<span id="cb10-4"><a href="#cb10-4"></a><span class="ot">readMCASRef ::</span> (<span class="dt">Eq</span> a) <span class="ot">=&gt;</span> <span class="dt">MCASRef</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> a</span>
+<span id="cb10-5"><a href="#cb10-5"></a>readMCASRef ref <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb10-6"><a href="#cb10-6"></a>    x <span class="ot">&lt;-</span> readCCASRef (unMCASRef ref)</span>
+<span id="cb10-7"><a href="#cb10-7"></a>    <span class="kw">case</span> x <span class="kw">of</span></span>
+<span id="cb10-8"><a href="#cb10-8"></a>        <span class="dt">Right</span> v <span class="ot">-&gt;</span> <span class="fu">return</span> v</span>
+<span id="cb10-9"><a href="#cb10-9"></a>        <span class="dt">Left</span> d <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb10-10"><a href="#cb10-10"></a>            mcasHelp d</span>
+<span id="cb10-11"><a href="#cb10-11"></a>            readMCASRef ref</span></code></pre></div>
+<p>There’s nothing to say about the reference interface functions. They are essentially identical to the CCAS ones for the same reasons only with <code>CCASRef</code>s instead of <code>IORef</code>s.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb11-1"><a href="#cb11-1"></a><span class="ot">mcas ::</span> (<span class="dt">Eq</span> a) <span class="ot">=&gt;</span> [(<span class="dt">MCASRef</span> a, a, a)] <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">Bool</span></span>
+<span id="cb11-2"><a href="#cb11-2"></a>mcas entries <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb11-3"><a href="#cb11-3"></a>    status <span class="ot">&lt;-</span> newIORef <span class="dt">UNDECIDED</span></span>
+<span id="cb11-4"><a href="#cb11-4"></a>    d <span class="ot">&lt;-</span> newIORef (<span class="dt">MCASDescriptor</span> (sortOn (\(ref, _, _) <span class="ot">-&gt;</span> ref) entries) status)</span>
+<span id="cb11-5"><a href="#cb11-5"></a>    mcasHelp d</span></code></pre></div>
+<p>The <code>mcas</code> function is fairly straightforward. It allocates a status reference and a descriptor and delegates most of the work to <code>mcasHelp</code>. The main but critical subtlety is the sort. This is critical to ensuring termination.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb12-1"><a href="#cb12-1"></a><span class="ot">mcasHelp ::</span> (<span class="dt">Eq</span> a) <span class="ot">=&gt;</span> <span class="dt">MCASDescriptor</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">Bool</span></span>
+<span id="cb12-2"><a href="#cb12-2"></a>mcasHelp d <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb12-3"><a href="#cb12-3"></a>    <span class="dt">MCASDescriptor</span> entries statusRef <span class="ot">&lt;-</span> readIORef d</span>
+<span id="cb12-4"><a href="#cb12-4"></a>    <span class="kw">let</span> phase1 [] <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb12-5"><a href="#cb12-5"></a>            _ <span class="ot">&lt;-</span> cas statusRef <span class="dt">UNDECIDED</span> <span class="dt">SUCCESSFUL</span></span>
+<span id="cb12-6"><a href="#cb12-6"></a>            phase2</span>
+<span id="cb12-7"><a href="#cb12-7"></a>        phase1 ((<span class="dt">MCASRef</span> ref, old, new)<span class="op">:</span>es) <span class="ot">=</span> tryAcquire ref old new es</span>
+<span id="cb12-8"><a href="#cb12-8"></a></span>
+<span id="cb12-9"><a href="#cb12-9"></a>        tryAcquire ref old new es <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb12-10"><a href="#cb12-10"></a>            _ <span class="ot">&lt;-</span> ccas ref (<span class="dt">Right</span> old) (<span class="dt">Left</span> d) statusRef <span class="dt">UNDECIDED</span></span>
+<span id="cb12-11"><a href="#cb12-11"></a>            v <span class="ot">&lt;-</span> tryReadCCASRef ref</span>
+<span id="cb12-12"><a href="#cb12-12"></a>            <span class="kw">case</span> v <span class="kw">of</span></span>
+<span id="cb12-13"><a href="#cb12-13"></a>                <span class="dt">Just</span> (<span class="dt">Left</span> d&#39;) <span class="op">|</span> d <span class="op">==</span> d&#39; <span class="ot">-&gt;</span> phase1 es <span class="co">-- successful acquisition</span></span>
+<span id="cb12-14"><a href="#cb12-14"></a>                               <span class="op">|</span> <span class="fu">otherwise</span> <span class="ot">-&gt;</span> <span class="kw">do</span> <span class="co">-- help someone else</span></span>
+<span id="cb12-15"><a href="#cb12-15"></a>                                    mcasHelp d&#39;</span>
+<span id="cb12-16"><a href="#cb12-16"></a>                                    tryAcquire ref old new es</span>
+<span id="cb12-17"><a href="#cb12-17"></a>                <span class="dt">Just</span> (<span class="dt">Right</span> curr) <span class="op">|</span> curr <span class="op">==</span> old <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb12-18"><a href="#cb12-18"></a>                    status <span class="ot">&lt;-</span> readIORef statusRef</span>
+<span id="cb12-19"><a href="#cb12-19"></a>                    <span class="kw">if</span> status <span class="op">==</span> <span class="dt">UNDECIDED</span> <span class="kw">then</span> <span class="kw">do</span></span>
+<span id="cb12-20"><a href="#cb12-20"></a>                        tryAcquire ref old new es <span class="co">-- failed to acquire but could still succeed</span></span>
+<span id="cb12-21"><a href="#cb12-21"></a>                    <span class="kw">else</span> <span class="kw">do</span></span>
+<span id="cb12-22"><a href="#cb12-22"></a>                        phase2</span>
+<span id="cb12-23"><a href="#cb12-23"></a>                _ <span class="ot">-&gt;</span> <span class="kw">do</span> <span class="co">-- failed MCAS</span></span>
+<span id="cb12-24"><a href="#cb12-24"></a>                    _ <span class="ot">&lt;-</span> cas statusRef <span class="dt">UNDECIDED</span> <span class="dt">FAILED</span></span>
+<span id="cb12-25"><a href="#cb12-25"></a>                    phase2</span>
+<span id="cb12-26"><a href="#cb12-26"></a></span>
+<span id="cb12-27"><a href="#cb12-27"></a>        phase2 <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb12-28"><a href="#cb12-28"></a>            status <span class="ot">&lt;-</span> readIORef statusRef</span>
+<span id="cb12-29"><a href="#cb12-29"></a>            <span class="kw">let</span> succeeded <span class="ot">=</span> status <span class="op">==</span> <span class="dt">SUCCESSFUL</span></span>
+<span id="cb12-30"><a href="#cb12-30"></a>            forM_ entries <span class="op">$</span> \(<span class="dt">MCASRef</span> ref, old, new) <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb12-31"><a href="#cb12-31"></a>                casCCASRef ref (<span class="dt">Left</span> d) (<span class="dt">Right</span> (<span class="kw">if</span> succeeded <span class="kw">then</span> new <span class="kw">else</span> old))</span>
+<span id="cb12-32"><a href="#cb12-32"></a>            <span class="fu">return</span> succeeded</span>
+<span id="cb12-33"><a href="#cb12-33"></a></span>
+<span id="cb12-34"><a href="#cb12-34"></a>    phase1 entries </span></code></pre></div>
+<p><code>phase1</code> attempts to “acquire” each <code>MCASRef</code> by using <code>tryAcquire</code> which will move <code>phase1</code> to the next entry each time it succeeds. Therefore, if <code>phase1</code> reaches the end of the list and there was no interference, we will have successfully “acquired” all references. We record this with a CAS against <code>statusRef</code>. If this CAS succeeds, then the MCAS will be considered successful and conceptually to have occurred at this point. If the CAS fails, then some other process has already completed this MCAS, possibly in success or failure. We then move to <code>phase2</code>.</p>
+<p><code>tryAcquire</code> can also detect that the MCAS should fail. In this case, we immediately attempt to record this fact via a CAS into <code>statusRef</code>. As with the successful case, this CAS succeeding marks the conceptual instant that the MCAS completes. As before, we then move on to <code>phase2</code>.</p>
+<p>We never enter <code>phase2</code> without <code>statusRef</code> being set to either <code>SUCCESSFUL</code> or <code>FAILED</code>. <code>phase2</code> is completely straightforward. We simply set each “acquired” reference to either the new or old value depending on whether the MCAS succeeded or not. The <code>casCCASRef</code> will fail if either we never got around to “acquiring” a particular reference (in the case of MCAS failure), or if a reference was written to since it was “acquired”. Since such writes conceptually occurred after the MCAS completed, we do not want to overwrite them.</p>
+<p>During <code>tryAcquire</code>, there are a few cases that lead to retrying. First, if we find that a reference has already been “acquired” by some other MCAS operation, we recursively help it. Here, the sorting of the references is important to ensure that any MCAS operation we help will never try to help us back. It’s easy to see that without the sorting, if two MCAS operations on the same two references each acquired one of the references, the (concurrent) recursive calls to <code>mcasHelp</code> would become infinite loops. With a total ordering on references, each recursive call to <code>mcasHelp</code> will be at a greater reference and thus must eventually terminate. The other case for <code>tryAcquire</code>, is that the expected value is written after the <code>ccas</code> but before the <code>tryReadCCASRef</code>. In this case, we try again unless the status has already been decided. It might seem like this is just an optimization, and that we could instead treat this as the MCAS failing. However, the intervening write may have written the value that was there before the <code>ccas</code>, meaning that there was never a point at which the MCAS could have failed.</p>
+<p>References are only “acquired” at the <code>ccas</code> in <code>phase1</code>. Once the status has been decided, no references may be “acquired” any longer. Since it’s impossible to enter <code>phase2</code> without deciding the status, once one process enters <code>phase2</code>, no processes are capable of “acquiring” references. This makes <code>phase2</code> idempotent and, indeed, each CAS in <code>phase2</code> is independently idempotent. Overlapping executions of <code>phase1</code> are fine essentially because each <code>ccas</code> is idempotent and the <code>statusRef</code> can change at most once.</p>
+<p>Let’s see how an <code>mcas</code> interacts with other operations from the perspective of atomicity. If we attempt to read a reference via <code>readMCASRef</code> which is included in the list of references of an ongoing <code>mcas</code>, there are two possibilities. Either that reference has not yet been “acquired” by the <code>mcas</code>, in which case the read will occur conceptually before the MCAS, or it has been “acquired” in which case the read will help the MCAS to completion and then try again after the MCAS. The story is similar for overlapping <code>mcas</code>’s. The <code>mcas</code> which “acquires” the least reference in their intersection will conceptually complete first, either because it literally finishes before the second <code>mcas</code> notices or because the second <code>mcas</code> will help it to completion. Writes are only slightly different.</p>
+<p>It is important to note that these operations are NOT atomic with respect to some other reasonable operations. Most notably, they are not atomic with respect to blind writes. It is easy to construct a scenario where two blind writes happen in sequence but the first appears to happen after the <code>mcas</code> and the second before. Except for initialization, I don’t believe there are any blind writes to references involved in a <code>mcas</code> in Fraser’s thesis. Fraser’s thesis does, however, contain <code>cas</code> operations directly against these references. These are also not atomic for exactly the same reason <code>casCCASRef</code> isn’t. That said, Fraser’s uses of <code>cas</code> against <code>MCASRef</code>s are safe, because in each case they just retry until success.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>While I’ve gone into a good amount of detail here, I’ve mainly wanted to illustrate the concept of recursive helping. It’s a key concept for lock-free and wait-free algorithm designs, but it also may be a useful idea to have in mind when designing concurrent code even if you aren’t explicitly trying to achieve a lock-free guarantee.</p>
+<!--
+
+Scenario:
+
+```               
+               |--mcas((a, 1, 11), (b, 2, 22))---|
+w(a,1)--w(b,1)----acq(a)------------------acq(b)--
+--------------------------w(a,2)--w(b,2)----------
+```
+
+`w(a,2)` seems to happen after the `mcas` but `w(b,2)` seems to occur before.
+-->
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p>MCAS allows you to perform transactions involving multiple updates atomically. STM additionally allows you to perform transactions involving multiple reads and updates atomically.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p>While I haven’t attempted it to see if it works out, it seems like you could make a generic “recursive helping” framework by storing an <code>IO</code> action instead. The “descriptors” have the flavor of defunctionalized continuations.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>]]></summary>
+</entry>
+<entry>
     <title>Beck-Chevalley</title>
     <link href="https://derekelkins.github.io/posts/beck-chevalley.html" />
     <id>https://derekelkins.github.io/posts/beck-chevalley.html</id>
@@ -883,265 +1116,6 @@ A <strong>subset type</strong> is just a type combined with a predicate on that 
     <summary type="html"><![CDATA[<blockquote>
 <p>I don’t believe classical logic is false; I just believe that it is not true.</p>
 </blockquote>]]></summary>
-</entry>
-<entry>
-    <title>The Mistake Everyone Makes with KnockoutJS</title>
-    <link href="https://derekelkins.github.io/posts/the-mistake-everyone-makes-with-knockoutjs.html" />
-    <id>https://derekelkins.github.io/posts/the-mistake-everyone-makes-with-knockoutjs.html</id>
-    <published>2016-05-05 13:38:08-07:00</published>
-    <updated>2016-05-05T20:38:08Z</updated>
-    <summary type="html"><![CDATA[<h3 id="introduction">Introduction</h3>
-<p><a href="http://knockoutjs.com">Knockout</a> is a nice JavaScript library for making values that automatically update when any of their “dependencies” update. Those dependencies can form an arbitrary directed acyclic graph. Many people seem to think of it as “yet another” templating library, but the core idea which is useful far beyond “templating” is the notion of observable values. One nice aspect is that it is a library and not a framework so you can use it as little or as much as you want and you can integrate it with other libraries and frameworks.</p>
-<p>At any rate, this article is more geared toward those who have already decided on using Knockout or a library (in any language) offering similar capabilities. I strongly suspect the issues and solutions I’ll discuss apply to all similar sorts of libraries. While I’ll focus on one particular example, the ideas behind it apply generally. This example, admittedly, is one that almost anyone will implement, and in my experience will do it incorrectly the first time and won’t realize the problem until later.</p>
-<h3 id="the-problem">The Problem</h3>
-<p>When doing any front-end work, before long there will be a requirement to support “multi-select” of something. Of course, you want the standard select/deselect all functionality and for it to work correctly, and of course you want to do something with the items you’ve selected. Here’s a very simple example:</p>
-<div id="#badExample">
-Number selected: <span data-bind="text: $data.numberSelected()"></span>
-<table>
-<tr>
-<th>
-<input type="checkbox" data-bind="checked: $data.allSelected"/>
-</th>
-<th>
-Item
-</th>
-</tr>
-<!-- ko foreach: { data: $data.items(), as: '$item' } -->
-<tr>
-<td>
-<input type="checkbox" data-bind="checked: $data.selected"/>
-</td>
-<td data-bind="text: &#39;Item number: &#39;+$data.body">
-</td>
-</tr>
-<!-- /ko -->
-<tr>
-<td>
-<button data-bind="click: function() { $data.add(); }">
-Add
-</button>
-</td>
-</tr>
-</table>
-</div>
-<p>Here, the number selected is an overly simple example of using the selected items. More realistically, the selected items will trigger other items to show up and/or trigger AJAX requests to update the data or populate other data. The HTML for this example is completely straightforward.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">&lt;div</span><span class="ot"> id=</span><span class="st">&quot;#badExample&quot;</span><span class="kw">&gt;</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a>    Number selected: <span class="kw">&lt;span</span><span class="ot"> data-bind=</span><span class="st">&quot;text: $data.numberSelected()&quot;</span><span class="kw">&gt;&lt;/span&gt;</span></span>
-<span id="cb1-3"><a href="#cb1-3"></a>    <span class="kw">&lt;table&gt;</span></span>
-<span id="cb1-4"><a href="#cb1-4"></a>        <span class="kw">&lt;tr&gt;&lt;th&gt;&lt;input</span><span class="ot"> type=</span><span class="st">&quot;checkbox&quot;</span><span class="ot"> data-bind=</span><span class="st">&quot;checked: $data.allSelected&quot;</span><span class="kw">/&gt;&lt;/th&gt;&lt;th&gt;</span>Item<span class="kw">&lt;/th&gt;&lt;/tr&gt;</span></span>
-<span id="cb1-5"><a href="#cb1-5"></a>        <span class="co">&lt;!-- ko foreach: { data: $data.items(), as: &#39;$item&#39; } --&gt;</span></span>
-<span id="cb1-6"><a href="#cb1-6"></a>        <span class="kw">&lt;tr&gt;&lt;td&gt;&lt;input</span><span class="ot"> type=</span><span class="st">&quot;checkbox&quot;</span><span class="ot"> data-bind=</span><span class="st">&quot;checked: $data.selected&quot;</span><span class="kw">/&gt;&lt;/td&gt;&lt;td</span><span class="ot"> data-bind=</span><span class="st">&quot;text: &#39;Item number: &#39;+$data.body&quot;</span><span class="kw">&gt;&lt;/td&gt;&lt;/tr&gt;</span></span>
-<span id="cb1-7"><a href="#cb1-7"></a>        <span class="co">&lt;!-- /ko --&gt;</span></span>
-<span id="cb1-8"><a href="#cb1-8"></a>        <span class="kw">&lt;tr&gt;&lt;td&gt;&lt;button</span><span class="ot"> data-bind=</span><span class="st">&quot;click: function() { $data.add(); }&quot;</span><span class="kw">&gt;</span>Add<span class="kw">&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;</span></span>
-<span id="cb1-9"><a href="#cb1-9"></a>    <span class="kw">&lt;/table&gt;</span></span>
-<span id="cb1-10"><a href="#cb1-10"></a><span class="kw">&lt;/div&gt;</span></span></code></pre></div>
-<p>The way nearly everyone (including me) first thinks to implement this is by adding a <code>selected</code> observable to each item and then having <code>allSelected</code> depend on all of the <code>selected</code> observables. Since we also want to write to <code>allSelected</code> to change the state of the <code>selected</code> observables we use a <a href="http://knockoutjs.com/documentation/computed-writable.html">writable computed observable</a>. This computed observable will loop through all the items and check to see if they are all set to determine it’s state. When it is updated, it will loop through all the <code>selected</code> observables and set them to the appropriate state. Here’s the full code listing.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">var</span> badViewModel <span class="op">=</span> <span class="op">{</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a>    <span class="dt">counter</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span></span>
-<span id="cb2-3"><a href="#cb2-3"></a>    <span class="dt">items</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observableArray</span>()</span>
-<span id="cb2-4"><a href="#cb2-4"></a><span class="op">};</span></span>
-<span id="cb2-5"><a href="#cb2-5"></a></span>
-<span id="cb2-6"><a href="#cb2-6"></a><span class="va">badViewModel</span>.<span class="at">allSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="op">{</span></span>
-<span id="cb2-7"><a href="#cb2-7"></a>    <span class="dt">read</span><span class="op">:</span> <span class="kw">function</span>() <span class="op">{</span></span>
-<span id="cb2-8"><a href="#cb2-8"></a>        <span class="kw">var</span> items <span class="op">=</span> <span class="va">badViewModel</span>.<span class="at">items</span>()<span class="op">;</span></span>
-<span id="cb2-9"><a href="#cb2-9"></a>        <span class="kw">var</span> allSelected <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span>
-<span id="cb2-10"><a href="#cb2-10"></a>        <span class="cf">for</span>(<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="va">items</span>.<span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) <span class="op">{</span> <span class="co">// Need to make sure we depend on each item, so don&#39;t break out of loop early</span></span>
-<span id="cb2-11"><a href="#cb2-11"></a>            allSelected <span class="op">=</span> allSelected <span class="op">&amp;&amp;</span> items[i].<span class="at">selected</span>()<span class="op">;</span></span>
-<span id="cb2-12"><a href="#cb2-12"></a>        <span class="op">}</span></span>
-<span id="cb2-13"><a href="#cb2-13"></a>        <span class="cf">return</span> allSelected<span class="op">;</span></span>
-<span id="cb2-14"><a href="#cb2-14"></a>    <span class="op">},</span></span>
-<span id="cb2-15"><a href="#cb2-15"></a>    <span class="dt">write</span><span class="op">:</span> <span class="kw">function</span>(newValue) <span class="op">{</span></span>
-<span id="cb2-16"><a href="#cb2-16"></a>        <span class="kw">var</span> items <span class="op">=</span> <span class="va">badViewModel</span>.<span class="at">items</span>()<span class="op">;</span></span>
-<span id="cb2-17"><a href="#cb2-17"></a>        <span class="cf">for</span>(<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="va">items</span>.<span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) <span class="op">{</span></span>
-<span id="cb2-18"><a href="#cb2-18"></a>            items[i].<span class="at">selected</span>(newValue)<span class="op">;</span></span>
-<span id="cb2-19"><a href="#cb2-19"></a>        <span class="op">}</span></span>
-<span id="cb2-20"><a href="#cb2-20"></a>    <span class="op">}</span></span>
-<span id="cb2-21"><a href="#cb2-21"></a><span class="op">}</span>)<span class="op">;</span></span>
-<span id="cb2-22"><a href="#cb2-22"></a></span>
-<span id="cb2-23"><a href="#cb2-23"></a><span class="va">badViewModel</span>.<span class="at">numberSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="kw">function</span>() <span class="op">{</span></span>
-<span id="cb2-24"><a href="#cb2-24"></a>    <span class="kw">var</span> count <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
-<span id="cb2-25"><a href="#cb2-25"></a>    <span class="kw">var</span> items <span class="op">=</span> <span class="va">badViewModel</span>.<span class="at">items</span>()<span class="op">;</span></span>
-<span id="cb2-26"><a href="#cb2-26"></a>    <span class="cf">for</span>(<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="va">items</span>.<span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) <span class="op">{</span></span>
-<span id="cb2-27"><a href="#cb2-27"></a>        <span class="cf">if</span>(items[i].<span class="at">selected</span>()) count<span class="op">++;</span></span>
-<span id="cb2-28"><a href="#cb2-28"></a>    <span class="op">}</span></span>
-<span id="cb2-29"><a href="#cb2-29"></a>    <span class="cf">return</span> count<span class="op">;</span></span>
-<span id="cb2-30"><a href="#cb2-30"></a><span class="op">}</span>)<span class="op">;</span></span>
-<span id="cb2-31"><a href="#cb2-31"></a></span>
-<span id="cb2-32"><a href="#cb2-32"></a><span class="va">badViewModel</span>.<span class="at">add</span> <span class="op">=</span> <span class="kw">function</span>() <span class="op">{</span></span>
-<span id="cb2-33"><a href="#cb2-33"></a>    <span class="va">badViewModel</span>.<span class="va">items</span>.<span class="at">push</span>(<span class="op">{</span></span>
-<span id="cb2-34"><a href="#cb2-34"></a>        <span class="dt">body</span><span class="op">:</span> <span class="va">badViewModel</span>.<span class="at">counter</span><span class="op">++,</span></span>
-<span id="cb2-35"><a href="#cb2-35"></a>        <span class="dt">selected</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observable</span>(<span class="kw">false</span>)</span>
-<span id="cb2-36"><a href="#cb2-36"></a>    <span class="op">}</span>)<span class="op">;</span></span>
-<span id="cb2-37"><a href="#cb2-37"></a><span class="op">};</span></span>
-<span id="cb2-38"><a href="#cb2-38"></a></span>
-<span id="cb2-39"><a href="#cb2-39"></a><span class="va">ko</span>.<span class="at">applyBindings</span>(badViewModel<span class="op">,</span> <span class="va">document</span>.<span class="at">getElementById</span>(<span class="st">&#39;#badExample&#39;</span>))<span class="op">;</span></span></code></pre></div>
-<p>This should be relatively straightforward, and it works, so what’s the problem? The problem can be seen in <code>numberSelected</code> (and it also comes up with <code>allSelected</code> which I’ll get to momentarily). <code>numberSelected</code> depends on <em>each</em> <code>selected</code> observable and so it will be fired <em>each</em> time <em>each</em> one updates. That means if you have 100 items, and you use the select all checkbox, <code>numberSelected</code> will be called 100 times. For this example, that doesn’t really matter. For a more realistic example than <code>numberSelected</code>, this may mean rendering one, then two, then three, … then 100 HTML fragments or making 100 AJAX requests. In fact, this same behavior is present in <code>allSelected</code>. When it is written, as it’s writing to the <code>selected</code> observables, it is also triggering <em>itself</em>.</p>
-<p>So the problem is updating <code>allSelected</code> or <code>numberSelected</code> can’t be done all at once, or to use database terminology, it can’t be updated atomically. One possible solution in newer versions of Knockout is to use <code>deferredUpdates</code> or, what I did back in the much earlier versions of Knockout, abuse the rate limiting features. The problem with this solution is that it makes updates asynchronous. If you’ve written your code to not care whether it was called synchronously or asynchronously, then this will work fine. If you haven’t, doing this throws you into a world of shared state concurrency and race conditions. In this case, this solution is far worse than the disease.</p>
-<h3 id="the-solution">The Solution</h3>
-<p>So, what’s the alternative? We want to update all selected items atomically; we can atomically update a single observable; so we’ll put all selected items into a single observable. Now an item determines if it is selected by checking whether it is in the collection of selected items. More abstractly, we make our observables more coarse-grained, and we have a bunch of small computed observables depend on a large observable instead of a large computed observable depending on a bunch of small observables as we had in the previous code. Here’s an example using the exact same HTML and presenting the same overt behavior.</p>
-<div id="#goodExample">
-Number selected: <span data-bind="text: $data.numberSelected()"></span>
-<table>
-<tr>
-<th>
-<input type="checkbox" data-bind="checked: $data.allSelected"/>
-</th>
-<th>
-Item
-</th>
-</tr>
-<!-- ko foreach: { data: $data.items(), as: '$item' } -->
-<tr>
-<td>
-<input type="checkbox" data-bind="checked: $data.selected"/>
-</td>
-<td data-bind="text: &#39;Item number: &#39;+$data.body">
-</td>
-</tr>
-<!-- /ko -->
-<tr>
-<td>
-<button data-bind="click: function() { $data.add(); }">
-Add
-</button>
-</td>
-</tr>
-</table>
-</div>
-<p>And here’s the code behind this second example:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">var</span> goodViewModel <span class="op">=</span> <span class="op">{</span></span>
-<span id="cb3-2"><a href="#cb3-2"></a>    <span class="dt">counter</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span></span>
-<span id="cb3-3"><a href="#cb3-3"></a>    <span class="dt">selectedItems</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observableArray</span>()<span class="op">,</span></span>
-<span id="cb3-4"><a href="#cb3-4"></a>    <span class="dt">items</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observableArray</span>()</span>
-<span id="cb3-5"><a href="#cb3-5"></a><span class="op">};</span></span>
-<span id="cb3-6"><a href="#cb3-6"></a></span>
-<span id="cb3-7"><a href="#cb3-7"></a><span class="va">goodViewModel</span>.<span class="at">allSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="op">{</span></span>
-<span id="cb3-8"><a href="#cb3-8"></a>    <span class="dt">read</span><span class="op">:</span> <span class="kw">function</span>() <span class="op">{</span></span>
-<span id="cb3-9"><a href="#cb3-9"></a>        <span class="cf">return</span> <span class="va">goodViewModel</span>.<span class="at">items</span>().<span class="at">length</span> <span class="op">===</span> <span class="va">goodViewModel</span>.<span class="at">selectedItems</span>().<span class="at">length</span><span class="op">;</span></span>
-<span id="cb3-10"><a href="#cb3-10"></a>    <span class="op">},</span></span>
-<span id="cb3-11"><a href="#cb3-11"></a>    <span class="dt">write</span><span class="op">:</span> <span class="kw">function</span>(newValue) <span class="op">{</span></span>
-<span id="cb3-12"><a href="#cb3-12"></a>        <span class="cf">if</span>(newValue) <span class="op">{</span></span>
-<span id="cb3-13"><a href="#cb3-13"></a>            <span class="va">goodViewModel</span>.<span class="at">selectedItems</span>(<span class="va">goodViewModel</span>.<span class="at">items</span>().<span class="at">slice</span>(<span class="dv">0</span>))<span class="op">;</span> <span class="co">// Need a copy!</span></span>
-<span id="cb3-14"><a href="#cb3-14"></a>        <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
-<span id="cb3-15"><a href="#cb3-15"></a>            <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">removeAll</span>()<span class="op">;</span></span>
-<span id="cb3-16"><a href="#cb3-16"></a>        <span class="op">}</span></span>
-<span id="cb3-17"><a href="#cb3-17"></a>    <span class="op">}</span></span>
-<span id="cb3-18"><a href="#cb3-18"></a><span class="op">}</span>)<span class="op">;</span></span>
-<span id="cb3-19"><a href="#cb3-19"></a></span>
-<span id="cb3-20"><a href="#cb3-20"></a><span class="va">goodViewModel</span>.<span class="at">numberSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="kw">function</span>() <span class="op">{</span></span>
-<span id="cb3-21"><a href="#cb3-21"></a>    <span class="cf">return</span> <span class="va">goodViewModel</span>.<span class="at">selectedItems</span>().<span class="at">length</span><span class="op">;</span></span>
-<span id="cb3-22"><a href="#cb3-22"></a><span class="op">}</span>)<span class="op">;</span></span>
-<span id="cb3-23"><a href="#cb3-23"></a></span>
-<span id="cb3-24"><a href="#cb3-24"></a><span class="va">goodViewModel</span>.<span class="at">add</span> <span class="op">=</span> <span class="kw">function</span>() <span class="op">{</span></span>
-<span id="cb3-25"><a href="#cb3-25"></a>    <span class="kw">var</span> item <span class="op">=</span> <span class="op">{</span> <span class="dt">body</span><span class="op">:</span> <span class="va">goodViewModel</span>.<span class="at">counter</span><span class="op">++</span> <span class="op">}</span></span>
-<span id="cb3-26"><a href="#cb3-26"></a>    <span class="va">item</span>.<span class="at">selected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="op">{</span></span>
-<span id="cb3-27"><a href="#cb3-27"></a>        <span class="dt">read</span><span class="op">:</span> <span class="kw">function</span>() <span class="op">{</span></span>
-<span id="cb3-28"><a href="#cb3-28"></a>            <span class="cf">return</span> <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">indexOf</span>(item) <span class="op">&gt;</span> <span class="dv">-1</span><span class="op">;</span></span>
-<span id="cb3-29"><a href="#cb3-29"></a>        <span class="op">},</span></span>
-<span id="cb3-30"><a href="#cb3-30"></a>        <span class="dt">write</span><span class="op">:</span> <span class="kw">function</span>(newValue) <span class="op">{</span></span>
-<span id="cb3-31"><a href="#cb3-31"></a>            <span class="cf">if</span>(newValue) <span class="op">{</span></span>
-<span id="cb3-32"><a href="#cb3-32"></a>                <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">push</span>(item)<span class="op">;</span></span>
-<span id="cb3-33"><a href="#cb3-33"></a>            <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
-<span id="cb3-34"><a href="#cb3-34"></a>                <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">remove</span>(item)<span class="op">;</span></span>
-<span id="cb3-35"><a href="#cb3-35"></a>            <span class="op">}</span></span>
-<span id="cb3-36"><a href="#cb3-36"></a>        <span class="op">}</span></span>
-<span id="cb3-37"><a href="#cb3-37"></a>    <span class="op">}</span>)<span class="op">;</span></span>
-<span id="cb3-38"><a href="#cb3-38"></a>    <span class="va">goodViewModel</span>.<span class="va">items</span>.<span class="at">push</span>(item)<span class="op">;</span></span>
-<span id="cb3-39"><a href="#cb3-39"></a><span class="op">};</span></span>
-<span id="cb3-40"><a href="#cb3-40"></a></span>
-<span id="cb3-41"><a href="#cb3-41"></a><span class="va">ko</span>.<span class="at">applyBindings</span>(goodViewModel<span class="op">,</span> <span class="va">document</span>.<span class="at">getElementById</span>(<span class="st">&#39;#goodExample&#39;</span>))<span class="op">;</span></span></code></pre></div>
-<p>One thing to note is that setting <code>allSelected</code> and <code>numberSelected</code> are now both simple operations. A write to an observable triggers a constant number of writes to other observables. In fact, there are only two (non-computed) observables. On the other hand, <em>reading</em> the <code>selected</code> observable is more expensive. Toggling all items has quadratic complexity. In fact, it had quadratic complexity before due to the feedback. However, unlike the previous code, this <em>also</em> has quadratic complexity when any <em>individual</em> item is toggled. Unlike the previous code, though, this is simply due to a poor choice of data structure. Equipping each item with an “ID” field and using an object as a hash map would reduce the complexity to linear. In practice, for this sort of scenario, it tends not to make a big difference. Also, Knockout won’t trigger dependents if the value doesn’t change, so there’s no risk of the extra work propagating into still more extra work. Nevertheless, while I endorse this solution for this particular problem, in general making <em>finer</em> grained observables can help limit the scope of changes so unnecessary work isn’t done.</p>
-<p>Still, the real concern and benefit of this latter approach isn’t the asymptotic complexity of the operations, but the <em>atomicity</em> of the operations. In the second solution, every update is atomic. There are no intermediate states on the way to a final state. This means that dependents, represented by <code>numberSelected</code> but which are realistically much more complicated, don’t get triggered excessively and don’t need to “compensate” for unintended intermediate values.</p>
-<h3 id="epilogue">Epilogue</h3>
-<p>We could take the coarse-graining to its logical conclusion and have the view model for an application be a single observable holding an object representing the entire view model (and containing no observables of its own). Taking this approach actually does have a lot of benefits, albeit there is little reason to use Knockout at that point. Instead this starts to lead to things like Facebook’s <a href="https://facebook.github.io/flux/">Flux</a> pattern and the pattern perhaps most clearly articulated by <a href="http://cycle.js.org/">Cycle JS</a>.</p>
-<script lang="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.3.0/knockout-min.js" integrity="sha384-bpY4Nxr8KotrByPQIhZdNw6qY1QFNMhtBX0QfW7o0e75Z3HAyJ4yeJByRGMMQ6I+" crossorigin="anonymous"></script>
-<script lang="text/javascript">
-// Bad View Model
-
-var badViewModel = {
-    counter: 0,
-    items: ko.observableArray()
-};
-
-badViewModel.allSelected = ko.computed({
-    read: function() {
-        var items = badViewModel.items();
-        var allSelected = true;
-        for(var i = 0; i < items.length; i++) { // Need to make sure we depend on each item, so don't break out of loop early
-            allSelected = allSelected && items[i].selected();
-        }
-        return allSelected;
-    },
-    write: function(newValue) {
-        var items = badViewModel.items();
-        for(var i = 0; i < items.length; i++) {
-            items[i].selected(newValue);
-        }
-    }
-});
-
-badViewModel.numberSelected = ko.computed(function() {
-    var count = 0;
-    var items = badViewModel.items();
-    for(var i = 0; i < items.length; i++) {
-        if(items[i].selected()) count++;
-    }
-    return count;
-});
-
-badViewModel.add = function() {
-    badViewModel.items.push({
-        body: badViewModel.counter++,
-        selected: ko.observable(false)
-    });
-};
-
-
-// Good View Model
-
-var goodViewModel = {
-    counter: 0,
-    selectedItems: ko.observableArray(),
-    items: ko.observableArray()
-};
-
-goodViewModel.allSelected = ko.computed({
-    read: function() {
-        return goodViewModel.items().length === goodViewModel.selectedItems().length;
-    },
-    write: function(newValue) {
-        if(newValue) {
-            goodViewModel.selectedItems(goodViewModel.items().slice(0)); // Need a copy!
-        } else {
-            goodViewModel.selectedItems.removeAll();
-        }
-    }
-});
-
-goodViewModel.numberSelected = ko.computed(function() {
-    return goodViewModel.selectedItems().length;
-});
-
-goodViewModel.add = function() {
-    var item = { body: goodViewModel.counter++ }
-    item.selected = ko.computed({
-        read: function() {
-            return goodViewModel.selectedItems.indexOf(item) > -1;
-        },
-        write: function(newValue) {
-            if(newValue) {
-                goodViewModel.selectedItems.push(item);
-            } else {
-                goodViewModel.selectedItems.remove(item);
-            }
-        }
-    });
-    goodViewModel.items.push(item);
-};
-
-ko.applyBindings(badViewModel, document.getElementById('#badExample'));
-ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
-</script>]]></summary>
 </entry>
 
 </feed>

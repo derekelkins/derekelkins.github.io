@@ -47,7 +47,7 @@
     </p>
     <h6 class="blog-post-meta">
         
-        Tags: <a href="../tags/javascript.html">javascript</a>
+        Tags: <a title="All pages tagged 'javascript'." href="../tags/javascript.html">javascript</a>
         
     </h6>
 
@@ -97,45 +97,45 @@ Add
 <span id="cb1-9"><a href="#cb1-9"></a>    <span class="kw">&lt;/table&gt;</span></span>
 <span id="cb1-10"><a href="#cb1-10"></a><span class="kw">&lt;/div&gt;</span></span></code></pre></div>
 <p>The way nearly everyone (including me) first thinks to implement this is by adding a <code>selected</code> observable to each item and then having <code>allSelected</code> depend on all of the <code>selected</code> observables. Since we also want to write to <code>allSelected</code> to change the state of the <code>selected</code> observables we use a <a href="http://knockoutjs.com/documentation/computed-writable.html">writable computed observable</a>. This computed observable will loop through all the items and check to see if they are all set to determine it’s state. When it is updated, it will loop through all the <code>selected</code> observables and set them to the appropriate state. Here’s the full code listing.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">var</span> badViewModel <span class="op">=</span> <span class="op">{</span></span>
+<div class="sourceCode" id="cb2"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">var</span> badViewModel <span class="op">=</span> {</span>
 <span id="cb2-2"><a href="#cb2-2"></a>    <span class="dt">counter</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span></span>
-<span id="cb2-3"><a href="#cb2-3"></a>    <span class="dt">items</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observableArray</span>()</span>
-<span id="cb2-4"><a href="#cb2-4"></a><span class="op">};</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a>    <span class="dt">items</span><span class="op">:</span> ko<span class="op">.</span><span class="fu">observableArray</span>()</span>
+<span id="cb2-4"><a href="#cb2-4"></a>}<span class="op">;</span></span>
 <span id="cb2-5"><a href="#cb2-5"></a></span>
-<span id="cb2-6"><a href="#cb2-6"></a><span class="va">badViewModel</span>.<span class="at">allSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="op">{</span></span>
-<span id="cb2-7"><a href="#cb2-7"></a>    <span class="dt">read</span><span class="op">:</span> <span class="kw">function</span>() <span class="op">{</span></span>
-<span id="cb2-8"><a href="#cb2-8"></a>        <span class="kw">var</span> items <span class="op">=</span> <span class="va">badViewModel</span>.<span class="at">items</span>()<span class="op">;</span></span>
+<span id="cb2-6"><a href="#cb2-6"></a>badViewModel<span class="op">.</span><span class="at">allSelected</span> <span class="op">=</span> ko<span class="op">.</span><span class="fu">computed</span>({</span>
+<span id="cb2-7"><a href="#cb2-7"></a>    <span class="dt">read</span><span class="op">:</span> <span class="kw">function</span>() {</span>
+<span id="cb2-8"><a href="#cb2-8"></a>        <span class="kw">var</span> items <span class="op">=</span> badViewModel<span class="op">.</span><span class="fu">items</span>()<span class="op">;</span></span>
 <span id="cb2-9"><a href="#cb2-9"></a>        <span class="kw">var</span> allSelected <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span>
-<span id="cb2-10"><a href="#cb2-10"></a>        <span class="cf">for</span>(<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="va">items</span>.<span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) <span class="op">{</span> <span class="co">// Need to make sure we depend on each item, so don't break out of loop early</span></span>
-<span id="cb2-11"><a href="#cb2-11"></a>            allSelected <span class="op">=</span> allSelected <span class="op">&amp;&amp;</span> items[i].<span class="at">selected</span>()<span class="op">;</span></span>
-<span id="cb2-12"><a href="#cb2-12"></a>        <span class="op">}</span></span>
+<span id="cb2-10"><a href="#cb2-10"></a>        <span class="cf">for</span>(<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> items<span class="op">.</span><span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) { <span class="co">// Need to make sure we depend on each item, so don't break out of loop early</span></span>
+<span id="cb2-11"><a href="#cb2-11"></a>            allSelected <span class="op">=</span> allSelected <span class="op">&amp;&amp;</span> items[i]<span class="op">.</span><span class="fu">selected</span>()<span class="op">;</span></span>
+<span id="cb2-12"><a href="#cb2-12"></a>        }</span>
 <span id="cb2-13"><a href="#cb2-13"></a>        <span class="cf">return</span> allSelected<span class="op">;</span></span>
-<span id="cb2-14"><a href="#cb2-14"></a>    <span class="op">},</span></span>
-<span id="cb2-15"><a href="#cb2-15"></a>    <span class="dt">write</span><span class="op">:</span> <span class="kw">function</span>(newValue) <span class="op">{</span></span>
-<span id="cb2-16"><a href="#cb2-16"></a>        <span class="kw">var</span> items <span class="op">=</span> <span class="va">badViewModel</span>.<span class="at">items</span>()<span class="op">;</span></span>
-<span id="cb2-17"><a href="#cb2-17"></a>        <span class="cf">for</span>(<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="va">items</span>.<span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) <span class="op">{</span></span>
-<span id="cb2-18"><a href="#cb2-18"></a>            items[i].<span class="at">selected</span>(newValue)<span class="op">;</span></span>
-<span id="cb2-19"><a href="#cb2-19"></a>        <span class="op">}</span></span>
-<span id="cb2-20"><a href="#cb2-20"></a>    <span class="op">}</span></span>
-<span id="cb2-21"><a href="#cb2-21"></a><span class="op">}</span>)<span class="op">;</span></span>
+<span id="cb2-14"><a href="#cb2-14"></a>    }<span class="op">,</span></span>
+<span id="cb2-15"><a href="#cb2-15"></a>    <span class="dt">write</span><span class="op">:</span> <span class="kw">function</span>(newValue) {</span>
+<span id="cb2-16"><a href="#cb2-16"></a>        <span class="kw">var</span> items <span class="op">=</span> badViewModel<span class="op">.</span><span class="fu">items</span>()<span class="op">;</span></span>
+<span id="cb2-17"><a href="#cb2-17"></a>        <span class="cf">for</span>(<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> items<span class="op">.</span><span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) {</span>
+<span id="cb2-18"><a href="#cb2-18"></a>            items[i]<span class="op">.</span><span class="fu">selected</span>(newValue)<span class="op">;</span></span>
+<span id="cb2-19"><a href="#cb2-19"></a>        }</span>
+<span id="cb2-20"><a href="#cb2-20"></a>    }</span>
+<span id="cb2-21"><a href="#cb2-21"></a>})<span class="op">;</span></span>
 <span id="cb2-22"><a href="#cb2-22"></a></span>
-<span id="cb2-23"><a href="#cb2-23"></a><span class="va">badViewModel</span>.<span class="at">numberSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="kw">function</span>() <span class="op">{</span></span>
+<span id="cb2-23"><a href="#cb2-23"></a>badViewModel<span class="op">.</span><span class="at">numberSelected</span> <span class="op">=</span> ko<span class="op">.</span><span class="fu">computed</span>(<span class="kw">function</span>() {</span>
 <span id="cb2-24"><a href="#cb2-24"></a>    <span class="kw">var</span> count <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
-<span id="cb2-25"><a href="#cb2-25"></a>    <span class="kw">var</span> items <span class="op">=</span> <span class="va">badViewModel</span>.<span class="at">items</span>()<span class="op">;</span></span>
-<span id="cb2-26"><a href="#cb2-26"></a>    <span class="cf">for</span>(<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="va">items</span>.<span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) <span class="op">{</span></span>
-<span id="cb2-27"><a href="#cb2-27"></a>        <span class="cf">if</span>(items[i].<span class="at">selected</span>()) count<span class="op">++;</span></span>
-<span id="cb2-28"><a href="#cb2-28"></a>    <span class="op">}</span></span>
+<span id="cb2-25"><a href="#cb2-25"></a>    <span class="kw">var</span> items <span class="op">=</span> badViewModel<span class="op">.</span><span class="fu">items</span>()<span class="op">;</span></span>
+<span id="cb2-26"><a href="#cb2-26"></a>    <span class="cf">for</span>(<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> items<span class="op">.</span><span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) {</span>
+<span id="cb2-27"><a href="#cb2-27"></a>        <span class="cf">if</span>(items[i]<span class="op">.</span><span class="fu">selected</span>()) count<span class="op">++;</span></span>
+<span id="cb2-28"><a href="#cb2-28"></a>    }</span>
 <span id="cb2-29"><a href="#cb2-29"></a>    <span class="cf">return</span> count<span class="op">;</span></span>
-<span id="cb2-30"><a href="#cb2-30"></a><span class="op">}</span>)<span class="op">;</span></span>
+<span id="cb2-30"><a href="#cb2-30"></a>})<span class="op">;</span></span>
 <span id="cb2-31"><a href="#cb2-31"></a></span>
-<span id="cb2-32"><a href="#cb2-32"></a><span class="va">badViewModel</span>.<span class="at">add</span> <span class="op">=</span> <span class="kw">function</span>() <span class="op">{</span></span>
-<span id="cb2-33"><a href="#cb2-33"></a>    <span class="va">badViewModel</span>.<span class="va">items</span>.<span class="at">push</span>(<span class="op">{</span></span>
-<span id="cb2-34"><a href="#cb2-34"></a>        <span class="dt">body</span><span class="op">:</span> <span class="va">badViewModel</span>.<span class="at">counter</span><span class="op">++,</span></span>
-<span id="cb2-35"><a href="#cb2-35"></a>        <span class="dt">selected</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observable</span>(<span class="kw">false</span>)</span>
-<span id="cb2-36"><a href="#cb2-36"></a>    <span class="op">}</span>)<span class="op">;</span></span>
-<span id="cb2-37"><a href="#cb2-37"></a><span class="op">};</span></span>
+<span id="cb2-32"><a href="#cb2-32"></a>badViewModel<span class="op">.</span><span class="at">add</span> <span class="op">=</span> <span class="kw">function</span>() {</span>
+<span id="cb2-33"><a href="#cb2-33"></a>    badViewModel<span class="op">.</span><span class="at">items</span><span class="op">.</span><span class="fu">push</span>({</span>
+<span id="cb2-34"><a href="#cb2-34"></a>        <span class="dt">body</span><span class="op">:</span> badViewModel<span class="op">.</span><span class="at">counter</span><span class="op">++,</span></span>
+<span id="cb2-35"><a href="#cb2-35"></a>        <span class="dt">selected</span><span class="op">:</span> ko<span class="op">.</span><span class="fu">observable</span>(<span class="kw">false</span>)</span>
+<span id="cb2-36"><a href="#cb2-36"></a>    })<span class="op">;</span></span>
+<span id="cb2-37"><a href="#cb2-37"></a>}<span class="op">;</span></span>
 <span id="cb2-38"><a href="#cb2-38"></a></span>
-<span id="cb2-39"><a href="#cb2-39"></a><span class="va">ko</span>.<span class="at">applyBindings</span>(badViewModel<span class="op">,</span> <span class="va">document</span>.<span class="at">getElementById</span>(<span class="st">'#badExample'</span>))<span class="op">;</span></span></code></pre></div>
+<span id="cb2-39"><a href="#cb2-39"></a>ko<span class="op">.</span><span class="fu">applyBindings</span>(badViewModel<span class="op">,</span> <span class="bu">document</span><span class="op">.</span><span class="fu">getElementById</span>(<span class="st">'#badExample'</span>))<span class="op">;</span></span></code></pre></div>
 <p>This should be relatively straightforward, and it works, so what’s the problem? The problem can be seen in <code>numberSelected</code> (and it also comes up with <code>allSelected</code> which I’ll get to momentarily). <code>numberSelected</code> depends on <em>each</em> <code>selected</code> observable and so it will be fired <em>each</em> time <em>each</em> one updates. That means if you have 100 items, and you use the select all checkbox, <code>numberSelected</code> will be called 100 times. For this example, that doesn’t really matter. For a more realistic example than <code>numberSelected</code>, this may mean rendering one, then two, then three, … then 100 HTML fragments or making 100 AJAX requests. In fact, this same behavior is present in <code>allSelected</code>. When it is written, as it’s writing to the <code>selected</code> observables, it is also triggering <em>itself</em>.</p>
 <p>So the problem is updating <code>allSelected</code> or <code>numberSelected</code> can’t be done all at once, or to use database terminology, it can’t be updated atomically. One possible solution in newer versions of Knockout is to use <code>deferredUpdates</code> or, what I did back in the much earlier versions of Knockout, abuse the rate limiting features. The problem with this solution is that it makes updates asynchronous. If you’ve written your code to not care whether it was called synchronously or asynchronously, then this will work fine. If you haven’t, doing this throws you into a world of shared state concurrency and race conditions. In this case, this solution is far worse than the disease.</p>
 <h3 id="the-solution">The Solution</h3>
@@ -170,47 +170,47 @@ Add
 </table>
 </div>
 <p>And here’s the code behind this second example:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">var</span> goodViewModel <span class="op">=</span> <span class="op">{</span></span>
+<div class="sourceCode" id="cb3"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">var</span> goodViewModel <span class="op">=</span> {</span>
 <span id="cb3-2"><a href="#cb3-2"></a>    <span class="dt">counter</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span></span>
-<span id="cb3-3"><a href="#cb3-3"></a>    <span class="dt">selectedItems</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observableArray</span>()<span class="op">,</span></span>
-<span id="cb3-4"><a href="#cb3-4"></a>    <span class="dt">items</span><span class="op">:</span> <span class="va">ko</span>.<span class="at">observableArray</span>()</span>
-<span id="cb3-5"><a href="#cb3-5"></a><span class="op">};</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a>    <span class="dt">selectedItems</span><span class="op">:</span> ko<span class="op">.</span><span class="fu">observableArray</span>()<span class="op">,</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a>    <span class="dt">items</span><span class="op">:</span> ko<span class="op">.</span><span class="fu">observableArray</span>()</span>
+<span id="cb3-5"><a href="#cb3-5"></a>}<span class="op">;</span></span>
 <span id="cb3-6"><a href="#cb3-6"></a></span>
-<span id="cb3-7"><a href="#cb3-7"></a><span class="va">goodViewModel</span>.<span class="at">allSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="op">{</span></span>
-<span id="cb3-8"><a href="#cb3-8"></a>    <span class="dt">read</span><span class="op">:</span> <span class="kw">function</span>() <span class="op">{</span></span>
-<span id="cb3-9"><a href="#cb3-9"></a>        <span class="cf">return</span> <span class="va">goodViewModel</span>.<span class="at">items</span>().<span class="at">length</span> <span class="op">===</span> <span class="va">goodViewModel</span>.<span class="at">selectedItems</span>().<span class="at">length</span><span class="op">;</span></span>
-<span id="cb3-10"><a href="#cb3-10"></a>    <span class="op">},</span></span>
-<span id="cb3-11"><a href="#cb3-11"></a>    <span class="dt">write</span><span class="op">:</span> <span class="kw">function</span>(newValue) <span class="op">{</span></span>
-<span id="cb3-12"><a href="#cb3-12"></a>        <span class="cf">if</span>(newValue) <span class="op">{</span></span>
-<span id="cb3-13"><a href="#cb3-13"></a>            <span class="va">goodViewModel</span>.<span class="at">selectedItems</span>(<span class="va">goodViewModel</span>.<span class="at">items</span>().<span class="at">slice</span>(<span class="dv">0</span>))<span class="op">;</span> <span class="co">// Need a copy!</span></span>
-<span id="cb3-14"><a href="#cb3-14"></a>        <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
-<span id="cb3-15"><a href="#cb3-15"></a>            <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">removeAll</span>()<span class="op">;</span></span>
-<span id="cb3-16"><a href="#cb3-16"></a>        <span class="op">}</span></span>
-<span id="cb3-17"><a href="#cb3-17"></a>    <span class="op">}</span></span>
-<span id="cb3-18"><a href="#cb3-18"></a><span class="op">}</span>)<span class="op">;</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a>goodViewModel<span class="op">.</span><span class="at">allSelected</span> <span class="op">=</span> ko<span class="op">.</span><span class="fu">computed</span>({</span>
+<span id="cb3-8"><a href="#cb3-8"></a>    <span class="dt">read</span><span class="op">:</span> <span class="kw">function</span>() {</span>
+<span id="cb3-9"><a href="#cb3-9"></a>        <span class="cf">return</span> goodViewModel<span class="op">.</span><span class="fu">items</span>()<span class="op">.</span><span class="at">length</span> <span class="op">===</span> goodViewModel<span class="op">.</span><span class="fu">selectedItems</span>()<span class="op">.</span><span class="at">length</span><span class="op">;</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a>    }<span class="op">,</span></span>
+<span id="cb3-11"><a href="#cb3-11"></a>    <span class="dt">write</span><span class="op">:</span> <span class="kw">function</span>(newValue) {</span>
+<span id="cb3-12"><a href="#cb3-12"></a>        <span class="cf">if</span>(newValue) {</span>
+<span id="cb3-13"><a href="#cb3-13"></a>            goodViewModel<span class="op">.</span><span class="fu">selectedItems</span>(goodViewModel<span class="op">.</span><span class="fu">items</span>()<span class="op">.</span><span class="fu">slice</span>(<span class="dv">0</span>))<span class="op">;</span> <span class="co">// Need a copy!</span></span>
+<span id="cb3-14"><a href="#cb3-14"></a>        } <span class="cf">else</span> {</span>
+<span id="cb3-15"><a href="#cb3-15"></a>            goodViewModel<span class="op">.</span><span class="at">selectedItems</span><span class="op">.</span><span class="fu">removeAll</span>()<span class="op">;</span></span>
+<span id="cb3-16"><a href="#cb3-16"></a>        }</span>
+<span id="cb3-17"><a href="#cb3-17"></a>    }</span>
+<span id="cb3-18"><a href="#cb3-18"></a>})<span class="op">;</span></span>
 <span id="cb3-19"><a href="#cb3-19"></a></span>
-<span id="cb3-20"><a href="#cb3-20"></a><span class="va">goodViewModel</span>.<span class="at">numberSelected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="kw">function</span>() <span class="op">{</span></span>
-<span id="cb3-21"><a href="#cb3-21"></a>    <span class="cf">return</span> <span class="va">goodViewModel</span>.<span class="at">selectedItems</span>().<span class="at">length</span><span class="op">;</span></span>
-<span id="cb3-22"><a href="#cb3-22"></a><span class="op">}</span>)<span class="op">;</span></span>
+<span id="cb3-20"><a href="#cb3-20"></a>goodViewModel<span class="op">.</span><span class="at">numberSelected</span> <span class="op">=</span> ko<span class="op">.</span><span class="fu">computed</span>(<span class="kw">function</span>() {</span>
+<span id="cb3-21"><a href="#cb3-21"></a>    <span class="cf">return</span> goodViewModel<span class="op">.</span><span class="fu">selectedItems</span>()<span class="op">.</span><span class="at">length</span><span class="op">;</span></span>
+<span id="cb3-22"><a href="#cb3-22"></a>})<span class="op">;</span></span>
 <span id="cb3-23"><a href="#cb3-23"></a></span>
-<span id="cb3-24"><a href="#cb3-24"></a><span class="va">goodViewModel</span>.<span class="at">add</span> <span class="op">=</span> <span class="kw">function</span>() <span class="op">{</span></span>
-<span id="cb3-25"><a href="#cb3-25"></a>    <span class="kw">var</span> item <span class="op">=</span> <span class="op">{</span> <span class="dt">body</span><span class="op">:</span> <span class="va">goodViewModel</span>.<span class="at">counter</span><span class="op">++</span> <span class="op">}</span></span>
-<span id="cb3-26"><a href="#cb3-26"></a>    <span class="va">item</span>.<span class="at">selected</span> <span class="op">=</span> <span class="va">ko</span>.<span class="at">computed</span>(<span class="op">{</span></span>
-<span id="cb3-27"><a href="#cb3-27"></a>        <span class="dt">read</span><span class="op">:</span> <span class="kw">function</span>() <span class="op">{</span></span>
-<span id="cb3-28"><a href="#cb3-28"></a>            <span class="cf">return</span> <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">indexOf</span>(item) <span class="op">&gt;</span> <span class="dv">-1</span><span class="op">;</span></span>
-<span id="cb3-29"><a href="#cb3-29"></a>        <span class="op">},</span></span>
-<span id="cb3-30"><a href="#cb3-30"></a>        <span class="dt">write</span><span class="op">:</span> <span class="kw">function</span>(newValue) <span class="op">{</span></span>
-<span id="cb3-31"><a href="#cb3-31"></a>            <span class="cf">if</span>(newValue) <span class="op">{</span></span>
-<span id="cb3-32"><a href="#cb3-32"></a>                <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">push</span>(item)<span class="op">;</span></span>
-<span id="cb3-33"><a href="#cb3-33"></a>            <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
-<span id="cb3-34"><a href="#cb3-34"></a>                <span class="va">goodViewModel</span>.<span class="va">selectedItems</span>.<span class="at">remove</span>(item)<span class="op">;</span></span>
-<span id="cb3-35"><a href="#cb3-35"></a>            <span class="op">}</span></span>
-<span id="cb3-36"><a href="#cb3-36"></a>        <span class="op">}</span></span>
-<span id="cb3-37"><a href="#cb3-37"></a>    <span class="op">}</span>)<span class="op">;</span></span>
-<span id="cb3-38"><a href="#cb3-38"></a>    <span class="va">goodViewModel</span>.<span class="va">items</span>.<span class="at">push</span>(item)<span class="op">;</span></span>
-<span id="cb3-39"><a href="#cb3-39"></a><span class="op">};</span></span>
+<span id="cb3-24"><a href="#cb3-24"></a>goodViewModel<span class="op">.</span><span class="at">add</span> <span class="op">=</span> <span class="kw">function</span>() {</span>
+<span id="cb3-25"><a href="#cb3-25"></a>    <span class="kw">var</span> item <span class="op">=</span> { <span class="dt">body</span><span class="op">:</span> goodViewModel<span class="op">.</span><span class="at">counter</span><span class="op">++</span> }</span>
+<span id="cb3-26"><a href="#cb3-26"></a>    item<span class="op">.</span><span class="at">selected</span> <span class="op">=</span> ko<span class="op">.</span><span class="fu">computed</span>({</span>
+<span id="cb3-27"><a href="#cb3-27"></a>        <span class="dt">read</span><span class="op">:</span> <span class="kw">function</span>() {</span>
+<span id="cb3-28"><a href="#cb3-28"></a>            <span class="cf">return</span> goodViewModel<span class="op">.</span><span class="at">selectedItems</span><span class="op">.</span><span class="fu">indexOf</span>(item) <span class="op">&gt;</span> <span class="dv">-1</span><span class="op">;</span></span>
+<span id="cb3-29"><a href="#cb3-29"></a>        }<span class="op">,</span></span>
+<span id="cb3-30"><a href="#cb3-30"></a>        <span class="dt">write</span><span class="op">:</span> <span class="kw">function</span>(newValue) {</span>
+<span id="cb3-31"><a href="#cb3-31"></a>            <span class="cf">if</span>(newValue) {</span>
+<span id="cb3-32"><a href="#cb3-32"></a>                goodViewModel<span class="op">.</span><span class="at">selectedItems</span><span class="op">.</span><span class="fu">push</span>(item)<span class="op">;</span></span>
+<span id="cb3-33"><a href="#cb3-33"></a>            } <span class="cf">else</span> {</span>
+<span id="cb3-34"><a href="#cb3-34"></a>                goodViewModel<span class="op">.</span><span class="at">selectedItems</span><span class="op">.</span><span class="fu">remove</span>(item)<span class="op">;</span></span>
+<span id="cb3-35"><a href="#cb3-35"></a>            }</span>
+<span id="cb3-36"><a href="#cb3-36"></a>        }</span>
+<span id="cb3-37"><a href="#cb3-37"></a>    })<span class="op">;</span></span>
+<span id="cb3-38"><a href="#cb3-38"></a>    goodViewModel<span class="op">.</span><span class="at">items</span><span class="op">.</span><span class="fu">push</span>(item)<span class="op">;</span></span>
+<span id="cb3-39"><a href="#cb3-39"></a>}<span class="op">;</span></span>
 <span id="cb3-40"><a href="#cb3-40"></a></span>
-<span id="cb3-41"><a href="#cb3-41"></a><span class="va">ko</span>.<span class="at">applyBindings</span>(goodViewModel<span class="op">,</span> <span class="va">document</span>.<span class="at">getElementById</span>(<span class="st">'#goodExample'</span>))<span class="op">;</span></span></code></pre></div>
+<span id="cb3-41"><a href="#cb3-41"></a>ko<span class="op">.</span><span class="fu">applyBindings</span>(goodViewModel<span class="op">,</span> <span class="bu">document</span><span class="op">.</span><span class="fu">getElementById</span>(<span class="st">'#goodExample'</span>))<span class="op">;</span></span></code></pre></div>
 <p>One thing to note is that setting <code>allSelected</code> and <code>numberSelected</code> are now both simple operations. A write to an observable triggers a constant number of writes to other observables. In fact, there are only two (non-computed) observables. On the other hand, <em>reading</em> the <code>selected</code> observable is more expensive. Toggling all items has quadratic complexity. In fact, it had quadratic complexity before due to the feedback. However, unlike the previous code, this <em>also</em> has quadratic complexity when any <em>individual</em> item is toggled. Unlike the previous code, though, this is simply due to a poor choice of data structure. Equipping each item with an “ID” field and using an object as a hash map would reduce the complexity to linear. In practice, for this sort of scenario, it tends not to make a big difference. Also, Knockout won’t trigger dependents if the value doesn’t change, so there’s no risk of the extra work propagating into still more extra work. Nevertheless, while I endorse this solution for this particular problem, in general making <em>finer</em> grained observables can help limit the scope of changes so unnecessary work isn’t done.</p>
 <p>Still, the real concern and benefit of this latter approach isn’t the asymptotic complexity of the operations, but the <em>atomicity</em> of the operations. In the second solution, every update is atomic. There are no intermediate states on the way to a final state. This means that dependents, represented by <code>numberSelected</code> but which are realistically much more complicated, don’t get triggered excessively and don’t need to “compensate” for unintended intermediate values.</p>
 <h3 id="epilogue">Epilogue</h3>
@@ -336,7 +336,8 @@ ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js" integrity="sha384-6ePHh72Rl3hKio4HiJ841psfsRJveeS+aLoaEf3BWfS+gTF0XdAqku2ka8VddikM" crossorigin="anonymous"></script>
-    <script src="../js/bootstrap.min.js"></script>
+    <!-- <script type="text/javascript" src="/js/jquery.min.js"></script> -->
+    <script type="text/javascript" src="../js/bootstrap.min.js"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <!--<script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>-->
     <script type="text/javascript">
@@ -348,8 +349,8 @@ ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
             (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
         }());
     </script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_HTMLorMML.js" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous">
-    </script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_HTMLorMML.js" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script>
+    <!-- <script type="text/javascript" src="/js/MathJax-2.7.7/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script> -->
     <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
           extensions: ['asciimath2jax.js'],
