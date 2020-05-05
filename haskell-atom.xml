@@ -8,8 +8,90 @@
         <name>Derek Elkins</name>
         <email>derek.a.elkins+blog@gmail.com</email>
     </author>
-    <updated>2020-04-30T06:06:52Z</updated>
+    <updated>2020-05-04T17:21:49Z</updated>
     <entry>
+    <title>Example Representability Argument</title>
+    <link href="https://derekelkins.github.io/posts/example-representability-argument.html" />
+    <id>https://derekelkins.github.io/posts/example-representability-argument.html</id>
+    <published>2020-05-04 10:21:49-07:00</published>
+    <updated>2020-05-04T17:21:49Z</updated>
+    <summary type="html"><![CDATA[<h3 id="introduction">Introduction</h3>
+<p>When I was young and dumb and first learning category theory, I got it into my head that arguments involving sets were not “categorical”. This is not completely crazy as the idea of category theory being an alternate “foundation” and categorical critiques of set theoretic reasoning are easy to find. As such, I tended to neglect techniques that significantly leveraged |\mathbf{Set}|, and, in particular, representability. Instead, I’d prefer arguments using universal arrows as those translate naturally and directly to 2-categories.</p>
+<p>This was a mistake. I have long since completely reversed my position on this for both practical and theoretical reasons. Practically, representability and related techniques provide very concise definitions which lead to concise proofs which I find relatively easy to formulate and easy to verify. This is especially true when combined with the (co)end calculus. It’s also the case that for a lot of math you simply don’t need any potential generality you might gain by, e.g. being able to use an arbitrary 2-category. Theoretically, I’ve gained a better understanding of where and how category theory is (or is not) “foundational”, and a better understanding of what about set theory categorists were critiquing. Category theory as a whole does <em>not</em> provide an alternate foundation for mathematics as that term is usually understood by mathematicians. A branch of category theory, topos theory, does, but a topos is fairly intentionally designed to give a somewhat |\mathbf{Set}|-like experience. Similarly, many approaches to higher category theory still include a |\mathbf{Set}|-like level.</p>
+<p>This is, of course, not to suggest ideas like universal arrows <em>aren’t</em> important or can’t lead to elegant proofs.</p>
+<p>Below is a particular example of attacking a problem from the perspective of representability. I use this example more because it is a neat proof that I hadn’t seen before. There are plenty of simpler compelling examples, such as proving that right(/left) adjoints are (co)continuous, and I regularly use representability in proofs I present on, e.g. the Math StackExchange.</p>
+<h3 id="the-problem">The Problem</h3>
+<p>An <a href="https://ncatlab.org/nlab/show/topos#ElementaryTopos">elementary topos</a>, |\mathcal E|, can be described as a category with finite limits and power objects. Having <a href="https://ncatlab.org/nlab/show/power+object">power objects</a> means having a functor |\mathsf P : \mathcal E^{op} \to \mathcal E| such that |\mathcal E(A,\mathsf PB) \cong \mathsf{Sub}(A \times B)| natural in |A| and |B| where |\mathsf{Sub}| is the (contravariant) functor that takes an object to its set of <a href="https://ncatlab.org/nlab/show/subobject">subobjects</a>. The action of |\mathsf{Sub}(f)| for an arrow |f : A \to B| is a function |m \mapsto f^*(m)| where |m| is a (representative) monomorphism and |f^*(m)| is the pullback of |f| along |m| which is a monomorphism by basic facts about pullbacks. In diagrammatic form: <br /><span class="math display">$$\require{AMScd}
+\begin{CD}
+f^{-1}(B') @&gt;f^\ast(m)&gt;&gt; A \\
+@VVV @VVfV \\
+B' @&gt;&gt;m&gt; B
+\end{CD}$$</span><br /></p>
+<p>This is a characterization of |\mathsf P| via representability. We are saying that |\mathsf PB| represents the functor |\mathsf{Sub}(- \times B)| parameterized in |B|.</p>
+<p>A well-known and basic fact about elementary toposes is that they are <a href="https://ncatlab.org/nlab/show/cartesian+closed+category">cartesian closed</a>. (Indeed, finite limits + cartesian closure + a <a href="https://ncatlab.org/nlab/show/subobject+classifier">subobject classifier</a> is a common alternative definition.) Cartesian closure can be characterized as |\mathcal E(- \times A, B) \cong \mathcal E(-,B^A)| which characterizes the exponent, |B^A| via representability, namely that |B^A| represents the functor |\mathcal E(- \times A, B)| parameterized in |A|. Proving that elementary toposes are cartesian closed is not too difficult, but it is a bit fiddly. This is the example that I’m going to use.</p>
+<h3 id="common-setup">Common Setup</h3>
+<p>All the proofs I reference rely on the following basic facts about an elementary topos.</p>
+<p>We have the monomorphism |\top : 1 \to \mathsf P1| induced by the identity arrow |\mathsf P1 \to \mathsf P1|.</p>
+<p>We need the lemma that |\mathcal E(A \times B,PC) \cong \mathcal E(A,\mathsf P(B \times C))|. <strong>Proof</strong>: <br /><span class="math display">$$\begin{align}
+\mathcal E(A \times B,\mathsf PC) \cong \mathsf{Sub}((A \times B) \times C) \cong \mathsf{Sub}(A \times (B \times C)) \cong \mathcal E(A,\mathsf P(B \times C))\ \square
+\end{align}$$</span><br /></p>
+<p>Since the arrow |\langle id_A, f\rangle : A \to A \times B| is a monomorphism for any arrow |f : A \to B|, the map |f \mapsto \langle id, f \rangle| is a map from |\mathcal E(-, B)| to |\mathsf{Sub}(- \times B)|. Using |\mathsf{Sub}(- \times B) \cong \mathcal E(-,\mathsf PB)|, we get a map |\mathcal E(-, B) \to \mathsf{Sub}(- \times B) \cong \mathcal E(-,\mathsf PB)|. By Yoneda, i.e. by evaluating it at |id|, we get the singleton map: |\{\}_B : B \to \mathsf PB|. If we can show that |\{\}| is a monomorphism, then, since |\mathsf PA \cong \mathsf P(A \times 1)|, we’ll get an arrow |\sigma : \mathsf PA \to \mathsf P1| such that</p>
+<p><br /><span class="math display">$$\begin{CD}
+A @&gt;\{\}_A&gt;&gt; \mathsf PA \\
+@VVV @VV\sigma_AV \\
+1 @&gt;&gt;\top&gt; \mathsf P1
+\end{CD}$$</span><br /></p>
+<p>is a pullback.</p>
+<p>|\{\}_A| is a monomorphism because any |f, g : X \to A| gets mapped by the above to |\langle id_X, f\rangle| and |\langle id_X, g\rangle| which represent the same subobject because |\{\} \circ f = \{\} \circ g|. Therefore, there’s an isomorphism |j : X \cong X| such that |\langle id_X, f\rangle \circ j = \langle j, f \circ j\rangle = \langle id_X, g\rangle| but this means |j = id_X| and thus |f = g|.</p>
+<h3 id="other-proofs">Other Proofs</h3>
+<p>To restate the problem: given the above setup, we want to show that the elementary topos |\mathcal E| is cartesian closed.</p>
+<p><a href="http://www.tac.mta.ca/tac/reprints/articles/12/tr12.pdf#page=170">Toposes, Triples, and Theories</a> by Barr and Wells actually provides <em>two</em> proofs of this statement: Theorem 4.1 of Chapter 5. The first proof is in exactly the representability-style approach I’m advocating, but it relies on earlier results about how a topos relates to its slice categories. The second proof is more concrete and direct, but it also involves |\mathsf P\mathsf P\mathsf P\mathsf P B|…</p>
+<p><a href="https://doi.org/10.1007/978-1-4612-0927-0">Sheaves in Geometry and Logic</a> by Mac Lane and Moerdijk also has this result as Theorem 1 of section IV.2 “The Construction of Exponentials”. The proof starts on page 167 and finishes on 169. The idea is to take the set theoretic construction of functions via their graphs and interpret that into topos concepts. This proof involves a decent amount of equational reasoning (either via diagrams or via generalized elements).</p>
+<h3 id="dans-proof-via-representability">Dan’s Proof via Representability</h3>
+<p>Contrast these to Dan Doel’s proof<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> using representability, which proceeds as follows. (Any mistakes are mine.)</p>
+<p>Start with the pullback induced by the singleton map.</p>
+<p><br /><span class="math display">$$\begin{CD}
+B @&gt;\{\}_B&gt;&gt; \mathsf PB \\
+@VVV @VV\sigma_BV \\
+1 @&gt;&gt;\top&gt; \mathsf P1
+\end{CD}$$</span><br /></p>
+<p>Apply the functor |\mathcal E(= \times A,-)| which preserves the fact that it is a pullback via continuity. <br /><span class="math display">$$\begin{CD}
+\mathcal{E}(-\times A,B) @&gt;&gt;&gt; \mathcal{E}(- \times A,\mathsf PB) \\
+@VVV @VVV \\
+\mathcal{E}(- \times A,1) @&gt;&gt;&gt; \mathcal{E}(- \times A,\mathsf P1)
+\end{CD}$$</span><br /></p>
+<p>Note:</p>
+<ul>
+<li>|\mathcal E(- \times A,1) \cong 1 \cong \mathcal E(-,1)| (by continuity)</li>
+<li>|\mathcal E(- \times A,\mathsf PB) \cong \mathcal E(-,\mathsf P(A \times B))| (by definition of power objects)</li>
+<li>|\mathcal E(- \times A,\mathsf P1) \cong \mathcal E(-,\mathsf PA)| (because |A \times 1 \cong A|)</li>
+</ul>
+<p>This means that the above pullback is also pullback of <br /><span class="math display">$$\begin{CD}
+\mathcal E(-\times A,B) @&gt;&gt;&gt; \mathcal E(-,\mathsf P(A\times B)) \\
+@VVV @VVV \\
+\mathcal E(-,1) @&gt;&gt;&gt; \mathcal E(-,\mathsf PA)
+\end{CD}$$</span><br /></p>
+<p>Since |\mathcal E| has all finite limits, it has the following pullback</p>
+<p><br /><span class="math display">$$\begin{CD}
+X @&gt;&gt;&gt; \mathsf P(A \times B) \\
+@VVV @VVV \\
+1 @&gt;&gt;&gt; \mathsf PA
+\end{CD}$$</span><br /></p>
+<p>where the bottom and right arrows are induced by the corresponding arrows of the previous diagram by Yoneda. Applying |\mathcal E(=,-)| to this diagram gives another pullback diagram by continuity</p>
+<p><br /><span class="math display">$$\begin{CD}
+\mathcal E(-,X) @&gt;&gt;&gt; \mathcal E(-,\mathsf P(A\times B)) \\
+@VVV @VVV \\
+\mathcal E(-,1) @&gt;&gt;&gt; \mathcal E(-,\mathsf PA)
+\end{CD}$$</span><br /></p>
+<p>which is to say |\mathcal E(- \times A, B) \cong \mathcal E(-, X)| because pullbacks are unique up to isomorphism, so |X| satisfies the universal property of |B^A|, namely |\mathcal E(- \times A, B) \cong \mathcal E(-,B^A)|.</p>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p>Sent to me almost exactly three years ago.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>]]></summary>
+</entry>
+<entry>
     <title>Recursive Helping</title>
     <link href="https://derekelkins.github.io/posts/recursive-helping.html" />
     <id>https://derekelkins.github.io/posts/recursive-helping.html</id>
@@ -1106,16 +1188,6 @@ A <strong>subset type</strong> is just a type combined with a predicate on that 
 <li id="fn2" role="doc-endnote"><p>It gets mapped to it’s value at #3#, i.e. #P(3)#.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>]]></summary>
-</entry>
-<entry>
-    <title>Constructivist Motto</title>
-    <link href="https://derekelkins.github.io/posts/constructivist-motto.html" />
-    <id>https://derekelkins.github.io/posts/constructivist-motto.html</id>
-    <published>2016-05-07 11:12:29-07:00</published>
-    <updated>2016-05-07T18:12:29Z</updated>
-    <summary type="html"><![CDATA[<blockquote>
-<p>I don’t believe classical logic is false; I just believe that it is not true.</p>
-</blockquote>]]></summary>
 </entry>
 
 </feed>
