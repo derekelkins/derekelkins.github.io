@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="A blog mostly on math, physics, and computer science.">
+    <meta name="author" content="Derek Elkins">
+    <!--<link rel="icon" href="/images/favicon.ico">-->
+
+    <title>Internal Language of a Monoidal Category</title>
+    <!-- Bootstrap core CSS -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="../css/blog.css" rel="stylesheet">
+    <link href="../css/syntax.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="blog-masthead">
+      <div class="container">
+        <nav class="blog-nav">
+          <a class="blog-nav-item " href="../">Home</a>
+          <a class="blog-nav-item " href="../about.html">About</a>
+          <a class="blog-nav-item " href="../contact.html">Contact</a>
+          <a class="blog-nav-item " href="../readinglist.html">Reading List</a>
+          <a class="blog-nav-item " href="../archive.html">Archive</a>
+          <a class="blog-nav-item pull-right" href="../rss.xml">RSS</a>
+          <a class="blog-nav-item pull-right" href="../atom.xml">Atom</a>
+        </nav>
+      </div>
+    </div>
+
+    <div class="container">
+      
+      
+      <div class="row">
+        
+        <div class="col-sm-12 blog-main">
+        
+          <div class="blog-post">
+    <h2 class="blog-post-title" style="margin-top: 30px;">Internal Language of a Monoidal Category</h2>
+    <p class="blog-post-meta">May 22, 2020 08:46 UTC 
+        
+        (Last updated on May 22, 2020 08:46 UTC)
+    </p>
+    <h6 class="blog-post-meta">
+        
+        Tags: <a title="All pages tagged 'math'." href="../tags/math.html">math</a>, <a title="All pages tagged 'category theory'." href="../tags/category%20theory.html">category theory</a>
+        
+    </h6>
+
+    <h2 id="introduction">Introduction</h2>
+<p>This is the first post in a series of posts on doing enriched indexed category theory and using the notion of an internal language to make this look relatively mundane. The internal language aspects are useful for other purposes too, as will be illustrated in this post, for example. This is related to the post <a href="../posts/category-theory-syntactically.html">Category Theory, Syntactically</a>. In particular, it can be considered half-way between the unary theories and the finite product theories described there.</p>
+<p>First in this series – this post – covers the internal language of a monoidal category. This is fairly straightforward, but it already provides some use. For example, the category of endofunctors on a category is a strict monoidal category, and so we can take a different perspective on natural transformations. This will also motivate the notions of a (virtual) bicategory and an actegory. Throughout this post, I’ll give a fairly worked example of turning some categorical content into <a href="../posts/understanding-typing-judgments.html">rules</a> of a type-/proof-theory.</p>
+<p>The second post will add indexing to the notion of monoidal category and introduce the very powerful and useful notion of an <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal category</a>.</p>
+<p>The third post will formulate the notion of <a href="https://arxiv.org/abs/1212.3914">categories enriched in an indexed monoidal category</a> and give the definitions which don’t require any additional assumptions.</p>
+<p>The fourth post will introduce the notion and internal language for an indexed cosmos. Normally, when we do enriched category theory, we want the category into which we’re enriching to not be just a monoidal category but a <a href="https://ncatlab.org/nlab/show/cosmos">cosmos</a>. This provides many additional properties. An indexed cosmos is just the analogue of that for indexed monoidal categories.</p>
+<p>The fifth post will then formulate categorical concepts for our enriched indexed categories that require some or all of these additional properties provided by an indexed cosmos.</p>
+<p>At some point, there will be a post on <a href="https://ncatlab.org/nlab/show/virtual+double+category">virtual double categories</a> as they (or, even better, <a href="https://arxiv.org/abs/1910.11189">augmented virtual double categories</a>) are what will really be behind the notion of enriched indexed categories we’ll define. Basically, we’ll secretly be spelling out a specific instance of the |\mathsf{Mod}| construction.</p>
+<!--more-->
+<h2 id="the-internal-language-of-monoidal-categories">The Internal Language of Monoidal Categories</h2>
+<p>Fix a <a href="https://ncatlab.org/nlab/show/monoidal+category">monoidal category</a> called |\newcommand{\V}{\mathbf V}\V|.</p>
+<p>The internal language of a monoidal category is quite simple to describe<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. We’ll write terms in context. The term <br /><span class="math display">$$\begin{align}
+a_1 : A_1, \dots, a_n : A_n \vdash E : B\end{align}$$</span><br /> will represent an arrow |A_1 \otimes \cdots \otimes A_n \to B| in |\V|. The |n = 0| case will be represented by omitting the context and will correspond to an arrow from the unit, |I|. However, there’s a catch. The term |E| must use all the variables |a_1, \dots, a_n| <em>exactly</em> once and in the order that they are listed in the context. (The |\mathsf{match}| construct will make this more complicated. Ultimately, a one-dimensional syntax isn’t that well suited to this situation.) For example, <br /><span class="math display">$$\begin{align}a_1 : A_1, a_2: A_2 \vdash \mathsf f(a_2, a_1) : B, \quad a : A_1 \vdash \mathsf g(a, a) : B, \quad \text{and} \quad a : A \vdash \mathsf b : B\end{align}$$</span><br /> are all <em>in</em>valid. We’ll call the context the <strong>linear context</strong>, consisting of <strong>linear variables</strong> with <strong>linear types</strong>, which we’ll usually represent with the metavariable |\Delta|. The naming comes from the connections to ordered linear logic.</p>
+<p>Substituting for the linear variables, written |E[E_1/a_1,\dots,E_n/a_n]|, corresponds to the composition |E \circ (E_1 \otimes \cdots \otimes E_n)|. You can work out what associativity and unit laws of composition would look like. It should be noted, though, that this is a meta-theorem. Substitution is defined in the typical, syntactic way, and we’d need to prove that for every term the interpretation of the result of substituting into that term is equal to the composition of the interpretations.</p>
+<p>If we replaced arrows |A_1 \otimes \cdots \otimes A_n \to B| in a monoidal category with multiarrows |(A_1, \dots, A_n) \to B| in a multicategory<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>, then we’d be done. However, monoidal categories correspond to <a href="https://ncatlab.org/nlab/show/representable+multicategory"><em>representable</em> multicategories</a>. If we write, |\mathcal C(A_1, \dots, A_n; B)| for the set of multiarrows |(A_1, \dots, A_n) \to B| in the multicatgory |\mathcal C|, then |\mathcal C| being representable means we have <br /><span class="math display">$$\begin{align}
+\mathcal C(A_1, \dots, A_m, B_1, \dots, B_n, C_1, \dots, C_p; D)
+    \cong \mathcal C(A_1, \dots, A_m, B_1 \otimes \cdots \otimes B_n, C_1, \dots, C_p; D)
+\end{align}$$</span><br /> natural in |D| and multinatural in the |A_i| and |C_i|. This implies that every |n|-ary arrow is equivalent to a unary arrow.</p>
+<p>Since it’s useful to know, I’ll go into some detail on how we derive natural-deduction-style rules from this categorical data. First, we note that the above natural isomorphism (at least when |m=0| and |p=0|) has the form of a universal property using representability and, specifically, is a mapping-out property. That is, we are saying that the functor |\mathcal C(B_1, \dots, B_n; \_)| is represented by |B_1 \otimes \cdots \otimes B_n|. Let’s call the left to right direction of the above natural isomorphism |\varphi|. While this universal property can, of course, be represented by the natural isomorphism as above, it can also be equivalently represented by a universal element. Namely, one particularly notable choice for |D| is |B_1 \otimes \cdots \otimes B_n| itself, at which point we can consider |\eta = \varphi^{-1}(id_{B_1 \otimes \cdots \otimes B_n}) : (B_1, \dots, B_n) \to B_1 \otimes \cdots \otimes B_n|. By using naturality of |\varphi^{-1}|, we can easily show that |\varphi^{-1}(f) = f \circ \eta|. To witness the fact that |\varphi^{-1}(\varphi(f)) = f|, we need |\varphi(f) \circ \eta = f|. We’ve now shown that a natural transformation |\varphi| as above and an element (in this case a multiarrow) |\eta| which satisfy |\varphi(\eta) = id| and |\varphi(f) \circ \eta = f| is equivalent to the natural isomorphism above.</p>
+<p>To start translating this to rules, we look at |\eta| first. A direct translation would be to say we have the rule: <br /><span class="math display">$$\begin{align}
+\dfrac{}{a_1 : A_1, \dots, a_n : A_n \vdash \eta : A_1 \otimes \cdots \otimes A_n}
+\end{align}$$</span><br /> This is unnatural because it treats || like a primitive open term. This also means that to use |\eta|, we’d need to use the Cut rule (which corresponds to substitution/composition) which would stymie Cut elimination. The solution is to mix a use of Cut into the rule itself producing the term |\eta[E_1/a_1, \dots, E_n/a_n]| which I’ll write more perspicuously as |E_1 \otimes \cdots \otimes E_n|. This gives rise to the rule: <br /><span class="math display">$$\begin{align}
+\dfrac{\Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Delta_n \vdash E_n : A_n}{\Delta_1,\dots,\Delta_n \vdash E_1 \otimes \cdots \otimes E_n : A_1 \otimes \cdots \otimes A_n}{\otimes_n}\text{I}
+\end{align}$$</span><br /> Of course, we could restrict to just the |n=0| and |n=2| cases if we wanted. I’ll write the |n=0| case of |a_1\otimes\cdots\otimes a_n| as |*| in both the term and pattern cases. As the label for the rule, |\otimes_n I|, suggests, this is an introduction rule for |\otimes|.</p>
+<p>The rule corresponding to |\varphi| takes less massaging. We’ll do the same trick of incorporating a Cut (Where?), but this makes a fairly minor difference in this case. The rule we get is: <br /><span class="math display">$$\begin{align}
+\dfrac{\Delta \vdash E : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E' : B}{\Delta_l, \Delta, \Delta_r \vdash \mathsf{match}\ E\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E' : B}{\otimes_n}\text{E},n \geq 1
+\end{align}$$</span><br /> Again, as the label suggests, this is an elimination rule for |\otimes|.</p>
+<p>We then need equalities for the two equations and a third equality for naturality of |\varphi|. <br /><span class="math display">$$\begin{gather}
+\dfrac{\Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Delta_n \vdash E_n : A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E : B}{\Delta_l, \Delta_1, \dots, \Delta_n, \Delta_r \vdash (\mathsf{match}\ E_1\otimes\cdots\otimes E_n\ \mathsf{as}\ a_1\otimes\cdots\otimes a_n\ \mathsf{in}\ E) = E[E_1/a_1, \dots, E_n/a_n] : B}{\otimes}\beta
+\\ \\
+\dfrac{\Delta \vdash E : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a : A_1 \otimes \cdots \otimes A_n, \Delta_r \vdash E' : B}{\Delta_l, \Delta, \Delta_r \vdash E'[E/a] = (\mathsf{match}\ E\ \mathsf{as}\ a_1\otimes\cdots\otimes a_n\ \mathsf{in}\ E'[(a_1\otimes\cdots\otimes a_n)/a]) : B}{\otimes}\eta
+\end{gather}$$</span><br /> The first equation corresponds to an introduction immediately followed by an elimination which is the form of a |\beta|-rule. The second is an elimination followed by an introduction and gives rise to an |\eta|-rule.</p>
+<p>Since we are considering a mapping-out property, the naturality equations gives rise to what is called a commuting conversion: <br /><span class="math display">$$\begin{align}
+\dfrac{\Delta \vdash E_1 : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E_2 : B \quad b : B \vdash E_3 : C}{\Delta_l, \Delta, \Delta_r \vdash E_3[(\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \dots \otimes a_n\ \mathsf{in}\ E_2)/b] = (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E_3[E_2/b] : C}{\otimes}\text{CC}
+\end{align}$$</span><br /></p>
+<p>This rule is pretty bad from the perspective of structural proof theory. If I give you terms of the forms of the left and right hand sides of the equation, it can be quite difficult and potentially ambiguous to figure out what terms |E_2| and |E_3| should be. While this particular example can’t happen in our case, imagine if |E_3| did not use the variable |b|. This technically isn’t a problem for building a derivation or verifying it as you can just require that when someone invokes this rule they must <em>specify</em> what all the meta-variables are. Still, this causes difficulties for proof search and normalization and proofs of meta-theorems.</p>
+<p>The solution is straightforward enough. We simply instantiate |E_3| with a concrete term. The not-so-straightforward part is knowing which terms we need. In this case, the main rule we need (and only one if we interpret the above as covering the |n = 0| case) is the following: <br /><span class="math display">$$\begin{align}
+\dfrac{\Delta \vdash E_1 : A_1 \otimes \cdots \otimes A_m \quad \Delta_l, a_1 : A_1, \dots, a_m : A_m, \Delta_r \vdash E_2 : B_1 \otimes \cdots \otimes B_n \quad \Delta_l', b_1 : B_1, \dots, b_n : B_n, \Delta_r' \vdash E_3 : C}{\Delta_l', \Delta_l, \Delta, \Delta_r, \Delta_r' \vdash (\mathsf{match}\ (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_m\ \mathsf{in}\ E_2)\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_n\ \mathsf{in}\ E_3) \\ \qquad \qquad \qquad \quad \, = (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ \mathsf{match}\ E_2\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) : C}{\otimes}{\otimes}\text{CC}
+\end{align}$$</span><br /></p>
+<p>You can see that this rule presents no difficulty in picking out the subterms that should correspond to the meta-variables. Fortunately, we don’t need a rule for every possible top-level term the |E_3| from the first rule could be, let alone the infinite number of possible instantiations of |E_3|. Unfortunately, we <em>do</em> need one for each elimination rule, and so the number of commuting conversions grows roughly quadratically with the number of connectives.</p>
+<p>The motivation for all these rules – the |\beta| and |\eta| rules as well as the commuting conversions – is ideally to have a well-defined normal form for terms that we can systematically reach. In particular, we want two terms to have the same normal form if and only if they are semantically equivalent. If we fail to have normal forms, we’d still at least want two terms to be in the same equivalence class induced by the equations if and only if they are semantically equivalent. Often, we only consider normal forms modulo the equivalence induced by commuting conversions and then endeavor to ensure that this equivalence is easily decidable.</p>
+<p>If we were to consider a mapping-in property, e.g. |\mathcal C(\_, B) \times \mathcal C(\_, C) \cong \mathcal C(\_, B \times C)| for the categorical product, the story would be very similar except with introduction and elimination switched. We’d also find that we don’t need a commuting conversion rule, though we would need to expand any existing commuting conversions with the new eliminator. You can work through it and try to find where the naturality equation went.</p>
+<p>See the <a href="#appendix">appendix</a> for a full and compact listing of the rules and an explicit formulation of what it means to interpret this language into a monoidal category.</p>
+<h2 id="examples">Examples</h2>
+<p>Before we go on to examples of monoidal categories, let’s consider an example of a theory that we can formulate in our internal language. The main example is the theory of monoids. We assume a type |\mathsf M| and operations |\mathsf e : () \to \mathsf M| and |\mathsf m : (\mathsf M, \mathsf M) \to \mathsf M|. To this we add the equations, |\mathsf m(\mathsf e(), a) = a = \mathsf m(a, \mathsf e())| and |\mathsf m(\mathsf m(a_1, a_2), a_3) = \mathsf m(a_1, \mathsf m(a_2, a_3))|. As we can readily verify, all these equations use the free variables in order and exactly once on each side of the equations. You can contrast this to <a href="https://en.wikipedia.org/wiki/Group_(mathematics)#Definition">the axioms of a group</a> and see that those axioms aren’t valid in our internal language. A model of the theory of a monoid in a monoidal category is known as a <a href="https://ncatlab.org/nlab/show/monoid+in+a+monoidal+category">monoid object</a>. Another theory we could formulate in our internal language is <a href="https://en.wikipedia.org/wiki/Semigroup_action#Formal_definitions">the theory of a monoid action</a>.</p>
+<p>For mathematicians, the archetypal example of a monoidal category is the category of vector spaces over a field |k|, e.g. the real numbers. The monoidal product is the tensor product of vector spaces with unit |k|. The multiarrows of the associated multicategory are multilinear maps. The tensor product is symmetric which corresponds to adding the <a href="https://en.wikipedia.org/wiki/Structural_rule">structural rule</a> of Exchange to our list of rules. In practice, this means while we’re still required to use each variable in the context of a term exactly once, we are no longer required to use them in order. A model of the theory of monoids in this monoidal category, i.e. a monoid object in this monoidal category, is exactly an <a href="https://en.wikipedia.org/wiki/Associative_algebra">associative, unital |k|-algebra</a>. Closely related, a ring is exactly a monoid object in the monoidal category of abelian groups.</p>
+<p>Another major class of monoidal categories is cartesian monoidal categories where the monoidal product is the categorical product. The category of vector spaces has categorical products so it forms a monoidal category with that as well. Therefore part of the data of a monoidal category is a specific choice of monoidal product as there can easily be many inequivalent monoidal products. In terms of our internal language, a cartesian monoidal product corresponds to adding all the structural rules: Exchange, Weakening, and Contraction. This means that we are free to use variables however we like, i.e. we can use them in any order, ignore them, or use them multiple times. Usually, categorical products are presented in terms of a mapping-in property as I mentioned in the previous section. For a type theory, this leads to having tupling and projections. A good exercise would be to look up (or formulate) the rules for product types and show how the rules we’ve provided, in addition to the structural rules, allows us to define projections and show that the relevant equations are satisfied. A monoid object in |\mathbf{Set}| with respect to its cartesian monoidal product is exactly what we typically mean by a monoid.</p>
+<p>A final example is the category of endofunctors on a given category which becomes a strict, non-symmetric monoidal category with composition as the monoidal product and the identity functor as the unit. Our internal language then provides a rather different perspective on natural transformations. A natural transformation |\tau : F \circ G \to H| is now viewed as a binary operation |\tau : (F, G) \to H|. To be clear, this is still <em>interpreted</em> as a family of (<em>unary</em>) arrows |\tau_A : F(G(A)) \to H(A)|. The action on arrows (which are natural transformations in this case) of the monoidal product is horizontal composition of natural transformations. The famous example is, of course, the natural transformations |\mu : T \circ T \to T| and |\eta : Id \to T| become the operations |\mu : (T, T) \to T| and |\eta : () \to T| and the monad laws are exactly the monoid laws. That is, a monad is a monoid object in the category of endofunctors equipped with this monoidal product.</p>
+<h2 id="generalizations---virtual-bicategories-and-actegories">Generalizations - (Virtual) Bicategories and Actegories</h2>
+<p>The category of endofunctors example is pretty nice, but it is weird to limit to just endofunctors. We can consider natural transformations from an arbitrary composable sequence of functors whose composite has the same source and target objects as the target functor. The source of this restriction is that our objects are (endo-)functors and the monoidal product needs to work on any pair of objects in any order. The solution to this is to use the fact that a monoidal category is exactly a one-object <a href="https://ncatlab.org/nlab/show/bicategory">bicategory</a>.</p>
+<p>We can thus readily generalize to the internal language of a bicategory. As before, it was helpful to use the notion of a multicategory, at least in passing. The analogue of a multicategory in this context is a virtual bicategory. That is, a multicategory is to a monoidal category as a virtual bicategory is to a bicategory. Basically, a virtual bicategory is like a multicategory except that each object now has a specified source and target and instead of allowing arbitrary sequences as sources for multiarrows, we only allow <em>composable</em> sequences. Here, a composable sequence is a sequence of objects such that the target of one object in the sequence is the source of the next. The analogue of a representable multicategory is the existence of composites in our virtual bicategory. We can say a bicategory is a virtual bicategory that has all composites.</p>
+<p>For our internal language, the only real change we need to make is to keep track of and enforce the composability constraint. One way of doing this is to modify our type formation judgement to |\vdash_S^T A| asserting that |A| is a linear type with source |S| and target |T|. Our typing judgement is similarly decorated producing |\Delta \vdash_S^T E : B|. |\Delta| is again of the form |a_1 : A_1, \dots, a_n : A_n|, but now there is the constraint that the source of |A_n| is |S|, the target of |A_1| is |T|, and the target of |A_i| is the source of |A_{i+1}| for |i &lt; n|. This leads to rules like <br /><span class="math display">$$\begin{align}
+\dfrac{\Delta_1 \vdash_{T_1}^{T_0} E_1 : A_1 \quad \cdots \quad \Delta_n \vdash_{T_n}^{T_{n-1}} E_n : A_n}{\Delta_1,\dots,\Delta_n \vdash_{T_n}^{T_0} E_1 * \cdots * E_n : A_1 * \cdots * A_n}
+\end{align}$$</span><br /> but nothing needs to change at the term level (though I did rename |\otimes| to |*| as that’s less misleading). The main (strict) bicategory would be |\mathbf{Cat}| where we’d interpret the linear types as functors and the linear terms as natural transformations.</p>
+<p>Another direction for generalization is motivated by <a href="https://ncatlab.org/nlab/show/algebra+over+a+monad#definition">T-algebras</a> where |T| is a monad. A |T|-algebra is an arrow |\alpha : TA \to A|. If we think of |\alpha| as a binary operation, |\alpha : (T, A) \to A|, similarly to how we viewed |\mu|, the |T|-algebra laws would look like |\alpha(\eta(), a) = a| and |\alpha(\mu(x, y), a) = \alpha(x, \alpha(y, a))|. These look exactly like the laws of a <a href="https://en.wikipedia.org/wiki/Semigroup_action">monoid action</a>. The problem with this idea is that |T| and |A| are different kinds of objects; they live in different categories. One solution to this is to consider the internal language of an <a href="https://ncatlab.org/nlab/show/actegory">actegory</a>.</p>
+<p>An actegory is a monoidal category, |\mathcal C|, that acts on another category, |\mathcal D|. The quickest way of describing this is to say it is a strong monoidal functor from |\mathcal C \to [\mathcal D, \mathcal D]| where the (endo-)functor category |[\mathcal D, \mathcal D]| is equipped with composition as its monoidal product. We can uncurry this functor into a bifunctor |({-})\cdot({=}) : \mathcal C \times \mathcal D \to \mathcal D| satisfying |I\cdot D \cong D| and |(C \otimes C’)\cdot D \cong C \cdot (C’ \cdot D)|. For our |T|-algebras, |\mathcal C| would be |[\mathcal D, \mathcal D]|, and the monoidal functor would just be the identity.</p>
+<p>To make the internal language, we’d start by including all the rules for a monoidal category to handle the structure on |\mathcal C|. Next, we’d add a judgement |\Delta / d : D \vdash E : D’| where |\Delta = c_1 : C_1, \dots, c_n : C_n|. This would have the same restriction that all variables, |c_1, \dots, c_n| and |d|, would need to be used exactly once and in the order they were written. The idea is that this would be interpreted as an arrow in |\mathcal D| from |(C_1 \otimes \cdots \otimes C_n)\cdot D \to D’|.</p>
+<p>We’d have the rules (among others): <br /><span class="math display">$$\begin{gather}
+\dfrac{}{/ d : D \vdash d : D} \\ \\
+\dfrac{\Delta \vdash E : C \quad \Delta' / d : D \vdash E' : D'}{\Delta, \Delta' / d : D \vdash E \cdot E' : C \cdot D'} \\ \\
+\dfrac{\Delta / d : D \vdash E : C \cdot D' \quad c : C / d' : D' \vdash E' : D''}{\Delta / d : D \vdash \mathsf{match}\ E\ \mathsf{as}\ c \cdot d'\ \mathsf{in}\ E' : D''}
+\end{gather}$$</span><br /></p>
+<p>Presumably, you could formulate a notion of “virtual actegory” where the arrows consist of a list of objects from a multicategory |\mathcal C| and a final object from a category |\mathcal D| as their source and an object of |\mathcal D| as their target. You could imagine going further (or alternately) for an analogue of a (virtual) bicategory which would, again, amount to using composable sequences. (The name “biactegory” is already taken.)</p>
+<p>Regardless, the above framework allows us to have |t : T / a : A \vdash \alpha(t, a) : A|, and we can then express our desired equations for a |T|-algebra in the form of the laws of a monoid action. One place where this notation comes in handy is in the connections between |T|-algebras and absolute colimits.</p>
+<h2 id="appendix">Appendix</h2>
+<h3 id="rules-for-a-monoidal-category">Rules for a Monoidal Category</h3>
+<p><br /><span class="math display">$$\begin{gather}
+\dfrac{}{\vdash I}I\text{F} \qquad
+\dfrac{\vdash A_1 \quad \cdots \quad \vdash A_n}{\vdash A_1 \otimes \cdots \otimes A_n}{\otimes_n}\text{F}, n \geq 1
+ \\ \\
+\dfrac{\vdash A}{a : A \vdash a : A}\text{Ax} \qquad
+\dfrac{\Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Delta_n \vdash E_n : A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E: B}{\Delta_l, \Delta_1, \dots, \Delta_n, \Delta_r \vdash E[E_1/a_1,\dots,E_n/a_n] : B}\text{Cut}
+ \\ \\
+\dfrac{}{\vdash * : I}I\text{I} \qquad
+\dfrac{\Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Delta_n \vdash E_n : A_n}{\Delta_1,\dots,\Delta_n \vdash E_1 \otimes \cdots \otimes E_n : A_1 \otimes \cdots \otimes A_n}{\otimes_n}\text{I}
+ \\ \\
+\dfrac{\Delta \vdash E : I \quad \Delta_l, \Delta_r \vdash E' : B}{\Delta_l, \Delta, \Delta_r \vdash \mathsf{match}\ E\ \mathsf{as}\ {*}\ \mathsf{in}\ E' : B}I\text{E} \qquad
+\dfrac{\Delta \vdash E : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E' : B}{\Delta_l, \Delta, \Delta_r \vdash \mathsf{match}\ E\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E' : B}{\otimes_n}\text{E},n \geq 1
+\end{gather}$$</span><br /></p>
+<h3 id="equations">Equations</h3>
+<p><br /><span class="math display">$$\begin{gather}
+\dfrac{\Delta \vdash E : B}{\Delta \vdash (\mathsf{match}\ {*}\ \mathsf{as}\ {*}\ \mathsf{in}\ E) = E : B}{*}\beta \qquad
+\dfrac{\Delta \vdash E : I \quad a : I, \Delta_l, \Delta_r \vdash E' : B}{\Delta_l, \Delta, \Delta_r \vdash E'[E/a] = (\mathsf{match}\ E\ \mathsf{as}\ {*}\ \mathsf{in}\ E'[*/a]) : B}{*}\eta
+ \\ \\
+\dfrac{\Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Delta_n \vdash E_n : A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E : B}{\Delta_l, \Delta_1, \dots, \Delta_n, \Delta_r \vdash (\mathsf{match}\ E_1\otimes\cdots\otimes E_n\ \mathsf{as}\ a_1\otimes\cdots\otimes a_n\ \mathsf{in}\ E) = E[E_1/a_1, \dots, E_n/a_n] : B}{\otimes}\beta
+\\ \\ 
+\dfrac{\Delta \vdash E : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a : A_1 \otimes \cdots \otimes A_n, \Delta_r \vdash E' : B}{\Delta_l, \Delta, \Delta_r \vdash E'[E/a] = (\mathsf{match}\ E\ \mathsf{as}\ a_1\otimes\cdots\otimes a_n\ \mathsf{in}\ E'[(a_1\otimes\cdots\otimes a_n)/a]) : B}{\otimes}\eta
+ \\ \\
+\dfrac{\Delta \vdash E_1 : I \quad \Delta_l, \Delta_r \vdash E_2 : I \quad \Delta_l', \Delta_r' \vdash E_3 : C}{\Delta_l', \Delta_l, \Delta, \Delta_r, \Delta_r' \vdash (\mathsf{match}\ (\mathsf{match}\ E_1\ \mathsf{as}\ {*}\ \mathsf{in}\ E_2)\ \mathsf{as}\ {*}\ \mathsf{in}\ E_3) = (\mathsf{match}\ E_1\ \mathsf{as}\ {*}\ \mathsf{in}\ \mathsf{match}\ E_2\ \mathsf{as}\ {*}\ \mathsf{in}\ E_3) : C}{*}{*}\text{CC}
+ \\ \\
+\dfrac{\Delta \vdash E_1 : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E_2 : I\quad \Delta_l', \Delta_r' \vdash E_3 : C}{\Delta_l', \Delta_l, \Delta, \Delta_r, \Delta_r' \vdash (\mathsf{match}\ (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E_2)\ \mathsf{as}\ {*}\ \mathsf{in}\ E_3) \\ \qquad \qquad \qquad \quad \, = (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ \mathsf{match}\ E_2\ \mathsf{as}\ {*}\ \mathsf{in}\ E_3) : C}{\otimes}{*}\text{CC}
+ \\ \\
+\dfrac{\Delta \vdash E_1 : I \quad \Delta_l, \Delta_r \vdash E_2 : B_1 \otimes \cdots \otimes B_m \quad \Delta_l', b_1 : B_1, \dots, b_m : B_m, \Delta_r' \vdash E_3 : C}{\Delta_l', \Delta_l, \Delta, \Delta_r, \Delta_r' \vdash (\mathsf{match}\ (\mathsf{match}\ E_1\ \mathsf{as}\ {*}\ \mathsf{in}\ E_2)\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) \\ \qquad \qquad \qquad \quad \, = (\mathsf{match}\ E_1\ \mathsf{as}\ {*}\ \mathsf{in}\ \mathsf{match}\ E_2\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) : C}{*}{\otimes}\text{CC}
+ \\ \\
+\dfrac{\Delta \vdash E_1 : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E_2 : B_1 \otimes \cdots \otimes B_m \quad \Delta_l', b_1 : B_1, \dots, b_m : B_m, \Delta_r' \vdash E_3 : C}{\Delta_l', \Delta_l, \Delta, \Delta_r, \Delta_r' \vdash (\mathsf{match}\ (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E_2)\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) \\ \qquad \qquad \qquad \quad \, = (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ \mathsf{match}\ E_2\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) : C}{\otimes}{\otimes}\text{CC}
+\end{gather}$$</span><br /></p>
+<p>I did not write them, but the usual laws for equality (reflexivity and indiscernability of identicals) should be included.</p>
+<p>A theory in this language is free to introduce additional linear types and linear operations.</p>
+<h3 id="interpretation-into-a-monoidal-category">Interpretation into a monoidal category</h3>
+<p>Write |\newcommand{\den}[1]{[\![#1]\!]}\den{-}| for the (overloaded) interpretation function. Its value on primitive operations is left as a parameter.</p>
+<p>Associators for the semantic |\otimes| will be omitted below. We can arbitrarily assume a particular association of monoidal products and then the relevant associators are completely determined by the input and output types. There are multiple possible expressions for those associators, but the coherence conditions of monoidal categories guarantee that they are equal.</p>
+<h4 id="interpretation-of-linear-types">Interpretation of Linear Types</h4>
+<p><br /><span class="math display">$$\begin{align}
+\vdash A \implies &amp; \den{A} \in \mathsf{Ob}(\V) \\ \\
+\den{\Delta} =\, &amp; \den{A_1}\otimes \cdots \otimes \den{A_n} \text{ where } \Delta = a_1 : A_1, \dots, a_n : A_n \\
+\den{I} =\, &amp; I \\
+\den{A_1 \otimes \cdots \otimes A_n} =\, &amp; \den{A_1}\otimes \cdots \otimes \den{A_n} \\
+\end{align}$$</span><br /></p>
+<h4 id="interpretation-of-linear-terms">Interpretation of Linear Terms</h4>
+<p><br /><span class="math display">$$\begin{align}
+\Delta \vdash E : A \implies &amp; \den{E} \in \V(\den{\Delta}, \den{A}) \\ \\
+\den{a} =\, &amp; id_{\den{A}} \text{ where } a : A \\
+\den{*} =\, &amp; id_I \\
+\den{E_1 \otimes \cdots \otimes E_n} =\, &amp; \den{E_1} \otimes \cdots \otimes \den{E_n} \text{ where }\Delta_i \vdash E_i : A_i \\
+\den{\mathsf{match}\ E\ \mathsf{as}\ {*}\ \mathsf{in}\ E'} =\, &amp; 
+    \den{E'} \circ (id_{\den{\Delta_l}} \otimes (\lambda_{\den{\Delta_r}} \circ (\den{E} \otimes id_{\den{\Delta_r}}))) \\
+\den{\mathsf{match}\ E\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E'} =\, &amp;
+    \den{E'} \circ (id_{\den{\Delta_l}} \otimes \den{E} \otimes id_{\den{\Delta_r}}) \\
+\den{\mathsf f(E_1, \dots, E_n)} =\, &amp; \den{\mathsf f} \circ (\den{E_1} \otimes \cdots \otimes \den{E_n})
+    \text{ where }\mathsf f\text{ is an appropriately typed linear operation}
+\end{align}$$</span><br /></p>
+<p>where |\lambda_B : I \otimes B \cong B| is the left unitor.</p>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p>It would be even simpler if we talked about the internal language of a multicategory…<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p>Every monoidal category gives rise to a multicategory in this way.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_shortname = 'hedonisticlearning';
+        var disqus_identifier = '3f996120-0b87-43ac-b93d-c17395708c46';
+        var disqus_title = 'Internal Language of a Monoidal Category';
+        
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript> 
+</div>
+
+        </div><!-- /.blog-main -->
+        
+        
+      </div><!-- /.row -->
+    </div><!-- /.container -->
+
+    <footer class="blog-footer">
+      <p>Site generated by <a href="http://jaspervdj.be/hakyll">Hakyll</a></p>
+      <p>
+        <a href="#">Back to top</a>
+      </p>
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js" integrity="sha384-6ePHh72Rl3hKio4HiJ841psfsRJveeS+aLoaEf3BWfS+gTF0XdAqku2ka8VddikM" crossorigin="anonymous"></script>
+    <!-- <script type="text/javascript" src="/js/jquery.min.js"></script> -->
+    <script type="text/javascript" src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!--<script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>-->
+    <script type="text/javascript">
+        var disqus_shortname = 'hedonisticlearning';
+        (function () {
+            var s = document.createElement('script'); s.async = true;
+            s.type = 'text/javascript';
+            s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
+            (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+        }());
+    </script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_HTMLorMML.js" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script>
+    <!-- <script type="text/javascript" src="/js/MathJax-2.7.7/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script> -->
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+          extensions: ['asciimath2jax.js'],
+          asciimath2jax: {
+              delimiters: [['#','#']],
+              processClass: 'asciimath'
+          },
+          tex2jax: {
+              inlineMath: [['|','|']]
+          }
+        });
+    </script>
+  </body>
+</html>
