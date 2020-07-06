@@ -8,8 +8,327 @@
         <name>Derek Elkins</name>
         <email>derek.a.elkins+blog@gmail.com</email>
     </author>
-    <updated>2020-05-22T08:46:31Z</updated>
+    <updated>2020-07-06T05:03:27Z</updated>
     <entry>
+    <title>Enriched Indexed Categories, Syntactically</title>
+    <link href="https://derekelkins.github.io/posts/enriched-indexed-categories-syntactically.html" />
+    <id>https://derekelkins.github.io/posts/enriched-indexed-categories-syntactically.html</id>
+    <published>2020-07-05 22:03:27-07:00</published>
+    <updated>2020-07-06T05:03:27Z</updated>
+    <summary type="html"><![CDATA[<h2 id="introduction">Introduction</h2>
+<p>This is part 3 in a series. See <a href="/posts/internal-language-of-indexed-monoidal-categories.html">the previous part about internal languages for indexed monoidal categories</a> upon which this part heavily depends.</p>
+<p>In category theory, the hom-sets between two objects can often be equipped with some extra structure which is respected by identities and composition. For example, the set of group homomorphisms between two abelian groups is itself an abelian group by defining the operations pointwise. Similarly, the set of monotonic functions between two partially ordered sets (posets) is a poset again by defining the ordering pointwise. Linear functions between vector spaces form a vector space. The set of functors between small categories is a small category. Of course, the structure on the hom-sets can be different than the objects. Trivially, with the earlier examples a vector space is an abelian group, so we could say that linear functions form an abelian group instead of a vector space. Likewise groups are monoids. Less trivially, the set of relations between two sets is a partially ordered set via inclusion. There are many cases where instead of hom-sets we have hom-objects that aren’t naturally thought of as sets. For example, we can have hom-objects be non-negative (extended) real numbers from which the category laws become the laws of a generalized metric space. We can identify posets with categories who hom-objects are elements of a two element set or, even better, a two element poset with one element less than or equal to the other.</p>
+<p>This general process is called <a href="https://ncatlab.org/nlab/show/enriched+category+theory">enriching</a> a category in some other category which is almost always called |\newcommand{\V}{\mathcal V}\V| in the generic case. We then talk about having |\V|-categories and |\V|-functors, etc. In a specific case, it will be something like |\mathbf{Ab}|-categories for an |\mathbf{Ab}|-enriched category, where |\mathbf{Ab}| is the category of abelian groups. Unsurprisingly, not just <em>any</em> category will do for |\V|. However, it turns out very little structure is needed to define a notion of |\V|-category, |\V|-functor, |\V|-natural transformation, and |\V|-profunctor. The usual “baseline” is that |\V| is a <a href="https://ncatlab.org/nlab/show/monoidal+category">monoidal category</a>. As mentioned in the previous post, paraphrasing Bénabou, notions of “families of objects/arrows” are ubiquitous and fundamental in category theory. It is useful for our purposes to make this structure explicit. For very little cost, this will also provide a vastly more general notion that will readily capture enriched categories, <a href="https://ncatlab.org/nlab/show/indexed+category">indexed categories</a>, and categories that are simultaneously indexed and enriched, of which <a href="https://ncatlab.org/nlab/show/internal+category">internal categories</a> are an example. The tool for this is a <a href="https://ncatlab.org/nlab/show/Grothendieck+fibration">(Grothendieck) fibration</a> aka a fibered category or the mostly equivalent concept of an indexed category.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>To that end, instead of just a monoidal category, we’ll be using <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal categories</a>. Typically, to get an experience as much like ordinary category theory as possible, additional structure is assumed on |\V|. In particular, it is assumed to be an <a href="https://ncatlab.org/nlab/show/cosmos#indexed_bnabou_cosmoi">(indexed) cosmos</a> which means that it is an indexed symmetric monoidally closed category with indexed coproducts preserved by |\otimes| and indexed products and fiberwise finite limits and colimits (preserved by the indexed structure). This is quite a lot more structure which I’ll introduce in later parts. In this part, I’ll make no assumptions beyond having an indexed monoidal category.</p>
+<!--more-->
+<h2 id="basic-category-theory-in-indexed-monoidal-categories">Basic Category Theory in Indexed Monoidal Categories</h2>
+<p>The purpose of the machinery of the previous posts is to make this section seem boring and pedestrian. Other than being a little more explicit and formal, for most of the following concepts it will look like we’re restating the usual definitions of categories, functors, and natural transformations. The main exception is profunctors which will be presented in a quite different manner, though still in a manner that is easy to connect to the usual presentation. (We will see how to recover the usual presentation in later parts.)</p>
+<p>While I’ll start by being rather explicit about indexes and such, I will start to suppress that detail over time as most of it is inferrable. One big exception is that right from the start I’ll omit the explicit dependence of primitive terms on indexes. For example, while I’ll write |\mathsf F(\mathsf{id}) = \mathsf{id}| for the first functor law, what the syntax of the previous posts says I should be writing is |\mathsf F(s, s; \mathsf{id}(s)) = \mathsf{id}(s)|.</p>
+<p>To start, I want to introduce two different notions of |\V|-category, small |\V|-categories and large |\V|-categories, and talk about what this distinction actually means. I will proceed afterwards with the “large” notions, e.g. |\V|-functors between large |\V|-categories, as the small case will be an easy special case.</p>
+<h3 id="small-v-categories">Small |\V|-categories</h3>
+<p>The <strong>theory of a small |\V|-category</strong> consists of:</p>
+<ul>
+<li>an index type |\newcommand{\O}{\mathsf O}\O|,</li>
+<li>a linear type |\newcommand{\A}{\mathsf A}s, t : \O \vdash \A(t, s)|,</li>
+<li>a linear term |s : \O; \vdash \mathsf{id} : \A(s, s)|, and</li>
+<li>a linear term |s, u, t : \O; g : \A(t, u), f : \A(u, s) \vdash g \circ f : \A(t, s)|</li>
+</ul>
+<p>satisfying <br /><span class="math display">$$\begin{gather}
+s, t : \O; f : \A(t, s) \vdash \mathsf{id} \circ f = f = f \circ \mathsf{id} : \A(t, s)\qquad \text{and} \\ \\
+s, u, v, t : \O; h : \A(t, v), g : \A(v, u), f : \A(u, s) \vdash h \circ (g \circ f) = (h \circ g) \circ f : \A(t, s)
+\end{gather}$$</span><br /></p>
+<p>In the notation of the previous posts, I’m saying |\O : \mathsf{IxType}|, |\A : (\O, \O) \to \mathsf{Type}|, |\mathsf{id} : (s : \O;) \to \A(s, s)|, and |\circ : (s, u, t : \O; \A(t, u), \A(u, s)) \to \A(t, s)| are primitives added to the signature of the theory. I’ll continue to use the earlier, more pointwise presentation above to describe the signature.</p>
+<p>A <strong>small |\V|-category</strong> for an |\mathbf S|-indexed monoidal category |\V| is then an interpretation of this theory. That is, an object |O| of |\mathbf S| as the interpretation of |\O|, and an object |A| of |\V^{O\times O}| as the interpretation of |\A|. The interpretation of |\mathsf{id}| is an arrow |I_O \to \Delta_O^* A| of |\V^O|, where |\Delta_O : O \to O\times O| is the diagonal arrow |\langle id, id\rangle| in |\mathbf S|. The interpretation of |\circ| is an arrow |\pi_{23}^* A \otimes \pi_{12}^* A \to \pi_{13}^* A| of |\V^{O\times O \times O}| where |\pi_{ij} : X_1 \times X_2 \times X_3 \to X_i \times X_j| are the appropriate projections.</p>
+<p>Since we can prove in the internal language that the choice of |()| for |\O|, |s, t : () \vdash I| for |\A|, |s, t : (); x : I \vdash x : I| for |\mathsf{id}|, and |s, u, t : (); f : I, g: I \vdash \mathsf{match}\ f\ \mathsf{as}\ *\ \mathsf{in}\ g : I| for |\circ| satisfies the laws of the theory of a small |\V|-category, we know we have a |\V|-category which I’ll call |\mathbb I| for any |\V|.</p>
+<p>For |\V = \mathcal Fam(\mathbf V)|, |O| is a set of objects. |A| is an |(O\times O)|-indexed family of objects of |\mathbf V| which we can write |\{A(t,s)\}_{s,t\in O}|. The interpretation of |\mathsf{id}| is an |O|-indexed family of arrows of |\mathbf V|, |\{ id_s : I_s \to A(s, s) \}_{s\in O}|. Finally, the interpretation of |\circ| is a family of arrows of |\mathbf V|, |\{ \circ_{s,u,t} : A(t, u)\otimes A(u, s) \to A(t, s) \}_{s,u,t \in O}|. This is exactly the data of a (small) |\mathbf V|-enriched category. One example is when |\mathbf V = \mathbf{Cat}| which produces (strict) |2|-categories.</p>
+<p>For |\V = \mathcal Self(\mathbf S)|, |O| is an object of |\mathbf S|. |A| is an arrow of |\mathbf S| into |O\times O|, i.e. an object of |\mathbf S/O\times O|. I’ll write the object part of this as |A| as well, i.e. |A : A \to O\times O|. The idea is that the two projections are the target and source of the arrow. The interpretation of |\mathsf{id}| is an arrow |ids : O \to A| such that |A \circ ids = \Delta_O|, i.e. the arrow produced by |ids| should have the same target and source. Finally, the interpretation of |\circ| is an arrow |c| from the pullback of |\pi_2 \circ A| and |\pi_1 \circ A| to |A|. The source of this arrow is the object of composable pairs of arrows. We further require |c| to produce an arrow with the appropriate target and source of the composable pair. This is exactly the data for a category internal to |\mathbf S|. An interesting case for contrast with the previous paragraph is that a category internal to |\mathbf{Cat}| is a double category.</p>
+<p>For |\V = \mathcal Const(\mathbf V)|, the above data is exactly the data of a <a href="https://ncatlab.org/nlab/show/monoid+object">monoid object</a> in |\mathbf V|. This is a formal illustration that a (|\mathbf V|-enriched) category is just an “indexed monoid”. Indeed, |\mathcal Const(\mathbf V)|-functors will be monoid homomorphisms and |\mathcal Const(\mathbf V)|-profunctors will be double-sided monoid actions. In particular, when |\mathbf V = \mathbf{Ab}|, we get rings, ring homomorphisms, and bimodules of rings. The intuitions here are the guiding ones for the construction we’re realizing.</p>
+<p>One aspect of working in a not-necessarily-symmetric (indexed) monoidal category is the choice of the standard order of composition or diagrammatic order is not so trivial since it is not possible to even state what it means for them to be the equivalent. To be clear, this definition isn’t really taking a stance on the issue. We can interpret |\A(t, s)| as the type of arrows |s \to t| and then |\circ| will be the standard order of composition, or as the type of arrows |t \to s| and then |\circ| will be the diagrammatic order. In fact, there’s nothing in this definition that stops us from having |\A(t, s)| being the type of arrows |t \to s| while still having |\circ| be standard order composition as usual. The issue comes up only once we consider |\V|-profunctors as we will see.</p>
+<h3 id="large-v-categories">Large |\V|-categories</h3>
+<p>A <strong>large |\V|-category</strong> is a model of a theory of the following form. There is</p>
+<ul>
+<li>a collection of index types |\O_x|,</li>
+<li>for each pair of index types |\O_x| and |\O_y|, a linear type |s : \O_x, t : \O_y \vdash \A_{yx}(t, s)|,</li>
+<li>for each index type |\O_x|, a linear term |s : \O_x; \vdash \mathsf{id}_x : \A_{xx}(s, s)|, and</li>
+<li>for each triple of index types, |\O_x|, |\O_y|, and |\O_z|, a linear term |s: \O_x, u : \O_y, t : \O_z; g : \A_{zy}(t, u), f : \A_{yx}(u, s) \vdash g \circ_{xyz} f : \A_{zx}(t, s)|</li>
+</ul>
+<p>satisfying the same laws as small |\V|-categories, just with some extra subscripts. Clearly, a small |\V|-category is just a large |\V|-category where the collection of index types consists of just a single index type.</p>
+<h3 id="small-versus-large">Small versus Large</h3>
+<p>The typical way of describing the difference between small and large (|\V|-)categories would be to say something like: “By having a collection of index types in a large |\V|-category, we can have a proper class of them. In a small |\V|-category, the index type of objects is interpreted as an object in a category, and a proper class can’t be an object of a category<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.” However, for us, there’s a more directly relevant distinction. Namely, while we had a single theory of small |\V|-categories, there is no single theory of large |\V|-categories. Different large |\V|-categories correspond to models of (potentially) different theories. In other words, the notion of a small |\V|-category is able to be captured by our notion of theory but not the concept of a large |\V|-category. This extends to |\V|-functors, |\V|-natural transformations, and |\V|-profunctors. In the small case, we can define a single theory which captures each of these concepts, but that isn’t possible in the large case. In general, notions of “large” and “small” are about what we can internalize within the relevant object language, usually a set theory. Arguably, the only reason we speak of “size” and of proper classes being “large” is that the <a href="https://en.wikipedia.org/wiki/Axiom_schema_of_specification">Axiom of Specification</a> outright states that any subclass of a set is a set, so proper classes in <strong>ZFC</strong> can’t be subsets of any set. As I’ve mentioned <a href="/posts/finite.html">elsewhere</a>, you can definitely have set theories with proper classes that are contained in even finite sets, so the issue isn’t one of “bigness”.</p>
+<p>The above discussion also explains the hand-wavy word “collection”. The collection is a collection in the meta-language in which we’re discussing/formalizing the notion of theory. When working <em>within</em> the theory of a particular large |\V|-category, all the various types and terms are just available ab initio and are independent. There is no notion of “collection of types” within the theory and nothing indicating that some types are part of a “collection” with others.</p>
+<p>Another perspective on this distinction between large and small |\V|-categories is that small |\V|-categories have a <em>family</em> of arrows, identities, and compositions with respect to the notion of “family” represented by our internal language. If we hadn’t wanted to bother with formulating the internal language of an <em>indexed</em> monoidal category, we could have still defined the notion of |\V|-category with respect to the internal language of a (non-indexed) monoidal category. It’s just that all such |\V|-categories (except for monoid objects) would have to be large |\V|-categories. That is, the indexing and notion of “family” would be at a meta-level. Since most of the |\V|-categories of interest will be large (though, generally a special case called a |\V|-fibration which reins in the size a bit), it may seem that there was no real benefit to the indexing stuff. Where it comes in, or rather where small |\V|-categories come in, is that our notion of (co)complete means “has all (co)limits of <em>small</em> diagrams” and small diagrams are |\V|-functors from small |\V|-categories.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> There are several other places, e.g. the notion of presheaf, where we implicitly depend on what we mean by “small |\V|-category”. So while we won’t usually be focused on small |\V|-categories, which |\V|-categories are small impacts the structure of the whole theory.</p>
+<h3 id="v-functors">|\V|-functors</h3>
+<p>The formulation of |\V|-functors is straightforward. As mentioned before, I’ll only present the “large” version.</p>
+<p>Formally, we can’t formulate a theory of just a |\V|-functor, but rather we need to formulate a theory of “a pair of |\V|-categories and a |\V|-functor between them”.</p>
+<p>A <strong>|\V|-functor between (large) |\V|-categories |\mathcal C| and |\mathcal D|</strong> is a model of a theory consisting of a theory of a large |\V|-category, of which |\mathcal C| is a model, and a theory of a large |\V|-category which I’ll write with primes, of which |\mathcal D| is a model, and model of the following additional data:</p>
+<ul>
+<li>for each index type |\O_x|, an index type |\O’_{F_x}| and an index term, |s : \O_x \vdash \mathsf F_x(s) : \O’_{F_x}|, and</li>
+<li>for each pair of index types, |\O_x| and |\O_y|, a linear term |s : \O_x, t : \O_y; f : \A_{yx}(t, s) \vdash \mathsf F_{yx}(f) : \A’_{F_yF_x}(\mathsf F_y(t), \mathsf F_x(s))|</li>
+</ul>
+<p>satisfying <br /><span class="math display">$$\begin{gather}
+s : \O_x; \vdash \mathsf F_{xx}(\mathsf{id}_x) = \mathsf{id}'_{F_x}: \A'_{F_xF_x}(F_x(s), F_x(s))\qquad\text{and} \\
+s : \O_x, u : \O_y, t : \O_z; g : \A_{zy}(t, u), f : \A_{yx}(u, s)
+    \vdash \mathsf F_{zx}(g \circ_{xyz} f) = F_{zy}(g) \circ'_{F_xF_yF_z} F_{yx}(f) : \A'_{F_zF_x}(F_z(t), F_x(s))
+\end{gather}$$</span><br /></p>
+<p>The assignment of |\O’_{F_x}| for |\O_x| is, again, purely metatheoretical. From within the theory, all we know is that we happen to have some index types named |\O_x| and |\O’_{F_x}| and some data relating them. The fact that there is some kind of mapping of one to the other is not part of the data.</p>
+<p>Next, I’ll define <strong>|\V|-natural transformations</strong> . As before, what we’re really doing is defining |\V|-natural transformations as a model of a theory of “a pair of (large) |\V|-categories with a pair of |\V|-functors between them and a |\V|-natural transformation between those”. As before, I’ll use primes to indicate the types and terms of the second of each pair of subtheories. Unlike before, I’ll only mention what is added which is:</p>
+<ul>
+<li>for each index type |\O_x|, a linear term |s : \O_x; \vdash \tau_x : \A’_{F’_xF_x}(\mathsf F’_x(s), \mathsf F_x(s))|</li>
+</ul>
+<p>satisfying <br /><span class="math display">$$\begin{gather}
+s : \O_x, t : \O_y; f : \A_{yx}(t, s)
+    \vdash \mathsf F'_{yx}(f) \circ'_{F_xF'_xF'_y} \tau_x = \tau_y \circ'_{F_xF_yF'_y} \mathsf F_{yx}(f) : \A'_{F'_yF_x}(\mathsf F'_y(t), \mathsf F_x(s))
+\end{gather}$$</span><br /></p>
+<p>In practice, I’ll suppress the subscripts on all but index types as the rest are inferrable. This makes the above equation the much more readable <br /><span class="math display">$$\begin{gather}
+s : \O_x, t : \O_y; f : \A(t, s)
+    \vdash \mathsf F'(f) \circ' \tau = \tau \circ' \mathsf F(f) : \A'(\mathsf F'(t), \mathsf F(s))
+\end{gather}$$</span><br /></p>
+<h3 id="v-profunctors">|\V|-profunctors</h3>
+<p>Here’s where we need to depart from the usual story. In the usual story, a |\mathbf V|-enriched profunctor |\newcommand{\proarrow}{\mathrel{-\!\!\!\mapsto}} P : \mathcal C \proarrow \mathcal D| is a |\mathbf V|-enriched functor |P : \mathcal C\otimes\mathcal D^{op}\to\mathbf V| (or, often, the opposite convention is used |P : \mathcal C^{op}\otimes\mathcal D \to \mathbf V|). There are many problems with this definition in our context.</p>
+<ol type="1">
+<li>Without symmetry, we have no definition of opposite category.</li>
+<li>Without symmetry, the tensor product of |\mathbf V|-enriched categories doesn’t make sense.</li>
+<li>|\mathbf V| is not itself a |\mathbf V|-enriched category, so it doesn’t make sense to talk about |\mathbf V|-enriched functors into it.</li>
+<li>Even if it was, we’d need some way of converting between arrows of |\mathbf V| as a category and arrows of |\mathbf V| as a |\mathbf V|-enriched category.</li>
+<li>The equation |P(g \circ f, h \circ k) = P(g, k) \circ P(f, h)| requires symmetry. (This is arguably 2 again.)</li>
+</ol>
+<p>All of these problems are solved when |\mathbf V| is a symmetric monoidally closed category.</p>
+<p>Alternatively, we can reformulate the notion of a |\V|-profunctor so that it works in our context and is equivalent to the usual one when it makes sense.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> To this end, at a low level a |\mathbf V|-enriched profunctor is a family of arrows <br /><span class="math display">$$\begin{gather}P : \mathcal C(t, s)\otimes\mathcal D(s', t') \to [P(s, s'), P(t, t')]\end{gather}$$</span><br /> which satisfies <br /><span class="math display">$$\begin{gather}P(g \circ f, h \circ k)(p) = P(g, k)(P(f, h)(p))\end{gather}$$</span><br /> in the internal language of a symmetric monoidally closed category among other laws. We can uncurry |P| to eliminate the need for closure, getting <br /><span class="math display">$$\begin{gather}P : \mathcal C(t, s)\otimes \mathcal D(s', t')\otimes P(s, s') \to P(t, t')\end{gather}$$</span><br /> satisfying <br /><span class="math display">$$\begin{gather}P(g \circ f, h \circ k, p) = P(g, k, P(f, h, p))\end{gather}$$</span><br /> We see that we’re always going to need to permute |f| and |h| past |k| unless we move the third argument to the second producing the nice <br /><span class="math display">$$\begin{gather}P : \mathcal C(t, s)\otimes P(s, s') \otimes \mathcal D(s', t') \to P(t, t')\end{gather}$$</span><br /> and the law <br /><span class="math display">$$\begin{gather}P(g \circ f, p, h \circ k) = P(g, P(f, p, h), k)\end{gather}$$</span><br /> which no longer requires symmetry. This is also where the order of the arguments of |\circ| drives the order of the arguments of |\V|-profunctors.</p>
+<p>A <strong>|\V|-profunctor</strong>, |P : \mathcal C \proarrow \mathcal D|, is a model of the theory (containing subtheories for |\mathcal C| and |\mathcal D| etc. as in the |\V|-functor case) having:</p>
+<ul>
+<li>for each pair of index types |\O_x| and |\O’_{x’}|, a linear type |s : \O_x, t : \O’_{x’} \vdash \mathsf P_{x’x}(t, s)|, and</li>
+<li>for each quadruple of index types |\O_x|, |\O_y|, |\O’_{x’}|, and |\O’_{y’}|, a linear term |s : \O_x, s’ : \O’_{x’}, t : \O_y, t’ : \O’_{y’}; f : \A_{yx}(t, s), p : \mathsf P_{xx’}(s, s’), h : \A’_{x’y’}(s’, t’) \vdash \mathsf P_{yxx’y’}(f, p, h) : \mathsf P_{yy’}(t, t’)|</li>
+</ul>
+<p>satisfying <br /><span class="math display">$$\begin{align}
+ &amp; s : \O_x, s' : \O'_{x'}; p : \mathsf P(s, s')
+    \vdash \mathsf P(\mathsf{id}, p, \mathsf{id}') = p : \mathsf P(s, s') \\ \\
+ &amp; s : \O_x, s' : \O'_{x'}, u : \O_y, u' : \O'_{y'}, t : \O_z, t' : \O'_{z'}; \\
+ &amp;  g : \A(t, u), f : \A(u, s), p : \mathsf P(s, s'), h : \A'(s', u'), k : \A'(u', t') \\
+    \vdash\  &amp; \mathsf P(g \circ f, p, h \circ' k) = \mathsf P(g, \mathsf P(f, p, h), k) : \mathsf P(t, t')
+\end{align}$$</span><br /></p>
+<p>This can also be equivalently presented as a pair of a left and a right action satisfying <a href="https://en.wikipedia.org/wiki/Bimodule#Definition">bimodule laws</a>. We’ll make the following definitions |\mathsf P_l(f, p) = \mathsf P(f, p, \mathsf {id})| and |\mathsf P_r(p, h) = \mathsf P(\mathsf{id}, p ,h)|.</p>
+<p>A <strong>|\V|-presheaf</strong> on |\mathcal C| is a |\V|-profunctor |P : \mathbb I \proarrow \mathcal C|. Similarly, a <strong>|\V|-copresheaf</strong> on |\mathcal C| is a |\V|-profunctor |P : \mathcal C \proarrow \mathbb I|.</p>
+<p>Of course, we have the fact that the term <br /><span class="math display">$$\begin{gather}
+s : \O_x, t : \O_y, s' : \O_z, t' : \O_w; h : \A(t, s), g : \A(s, s'), f : \A(s', t')
+    \vdash h \circ g \circ f : \A(t, t')
+\end{gather}$$</span><br /> witnesses the interpretation of |\A| as a |\V|-profunctor |\mathcal C \proarrow \mathcal C| for any |\V|-category, |\mathcal C|, which we’ll call the <strong>hom |\V|-profunctor</strong>. More generally, given a |\V|-profunctor |P : \mathcal C \proarrow \mathcal D|, and |\V|-functors |F : \mathcal C’ \to \mathcal C| and |F’ : \mathcal D’ \to \mathcal D|, we have the |\V|-profunctor |P(F, F’) : \mathcal C’ \proarrow \mathcal D’| defined as <br /><span class="math display">$$\begin{gather}
+s : \O_x, s' : \O'_{x'}, t : \O_y, t' : \O'_{y'}; f : \A(t, s), p : \mathsf P(\mathsf F(s), \mathsf F'(s')), f' : \A'(s', t')
+    \vdash \mathsf P(\mathsf F(f), p, \mathsf F'(f')) : \mathsf P(\mathsf F(t), \mathsf F'(t'))
+\end{gather}$$</span><br /> In particular, we have the <strong>representable |\V|-profunctors</strong> when |P| is the hom |\V|-profunctor and either |F| or |F’| is the identity |\V|-functor, e.g. |\mathcal C(Id, F)| or |\mathcal C(F, Id)|.</p>
+<h3 id="multimorphisms">Multimorphisms</h3>
+<p>There’s a natural notion of morphism of |\V|-profunctors which we could derive either via passing the notion of natural transformation of the bifunctorial view through the same reformulations as above, or by generalizing the notion of a bimodule homomorphism. This would produce a notion like: a |\V|-natural transformation from |\alpha : P \to Q| is a |\alpha : P(t, s) \to Q(t, s)| satisfying |\alpha(P(f, p, h)) = Q(f, \alpha(p), h)|. While there’s nothing wrong with this definition, it doesn’t quite meet our needs. One way to see this is that it would be nice to have a bicategory whose |0|-cells were |\V|-categories, |1|-cells |\V|-profunctors, and |2|-cells |\V|-natural transformations as above. The problem there isn’t the |\V|-natural transformations but the |1|-cells. In particular, we don’t have composition of |\V|-profunctors. In the analogy with bimodules, we don’t have tensor products so we can’t reduce multilinear maps to linear maps; therefore, linear maps don’t suffice, and we really want a notion of multilinear maps.</p>
+<p>So, instead of a bicategory what we’ll have is a virtual bicategory (or, more generally, a <a href="https://ncatlab.org/nlab/show/virtual+double+category">virtual double category</a>). A virtual bicategory is to a bicategory what a multicategory is to a monoidal category, i.e. multicategories are “virtual monoidal categories”. The only difference between a virtual bicategory and a multicategory is that instead of our multimorphisms having arbitrary lists of objects as their sources, our “objects” (|1|-cells) themselves have sources and targets (|0|-cells) and our multimorphisms (|2|-cells) have <em>composable sequences</em> of |1|-cells as their sources.</p>
+<p>A <strong>|\V|-multimorphism</strong> from a composable sequence of |\V|-profunctors |P_1, \dots, P_n| to the |\V|-profunctor |Q| is a model of the theory consisting of the various necessary subtheories and:</p>
+<ul>
+<li>a linear term, |s_0 : \O_{x_0}^0, \dots, s_n : \O_{x_n}^n; p_1 : \mathsf P_{x_0x_1}^1(s_0, s_1), \dots, p_n : \mathsf P_{x_{n-1}x_n}^n(s_{n-1}, s_n) \vdash \tau_{x_0\cdots x_n}(p_1, \dots, p_n) : \mathsf Q_{x_0x_n}(s_0, s_n)|</li>
+</ul>
+<p>satisfying <br /><span class="math display">$$\begin{align}
+&amp; t, s_0 : \O^0, \dots, s_n : \O^n;
+    f : \A^0(t, s_0), p_1 : \mathsf P^1(s_0, s_1), \dots, p_n : \mathsf P^n(s_{n-1}, s_n) \\
+    \vdash\ &amp; \tau(\mathsf P_l^0(f, p_1), \dots, p_n) = \mathsf Q_l(f, \tau(p_1, \dots, p_n)) : \mathsf Q(t, s_n) \\ \\
+&amp; s_0 : \O^0, \dots, s_n, s : \O^n;
+    p_1 : \mathsf P^1(s_0, s_1), \dots, p_n : \mathsf P^n(s_{n-1}, s_n), f : \A^n(s_n, s) \\
+    \vdash\ &amp; \tau(p_1, \dots, \mathsf P_r^n(p_n, f)) = \mathsf Q_r(\tau(p_1, \dots, p_n), f) : \mathsf Q(s_0, s) \\ \\
+&amp; s_0 : \O^0, \dots, s_n : \O^n; \\
+    &amp; p_1 : \mathsf P^1(s_0, s_1), \dots, p_i : \mathsf P^i(s_{i-1}, s_i), f : \A^i(s_i, s_{i+1}),
+      p_{i+1} : \mathsf P^{i+1}(s_i, s_{i+1}), \dots, p_n : \mathsf P^n(s_{n-1}, s_n) \\
+    \vdash\ &amp; \tau(p_1, \dots, \mathsf P_r^i(p_i, f), p_{i+1}, \dots, p_n) = \tau(p_1, \dots, p_i, \mathsf P_l^{i+1}(f, p_{i+1}) \dots, p_n) : \mathsf Q(s_0, s_n)
+\end{align}$$</span><br /> except for the |n=0| case in which case the only law is <br /><span class="math display">$$\begin{gather}
+t, s : \O^0; f : \A^0(t, s) \vdash \mathsf Q_l(f, \tau()) = \mathsf Q_r(\tau(), f) : \mathsf Q(t, s)
+\end{gather}$$</span><br /></p>
+<p>The laws involving the action of |\mathsf Q| are called <strong>external equivariance</strong>, while the remaining law is called <strong>internal equivariance</strong>. We’ll write |\V\mathbf{Prof}(P_1, \dots, P_n; Q)| for the set of |\V|-multimorphisms from the composable sequence of |\V|-profunctors |P_1, \dots, P_n| to the |\V|-profunctor |Q|.</p>
+<p>As with multilinear maps, we can characterize composition via a universal property. Write |Q_1\diamond\cdots\diamond Q_n| for the <strong>composite |\V|-profunctor</strong> (when it exists) of the composable sequence |Q_1, \dots, Q_n|. We then have for any pair of composable sequences |R_1, \dots, R_m| and |S_1, \dots, S_k| which compose with |Q_1, \dots, Q_n|, <br /><span class="math display">$$\begin{gather}
+\V\mathbf{Prof}(R_1,\dots, R_m, Q_1 \diamond \cdots \diamond Q_n, S_1, \dots, S_k; -)
+    \cong \V\mathbf{Prof}(R_1,\dots, R_m, Q_1, \dots, Q_n, S_1, \dots, S_k; -)
+\end{gather}$$</span><br /> where the forward direction is induced by precomposition with a |\V|-multimorphism |Q_1, \dots, Q_n \to Q_1 \diamond \cdots \diamond Q_n|. A |\V|-multimorphism with this property is called <strong>opcartesian</strong>. The |n=0| case is particularly important and, for a |\V|-category |\mathcal C|, produces the <strong>unit |\V|-profunctor</strong>, |U_\mathcal C : \mathcal C \proarrow \mathcal C| as the composite of the empty sequence. When we have all composites, |\V\mathbf{Prof}| becomes an actual bicategory rather than a virtual bicategory. |\V\mathbf{Prof}| always has all units, namely the hom |\V|-profunctors. Much like we can define the tensor product of modules by quotienting the tensor product of their underlying abelian groups by internal equivariance, we will find that we can make composites when we have enough (well-behaved) colimits<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>.</p>
+<p>Related to composites, we can talk about left/right closure of |\V\mathbf{Prof}|. In this case we have the natural isomorphisms: <br /><span class="math display">$$\begin{gather}
+\V\mathbf{Prof}(Q_1,\dots, Q_n, R; S) \cong \V\mathbf{Prof}(Q_1, \dots, Q_n; R \triangleright S) \\
+\V\mathbf{Prof}(R, Q_1, \dots, Q_n; S) \cong \V\mathbf{Prof}(Q_1, \dots, Q_n;S \triangleleft R)
+\end{gather}$$</span><br /> Like composites, this merely characterizes these constructs; they need not exist in general. These will be important when we talk about Yoneda and (co)limits in |\V|-categories.</p>
+<p>A |\V|-natural transformation |\alpha : F \to G : \mathcal C \to \mathcal D| is the same as |\alpha\in\V\mathbf{Prof}(;\mathcal D(G, F))|.</p>
+<h3 id="example-proof">Example Proof</h3>
+<p>Just as an example, let’s prove a basic fact about categories for arbitrary |\V|-categories. This will use an informal style.</p>
+<p>The fact will be that full and faithful functors reflect isomorphisms. Let’s go through the typical proof for the ordinary category case.</p>
+<p>Suppose we have an natural transformation |\varphi : \mathcal D(FA, FB) \to \mathcal C(A, B)| natural in |A| and |B| such that |\varphi| is an inverse to |F|, i.e. the action of the functor |F| on arrows. If |Ff \circ Fg = id| and |Fg \circ Ff = id|, then by the naturality of |\varphi|, |\varphi(id) = \varphi(Ff \circ id \circ Fg) = f \circ \varphi(id) \circ g| and similarly with |f| and |g| switched. We now just need to show that |\varphi(id) = id| but |id = F(id)|, so |\varphi(id) = \varphi(F(id)) = id|. |\square|</p>
+<p>Now in the internal language. We’ll start with the theory of a |\V|-functor, so we have |\O|, |\O’|, |\A|, |\A’|, and |\mathsf F|. While the previous paragraph talks about a natural transformation, we can readily see that it’s really a multimorphism. In our case, it is a |\V|-multimorphism |\varphi| from |\A’(\mathsf F, \mathsf F)| to |\A|. Before we do that though, we need to show that |\mathsf F| itself is a |\V|-multimorphism. This corresponds to the naturality of the action on arrows of |F| which we took for granted in the previous paragraph. This is quickly verified: the external equivariance equations are just the functor law for composites. The additional data we have is two linear terms |\mathsf f| and |\mathsf g| such that |\mathsf F(\mathsf f) \circ \mathsf F(\mathsf g) = \mathsf{id}| and |\mathsf F(\mathsf g) \circ \mathsf F(\mathsf f) = \mathsf{id}|. Also, |\varphi(\mathsf F(h)) = h|. The result follows through almost identically to the previous paragraph. |\varphi(\mathsf{id}) = \varphi(\mathsf F(\mathsf f) \circ \mathsf F(\mathsf g)) = \varphi(\mathsf F(\mathsf f) \circ \mathsf{id} \circ \mathsf F(\mathsf g))|, we apply external equivariance twice to get |\mathsf f \circ \varphi(\mathsf{id}) \circ \mathsf g|. The functor law for |\mathsf{id}| gives |\varphi(\mathsf{id}) = \varphi(\mathsf F(\mathsf{id})) = \mathsf{id}|. A quick glance verifies that all these equations use their free variables linearly as required. |\square|</p>
+<p>As a warning, in the above |\mathsf f| and |\mathsf g| are not free variables but constants, i.e. primitive linear terms. Thus there is no issue with an equation like |\mathsf F(\mathsf f) \circ \mathsf F(\mathsf g) = \mathsf{id}| as both sides have no free variables.</p>
+<p>This is a very basic result but, again, the payoff here is how boring and similar to the usual case this is. For contrast, the definition of an internal profunctor is given <a href="https://ncatlab.org/nlab/show/internal+profunctor">here</a>. This definition is easier to connect to our notion of |\V|-presheaf, specifically a |\mathcal Self(\mathbf S)|-presheaf, than it is to the usual |\mathbf{Set}|-valued functor definition. While not hard, it would take me a bit of time to even formulate the above proposition, and a proof in terms of the explicit definitions would be hard to recognize as just the ordinary proof.</p>
+<p>For fun, let’s figure out what the |\mathcal Const(\mathbf{Ab})| case of this result says explicitly. A |\mathcal Const(\mathbf{Ab})|-category is a ring, a |\mathcal Const(\mathbf{Ab})|-functor is a ring homomorphism, and a |\mathcal Const(\mathbf{Ab})|-profunctor is a bimodule. Let |R| and |S| be rings and |f : R \to S| be a ring homomorphism. An isomorphism in |R| viewed as a |\mathcal Const(\mathbf{Ab})|-category is just an invertible element. Every ring, |R|, is an |R|-|R|-bimodule. Given any |S|-|S|-bimodule |P|, we have an |R|-|R|-bimodule |f^*(P)| via restriction of scalars, i.e. |f^*(P)| has the same elements as |P| and for |p \in f^*(P)|, |rpr’ = f(r)pf(r’)|. In particular, |f| gives rise to a bimodule homomorphism, i.e. a linear function, |f : R \to f^*(S)| which corresponds to its action on arrows from the perspective of |f| as a |\mathcal Const(\mathbf{Ab})|-functor. If this linear transformation has an inverse, then the above result states that when |f(r)| is invertible so is |r|. So to restate this all in purely ring theoretic terms, given a ring homomorphism |f : R \to S| and an abelian group homomorphism |\varphi : S \to R| satisfying |\varphi(f(rst)) = r\varphi(f(s))t| and |\varphi(f(r)) = r|, then if |f(r)| is invertible so is |r|.</p>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p>Indexed categories are equivalent to <em>cloven</em> fibrations and, if you have the Axiom of Choice, all fibrations can be cloven. Indexed categories can be viewed as <em>presentations</em> of fibrations.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p>With a good understanding of what a class is, it’s clear that it doesn’t even make sense to have a proper class be an object. In frameworks with an explicit notion of "class", this is often manifested by saying that a class that is an element of another class is a set (and thus not a proper class).<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3" role="doc-endnote"><p>This suggests that it might be interesting to consider categories that are (co)complete with respect to this monoid notion of “small”. I don’t think I’ve ever seen a study of such categories. (Co)Limits of monoids are <a href="https://doi.org/10.1007/BFb0084220">not trivial</a>.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4" role="doc-endnote"><p>This is one of the main things I like about working in weak foundations. It forces you to come up with better definitions that make it clear what is and is not important and eliminates coincidences. Of course, it also produces definitions and theorems that are inherently more general too.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5" role="doc-endnote"><p>This connection isn’t much of a surprise as the tensor product of modules is exactly the (small) |\mathcal Const(\mathbf{Ab})| case of this.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>]]></summary>
+</entry>
+<entry>
+    <title>Internal Language of Indexed Monoidal Categories</title>
+    <link href="https://derekelkins.github.io/posts/internal-language-of-indexed-monoidal-categories.html" />
+    <id>https://derekelkins.github.io/posts/internal-language-of-indexed-monoidal-categories.html</id>
+    <published>2020-07-05 19:00:56-07:00</published>
+    <updated>2020-07-06T02:00:56Z</updated>
+    <summary type="html"><![CDATA[<h2 id="introduction">Introduction</h2>
+<p>This is part 2 in a series. See <a href="/posts/internal-language-of-a-monoidal-category.html">the previous part about internal languages for (non-indexed) monoidal categories</a>. The main application I have in mind – enriching in indexed monoidal categories – is covered in the <a href="/posts/enriched-indexed-categories-syntactically.html">next post</a>.</p>
+<p>As Jean Bénabou pointed out in <a href="http://dx.doi.org/10.2307/2273784">Fibered Categories and the Foundations of Naive Category Theory</a> (<a href="https://pdfs.semanticscholar.org/a7ba/3c5b0431adf514595d53ea393910c9230745.pdf">PDF</a>) notions of “families of objects/arrows” are ubiquitous and fundamental in category theory. One of the more noticeable places early on is in the definition of a natural transformation as a family of arrows. However, even in the definition of category, identities and compositions are families of functions, or, in the enriched case, arrows of |\mathbf V|. From a foundational perspective, one place where this gets really in-your-face is when trying to formalize the notion of (co)completeness. It is straightforward to make a first-order theory of a finitely complete category, e.g. <a href="https://ncatlab.org/nlab/show/fully+formal+ETCS#the_theory_of_finitely_complete_categories">this one</a>. For arbitrary products and thus limits, we need to talk about families of objects. To formalize the usual meaning of this in a first-order theory would require attaching an entire first-order theory of sets, e.g. <strong>ZFC</strong>, to our notion of complete category. If your goals are of a foundational nature like Bénabou’s were, then this is unsatisfactory. Instead, we can abstract out what we need of the notion of “family”. The result turns out to be equivalent to the notion of a <a href="https://ncatlab.org/nlab/show/Grothendieck+fibration">fibration</a>.</p>
+<p>My motivations here are not foundational but leaving the notion of “family” entirely meta-theoretical means not being able to talk about it except in the semantics. Bénabou’s comment suggests that at the semantic level we want not just a monoidal category, but a fibration of monoidal categories<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. At the syntactic level, it suggests that there should be a built-in notion of “family” in our language. We accomplish both of these goals by formulating the internal language of an <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal category</a>.</p>
+<p>As a benefit, we can generalize to other notions of “family” than set-indexed families. We’ll clearly be able to formulate the notion of an <a href="https://ncatlab.org/nlab/show/enriched+category">enriched category</a>. It’s also clear that we’ll be able to formulate the notion of an <a href="https://ncatlab.org/nlab/show/indexed+category">indexed category</a>. Of course, we’ll also be able to formulate the notion of a category that is both enriched and indexed which includes the important special case of an <a href="https://ncatlab.org/nlab/show/internal+category">internal category</a>. We can also consider cases with trivial indexing which, in the unenriched case, will give us monoids, and in the |\mathbf{Ab}|-enriched case will give us rings.</p>
+<!--more-->
+<h2 id="indexed-monoidal-categories">Indexed Monoidal Categories</h2>
+<p>Following Shulman’s <a href="https://arxiv.org/abs/1212.3914">Enriched indexed categories</a>, let |\mathbf{S}| be a category with a cartesian monoidal structure, i.e. finite products. Then an |\mathbf{S}|-indexed monoidal category is simply a pseudofunctor |\newcommand{\V}{\mathcal V}\V : \mathbf{S}^{op} \to \mathbf{MonCat}|. A <a href="https://ncatlab.org/nlab/show/pseudofunctor">pseudofunctor</a> is like a functor except that the functor laws only hold up to isomorphism, e.g. |\V(id)\cong id|. |\mathbf{MonCat}| is the |2|-category of monoidal categories, <a href="https://ncatlab.org/nlab/show/monoidal+functor">strong monoidal functors</a><a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>, and <a href="https://ncatlab.org/nlab/show/monoidal+natural+transformation">monoidal natural transformations</a>. We’ll write |\V(X)| as |\V^X| and |\V(f)| as |f^*|. We’ll never have multiple relevant indexed monoidal categories so this notation will never be ambiguous. We’ll call the categories |\V^X| <strong>fiber categories</strong> and the functors |f^*| <strong>reindexing functors</strong>. The cartesian monoidal structure on |\mathbf S| becomes relevant when we want to equip the total category, |\int\V|, (computed via the <a href="https://ncatlab.org/nlab/show/Grothendieck+construction">Grothendieck construction</a> in the usual way) with a monoidal structure. In particular, the tensor product of |A \in \V^X| and |B \in \V^Y| is an object |A\otimes B \in \V^{X\times Y}| calculated as |\pi_1^*(A) \otimes_{X\times Y} \pi_2^*(B)| where |\otimes_{X\times Y}| is the monoidal tensor in |\V^{X\times Y}|. The unit, |I|, is the unit |I_1 \in \V^1|.</p>
+<p>The two main examples are: |\mathcal Fam(\mathbf V)| where |\mathbf V| is a (non-indexed) monoidal category and |\mathcal Self(\mathbf S)| where |\mathbf S| is a category with finite limits. |\mathcal Fam(\mathbf V)| is a |\mathbf{Set}|-indexed monoidal category with |\mathcal Fam(\mathbf V)^X| defined as the set of |X|-indexed families of objects of |\mathbf V|, families of arrows between them, and an index-wise monoidal product. We can identify |\mathcal Fam(\mathbf V)^X| with the functor category |[DX, \mathbf V]| where |D : \mathbf{Set} \to \mathbf{cat}| takes a set |X| to a small discrete category. Enriching in indexed monoidal category |\mathcal Fam(\mathbf V)| will be equivalent to enriching in the non-indexed monoidal category |\mathbf V|, i.e. the usual notion of enrichment in a monoidal category. |\mathcal Self(\mathbf S)| is an |\mathbf S|-indexed monoidal category and |\mathcal Self(\mathbf S)^X| is the slice category |\mathbf S/X| with its cartesian monoidal structure. |f^*| is the pullback functor. |\mathcal Self(\mathbf S)|-enriched categories are categories internal to |\mathbf S|. A third example we’ll find interesting is |\mathcal Const(\mathbf V)| for a (non-indexed) monoidal category, |\mathbf V|, which is a |\mathbf 1|-indexed monoidal category, which corresponds to an object of |\mathbf{MonCat}|, namely |\mathbf V|.</p>
+<h2 id="the-internal-language-of-indexed-monoidal-categories">The Internal Language of Indexed Monoidal Categories</h2>
+<p>This builds on the internal language of a monoidal category described in the previous post. We’ll again have <strong>linear types</strong> and <strong>linear terms</strong> which will be interpreted into objects and arrows in the fiber categories. To indicate the dependence on the indexing, we’ll use two contexts: |\Gamma| will be an <strong>index context</strong> containing <strong>index types</strong> and <strong>index variables</strong>, which will be interpreted into objects and arrows of |\mathbf S|, while |\Delta|, the <strong>linear context</strong>, will contain linear types and linear variables as before except now linear types will be able to depend on <strong>index terms</strong>. So we’ll have judgements that look like: <br /><span class="math display">$$\begin{gather}
+\Gamma \vdash A \quad \text{and} \quad \Gamma; \Delta \vdash E : B
+\end{gather}$$</span><br /> The former indicates that |A| is a linear type indexed by the index variables of |\Gamma|. The latter states that |E| is a linear term of linear type |B| in the linear context |\Delta| indexed by the index variables of |\Gamma|. We’ll also have judgements for index types and index terms: <br /><span class="math display">$$\begin{gather}
+\vdash X : \square \quad \text{and} \quad \Gamma \vdash E : Y
+\end{gather}$$</span><br /> The former asserts that |X| is an index type. The latter asserts that |E| is an index term of index type |Y| in the index context |\Gamma|.</p>
+<p>Since each fiber category is monoidal, we’ll have all the rules from before just with an extra |\Gamma| hanging around. Since our indexing category, |\mathbf S|, is also monoidal, we’ll also have copies of these rules at the level of indexes. However, since |\mathbf S| is <em>cartesian</em> monoidal, we’ll also have the structural rules of weakening, exchange, and contraction for index terms and types. To emphasize the cartesian monoidal structure of indexes, I’ll use the more traditional Cartesian product and tuple notation: |\times| and |(E_1, \dots, E_n)|. This notation allows a bit more uniformity as the |n=0| case can be notated by |()|.</p>
+<p>The only really new rule is the rule that allows us to move linear types and terms from one index context to another, i.e. the rule that would correspond to applying a reindexing functor. I call this rule Reindex and, like Cut, it will be witnessed by substitution. Like Cut, it will also be a rule which we can eliminate. At the semantic level, this elimination corresponds to the fact that to understand the intepreration of any particular (linear) term, we can first reindex <em>everything</em>, i.e. all the intepretations of all subterms, into the same fiber category and then we can work entirely within that one fiber category. The Reindex rule is: <br /><span class="math display">$$\begin{gather}
+\dfrac{\Gamma \vdash E : X \quad \Gamma', x : X; a_1 : A_1, \dots, a_n : A_n \vdash E' : B}{\Gamma',\Gamma; a_1 : A_1[E/x], \dots, a_n : A_n[E/x] \vdash E'[E/x] : B[E/x]}\text{Reindex}
+\end{gather}$$</span><br /></p>
+<p>By representing reindexing by syntactic substitution, we’re requiring the semantics of (linear) type and term formation operations to be respected by reindexing functors. This is exactly the right thing to do as the appropriate notion of, say, indexed coproducts, which would correspond to sum types, is coproducts in each fiber category which are preserved by reindexing functors.</p>
+<p><a href="#rules-for-an-indexed-monoidal-category">Below</a> I provide a listing of rules and equations.</p>
+<h2 id="relation-to-parameterized-and-dependent-types">Relation to Parameterized and Dependent Types</h2>
+<p><small>None of this section is necessary for anything else.</small></p>
+<p>This notion of (linear) types and terms being indexed by other types and terms is reminiscent of parametric types or dependent types. The machinery of indexed/fibered categories is also commonly used in the categorical semantics of parameterized and dependent types. However, there are important differences between those cases and our case.</p>
+<p>In the case of parameterized types, we have types and terms that depend on other types. In this case, we have kinds, which are “types of types”, which classify types which in turn classify terms. If we try to set up an analogy to our situation, index types would correspond to kinds and index terms would correspond to types. The most natural thing to continue would be to have linear terms correspond to terms, but we start to see the problem. Linear terms are classified by linear types, but linear types are <em>not</em> index terms. They don’t even induce index terms. In the categorical semantics of parameterized types, this identification of types with (certain) expressions classified by kinds is handled by the notion of a generic object. A generic object corresponds to the kind |\mathsf{Type}| (what Haskell calls <code>*</code>). The assumption of a generic object is a rather strong assumption and one that none of our example indexed monoidal categories support in general.</p>
+<p>A similar issue occurs when we try to make an analogy to dependent types. The defining feature of a dependent type system is that types can depend on terms. The problem with such a potential analogy is that linear types and terms do not induce index types and terms. A nice way to model the semantics of dependent types is the notion of a <a href="https://ncatlab.org/nlab/show/categorical+model+of+dependent+types#comprehension_categories">comprehension category</a>. This, however, is additional structure beyond what we are given by an indexed monoidal category. However, comprehension categories will implicitly come up later when we talk about adding |\mathbf S|-indexed (co)products. These comprehension categories will share the same index category as our indexed monoidal categories, namely |\mathbf S|, but will have different total categories. Essentially, a comprehension category shows how objects (and arrows) of a total category can be represented in the index category. We can then talk about having (co)products in a different total category with same index category with respect to those objects picked out by the comprehension category. We get dependent types in the case where the total categories are the same. (More precisely, the fibrations are the same.) Sure enough, we will see that when |\mathcal Self(\mathbf S)| has |\mathbf S|-indexed products, then |\mathbf S| is, indeed, a model of a dependent type theory. In particular, it is <a href="https://ncatlab.org/nlab/show/locally+cartesian+closed+category">locally cartesian closed</a>.</p>
+<h2 id="rules-for-an-indexed-monoidal-category">Rules for an Indexed Monoidal Category</h2>
+<p><br /><span class="math display">$$\begin{gather}
+\dfrac{\vdash X : \square}{x : X \vdash x : X}\text{IxAx} \qquad
+\dfrac{\Gamma\vdash E : X \quad \Gamma', x : X \vdash E': Y}{\Gamma',\Gamma \vdash E'[E/x] : Y}\text{IxCut}
+ \\ \\
+\dfrac{\vdash Y : \square \quad \Gamma\vdash E : X}{\Gamma, y : Y \vdash E : X}\text{Weakening},\ y\text{ fresh} \qquad
+\dfrac{\Gamma, x : X, y : Y, \Gamma' \vdash E : Z}{\Gamma, y : Y, x : X, \Gamma' \vdash E : Z}\text{Exchange} \qquad
+\dfrac{\Gamma, x : X, y : Y \vdash E : Z}{\Gamma, x : X \vdash E[x/y] : Z}\text{Contraction}
+ \\ \\
+\dfrac{\mathsf X : \mathsf{IxType}}{\vdash \mathsf X : \square}\text{PrimIxType} \qquad
+\dfrac{\vdash X_1 : \square \quad \cdots \quad \vdash X_n : \square}{\vdash (X_1, \dots, X_n) : \square}{\times_n}\text{F}
+ \\ \\
+\dfrac{\Gamma \vdash E_1 : X_1 \quad \cdots \quad \Gamma \vdash E_n : X_n \quad \mathsf F : (X_1, \dots, X_n) \to Y}{\Gamma \vdash \mathsf F(E_1, \dots, E_n) : Y}\text{PrimIxTerm}
+ \\ \\
+\dfrac{\Gamma_1 \vdash E_1 : X_1 \quad \cdots \quad \Gamma_n \vdash E_n : X_n}{\Gamma_1,\dots,\Gamma_n \vdash (E_1, \dots, E_n) : (X_1, \dots, X_n)}{\times_n}\text{I} \qquad
+\dfrac{\Gamma \vdash E : (X_1, \dots, X_n) \quad x_1 : X_1, \dots, x_n : X_n, \Gamma' \vdash E' : Y}{\Gamma, \Gamma' \vdash \mathsf{match}\ E\ \mathsf{as}\ (x_1, \dots, x_n)\ \mathsf{in}\ E' : Y}{\times_n}\text{E}
+ \\ \\
+\dfrac{\Gamma \vdash E_1 : X_1 \quad \cdots \quad \Gamma \vdash E_n : X_n \quad \mathsf A : (X_1, \dots, X_n) \to \mathsf{Type}}{\Gamma \vdash \mathsf A(E_1, \dots, E_n)}\text{PrimType}
+ \\ \\
+\dfrac{\Gamma \vdash A}{\Gamma; a : A \vdash a : A}\text{Ax} \qquad
+\dfrac{\Gamma; \Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Gamma; \Delta_n \vdash E_n : A_n \quad \Gamma; \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E: B}{\Gamma; \Delta_l, \Delta_1, \dots, \Delta_n, \Delta_r \vdash E[E_1/a_1, \dots, E_n/a_n] : B}\text{Cut}
+ \\ \\
+\dfrac{\Gamma \vdash E : X \quad \Gamma', x : X; a_1 : A_1, \dots, a_n : A_n \vdash E' : B}{\Gamma',\Gamma; a_1 : A_1[E/x], \dots, a_n : A_n[E/x] \vdash E'[E/x] : B[E/x]}\text{Reindex}
+ \\ \\
+\dfrac{}{\Gamma\vdash I}I\text{F} \qquad
+\dfrac{\Gamma\vdash A_1 \quad \cdots \quad \Gamma \vdash A_n}{\Gamma \vdash A_1 \otimes \cdots \otimes A_n}{\otimes_n}\text{F}, n \geq 1
+ \\ \\
+\dfrac{\Gamma \vdash E_1 : X_1 \quad \cdots \quad \Gamma \vdash E_n : X_n \quad \Gamma; \Delta_1 \vdash E_1' : A_1 \quad \cdots \quad \Gamma; \Delta_m \vdash E_m' : A_m \quad \mathsf f : (x_1 : X_1, \dots, x_n : X_n; A_1, \dots, A_m) \to B}{\Gamma; \Delta_1, \dots, \Delta_m \vdash \mathsf f(E_1, \dots, E_n; E_1', \dots, E_m') : B}\text{PrimTerm}
+ \\ \\
+\dfrac{}{\Gamma; \vdash * : I}I\text{I} \qquad
+\dfrac{\Gamma; \Delta \vdash E : I \quad \Gamma; \Delta_l, \Delta_r \vdash E' : B}{\Gamma; \Delta_l, \Delta, \Delta_r \vdash \mathsf{match}\ E\ \mathsf{as}\ *\ \mathsf{in}\ E' : B}I\text{E}
+ \\ \\
+\dfrac{\Gamma; \Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Gamma; \Delta_n \vdash E_n : A_n}{\Gamma; \Delta_1,\dots,\Delta_n \vdash E_1 \otimes \cdots \otimes E_n : A_1 \otimes \cdots \otimes A_n}{\otimes_n}\text{I}
+ \\ \\
+\dfrac{\Gamma; \Delta \vdash E : A_1 \otimes \cdots \otimes A_n \quad \Gamma; \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E' : B}{\Gamma; \Delta_l, \Delta, \Delta_r \vdash \mathsf{match}\ E\ \mathsf{as}\ (a_1 \otimes \cdots \otimes a_n)\ \mathsf{in}\ E' : B}{\otimes_n}\text{E},n \geq 1
+\end{gather}$$</span><br /></p>
+<h3 id="equations">Equations</h3>
+<p><br /><span class="math display">$$\begin{gather}
+\dfrac{\Gamma_1 \vdash E_1 : X_1 \quad \cdots \quad \Gamma_n \vdash E_n : X_n \qquad x_1 : X_1, \dots, x_n : X_n, \Gamma \vdash E : Y}{\Gamma_1, \dots, \Gamma_n, \Gamma \vdash (\mathsf{match}\ (E_1, \dots, E_n)\ \mathsf{as}\ (x_1, \dots, x_n)\ \mathsf{in}\ E) = E[E_1/x_1, \dots, E_n/x_n] : Y}{\times_n}\beta
+ \\ \\
+\dfrac{\Gamma \vdash E : (X_1, \dots, X_n) \qquad \Gamma, x : (X_1, \dots, X_n) \vdash E' : B}{\Gamma \vdash E'[E/x] = \mathsf{match}\ E\ \mathsf{as}\ (x_1, \dots, x_n)\ \mathsf{in}\ E'[(x_1, \dots, x_n)/x] : B}{\times_n}\eta
+ \\ \\
+\dfrac{\Gamma \vdash E_1 : (X_1, \dots, X_n) \qquad x_1 : X_1, \dots, x_n : X_n \vdash E_2 : Y \quad y : Y \vdash E_3 : Z}{\Gamma \vdash (\mathsf{match}\ E_1\ \mathsf{as}\ (x_1, \dots, x_n)\ \mathsf{in}\ E_3[E_2/y]) = E_3[(\mathsf{match}\ E_1\ \mathsf{as}\ (x_1, \dots, x_n)\ \mathsf{in}\ E_2)/y] : Z}{\times_n}\text{CC}
+ \\ \\
+\dfrac{\Gamma;\vdash E : B}{\Gamma;\vdash (\mathsf{match}\ *\ \mathsf{as}\ *\ \mathsf{in}\ E) = E : B}{*}\beta \qquad
+\dfrac{\Gamma; \Delta \vdash E : I \qquad \Gamma; \Delta_l, a : I, \Delta_r \vdash E' : B}{\Gamma; \Delta_l, \Delta, \Delta_r \vdash E'[E/a] = (\mathsf{match}\ E\ \mathsf{as}\ *\ \mathsf{in}\ E'[{*}/a]) : B}{*}\eta
+ \\ \\
+\dfrac{\Gamma; \Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Gamma; \Delta_n \vdash E_n : A_n \qquad \Gamma; \Delta_l, a_1 : A_1, \dots, a_n, \Delta_r : A_n \vdash E : B}{\Gamma; \Delta_l, \Delta_1, \dots, \Delta_n, \Delta_r \vdash (\mathsf{match}\ E_1\otimes\cdots\otimes E_n\ \mathsf{as}\ a_1\otimes\cdots\otimes a_n\ \mathsf{in}\ E) = E[E_1/a_1, \dots, E_n/a_n] : B}{\otimes_n}\beta
+ \\ \\
+\dfrac{\Gamma; \Delta \vdash E : A_1 \otimes \cdots \otimes A_n \qquad \Gamma; \Delta_l, a : A_1 \otimes \cdots \otimes A_n, \Delta_r \vdash E' : B}{\Gamma; \Delta_l, \Delta, \Delta_r \vdash E'[E/a] = \mathsf{match}\ E\ \mathsf{as}\ a_1\otimes\cdots\otimes a_n\ \mathsf{in}\ E'[(a_1\otimes\cdots\otimes a_n)/a] : B}{\otimes_n}\eta
+ \\ \\
+\dfrac{\Gamma; \Delta \vdash E_1 : I \qquad \Gamma; \Delta_l, \Delta_r \vdash E_2 : B \qquad \Gamma; b : B \vdash E_3 : C}{\Gamma; \Delta_l, \Delta, \Delta_r \vdash (\mathsf{match}\ E_1\ \mathsf{as}\ *\ \mathsf{in}\ E_3[E_2/b]) = E_3[(\mathsf{match}\ E_1\ \mathsf{as}\ *\ \mathsf{in}\ E_2)/b] : C}{*}\text{CC}
+ \\ \\
+\dfrac{\Gamma; \Delta \vdash E_1 : A_1 \otimes \cdots \otimes A_n \qquad \Gamma; \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E_2 : B \qquad \Gamma; b : B \vdash E_3 : C}{\Gamma; \Delta_l, \Delta, \Delta_r \vdash (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E_3[E_2/b]) = E_3[(\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \dots \otimes a_n\ \mathsf{in}\ E_2)/b] : C}{\otimes_n}\text{CC}
+\end{gather}$$</span><br /></p>
+<p>|\mathsf X : \mathsf{IxType}| means |\mathsf X| is a primitive index type in the signature. |\mathsf A : (X_1, \dots, X_n) \to \mathsf{Type}| means that |\mathsf A| is a primitive linear type in the signature. |\mathsf F : (X_1, \dots, X_n) \to Y| and |\mathsf f : (x_1 : X_1, \dots, x_n : X_n; A_1, \dots, A_m) \to B| mean that |\mathsf F| and |\mathsf f| are assigned these types in the signature. In the latter case, it is assumed that |x_1 : X_1, \dots, x_n : X_n \vdash A_i| for |i = 1, \dots, m| and |x_1 : X_1, \dots, x_n : X_n \vdash B|. Alternatively, these assumptions could be added as additional hypotheses to the PrimTerm rule. Generally, every |x_i| will be used in some |A_j| or in |B|, though this isn’t technically required.</p>
+<p>As before, I did not write the usual laws for equality (reflexivity and indiscernability of identicals) but they also should be included.</p>
+<p>See the discussion in <a href="/posts/internal-language-of-a-monoidal-category.html">the previous part</a> about the commuting conversion (|\text{CC}|) rules.</p>
+<p>A theory in this language is free to introduce additional index types, operations on indexes, linear types, and linear operations.</p>
+<h2 id="interpretation-into-an-mathbf-s-indexed-monoidal-category">Interpretation into an |\mathbf S|-indexed monoidal category</h2>
+<p>Fix an |\mathbf S|-indexed monoidal category |\V|. Write |\newcommand{\den}[1]{[\![#1]\!]}\den{-}| for the (overloaded) interpretation function. Its value on primitive operations is left as a parameter.</p>
+<p>Associators for the semantic |\times| and |\otimes| will be omitted below.</p>
+<h3 id="interpretation-of-index-types">Interpretation of Index Types</h3>
+<p><br /><span class="math display">$$\begin{align}
+\vdash X : \square \implies &amp; \den{X} \in \mathsf{Ob}(\mathbf S) \\ \\
+\den{\Gamma} = &amp; \prod_{i=1}^n \den{X_i}\text{ where } \Gamma = x_1 : X_1, \dots, x_n : X_n \\
+\den{(X_1, \dots, X_n)} = &amp; \prod_{i=1}^n \den{X_i}
+\end{align}$$</span><br /></p>
+<h3 id="interpretation-of-index-terms">Interpretation of Index Terms</h3>
+<p><br /><span class="math display">$$\begin{align}
+\Gamma \vdash E : X \implies &amp; \den{E} \in \mathbf{S}(\den{\Gamma}, \den{X}) \\ \\
+\den{x_i} =\, &amp; \pi_i \text{ where } x_1 : X_1, \dots, x_n : X_n \vdash x_i : X_i \\
+\den{(E_1, \dots, E_n)} =\, &amp; \den{E_1} \times \cdots \times \den{E_n} \\
+\den{\mathsf{match}\ E\ \mathsf{as}\ (x_1, \dots, x_n)\ \mathsf{in}\ E'} =\, &amp; \den{E'} \circ (\den{E} \times id_{\den{\Gamma'}}) \text{ where }
+    \Gamma' \vdash E' : Y \\
+\den{\mathsf F(E_1, \dots, E_n)} =\, &amp; \den{\mathsf F} \circ (\den{E_1} \times \cdots \times \den{E_n}) \\
+    &amp; \quad \text{ where }\mathsf F\text{ is an appropriately typed index operation}
+\end{align}$$</span><br /></p>
+<h3 id="witnesses-of-index-derivations">Witnesses of Index Derivations</h3>
+<p>IxAx is witnessed by identity, and IxCut by composition in |\mathbf S|. Weakening is witnessed by projection. Exchange and Contraction are witnessed by expressions that can be built from projections and tupling. This is very standard.</p>
+<h3 id="interpretation-of-linear-types">Interpretation of Linear Types</h3>
+<p><br /><span class="math display">$$\begin{align}
+\Gamma \vdash A \implies &amp; \den{A} \in \mathsf{Ob}(\V^{\den{\Gamma}}) \\ \\
+\den{\Delta} =\, &amp; \den{A_1}\otimes_{\den{\Gamma}}\cdots\otimes_{\den{\Gamma}}\den{A_n} \text{ where } \Delta = a_1 : A_1, \dots, a_n : A_n \\
+\den{I} =\, &amp; I_{\den{\Gamma}}\text{ where } \Gamma \vdash I \\
+\den{A_1 \otimes \cdots \otimes A_n} =\, &amp; \den{A_1}\otimes_{\den{\Gamma}} \cdots \otimes_{\den{\Gamma}} \den{A_n}\text{ where }
+    \Gamma \vdash A_i \\
+\den{\mathsf A(E_1, \dots, E_n)} =\, &amp; \langle \den{E_1}, \dots, \den{E_n}\rangle^*(\den{\mathsf A}) \\
+    &amp; \quad \text{ where }\mathsf A\text{ is an appropriately typed linear type operation}
+\end{align}$$</span><br /></p>
+<h3 id="interpretation-of-linear-terms">Interpretation of Linear Terms</h3>
+<p><br /><span class="math display">$$\begin{align}
+\Gamma; \Delta \vdash E : A \implies &amp; \den{E} \in \V^{\den{\Gamma}}(\den{\Delta}, \den{A}) \\ \\
+\den{a} =\, &amp; id_{\den{A}} \text{ where } a : A \\
+\den{*} =\, &amp; id_{I_{\den{\Gamma}}} \text{ where } \Gamma;\vdash * : I \\
+\den{E_1 \otimes \cdots \otimes E_n} =\, &amp; \den{E_1} \otimes_{\den{\Gamma}} \cdots \otimes_{\den{\Gamma}} \den{E_n} \text{ where }
+    \Gamma; \Delta_i \vdash E_i : A_i \\
+\den{\mathsf{match}\ E\ \mathsf{as}\ {*}\ \mathsf{in}\ E'} =\, &amp;
+    \den{E'} \circ (id_{\den{\Delta_l}} \otimes_{\den{\Gamma}} (\lambda_{\den{\Delta_r}} \circ (\den{E} \otimes_{\den{\Gamma}} id_{\den{\Delta_r}}))) \\
+\den{\mathsf{match}\ E\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E'} =\, &amp;
+    \den{E'} \circ (id_{\den{\Delta_l}} \otimes_{\den{\Gamma}} \den{E} \otimes_{\den{\Gamma}} id_{\den{\Delta_r}}) \\
+\den{\mathsf f(E_1, \dots, E_n; E_1', \dots, E_n')} =\, &amp; \langle \den{E_1}, \dots, \den{E_n}\rangle^*(\den{\mathsf f})
+    \circ (\den{E_1'} \otimes_{\den{\Gamma}} \cdots \otimes_{\den{\Gamma}} \den{E_n'}) \\
+        &amp; \quad \text{ where }\mathsf f\text{ is an appropriately typed linear operation}
+\end{align}$$</span><br /></p>
+<h3 id="witnesses-of-linear-derivations">Witnesses of Linear Derivations</h3>
+<p>As with the index derivations, Ax is witnessed by the identity, in this case in |\V^{\den{\Gamma}}|.</p>
+<p>|\den{E[E_1/a_1,,E_n/a_n]} = \den{E} \circ (\den{E_1}\otimes\cdots\otimes\den{E_n})| witnesses Cut.</p>
+<p>Roughly speaking, Reindex is witnessed by |\den{E}^*(\den{E’})|. If we were content to restrict ourselves to semantics in |\mathbf S|-indexed monoidal categories witnessed by functors, as opposed to pseudofunctors, into <em>strict</em> monoidal categories, then this would suffice. For an arbitrary |\mathbf S|-indexed monoidal category, we can’t be sure that the naive interpretation of |A[E/x][E’/y]|, i.e. |\den{E’}^*(\den{E}^*(\den{A}))|, which we’d get from two applications of the Reindex rule, is the same as the interpretation of |A[E[E’/y]/x]|, i.e. |\den{E \circ E’}^*(\den{A})|, which we’d get from IxCut followed by Reindex. On the other hand, |A[E/x][E’/y] = A[E[E’/y]/x]| is simply true syntactically by the definition of substitution (which I have not provided but is the obvious, usual thing). There are similar issues for (meta-)equations like |I[E/x] = I| and |(A_1 \otimes A_2)[E/x] = A_1[E/x] \otimes A_2[E/x]|.</p>
+<p>The solution is that we essentially use a normal form where we eliminate the uses of Reindex. These normal form derivations will be reached by rewrites such as: <br /><span class="math display">$$\begin{gather}
+\dfrac{\dfrac{\mathcal D}{\Gamma' \vdash E : X} \qquad \dfrac{\dfrac{\mathcal D_1}{\Gamma, x : X; \Delta_1 \vdash E_1 : A_1} \quad
+                                        \cdots \quad \dfrac{\mathcal D_n}{\Gamma, x : X; \Delta_n \vdash E_n : A_n}}
+    {\Gamma, x : X; \Delta_1, \dots, \Delta_n \vdash E_1 \otimes \cdots \otimes E_n : A_1 \otimes \cdots \otimes A_n}}
+    {\Gamma, \Gamma'; \Delta_1[E/x], \dots, \Delta_n[E/x] \vdash E_1[E/x] \otimes \cdots \otimes E_n[E/x] : A_1[E/x] \otimes \cdots \otimes A_n[E/x]} \\
+\Downarrow \\
+\dfrac{\dfrac{\dfrac{\mathcal D}{\Gamma' \vdash E : X} \quad \dfrac{\mathcal D_1}{\Gamma, x : X; \Delta_1 \vdash E_1 : A_1}}
+                {\Gamma, \Gamma'; \Delta_1[E/x] \vdash E_1[E/x] : A_1[E/x]} \quad
+        \cdots \quad
+       \dfrac{\dfrac{\mathcal D}{\Gamma' \vdash E : X} \quad \dfrac{\mathcal D_n}{\Gamma, x : X; \Delta_n \vdash E_n : A_n}}
+                {\Gamma, \Gamma'; \Delta_n[E/x] \vdash E_n[E/x] : A_n[E/x]}}
+    {\Gamma, \Gamma'; \Delta_1[E/x], \dots, \Delta_n[E/x] \vdash E_1[E/x] \otimes \cdots \otimes E_n[E/x] : A_1[E/x] \otimes \cdots \otimes A_n[E/x]}
+\end{gather}$$</span><br /></p>
+<p>Semantically, this is witnessed by the strong monoidal structure, i.e. |\den{E}^*(\den{E_1} \otimes \cdots \otimes \den{E_n}) \cong \den{E}^*(\den{E_1}) \otimes \cdots \otimes \den{E}^*(\den{E_n})|. We need such rewrites for all (linear) rules that can immediately precede Reindex in a derivation. For |I\text{I}|, |I\text{E}|, |\otimes_n\text{E}|, and, as we’ve just seen, |\otimes_n\text{I}|, these rewrites are witnessed by |\den{E}^*| being a strong monoidal functor. The rewrites for |\text{Ax}| and |\text{Cut}| are witnessed by functorality of |\den{E}^*| and also strong monoidality for Cut. Finally, two adjacent uses of Reindex become an IxCut and a Reindex and are witnessed by the pseudofunctoriality of |(\_)^*|. (While we’re normalizing, we may as well eliminate Cut and IxCut as well.)</p>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p>As the previous post alludes, monoidal structure is more than we need. If we pursue the generalizations described there in this indexed context, we eventually end up at <a href="https://ncatlab.org/nlab/show/augmented+virtual+double+category">augmented virtual double categories</a> or <a href="https://ncatlab.org/nlab/show/virtual+equipment">virtual equipment</a>.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p>The terminology here is a mess. Leinster calls strong monoidal functors “weak”. “Strong” also refers to <a href="https://ncatlab.org/nlab/show/tensorial+strength">tensorial strength</a>, and it’s quite possible to have a “strong lax monoidal functor”. (In fact, this is what applicative functors are usually described as, though a <a href="https://ncatlab.org/nlab/show/closed+functor">strong lax closed functor</a> would be a more direct connection.) Or the functors we’re talking about which are not-strong strong monoidal functors…<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>]]></summary>
+</entry>
+<entry>
     <title>Internal Language of a Monoidal Category</title>
     <link href="https://derekelkins.github.io/posts/internal-language-of-a-monoidal-category.html" />
     <id>https://derekelkins.github.io/posts/internal-language-of-a-monoidal-category.html</id>
@@ -18,8 +337,8 @@
     <summary type="html"><![CDATA[<h2 id="introduction">Introduction</h2>
 <p>This is the first post in a series of posts on doing enriched indexed category theory and using the notion of an internal language to make this look relatively mundane. The internal language aspects are useful for other purposes too, as will be illustrated in this post, for example. This is related to the post <a href="/posts/category-theory-syntactically.html">Category Theory, Syntactically</a>. In particular, it can be considered half-way between the unary theories and the finite product theories described there.</p>
 <p>First in this series – this post – covers the internal language of a monoidal category. This is fairly straightforward, but it already provides some use. For example, the category of endofunctors on a category is a strict monoidal category, and so we can take a different perspective on natural transformations. This will also motivate the notions of a (virtual) bicategory and an actegory. Throughout this post, I’ll give a fairly worked example of turning some categorical content into <a href="/posts/understanding-typing-judgments.html">rules</a> of a type-/proof-theory.</p>
-<p>The second post will add indexing to the notion of monoidal category and introduce the very powerful and useful notion of an <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal category</a>.</p>
-<p>The third post will formulate the notion of <a href="https://arxiv.org/abs/1212.3914">categories enriched in an indexed monoidal category</a> and give the definitions which don’t require any additional assumptions.</p>
+<p>The <a href="/posts/internal-language-of-indexed-monoidal-categories.html">second post</a> will add indexing to the notion of monoidal category and introduce the very powerful and useful notion of an <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal category</a>.</p>
+<p>The <a href="/posts/enriched-indexed-categories-syntactically.html">third post</a> will formulate the notion of <a href="https://arxiv.org/abs/1212.3914">categories enriched in an indexed monoidal category</a> and give the definitions which don’t require any additional assumptions.</p>
 <p>The fourth post will introduce the notion and internal language for an indexed cosmos. Normally, when we do enriched category theory, we want the category into which we’re enriching to not be just a monoidal category but a <a href="https://ncatlab.org/nlab/show/cosmos">cosmos</a>. This provides many additional properties. An indexed cosmos is just the analogue of that for indexed monoidal categories.</p>
 <p>The fifth post will then formulate categorical concepts for our enriched indexed categories that require some or all of these additional properties provided by an indexed cosmos.</p>
 <p>At some point, there will be a post on <a href="https://ncatlab.org/nlab/show/virtual+double+category">virtual double categories</a> as they (or, even better, <a href="https://arxiv.org/abs/1910.11189">augmented virtual double categories</a>) are what will really be behind the notion of enriched indexed categories we’ll define. Basically, we’ll secretly be spelling out a specific instance of the |\mathsf{Mod}| construction.</p>
@@ -82,11 +401,14 @@ a_1 : A_1, \dots, a_n : A_n \vdash E : B\end{align}$$</span><br /> will represen
 <h2 id="appendix">Appendix</h2>
 <h3 id="rules-for-a-monoidal-category">Rules for a Monoidal Category</h3>
 <p><br /><span class="math display">$$\begin{gather}
-\dfrac{}{\vdash I}I\text{F} \qquad
-\dfrac{\vdash A_1 \quad \cdots \quad \vdash A_n}{\vdash A_1 \otimes \cdots \otimes A_n}{\otimes_n}\text{F}, n \geq 1
- \\ \\
 \dfrac{\vdash A}{a : A \vdash a : A}\text{Ax} \qquad
 \dfrac{\Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Delta_n \vdash E_n : A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E: B}{\Delta_l, \Delta_1, \dots, \Delta_n, \Delta_r \vdash E[E_1/a_1,\dots,E_n/a_n] : B}\text{Cut}
+ \\ \\
+\dfrac{}{\vdash I}I\text{F} \qquad
+\dfrac{\vdash A_1 \quad \cdots \quad \vdash A_n}{\vdash A_1 \otimes \cdots \otimes A_n}{\otimes_n}\text{F}, n \geq 1 \qquad
+\dfrac{\mathsf A : \mathsf{Type}}{\vdash \mathsf A}\text{PrimType}
+ \\ \\
+\dfrac{\Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Delta_n \vdash E_n : A_n \quad \mathsf f : (A_1, \dots, A_n) \to B}{\Delta_1, \dots, \Delta_n \vdash \mathsf f(E_1, \dots, E_n) : B}\text{PrimTerm}
  \\ \\
 \dfrac{}{\vdash * : I}I\text{I} \qquad
 \dfrac{\Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Delta_n \vdash E_n : A_n}{\Delta_1,\dots,\Delta_n \vdash E_1 \otimes \cdots \otimes E_n : A_1 \otimes \cdots \otimes A_n}{\otimes_n}\text{I}
@@ -97,20 +419,21 @@ a_1 : A_1, \dots, a_n : A_n \vdash E : B\end{align}$$</span><br /> will represen
 <h3 id="equations">Equations</h3>
 <p><br /><span class="math display">$$\begin{gather}
 \dfrac{\Delta \vdash E : B}{\Delta \vdash (\mathsf{match}\ {*}\ \mathsf{as}\ {*}\ \mathsf{in}\ E) = E : B}{*}\beta \qquad
-\dfrac{\Delta \vdash E : I \quad a : I, \Delta_l, \Delta_r \vdash E' : B}{\Delta_l, \Delta, \Delta_r \vdash E'[E/a] = (\mathsf{match}\ E\ \mathsf{as}\ {*}\ \mathsf{in}\ E'[*/a]) : B}{*}\eta
+\dfrac{\Delta \vdash E : I \quad \Delta_l, a : I, \Delta_r \vdash E' : B}{\Delta_l, \Delta, \Delta_r \vdash E'[E/a] = (\mathsf{match}\ E\ \mathsf{as}\ {*}\ \mathsf{in}\ E'[*/a]) : B}{*}\eta
  \\ \\
-\dfrac{\Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Delta_n \vdash E_n : A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E : B}{\Delta_l, \Delta_1, \dots, \Delta_n, \Delta_r \vdash (\mathsf{match}\ E_1\otimes\cdots\otimes E_n\ \mathsf{as}\ a_1\otimes\cdots\otimes a_n\ \mathsf{in}\ E) = E[E_1/a_1, \dots, E_n/a_n] : B}{\otimes}\beta
-\\ \\ 
-\dfrac{\Delta \vdash E : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a : A_1 \otimes \cdots \otimes A_n, \Delta_r \vdash E' : B}{\Delta_l, \Delta, \Delta_r \vdash E'[E/a] = (\mathsf{match}\ E\ \mathsf{as}\ a_1\otimes\cdots\otimes a_n\ \mathsf{in}\ E'[(a_1\otimes\cdots\otimes a_n)/a]) : B}{\otimes}\eta
+\dfrac{\Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Delta_n \vdash E_n : A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E : B}{\Delta_l, \Delta_1, \dots, \Delta_n, \Delta_r \vdash (\mathsf{match}\ E_1\otimes\cdots\otimes E_n\ \mathsf{as}\ a_1\otimes\cdots\otimes a_n\ \mathsf{in}\ E) = E[E_1/a_1, \dots, E_n/a_n] : B}{\otimes_n}\beta
+\\ \\
+\dfrac{\Delta \vdash E : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a : A_1 \otimes \cdots \otimes A_n, \Delta_r \vdash E' : B}{\Delta_l, \Delta, \Delta_r \vdash E'[E/a] = (\mathsf{match}\ E\ \mathsf{as}\ a_1\otimes\cdots\otimes a_n\ \mathsf{in}\ E'[(a_1\otimes\cdots\otimes a_n)/a]) : B}{\otimes_n}\eta
  \\ \\
 \dfrac{\Delta \vdash E_1 : I \quad \Delta_l, \Delta_r \vdash E_2 : I \quad \Delta_l', \Delta_r' \vdash E_3 : C}{\Delta_l', \Delta_l, \Delta, \Delta_r, \Delta_r' \vdash (\mathsf{match}\ (\mathsf{match}\ E_1\ \mathsf{as}\ {*}\ \mathsf{in}\ E_2)\ \mathsf{as}\ {*}\ \mathsf{in}\ E_3) = (\mathsf{match}\ E_1\ \mathsf{as}\ {*}\ \mathsf{in}\ \mathsf{match}\ E_2\ \mathsf{as}\ {*}\ \mathsf{in}\ E_3) : C}{*}{*}\text{CC}
  \\ \\
-\dfrac{\Delta \vdash E_1 : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E_2 : I\quad \Delta_l', \Delta_r' \vdash E_3 : C}{\Delta_l', \Delta_l, \Delta, \Delta_r, \Delta_r' \vdash (\mathsf{match}\ (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E_2)\ \mathsf{as}\ {*}\ \mathsf{in}\ E_3) \\ \qquad \qquad \qquad \quad \, = (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ \mathsf{match}\ E_2\ \mathsf{as}\ {*}\ \mathsf{in}\ E_3) : C}{\otimes}{*}\text{CC}
+\dfrac{\Delta \vdash E_1 : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E_2 : I\quad \Delta_l', \Delta_r' \vdash E_3 : C}{\Delta_l', \Delta_l, \Delta, \Delta_r, \Delta_r' \vdash (\mathsf{match}\ (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E_2)\ \mathsf{as}\ {*}\ \mathsf{in}\ E_3) \\ \qquad \qquad \qquad \quad \, = (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ \mathsf{match}\ E_2\ \mathsf{as}\ {*}\ \mathsf{in}\ E_3) : C}{\otimes_n}{*}\text{CC}
  \\ \\
-\dfrac{\Delta \vdash E_1 : I \quad \Delta_l, \Delta_r \vdash E_2 : B_1 \otimes \cdots \otimes B_m \quad \Delta_l', b_1 : B_1, \dots, b_m : B_m, \Delta_r' \vdash E_3 : C}{\Delta_l', \Delta_l, \Delta, \Delta_r, \Delta_r' \vdash (\mathsf{match}\ (\mathsf{match}\ E_1\ \mathsf{as}\ {*}\ \mathsf{in}\ E_2)\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) \\ \qquad \qquad \qquad \quad \, = (\mathsf{match}\ E_1\ \mathsf{as}\ {*}\ \mathsf{in}\ \mathsf{match}\ E_2\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) : C}{*}{\otimes}\text{CC}
+\dfrac{\Delta \vdash E_1 : I \quad \Delta_l, \Delta_r \vdash E_2 : B_1 \otimes \cdots \otimes B_m \quad \Delta_l', b_1 : B_1, \dots, b_m : B_m, \Delta_r' \vdash E_3 : C}{\Delta_l', \Delta_l, \Delta, \Delta_r, \Delta_r' \vdash (\mathsf{match}\ (\mathsf{match}\ E_1\ \mathsf{as}\ {*}\ \mathsf{in}\ E_2)\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) \\ \qquad \qquad \qquad \quad \, = (\mathsf{match}\ E_1\ \mathsf{as}\ {*}\ \mathsf{in}\ \mathsf{match}\ E_2\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) : C}{*}{\otimes_m}\text{CC}
  \\ \\
-\dfrac{\Delta \vdash E_1 : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E_2 : B_1 \otimes \cdots \otimes B_m \quad \Delta_l', b_1 : B_1, \dots, b_m : B_m, \Delta_r' \vdash E_3 : C}{\Delta_l', \Delta_l, \Delta, \Delta_r, \Delta_r' \vdash (\mathsf{match}\ (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E_2)\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) \\ \qquad \qquad \qquad \quad \, = (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ \mathsf{match}\ E_2\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) : C}{\otimes}{\otimes}\text{CC}
+\dfrac{\Delta \vdash E_1 : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E_2 : B_1 \otimes \cdots \otimes B_m \quad \Delta_l', b_1 : B_1, \dots, b_m : B_m, \Delta_r' \vdash E_3 : C}{\Delta_l', \Delta_l, \Delta, \Delta_r, \Delta_r' \vdash (\mathsf{match}\ (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E_2)\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) \\ \qquad \qquad \qquad \quad \, = (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ \mathsf{match}\ E_2\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) : C}{\otimes_n}{\otimes_m}\text{CC}
 \end{gather}$$</span><br /></p>
+<p>|\mathsf A : \mathsf{Type}| means that |\mathsf A| is a primitive type in the signature. |\mathsf f : (A_1, \dots, A_n) \to B| means that |\mathsf f| is assigned this type in the signature.</p>
 <p>I did not write them, but the usual laws for equality (reflexivity and indiscernability of identicals) should be included.</p>
 <p>A theory in this language is free to introduce additional linear types and linear operations.</p>
 <h3 id="interpretation-into-a-monoidal-category">Interpretation into a monoidal category</h3>
@@ -129,7 +452,7 @@ a_1 : A_1, \dots, a_n : A_n \vdash E : B\end{align}$$</span><br /> will represen
 \den{a} =\, &amp; id_{\den{A}} \text{ where } a : A \\
 \den{*} =\, &amp; id_I \\
 \den{E_1 \otimes \cdots \otimes E_n} =\, &amp; \den{E_1} \otimes \cdots \otimes \den{E_n} \text{ where }\Delta_i \vdash E_i : A_i \\
-\den{\mathsf{match}\ E\ \mathsf{as}\ {*}\ \mathsf{in}\ E'} =\, &amp; 
+\den{\mathsf{match}\ E\ \mathsf{as}\ {*}\ \mathsf{in}\ E'} =\, &amp;
     \den{E'} \circ (id_{\den{\Delta_l}} \otimes (\lambda_{\den{\Delta_r}} \circ (\den{E} \otimes id_{\den{\Delta_r}}))) \\
 \den{\mathsf{match}\ E\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E'} =\, &amp;
     \den{E'} \circ (id_{\den{\Delta_l}} \otimes \den{E} \otimes id_{\den{\Delta_r}}) \\
@@ -708,564 +1031,6 @@ U^I(F^f)^{-1} \circ \eta_{\mathcal D(f)}^I = U_{F^J}^f \circ \mathcal D(f)\eta^J
     <published>2017-04-09 05:35:18-07:00</published>
     <updated>2017-04-09T12:35:18Z</updated>
     <summary type="html"><![CDATA[<p>I couldn’t find an online version of Djinn, so I ran it through GHCJS with some tweaks, added a basic interface and hosted it <a href="/djinn/">here</a>. It runs in your browser, so go crazy. If you want changes to the default settings or environment, feel free to suggest them. Right now everything is the default settings of the Djinn tool except that multiple results is enabled.</p>]]></summary>
-</entry>
-<entry>
-    <title>Category Theory, Syntactically</title>
-    <link href="https://derekelkins.github.io/posts/category-theory-syntactically.html" />
-    <id>https://derekelkins.github.io/posts/category-theory-syntactically.html</id>
-    <published>2016-11-24 22:23:17-08:00</published>
-    <updated>2016-11-25T06:23:17Z</updated>
-    <summary type="html"><![CDATA[<h4 id="or-how-model-theory-got-scooped-by-category-theory">(or: How Model Theory Got Scooped by Category Theory)</h4>
-<h2 id="overview">Overview</h2>
-<p>This will be a <em>very</em> non-traditional introduction to the ideas behind category theory. It will essentially be a slice through model theory (presented in a more programmer-friendly manner) with an unusual organization. Of course the end result will be <strong>***SPOILER ALERT***</strong> it was category theory all along. A secret decoder ring will be provided at the end. This approach is inspired by the notion of an internal logic/language and by Vaughn Pratt’s paper <a href="http://boole.stanford.edu/pub/yon.pdf">The Yoneda Lemma Without Category Theory</a>. <!-- \* --></p>
-<p>I want to be very clear, though. This is not meant to be an analogy or an example or a guide for intuition. This <em>is</em> category theory. It is simply presented in a different manner.</p>
-<p>Dan Doel pointed me at some draft lecture notes by Mike Shulman that seem very much in the spirit of this blog post (albeit aimed at an audience familiar with category theory): <a href="https://mikeshulman.github.io/catlog/catlog.pdf">Categorical Logic from a Categorical Point of View</a>. A theory in my sense corresponds to a category presentation (Definition 1.7.1) as defined by these lecture notes. Its oft-mentioned Appendix A will also look very familiar.</p>
-<!--more-->
-<h2 id="theories">Theories</h2>
-<p>The first concept we’ll need is that of a theory. If you’ve ever implemented an interpreter for even the simplest language, then most of what follows modulo some terminological differences should be both familiar and very basic. If you are familiar with algebraic semantics, then that is exactly what is happening here only restricting to unary (but multi-sorted) algebraic theories.</p>
-<p>For us, a <strong>theory</strong>, #ccT#, is a collection of <strong>sorts</strong>, a collection of (unary) <strong>function symbols</strong><a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>, and a collection of <strong>equations</strong>. Each function symbol has an input sort and an output sort which we’ll call the <strong>source</strong> and <strong>target</strong> of the function symbol. We’ll write #ttf : A -&gt; B# to say that #ttf# is a function symbol with source #A# and target #B#. We define <code class="asciimath">#"src"(ttf) -= A#</code> and <code class="asciimath">#"tgt"(ttf) -= B#</code>. Sorts and function symbols are just symbols. Something is a sort if it is in the collection of sorts. Nothing else is required. A function symbol is not a function, it’s just a, possibly structured, name. Later, we’ll map those names to functions, but the same name may be mapped to different functions. In programming terms, a theory defines an interface or signature. We’ll write <code class="asciimath">#bb "sort"(ccT)#</code> for the collection of sorts of #ccT# and <code class="asciimath">#bb "fun"(ccT)#</code> for the collection of function symbols.</p>
-<p>A (raw) <strong>term</strong> in a theory is either a <strong>variable</strong> labelled by a sort, #bbx_A#, or it’s a function symbol applied to a term, <code class="asciimath">#tt "f"(t)#</code>, such that the sort of the term #t# matches the source of #ttf#. The sort or target of a term is the sort of the variable if it’s a variable or the target of the outermost function symbol. The source of a term is the sort of the innermost variable. In fact, all terms are just sequences of function symbol applications to a variable, so there will always be exactly one variable. All this is to say the expressions need to be “well-typed” in the obvious way. Given a theory with two function symbols #ttf : A -&gt; B# and #ttg : B -&gt; A#, <code class="asciimath">#bbx_A#</code>, <code class="asciimath">#bbx_B#</code> , <code class="asciimath">#tt "f"(bbx_A)#</code>, and <code class="asciimath">#tt "f"(tt "g"(tt "f"(bbx_A)))#</code> are all examples of terms. <code class="asciimath">#tt "f"(bbx_B)#</code> and <code class="asciimath">#tt "f"(tt "f"(bbx_A))#</code> are not terms because they are not “well-typed”, and #ttf# by itself is not a term simply because it doesn’t match the syntax. Using Haskell syntax, we can define a data type representing this syntax if we ignore the sorting:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">data</span> <span class="dt">Term</span> <span class="ot">=</span> <span class="dt">Var</span> <span class="dt">Sort</span> <span class="op">|</span> <span class="dt">Apply</span> <span class="dt">FunctionSymbol</span> <span class="dt">Term</span></span></code></pre></div>
-<p>Using GADTs, we could capture the sorting constraints as well:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">data</span> <span class="dt">Term</span> (<span class="ot">s ::</span> <span class="dt">Sort</span>) (<span class="ot">t ::</span> <span class="dt">Sort</span>) <span class="kw">where</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a>    <span class="dt">Var</span><span class="ot"> ::</span> <span class="dt">Term</span> t t</span>
-<span id="cb2-3"><a href="#cb2-3"></a>    <span class="dt">Apply</span><span class="ot"> ::</span> <span class="dt">FunctionSymbol</span> x t <span class="ot">-&gt;</span> <span class="dt">Term</span> s x <span class="ot">-&gt;</span> <span class="dt">Term</span> s t</span></code></pre></div>
-<p>An important operation on terms is <strong>substitution</strong>. Given a term #t_1# with source #A# and a term #t_2# with target #A# we define the substitution of #t_2# into #t_1#, written #t_1[bbx_A |-&gt; t_2]#, as:</p>
-<blockquote>
-<p>If #t_1 = bbx_A# then #bbx_A[bbx_A |-&gt; t_2] -= t_2#.</p>
-<p>If <code class="asciimath">#t_1 = tt "f"(t)#</code> then <code class="asciimath">#tt "f"(t)[bbx_A |-&gt; t_2] -= tt "f"(t[bbx_A |-&gt; t_2])#</code>.</p>
-</blockquote>
-<p>Using the theory from before, we have:</p>
-<blockquote>
-<p><code class="asciimath">#tt "f"(bbx_A)[bbx_A |-&gt; tt "g"(bbx_B)] = tt "f"(tt "g"(bbx_B))#</code></p>
-</blockquote>
-<p>As a shorthand, for arbitrary terms #t_1# and #t_2#, #t_1(t_2)# will mean <code class="asciimath">#t_1[bbx_("src"(t_1)) |-&gt; t_2]#</code>.</p>
-<p>Finally, equations<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>. An <strong>equation</strong> is a pair of terms with equal source and target, for example, <code class="asciimath">#(: tt "f"(tt "g"(bbx_B)), bbx_B :)#</code>. The idea is that we want to identify these two terms. To do this we <a href="../posts/quotient-types-for-programmers.html">quotient</a> the set of terms by the congruence generated by these pairs, i.e. by the reflexive-, symmetric-, transitive-closure of the relation generated by the equations which further satisfies “if #s_1 ~~ t_1# and #s_2 ~~ t_2# then <code class="asciimath">#s_1(s_2) ~~ t_1(t_2)#</code>”. From now on, by “terms” I’ll mean this quotient with “raw terms” referring to the unquotiented version. This means that when we say “<code class="asciimath">#tt "f"(tt "g"(bbx_B)) = bbx_B#</code>”, we really mean the two terms are congruent with respect to the congruence generated by the equations. We’ll write #ccT(A, B)# for the collection of terms, in this sense, with source #A# and target #B#. To make things look a little bit more normal, I’ll write #s ~~ t# as a synonym for #(: s, t :)# when the intent is that the pair represents a given equation.</p>
-<p>Expanding the theory from before, we get the <strong>theory of isomorphisms</strong>, <code class="asciimath">#ccT_{:~=:}#</code>, consisting of two sorts, #A# and #B#, two function symbols, #ttf# and #ttg#, and two equations <code class="asciimath">#tt "f"(tt "g"(bbx_B)) ~~ bbx_B#</code> and <code class="asciimath">#tt "g"(tt "f"(bbx_A)) ~~ bbx_A#</code>. The equations lead to equalities like <code class="asciimath">#tt "f"(tt "g"(tt "f"(bbx_A))) = tt "f"(bbx_A)#</code>. In fact, it doesn’t take much work to show that this theory only has four distinct terms: #bbx_A#, #bbx_B#, <code class="asciimath">#tt "f"(bbx_A)#</code>, and <code class="asciimath">#tt "g"(bbx_B)#</code>.</p>
-<p>In traditional model theory or universal algebra we tend to focus on multi-ary operations, i.e. function symbols that can take multiple inputs. By restricting ourselves to only unary function symbols, we expose a duality. For every theory #ccT#, we have the <strong>opposite theory</strong>, #ccT^(op)# defined by using the same sorts and function symbols but swapping the source and target of the function symbols which also requires rewriting the terms in the equations. The rewriting on terms is the obvious thing, e.g. if #ttf : A -&gt; B#, #ttg : B -&gt; C#, and #tth : C -&gt; D#, then the term in #ccT#, <code class="asciimath">#tt "h"(tt "g"(tt "f"(bbx_A)))#</code> would become the term <code class="asciimath">#tt "f"(tt "g"(tt "h"(bbx_D)))#</code> in #ccT^(op)#. From this it should be clear that <code class="asciimath">#(ccT^(op))^(op) = ccT#</code>.</p>
-<h2 id="product-theories">Product Theories</h2>
-<p>Given two theories #ccT_1# and #ccT_2# we can form a new theory #ccT_1 xx ccT_2# called the <strong>product theory</strong> of #ccT_1# and #ccT_2#. The sorts of this theory are pairs of sorts from #ccT_1# and #ccT_2#. The collection of function symbols is the <em>disjoint union</em> <code class="asciimath">#bb "fun"(ccT_1) xx bb "sort"(ccT_2) + bb "sort"(ccT_1) xx bb "fun"(ccT_2)#</code>. A disjoint union is like Haskell’s <code>Either</code> type. Here we’ll write <code class="asciimath">#tt "inl"#</code> and <code class="asciimath">#tt "inr"#</code> for the left and right injections respectively. <code class="asciimath">#tt "inl"#</code> takes a function symbol from #ccT_1# and a sort from #ccT_2# and produces a function symbol of #ccT_1 xx ccT_2# and similarly for <code class="asciimath">#tt "inr"#</code>. If <code class="asciimath">#tt "f" : A -&gt; B#</code> in #ccT_1# and #C# is a sort of #ccT_2#, then <code class="asciimath">#tt "inl"(f, C) : (A, C) -&gt; (B, C)#</code> and similarly for <code class="asciimath">#tt "inr"#</code>.</p>
-<p>The collection of equations for #ccT_1 xx ccT_2# consists of the following:</p>
-<ul>
-<li>for every equation, #l ~~ r# of #ccT_1# and every sort, #C#, of #ccT_2# we produce an equation #l’ ~~ r’# by replacing each function symbol #ttf# in #l# and #r# with <code class="asciimath">#tt "inl"(tt "f", C)#</code></li>
-<li>similarly for equations of #ccT_2#</li>
-<li>for every pair of function symbols #ttf : A -&gt; B# from #ccT_1# and #ttg : C -&gt; D# from #ccT_2#, we produce the equation <code class="asciimath">#tt "inl"(tt "f", D)(tt "inr"(A, tt "g")(bbx_{:(A, C")":})) ~~ tt "inr"(B, tt "g")("inl"(tt "f", C)(bbx_{:(A, C")":}))#</code></li>
-</ul>
-<p>The above is probably unreadable. If you work through it, you can show that every term of #ccT_1 xx ccT_2# is equivalent to a pair of terms #(t_1, t_2)# where #t_1# is a term in #ccT_1# and #t_2# is a term in #ccT_2#. Using this equivalence, the first bullet is seen to be saying that if #l = r# in #ccT_1# and #C# is a sort in #ccT_2# then #(l, bbx_C) = (r, bbx_C)# in #ccT_1 xx ccT_2#. The second is similar. The third then states</p>
-<blockquote>
-<p><code class="asciimath">#(t_1, bbx_C)((bbx_A, t_2)(bbx_{:"(A, C)":})) = (t_1, t_2)(bbx_{:"(A, C)":}) = (bbx_A, t_2)((t_1, bbx_C)(bbx_{:"(A, C)":}))#</code>.</p>
-</blockquote>
-<p>To establish the equivalence between terms of #ccT_1 xx ccT_2# and pairs of terms from #ccT_1# and #ccT_2#, we use the third bullet to move all the <code class="asciimath">#tt "inl"#</code>s outward at which point we’ll have a sequence of #ccT_1# function symbols followed by a sequence of #ccT_2# function symbols each corresponding to term.</p>
-<p>The above might seem a bit round about. An alternative approach would be to define the function symbols of #ccT_1 xx ccT_2# to be all pairs of all the <em>terms</em> from #ccT_1# and #ccT_2#. The problem with this approach is that it leads to an <em>explosion</em> in the number of function symbols and equations required. In particular, it easily produces an infinitude of function symbols and equations even when provided with theories that only have a finite number of sorts, function symbols, and equations.</p>
-<p>As a concrete and useful example, consider the theory #ccT_bbbN# consisting of a single sort, #0#, a single function symbol, #tts#, and no equations. This theory has a term for each natural number, #n#, corresponding to #n# applications of #tts#. Now let’s articulate #ccT_bbbN xx ccT_bbbN#. It has one sort, #(0, 0)#, two function symbols, <code class="asciimath">#tt "inl"(tt "s", 0)#</code> and <code class="asciimath">#tt "inr"(0, tt "s")#</code>, and it has one equation, <code class="asciimath">#tt "inl"(tt "s", 0)(tt "inr"(0, tt "s")(bbx_{:(0, 0")":})) ~~ tt "inr"(0, tt "s")(tt "inl"(tt "s", 0)(bbx_{:(0, 0")":}))#</code>. Unsurprisingly, the terms of this theory correspond to pairs of natural numbers. If we had used the alternative definition, we’d have had an infinite number of function symbols and an infinite number of equations.</p>
-<p>Nevertheless, for clarity I will typically write a term of a product theory as a pair of terms.</p>
-<p>As a relatively easy exercise — easier than the above — you can formulate and define the disjoint sum of two theories #ccT_1 + ccT_2#. The idea is that every term of #ccT_1 + ccT_2# corresponds to either a term of #ccT_1# or a term of #ccT_2#. Don’t forget to define what happens to the equations.</p>
-<p>Related to these, we have the theory #ccT_{:bb1:}#, which consists of one sort and no function symbols or equations, and #ccT_{:bb0:}# which consists of no sorts and thus no possibility for function symbols or equations. #ccT_{:bb1:}# has exactly one term while #ccT_{:bb0:}# has no terms.</p>
-<h2 id="collages">Collages</h2>
-<p>Sometimes we’d like to talk about function symbols whose source is in one theory and target is in another. As a simple example, that we’ll explore in more depth later, we may want function symbols whose sources are in a product theory. This would let us consider terms with multiple inputs.</p>
-<p>The natural way to achieve this is to simply make a new theory that contains sorts from both theories plus the new function symbols. A <strong>collage</strong>, #ccK#, from a theory #ccT_1# to #ccT_2#, written #ccK : ccT_1 ↛ ccT_2#, is a theory whose collection of sorts is the disjoint union of the sorts of #ccT_1# and #ccT_2#. The function symbols of #ccK# consist for each function symbol #ttf : A -&gt; B# in #ccT_1#, a function symbol <code class="asciimath">#tt "inl"(ttf) : tt "inl"(A) -&gt; tt "inl"(B)#</code>, and similarly for function symbols from #ccT_2#. Equations from #ccT_1# and #ccT_2# are likewise taken and lifted appropriately, i.e. #ttf# is replaced with <code class="asciimath">#tt "inl"(ttf)#</code> or <code class="asciimath">#tt "inr"(ttf)#</code> as appropriate. Additional function symbols of the form <code class="asciimath">#k : tt "inl"(A) -&gt; tt "inr"(Z)#</code> where #A# is a sort of #ccT_1# and #Z# is a sort of #ccT_2#, and potentially additional equations involving these function symbols, may be given. (If no additional function symobls are given, then this is exactly the disjoint sum of #ccT_1# and #ccT_2#.) These additional function symbols and equations are what differentiate two collages that have the same source and target theories. Note, there are <em>no</em> function symbols <code class="asciimath">#tt "inr"(Z) -&gt; tt "inl"(A)#</code>, i.e. where #Z# is in #ccT_2# and #A# is in #ccT_1#. That is, there are no function symbols going the “other way”. To avoid clutter, I’ll typically assume that the sorts and function symbols of #ccT_1# and #ccT_2# are disjoint already, and dispense with the <code class="asciimath">#tt "inl"#</code>s and <code class="asciimath">#tt "inr"#</code>s.</p>
-<p>Summarizing, we have <code class="asciimath">#ccK(tt "inl"(A), "inl"(B)) ~= ccT_1(A, B)#</code>, <code class="asciimath">#ccK(tt "inr"(Y), tt "inr"(Z)) ~= ccT_2(Y, Z)#</code>, and <code class="asciimath">#ccK(tt "inr"(Z), tt "inl"(A)) = O/#</code> for all #A#, #B#, #Y#, and #Z#. <code class="asciimath">#ccK(tt "inl"(A), tt "inr"(Z))#</code> for any #A# and #Z# is arbitrary generated. To distinguish them, I’ll call the function symbols that go from one theory to another <strong>bridges</strong>. More generally, an arbitrary term that has it’s source in one theory and target in another will be described as a <strong>bridging term</strong>.</p>
-<p>Here’s a somewhat silly example. Consider #ccK_+ : ccT_bbbN xx ccT_bbbN ↛ ccT_bbbN# that has one bridge <code class="asciimath">#tt "add" : (0, 0) -&gt; 0#</code> with the equations <code class="asciimath">#tt "add"(tt "inl"(tts, 0)(bbx_("("0, 0")"))) ~~ tts(tt "add"(bbx_("("0, 0")")))#</code> and <code class="asciimath">#tt "add"(tt "inr"(0, tts)(bbx_("("0, 0")"))) ~~ tts(tt "add"(bbx_("("0, 0")")))#</code>.</p>
-<p>More usefully, if a bit degenerately, every theory induces a collage in the following way. Given a theory #ccT#, we can build the collage #ccK_ccT : ccT ↛ ccT# where the bridges consist of the following. For each sort, #A#, of #ccT#, we have the following bridge: <code class="asciimath">#tt "id"_A : tt "inl"(A) -&gt; tt "inr"(A)#</code>. Then, for every function symbol, #ttf : A -&gt; B# in #ccT#, we have the following equation: <code class="asciimath">#tt "inl"(tt "f")(tt "id"_A(bbx_(tt "inl"(A)))) ~~ tt "id"_B(tt "inr"(tt "f")(bbx_(tt "inl"(A))))#</code>. We have <code class="asciimath">#ccK_ccT(tt "inl"(A), tt "inr"(B)) ~= ccT(A, B)#</code>.</p>
-<p>You can think of a bridging term in a collage as a sequence of function symbols partitioned into two parts by a bridge. Naturally, we might consider partitioning into more than two parts by having more than one bridge. It’s easy to generalize the definition of collage to combine an arbitrary number of theories, but I’ll take a different, probably worse, route. Given collages #ccK_1 : ccT_1 ↛ ccT_2# and #ccK_2 : ccT_2 ↛ ccT_3#, we can make the collage #ccK_2 @ ccK_1 : ccT_1 ↛ ccT_3# by defining its bridges to be triples of a bridge of #ccK_1#, #k_1 : A_1 -&gt; A_2#, a term, #t : A_2 -&gt; B_2# of #ccT_2#, and a bridge of #ccK_2#, #k_2 : B_2 -&gt; B_3# which altogether will be a bridge of #ccK_2 @ ccK_1# going from #A_1 -&gt; B_3#. These triples essentially represent a term like <code class="asciimath">#k_2(t(k_1(bbx_(A_1))))#</code>. With this intuition we can formulate the equations. For each equation <code class="asciimath">#t'(k_1(t_1)) ~~ s'(k'_1(s_1))#</code> where #k_1# and <code class="asciimath">#k'_1#</code> are bridges of #ccK_1#, we have for every bridge #k_2# of #ccK_2# and term #t# of the appropriate sorts <code class="asciimath">#(k_2, t(t'(bbx)), k_1)(t_1) ~~ (k_2, t(s'(bbx)), k'_1)(s_1)#</code> and similarly for equations involving the bridges of #ccK_2#.</p>
-<p>This composition is associative… almost. Furthermore, the collages generated by theories, #ccK_ccT#, behave like identities to this composition… almost. It turns out these statements are true, but only up to isomorphism of theories. That is, #(ccK_3 @ ccK_2) @ ccK_1 ~= ccK_3 @ (ccK_2 @ ccK_1)# but is not equal.</p>
-<p>To talk about isomorphism of theories we need the notion of…</p>
-<h2 id="interpretations">Interpretations</h2>
-<p>An interpretation of a theory gives meaning to the syntax of a theory. There are two nearly identical notions of interpretation for us: interpretation (into sets) and interpretation into a theory. I’ll define them in parallel. An <strong>interpretation</strong> (<strong>into a theory</strong>), #ccI#, is a mapping, written #⟦-⟧^ccI# though the superscript will often be omitted, which maps sorts to sets (sorts) and function symbols to functions (terms). The mapping satisfies:</p>
-<blockquote>
-<p><code class="asciimath">#⟦"src"(f)⟧ = "src"(⟦f⟧)#</code> and <code class="asciimath">#⟦"tgt"(f)⟧ = "tgt"(⟦f⟧)#</code> where <code class="asciimath">#"src"#</code> and <code class="asciimath">#"tgt"#</code> on the right are the domain and codomain operations for an interpretation.</p>
-</blockquote>
-<p>We extend the mapping to a mapping on terms via:</p>
-<blockquote>
-<ul>
-<li>#⟦bbx_A⟧ = x |-&gt; x#, i.e. the identity function, or, for interpretation into a theory, <code class="asciimath">#⟦bbx_A⟧ = bbx_{:⟦A⟧:}#</code></li>
-<li><code class="asciimath">#⟦tt "f"(t)⟧ = ⟦tt "f"⟧ @ ⟦t⟧#</code> or, for interpretation into a theory, <code class="asciimath">#⟦tt "f"(t)⟧ = ⟦tt "f"⟧(⟦t⟧)#</code></li>
-</ul>
-</blockquote>
-<p>and we require that for any equation of the theory, #l ~~ r#, #⟦l⟧ = ⟦r⟧#. (Technically, this is implicitly required for the extension of the mapping to terms to be well-defined, but it’s clearer to state it explicitly.) I’ll write <code class="asciimath">#ccI : ccT -&gt; bb "Set"#</code> when #ccI# is an interpretation of #ccT# into sets, and #ccI’ : ccT_1 -&gt; ccT_2# when #ccI’# is an interpretation of #ccT_1# into #ccT_2#.</p>
-<p>An interpretation of the theory of isomorphisms produces a bijection between two specified sets. Spelling out a simple example where #bbbB# is the set of booleans:</p>
-<blockquote>
-<ul>
-<li>#⟦A⟧ -= bbbB#</li>
-<li>#⟦B⟧ -= bbbB#</li>
-<li><code class="asciimath">#⟦tt "f"⟧ -= x |-&gt; not x#</code></li>
-<li><code class="asciimath">#⟦tt "g"⟧ -= x |-&gt; not x#</code></li>
-</ul>
-</blockquote>
-<p>plus the proof #not not x = x#.</p>
-<p>As another simple example, we can interpret the theory of isomorphisms into itself slightly non-trivially.</p>
-<blockquote>
-<ul>
-<li>#⟦A⟧ -= B#</li>
-<li>#⟦B⟧ -= A#</li>
-<li><code class="asciimath">#⟦tt "f"⟧ -= tt "g"(bbx_B)#</code></li>
-<li><code class="asciimath">#⟦tt "g"⟧ -= tt "f"(bbx_A)#</code></li>
-</ul>
-</blockquote>
-<p>As an (easy) exercise, you should define #pi_1 : ccT_1 xx ccT_2 -&gt; ccT_1# and similarly #pi_2#. If you defined #ccT_1 + ccT_2# before, you should define #iota_1 : ccT_1 -&gt; ccT_1 + ccT_2# and similarly for #iota_2#. As another easy exercise, show that an interpretation of <code class="asciimath">#ccT_{:~=:}#</code> is a bijection. In Haskell, an interpretation of #ccT_bbbN# would effectively be <code>foldNat</code>. Something very interesting happens when you consider what an interpretation of the collage generated by a theory, #ccK_ccT#, is. Spell it out. In a different vein, you can show that a collage #ccK : ccT_1 ↛ ccT_2# and an interpretation <code class="asciimath">#ccT_1^(op) xx ccT_2 -&gt; bb "Set"#</code> are essentially the same thing in the sense that each gives rise to the other.</p>
-<p>Two theories are <strong>isomorphic</strong> if there exists interpretations <code class="asciimath">#ccI_1 : ccT_1 -&gt; ccT_2#</code> and <code class="asciimath">#ccI_2 : ccT_2 -&gt; ccT_1#</code> such that <code class="asciimath">#⟦⟦A⟧^(ccI_1)⟧^(ccI_2) = A#</code> and vice versa, and similarly for function symbols. In other words, each is interpretable in the other, and if you go from one interpretation and then back, you end up where you started. Yet another way to say this is that there is a one-to-one correspondence between sorts and terms of each theory, and this correspondence respects substitution.</p>
-<p>As a crucially important example, the set of terms, #ccT(A, B)#, can be extended to an interpretation. In particular, for each sort #A#, <code class="asciimath">#ccT(A, -) : ccT -&gt; bb "Set"#</code>. It’s action on function symbols is the following:</p>
-<blockquote>
-<p><code class="asciimath">#⟦tt "f"⟧^(ccT(A, -)) -= t |-&gt; tt "f"(t)#</code></p>
-</blockquote>
-<p>We have, dually, <code class="asciimath">#ccT(-, A) : ccT^(op) -&gt; bb "Set"#</code> with the following action:</p>
-<blockquote>
-<p><code class="asciimath">#⟦tt "f"⟧^(ccT(-, A)) -= t |-&gt; t(tt "f"(bbx_B))#</code></p>
-</blockquote>
-<p>We can abstract from both parameters making <code class="asciimath">#ccT(-, =) : ccT^(op) xx ccT -&gt; bb "Set"#</code> which, by an early exercise, can be shown to correspond with the collage #ccK_ccT#.</p>
-<p>Via an abuse of notation, I’ll identify #ccT^(op)(A, -)# with #ccT(-, A)#, though technically we only have an isomorphism between the interpretations, and to talk about isomorphisms between interpretations we need the notion of…</p>
-<h2 id="homomorphisms">Homomorphisms</h2>
-<p>The theories we’ve presented are (multi-sorted) universal algebra theories. Universal algebra allows us to specify a general notion of “homomorphism” that generalizes monoid homomorphism or group homomorphism or ring homomorphism or lattice homomorphism.</p>
-<p>In universal algebra, the algebraic theory of groups consists of a single sort, a nullary operation, #1#, a binary operation, <code class="asciimath">#*#</code>, a unary operation, <code class="asciimath">#tt "inv"#</code>, and some equations which are unimportant for us. Operations correspond to our function symbols except that they’re are not restricted to being unary. A particular group is a particular interpretation of the algebraic theory of groups, i.e. it is a set and three functions into the set. A group homomorphism then is a function between those two groups, i.e. between the two interpretations, that preserves the operations. In a traditional presentation this would look like the following:</p>
-<blockquote>
-<p>Say #alpha : G -&gt; K# is a group homomorphism from the group #G# to the group #K# and #g, h in G# then:</p>
-<ul>
-<li>#alpha(1_G) = 1_K#</li>
-<li><code class="asciimath">#alpha(g *_G h) = alpha(g) *_K alpha(h)#</code></li>
-<li><code class="asciimath">#alpha(tt "inv"_G(g)) = tt "inv"_K(alpha(g))#</code></li>
-</ul>
-</blockquote>
-<p>Using something more akin to our notation, it would look like:</p>
-<blockquote>
-<ul>
-<li>#alpha(⟦1⟧^G) = ⟦1⟧^K#</li>
-<li><code class="asciimath">#alpha(⟦*⟧^G(g,h)) = ⟦*⟧^K(alpha(g), alpha(h))#</code></li>
-<li><code class="asciimath">#alpha(⟦tt "inv"⟧^G(g)) = ⟦tt "inv"⟧^K(alpha(g))#</code></li>
-</ul>
-</blockquote>
-<p>The <code class="asciimath">#tt "inv"#</code> case is the most relevant for us as it is unary. However, for us, a function symbol #ttf# may have a different source and target and so we made need a different function on each side of the equation. E.g. for #ttf : A -&gt; B#, #alpha : ccI_1 -&gt; ccI_2#, and #a in ⟦A⟧^(ccI_1)# we’d have:</p>
-<blockquote>
-<p><code class="asciimath">#alpha_B(⟦tt "f"⟧^(ccI_1)(a)) = ⟦tt "f"⟧^(ccI_2)(alpha_A(a))#</code></p>
-</blockquote>
-<p>So a <strong>homomorphism</strong> <code class="asciimath">#alpha : ccI_1 -&gt; ccI_2 : ccT -&gt; bb "Set"#</code> is a <em>family</em> of functions, one for each sort of #ccT#, that satisfies the above equation for every function symbol of #ccT#. We call the individual functions making up #alpha# <strong>components</strong> of #alpha#, and we have <code class="asciimath">#alpha_A : ⟦A⟧^(ccI_1) -&gt; ⟦A⟧^(ccI_2)#</code>. The definition for an interpretation into a theory, #ccT_2#, is identical except the components of #alpha# are terms of #ccT_2# and #a# can be replaced with #bbx_(⟦A⟧^(ccI_1))#. Two interpretations are <strong>isomorphic</strong> if we have homomorphism #alpha : ccI_1 -&gt; ccI_2# such that each component is a bijection. This is the same as requiring a homomorphism #beta : ccI_2 -&gt; ccI_1# such that for each #A#, #alpha_A(beta_A(x)) = x# and #beta_A(alpha_A(x)) = x#. A similar statement can be made for interpretations into theories, just replace #x# with <code class="asciimath">#bbx_(⟦A⟧)#</code>.</p>
-<p>Another way to look at homomorphisms is via collages. A homomorphism <code class="asciimath">#alpha : ccI_1 -&gt; ccI_2 : ccT -&gt; bb "Set"#</code> gives rise to an interpretation of the collage #ccK_ccT#. The interpretation <code class="asciimath">#ccI_alpha : ccK_ccT -&gt; bb "Set"#</code> is defined by:</p>
-<blockquote>
-<ul>
-<li><code class="asciimath">#⟦tt "inl"(A)⟧^(ccI_alpha) -= ⟦A⟧^(ccI_1)#</code></li>
-<li><code class="asciimath">#⟦tt "inr"(A)⟧^(ccI_alpha) -= ⟦A⟧^(ccI_2)#</code></li>
-<li><code class="asciimath">#⟦tt "inl"(ttf)⟧^(ccI_alpha) -= ⟦ttf⟧^(ccI_1)#</code></li>
-<li><code class="asciimath">#⟦tt "inr"(ttf)⟧^(ccI_alpha) -= ⟦ttf⟧^(ccI_2)#</code></li>
-<li><code class="asciimath">#⟦tt "id"_A⟧^(ccI_alpha) -= alpha_A#</code></li>
-</ul>
-</blockquote>
-<p>The homomorphism law guarantees that it satisfies the equation on <code class="asciimath">#tt "id"#</code>. Conversely, given an interpretation of #ccK_ccT#, we have the homomorphism, <code class="asciimath">#⟦tt "id"⟧ : ⟦tt "inl"(-)⟧ -&gt; ⟦tt "inr"(-)⟧ : ccT -&gt; bb "Set"#</code>. and the equation on <code class="asciimath">#tt "id"#</code> is exactly the homomorphism law.</p>
-<h2 id="yoneda">Yoneda</h2>
-<p>Consider a homomorphism #alpha : ccT(A, -) -&gt; ccI#. The #alpha# needs to satisfy for every sort #B# and #C#, every function symbol #ttf : C -&gt; D#, and every term #t : B -&gt; C#:</p>
-<blockquote>
-<p><code class="asciimath">#alpha_D(tt "f"(t)) = ⟦tt "f"⟧^ccI(alpha_C(t))#</code></p>
-</blockquote>
-<p>Looking at this equation, the possibility of viewing it as a recursive “definition” leaps out suggesting that the action of #alpha# is completely determined by it’s action on the variables. Something like this, for example:</p>
-<blockquote>
-<p><code class="asciimath">#alpha_D(tt "f"(tt "g"(tt "h"(bbx_A)))) = ⟦tt "f"⟧(alpha_C(tt "g"(tt "h"(bbx_A)))) = ⟦tt "f"⟧(⟦tt "g"⟧(alpha_B(tt "h"(bbx_A)))) = ⟦tt "f"⟧(⟦tt "g"⟧(⟦tt "h"⟧(alpha_A(bbx_A))))#</code></p>
-</blockquote>
-<p>We can easily establish that there’s a one-to-one correspondence between the set of homomorphisms #ccT(A, -) -&gt; ccI# and the elements of the set #⟦A⟧^ccI#. Given a homomorphism, #alpha#, we get an element of #⟦A⟧^ccI# via #alpha_A(bbx_A)#. Inversely, given an element #a in ⟦A⟧^ccI#, we can define a homomorphism <code class="asciimath">#a^**#</code> via:</p>
-<blockquote>
-<ul>
-<li><code class="asciimath">#a_D^**(tt "f"(t)) -= ⟦tt "f"⟧^ccI(a_C^**(t))#</code></li>
-<li><code class="asciimath">#a_A^**(bbx_A) -= a#</code></li>
-</ul>
-</blockquote>
-<p>which clearly satisfies the condition on homomorphisms by definition. It’s easy to verify that <code class="asciimath">#(alpha_A(bbx_A))^** = alpha#</code> and immediately true that <code class="asciimath">#a^**(bbx_A) = a#</code> establishing the bijection.</p>
-<p>We can state something stronger. Given any homomorphism #alpha : ccT(A, -) -&gt; ccI# and any function symbol #ttg : A -&gt; X#, we can make a new homomorphism #alpha * ttg : ccT(X, -) -&gt; ccI# via the following definition:</p>
-<blockquote>
-<p><code class="asciimath">#(alpha * ttg)(t) = alpha(t(tt "g"(bbx_A)))#</code></p>
-</blockquote>
-<p>Verifying that this is a homomorphism is straightforward:</p>
-<blockquote>
-<p><code class="asciimath">#(alpha * ttg)(tt "f"(t)) = alpha(tt "f"(t(tt "g"(bbx_A)))) = ⟦tt "f"⟧(alpha(t(tt "g"(bbx_A)))) = ⟦tt "f"⟧((alpha * ttg)(t))#</code></p>
-</blockquote>
-<p>and like any homomorphism of this form, as we’ve just established, it is completely determined by it’s action on variables, namely <code class="asciimath">#(alpha * ttg)_A(bbx_A) = alpha_X(tt "g"(bbx_A)) = ⟦tt "g"⟧(alpha_A(bbx_A))#</code>. In particular, if <code class="asciimath">#alpha = a^**#</code>, then we have <code class="asciimath">#a^** * ttg = (⟦tt "g"⟧(a))^**#</code>. Together these facts establish that we have an interpretation <code class="asciimath">#ccY : ccT -&gt; bb "Set"#</code> such that <code class="asciimath">#⟦A⟧^ccY -= (ccT(A, -) -&gt; ccI)#</code>, the <em>set</em> of homomorphisms, and <code class="asciimath">#⟦tt "g"⟧^ccY(alpha) -= alpha * tt "g"#</code>. The work we did before established that we have homomorphisms #(-)(bbx) : ccY -&gt; ccI# and <code class="asciimath">#(-)^** : ccI -&gt; ccY#</code> that are inverses. This is true for all theories and all interpretations as at no point did we use any particular facts about them. This statement is the (dual form of the) Yoneda lemma. To get the usual form simply replace #ccT# with #ccT^(op)#. A particularly important and useful case (so useful it’s usually used tacitly) occurs when we choose #ccI = ccT(B,-)#, we get #(ccT(A, -) -&gt; ccT(B, -)) ~= ccT(B, A)# or, choosing #ccT^(op)# everywhere, #(ccT(-, A) -&gt; ccT(-, B)) ~= ccT(A, B)# which states that a term from #A# to #B# is equivalent to a homomorphism from #ccT(-, A)# to #ccT(-, B)#.</p>
-<p>There is another result, dual in a different way, called the co-Yoneda lemma. It turns out it is a corollary of the fact that for a collage #ccK : ccT_1 ↛ ccT_2#, <code class="asciimath">#ccK_(ccT_2) @ ccK ~= ccK#</code> and the dual is just the composition the other way. To get (closer to) the precise result, we need to be able to turn an interpretation into a collage. Given an interpretation, <code class="asciimath">#ccI : ccT -&gt; bb "Set"#</code>, we can define a collage #ccK_ccI : ccT_bb1 ↛ ccT# whose bridges from #1 -&gt; A# are the elements of #⟦A⟧^ccI#. Given this, the co-Yoneda lemma is the special case, #ccK_ccT @ ccK_ccI ~= ccK_ccI#.</p>
-<p>Note, that the Yoneda and co-Yoneda lemmas only apply to interpretations into sets as #ccY# involves the <em>set</em> of homomorphisms.</p>
-<h2 id="representability">Representability</h2>
-<p>The Yoneda lemma suggests that the interpretations #ccT(A, -)# and #ccT(-, A)# are particularly important and this will be borne out as we continue.</p>
-<p>We call an interpretation, <code class="asciimath">#ccI : ccT^(op) -&gt; bb "Set"#</code> <strong>representable</strong> if #ccI ~= ccT(-, X)# for some sort #X#. We then say that #X# <strong>represents</strong> #ccI#. What this states is that every term of sort #X# corresponds to an element in one of the sets that make up #ccI#, and these transform appropriately. There’s clearly a particularly important element, namely the image of #bbx_X# which corresponds to an element in #⟦X⟧^ccI#. This element is called the <strong>universal element</strong>. The dual concept is, for <code class="asciimath">#ccI : ccT -&gt; bb "Set"#</code>, #ccI# is <strong>co-representable</strong> if #ccI ~= ccT(X, -)#. We will also say #X# represents #ccI# in this case as it actually does when we view #ccI# as an interpretation of <code class="asciimath">#(ccT^(op))^(op)#</code>.</p>
-<p>As a rather liberating exercise, you should establish the following result called <strong>parameterized representability</strong>. Assume we have theories #ccT_1# and #ccT_2#, and a family of sorts of #ccT_2#, #X#, and a family of interpretations of #ccT_2^(op)#, #ccI#, both indexed by sorts of #ccT_1#, such that for each <code class="asciimath">#A in bb "sort"(ccT_1)#</code>, #X_A# represents #ccI_A#, i.e. #ccI_A ~= ccT_2(-, X_A)#. Given all this, then there is a <em>unique</em> interpretation #ccX : ccT_1 -&gt; ccT_2# and <code class="asciimath">#ccI : ccT_1 xx ccT_2^(op) -&gt; bb "Set"#</code> where #⟦A⟧^(ccX) -= X_A# and <code class="asciimath">#"⟦("A, B")⟧"^ccI -= ⟦B⟧^(ccI_A)#</code> such that #ccI ~= ccT_2(=,⟦-⟧^ccX)#. To be a bit more clear, the right hand side means #(A, B) |-&gt; ccT_2(B, ⟦A⟧^ccX)#. Simply by choosing #ccT_1# to be a product of multiple theories, we can generalize this result to an arbitrary number of parameters. What makes this result liberating is that we just don’t need to worry about the parameters, they will automatically transform homomorphically. As a technical warning though, since two interpretations may have the same action on sorts but a different action on function symbols, if the family #X_A# was derived from an interpretation #ccJ#, i.e. #X_A -= ⟦A⟧^ccJ#, it may <em>not</em> be the case that #ccX = ccJ#.</p>
-<p>Let’s look at some examples.</p>
-<p>As a not-so-special case of representability, we can consider <code class="asciimath">#ccI -= ccK(tt "inl"(-), tt "inr"(Z))#</code> where #ccK : ccT_1 ↛ ccT_2#. Saying that #A# represents #ccI# in this case is saying that <em>bridging</em> terms of sort <code class="asciimath">#tt "inr"(Z)#</code>, i.e. sort #Z# in #ccT_2#, in #ccK#, correspond to terms of sort #A# in #ccT_1#. We’ll call the universal element of this representation the <strong>universal bridge</strong> (though technically it may be a bridging term, not a bridge). Let’s write #varepsilon# for this universal bridge. What representability states in this case is given <em>any</em> bridging term #k# of sort #Z#, there exists a unique term #|~ k ~|# of sort #A# such that #k = varepsilon(|~ k ~|)#. If we have an interpretation #ccX : ccT_2 -&gt; ccT_1# such that #⟦Z⟧^ccX# represents <code class="asciimath">#ccK(tt "inl"(-), tt "inr"(Z))#</code> for each sort #Z# of #ccT_2# we say we have a <strong>right representation</strong> of #ccK#. Note, that the universal bridges become a family <code class="asciimath">#varepsilon_Z : ⟦Z⟧^ccX -&gt; Z#</code>. Similarly, if <code class="asciimath">#ccK(tt "inl"(A), tt "inr"(-))#</code> is co-representable for each #A#, we say we have a <strong>left representation</strong> of #ccK#. The <strong>co-universal bridge</strong> is then a bridging term #eta_A : A -&gt; ⟦A⟧# such that for any bridging term #k# with source #A#, there exists a unique term <code class="asciimath">#|__ k __|#</code> in #ccT_2# such that <code class="asciimath">#k = |__ k __|(eta_A)#</code>. For reference, we’ll call these equations <strong>universal properties</strong> of the left/right representation. Parameterized representability implies that a left/right representation is essentially unique.</p>
-<center>
-<img src="/posts/raw/left-rep.svg" alt="" width="20%"></img> <img src="/posts/raw/right-rep.svg" alt="" width="20%"></img>
-</center>
-<p>Define #ccI_bb1# via #⟦A⟧^(ccI_bb1) -= bb1# where #bb1# is some one element set. #⟦ttf⟧^(ccI_bb1)# is the identity function for all function symbols #ttf#. We’ll say a theory #ccT# <strong>has a unit sort</strong> or <strong>has a terminal sort</strong> if there is a sort that we’ll also call #bb1# that represents #ccI_bb1#. Spelling out what that means, we first note that there is nothing notable about the universal element as it’s the only element. However, writing the homomorphism #! : ccI_bb1 -&gt; ccT(-, bb1)# and noting that since there’s only one element of #⟦A⟧^(ccI_bb1)# we can, with a slight abuse of notation, also write the term #!# picks out as #!# which gives the equation:</p>
-<blockquote>
-<p><code class="asciimath">#!_B(tt "g"(t)) = !_A(t)#</code> for any function symbol #ttg : A -&gt; B# and term, #t#, of sort #A#, note <code class="asciimath">#!_A : A -&gt; bb1#</code>.</p>
-</blockquote>
-<p>This equation states what the isomorphism also fairly directly states: there is exactly one term of sort #bb1# from any sort #A#, namely <code class="asciimath">#!_A(bbx_A)#</code>. The dual notion is called a <strong>void sort</strong> or an <strong>initial sort</strong> and will usually be notated #bb0#, the analog of #!# will be written as #0#. The resulting equation is:</p>
-<blockquote>
-<p><code class="asciimath">#tt "f"(0_A) = 0_B#</code> for any function symbol #ttf : A -&gt; B#, note #0_A : bb0 -&gt; A#.</p>
-</blockquote>
-<p>For the next example, I’ll leverage collages. Consider the collage #ccK_2 : ccT ↛ ccT xx ccT# whose bridges from #A -&gt; (B, C)# consist of pairs of terms #t_1 : A -&gt; B# and #t_2 : A -&gt; C#. #ccT# <strong>has pairs</strong> if #ccK_2# has a right representation. We’ll write #(B, C) |-&gt; B xx C# for the representing interpretation’s action on sorts. We’ll write the universal bridge as <code class="asciimath">#(tt "fst"(bbx_(B xx C)), tt "snd"(bbx_(B xx C)))#</code>. The universal property then looks like <code class="asciimath">#(tt "fst"(bbx_(B xx C)), tt "snd"(bbx_(B xx C)))((: t_1, t_2 :)) = (t_1, t_2)#</code> where #(: t_1, t_2 :) : A -&gt; B xx C# is the unique term induced by the bridge #(t_1, t_2)#. The universal property implies the following equations:</p>
-<blockquote>
-<ul>
-<li><code class="asciimath">#(: tt "fst"(bbx_(B xx C)), tt "snd"(bbx_(B xx C))) = bbx_(B xx C)#</code></li>
-<li><code class="asciimath">#tt "fst"((: t_1, t_2 :)) = t_1#</code></li>
-<li><code class="asciimath">#tt "snd"((: t_1, t_2 :)) = t_2#</code></li>
-</ul>
-</blockquote>
-<center>
-<img src="/posts/raw/right-rep-pairs.svg" alt="" width="20%"></img>
-</center>
-<p>One aspect of note is regardless of whether #ccK_2# has a right representation, i.e. regardless of whether #ccT# has pairs, it always has a left representation. The co-universal bridge is #(bbx_A, bbx_A)# and the unique term <code class="asciimath">#|__(t_1, t_2)__|#</code> is <code class="asciimath">#tt "inl"(t_1, bbx_A)(tt "inr"(bbx_A, t_2)(bbx_("("A,A")")))#</code>.</p>
-<center>
-<img src="/posts/raw/left-rep-pairs.svg" alt="" width="20%"></img>
-</center>
-<p>Define an interpretation #Delta : ccT -&gt; ccT xx ccT# so that #⟦A⟧^Delta -= (A,A)# and similarly for function symbols. #Delta# left represents #ccK_2#. If the interpretation #(B,C) |-&gt; B xx C# right represents #ccK_2#, then we say we have an adjunction between #Delta# and #(- xx =)#, written #Delta ⊣ (- xx =)#, and that #Delta# is left adjoint to #(- xx =)#, and conversely #(- xx =)# is right adjoint #Delta#.</p>
-<center>
-<img src="/posts/raw/left-right-rep-pairs.svg" alt="" width="20%"></img>
-</center>
-<p>More generally, whenever we have the situation <code class="asciimath">#ccT_1(⟦-⟧^(ccI_1), =) ~= ccT_2(-, ⟦=⟧^(ccI_2))#</code> we say that #ccI_1 : ccT_2 -&gt; ccT_1# is <strong>left adjoint</strong> to #ccI_2 : ccT_1 -&gt; ccT_2# or conversely that #ccI_2# is <strong>right adjoint</strong> to #ccI_1#. We call this arrangement an <strong>adjunction</strong> and write #ccI_1 ⊣ ccI_2#. Note that we will always have this situation if #ccI_1# left represents and #ccI_2# right represents the same collage. As we noted above, parameterized representability actually determines one adjoint given (its action on sorts and) the other adjoint. With this we can show that adjoints are unique up to isomorphism, that is, given two left adjoints to an interpretation, they must be isomorphic. Similarly for right adjoints. This means that stating something is a left or right adjoint to some other known interpretation essentially completely characterizes it. One issue with adjunctions is that they tend to be wholesale. Let’s say the pair sort #A xx B# existed but no other pair sorts existed, then the (no longer parameterized) representability approach would work just fine, but the adjunction would no longer exist.</p>
-<p>Here’s a few of exercises using this. First, a moderately challenging one (until you catch the pattern): spell out the details to the left adjoint to #Delta#. We say a theory <strong>has sums</strong> and write those sums as #A + B# if #(- + =) ⊣ Delta#. Recast void and unit sorts using adjunctions and/or left/right representations. As a terminological note, we say a theory <strong>has finite products</strong> if it has unit sorts and pairs. Similarly, a theory <strong>has finite sums</strong> or <strong>has finite coproducts</strong> if it has void sorts and sums. An even more challenging exercise is the following: a theory <strong>has exponentials</strong> if it has pairs and for every sort #A#, #(A xx -) ⊣ (A =&gt; -)# (note, parameterized representability applies to #A#). Spell out the equations characterizing #A =&gt; B#.</p>
-<h2 id="finite-product-theories">Finite Product Theories</h2>
-<p>Finite products start to lift us off the ground. So far the theories we’ve been working with have been extremely basic: a language with only unary functions, all terms being just a sequence of applications of function symbols. It shouldn’t be underestimated though. It’s more than enough to do monoid and group theory. A good amount of graph theory can be done with just this. And obviously we were able to establish several general results assuming only this structure. Nevertheless, while we can talk about specific groups, say, we can’t talk about the <em>theory</em> of groups. Finite products change this.</p>
-<p>A theory with finite products allows us to talk about multi-ary function symbols and terms by considering unary function symbols from products. This allows us to do all of universal algebra. For example, the <strong>theory of groups</strong>, <code class="asciimath">#ccT_(bb "Grp")#</code>, consists of a sort #S# and all it’s products which we’ll abbreviate as #S^n# with #S^0 -= bb1# and #S^(n+1) -= S xx S^n#. It has three function symbols #tte : bb1 -&gt; S#, #ttm : S^2 -&gt; S#, and #tti : S -&gt; S# plus the ones that having finite products requires. In fact, instead of just heaping an infinite number of sorts and function symbols into our theory — and we haven’t even gotten to equations — let’s define a compact set of data from which we can generate all this data.</p>
-<p>A <strong>signature</strong>, #Sigma#, consists of a collection of sorts, #sigma#, a collection of <em>multi-ary</em> function symbols, and a collection of equations. Equations still remain pairs of terms, but we need to now extend our definition of terms for this context. A <strong>term (in a signature)</strong> is either a variable, <code class="asciimath">#bbx_i^[A_0,A_1,...,A_n]#</code> where #A_i# are sorts and #0 &lt;= i &lt;= n#, the operators <code class="asciimath">#tt "fst"#</code> or <code class="asciimath">#tt "snd"#</code> applied to a term, the unit term written #(::)^A# with sort #A#, a pair of terms written #(: t_1, t_2 :)#, or the (arity correct) application of a multi-ary function symbol to a series of terms, e.g. <code class="asciimath">#tt "f"(t_1, t_2, t_3)#</code>. As a Haskell data declaration, it might look like:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">data</span> <span class="dt">SigTerm</span></span>
-<span id="cb3-2"><a href="#cb3-2"></a>    <span class="ot">=</span> <span class="dt">SigVar</span> [<span class="dt">Sort</span>] <span class="dt">Int</span></span>
-<span id="cb3-3"><a href="#cb3-3"></a>    <span class="op">|</span> <span class="dt">Fst</span> <span class="dt">SigTerm</span></span>
-<span id="cb3-4"><a href="#cb3-4"></a>    <span class="op">|</span> <span class="dt">Snd</span> <span class="dt">SigTerm</span></span>
-<span id="cb3-5"><a href="#cb3-5"></a>    <span class="op">|</span> <span class="dt">Unit</span> <span class="dt">Sort</span></span>
-<span id="cb3-6"><a href="#cb3-6"></a>    <span class="op">|</span> <span class="dt">Pair</span> <span class="dt">SigTerm</span> <span class="dt">SigTerm</span></span>
-<span id="cb3-7"><a href="#cb3-7"></a>    <span class="op">|</span> <span class="dt">SigApply</span> <span class="dt">FunctionSymbol</span> [<span class="dt">SigTerm</span>]</span></code></pre></div>
-<p>At this point, sorting (i.e. typing) the terms is no longer trivial, though it is still pretty straightforward. Sorts are either #bb1#, or #A xx B# for sorts #A# and #B#, or a sort #A in sigma#. The source of function symbols or terms are <em>lists</em> of sorts.</p>
-<blockquote>
-<ul>
-<li><code class="asciimath">#bbx_i^[A_0, A_1, ..., A_n] : [A_0, A_1, ..., A_n] -&gt; A_i#</code></li>
-<li><code class="asciimath">#(::)^A : [A] -&gt; bb1#</code></li>
-<li><code class="asciimath">#(: t_1, t_2 :) : bar S -&gt; T_1 xx T_2#</code> where #t_i : bar S -&gt; T_i#</li>
-<li><code class="asciimath">#tt "fst"(t) : bar S -&gt; T_1#</code> where #t : bar S -&gt; T_1 xx T_2#</li>
-<li><code class="asciimath">#tt "snd"(t) : bar S -&gt; T_2#</code> where #t : bar S -&gt; T_1 xx T_2#</li>
-<li><code class="asciimath">#tt "f"(t_1, ..., t_n) : bar S -&gt; T#</code> where #t_i : bar S -&gt; T_i# and <code class="asciimath">#ttf : [T_1,...,T_n] -&gt; T#</code></li>
-</ul>
-</blockquote>
-<p>The point of a signature was to represent a theory so we can compile a term of a signature into a term of a theory with finite products. The <strong>theory generated from a signature</strong> #Sigma# has the same sorts as #Sigma#. The equations will be equations of #Sigma#, with the terms compiled as will be described momentarily, plus for every pair of sorts the equations that describe pairs and the equations for #!#. Finally, we need to describe how to take a term of the signature and make a function symbol of the theory, but before we do that we need to explain how to convert those sources of the terms which are lists. That’s just a conversion to right nested pairs, <code class="asciimath">#[A_0,...,A_n] |-&gt; A_0 xx (... xx (A_n xx bb1) ... )#</code>. The compilation of a term #t#, which we’ll write as <code class="asciimath">#ccC[t]#</code>, is defined as follows:</p>
-<blockquote>
-<ul>
-<li><code class="asciimath">#ccC[bbx_i^[A_0, A_1, ..., A_n]] = tt "snd"^i(tt "fst"(bbx_(A_i xx(...))))#</code> where <code class="asciimath">#tt "snd"^i#</code> means the #i#-fold application of <code class="asciimath">#tt "snd"#</code></li>
-<li><code class="asciimath">#ccC[(::)^A] = !_A#</code></li>
-<li><code class="asciimath">#ccC[(: t_1, t_2 :)] = (: ccC[t_1], ccC[t_2] :)#</code></li>
-<li><code class="asciimath">#ccC[tt "fst"(t)] = tt "fst"(ccC[t])#</code></li>
-<li><code class="asciimath">#ccC[tt "snd"(t)] = tt "snd"(ccC[t])#</code></li>
-<li><code class="asciimath">#ccC[tt "f"(t_1, ..., t_n)] = tt "f"((: ccC[t_1], (: ... , (: ccC[t_n], ! :) ... :) :))#</code></li>
-</ul>
-</blockquote>
-<p>As you may have noticed, the generated theory will have an infinite number of sorts, an infinite number of function symbols, and an infinite number of equations no matter what the signature is — even an empty one! Having an infinite number of things isn’t a problem as long as we can algorithmically describe them and this is what the signature provides. Of course, if you’re a (typical) mathematician you nominally don’t care about an algorithmic description. Besides being compact, signatures present a nicer term language. The theories are like a core or assembly language. We could define a slightly nicer variation where we keep a context and manage named variables leading to terms-in-context like:</p>
-<blockquote>
-<p><code class="asciimath">#x:A, y:B |-- tt "f"(x, x, y)#</code></p>
-</blockquote>
-<p>which is</p>
-<blockquote>
-<p><code class="asciimath">#tt "f"(bbx_0^[A,B], bbx_0^[A,B], bbx_1^[A,B])#</code></p>
-</blockquote>
-<p>for our current term language for signatures. Of course, compilation will be (slightly) trickier for the nicer language.</p>
-<p>The benefit of having compiled the signature to a theory, in addition to being able to reuse the results we’ve established for theories, is we only need to define operations on the theory, which is simpler since we only need to deal with pairs and unary function symbols. One example of this is we’d like to extend our notion of interpretation to one that respects the structure of the signature, and we can do that by defining an interpretation of theories that respects finite products.</p>
-<p>A <strong>finite product preserving interpretation (into a finite product theory)</strong>, #ccI#, is an interpretation (into a finite product theory) that additionally satisfies:</p>
-<blockquote>
-<ul>
-<li><code class="asciimath">#⟦bb1⟧^ccI ~~ bb1#</code></li>
-<li><code class="asciimath">#⟦A xx B⟧^ccI ~~ ⟦A⟧^ccI xx ⟦B⟧^ccI#</code></li>
-</ul>
-</blockquote>
-<blockquote>
-<ul>
-<li><code class="asciimath">#⟦!_A⟧^ccI = !_(⟦A⟧^ccI)#</code></li>
-<li><code class="asciimath">#⟦tt "fst"(t)⟧^ccI = tt "fst"(⟦t⟧^ccI)#</code></li>
-<li><code class="asciimath">#⟦tt "snd"(t)⟧^ccI = tt "snd"(⟦t⟧^ccI)#</code></li>
-<li><code class="asciimath">#⟦(: t_1, t_2 :)⟧^ccI = (: ⟦t_1⟧^ccI, ⟦t_2⟧^ccI :)#</code></li>
-</ul>
-</blockquote>
-<p>where, for <code class="asciimath">#bb "Set"#</code>, #bb1 -= {{}}#, #xx# is the cartesian product, <code class="asciimath">#tt "fst"#</code> and <code class="asciimath">#tt "snd"#</code> are the projections, <code class="asciimath">#!_A -= x |-&gt; \{\}#</code>, and #(: f, g :) -= x |-&gt; (: f(x), g(x) :)#.</p>
-<p>With signatures, we can return to our theory, now signature, of groups. <code class="asciimath">#Sigma_bb "Grp"#</code> has a single sort #S#, three function symbols <code class="asciimath">#tte : [bb1] -&gt; S#</code>, <code class="asciimath">#tti : [S] -&gt; S#</code>, and <code class="asciimath">#ttm : [S, S] -&gt; S#</code>, with the following equations:</p>
-<blockquote>
-<ul>
-<li><code class="asciimath">#tt "m"(tt "e"((::)^S), bbx_0^S) ~~ bbx_0^S#</code></li>
-<li><code class="asciimath">#tt "m"(tt "i"(bbx_0^S), bbx_0^S) ~~ tt "e"((::)^S)#</code></li>
-<li><code class="asciimath">#tt "m"(tt "m"(bbx_0^[S,S,S], bbx_1^[S,S,S]), bbx_2^[S,S,S]) ~~ tt "m"(bbx_0^[S,S,S], tt "m"(bbx_1^[S,S,S], bbx_2^[S,S,S]))#</code></li>
-</ul>
-</blockquote>
-<p>or using the nicer syntax:</p>
-<blockquote>
-<ul>
-<li><code class="asciimath">#x:S |-- tt "m"(tt "e"(), x) ~~ x#</code></li>
-<li><code class="asciimath">#x:S |-- tt "m"(tt "i"(x), x) ~~ tt "e"()#</code></li>
-<li><code class="asciimath">#x:S, y:S, z:S |-- tt "m"(tt "m"(x, y), z) ~~ tt "m"(x, tt "m"(y, z))#</code></li>
-</ul>
-</blockquote>
-<p>An actual group is then just a finite product preserving interpretation of (the theory generated by) this signature. All of universal algebra and much of abstract algebra can be formulated this way.</p>
-<h2 id="the-simply-typed-lambda-calculus-and-beyond">The Simply Typed Lambda Calculus and Beyond</h2>
-<p>We can consider additionally assuming that our theory has exponentials. I left articulating exactly what that means as an exercise, but the upshot is we have the following two operations:</p>
-<p>For any term #t : A xx B -&gt; C#, we have the term <code class="asciimath">#tt "curry"(t) : A -&gt; C^B#</code>. We also have the homomorphism <code class="asciimath">#tt "app"_(AB) : B^A xx A -&gt; B#</code>. They satisfy:</p>
-<blockquote>
-<ul>
-<li><code class="asciimath">#tt "curry"(tt "app"(bbx_(B^A xx A))) = bbx_(B^A)#</code></li>
-<li><code class="asciimath">#tt "app"((: tt "curry"(t_1), t_2 :)) = t_1((: bbx_A, t_2 :))#</code> where #t_1 : A xx B -&gt; C# and #t_2 : A -&gt; B#.</li>
-</ul>
-</blockquote>
-<p>We can view these, together with the the product operations, as combinators, and it turns out we can compile the simply typed lambda calculus into the above theory. This is exactly what the <a href="https://en.wikipedia.org/wiki/Categorical_abstract_machine">Categorical Abstract Machine</a> did. The “Caml” in “O’Caml” stands for “Categorical Abstract Machine Language”, though O’Caml no longer uses the CAM. Conversely, every term of the theory can be expressed as a simply typed lambda term. This means we can view the simply typed lambda calculus as just a different presentation of the theory.</p>
-<p>At this point, this presentation of category theory starts to connect to the mainstream categorical literature on <a href="https://ncatlab.org/nlab/show/algebraic+theory">universal algebra</a>, <a href="https://ncatlab.org/nlab/show/type+theory#TheInternalLanguageOfACategory">internal languages</a>, <a href="https://ncatlab.org/nlab/show/sketch">sketches</a>, and <a href="https://ncatlab.org/nlab/show/internal+logic">internal logic</a>. This page gives a synopsis of the <a href="https://ncatlab.org/nlab/show/relation+between+type+theory+and+category+theory">relationship between type theory and category theory</a>. For some reason, it is unusual to talk about the internal language of a plain category, but that is exactly what we’ve done here.</p>
-<p>I haven’t talked about finite limits or colimits beyond products and coproducts, nor have I talked about even the infinitary versions of products and coproducts, let alone arbitrary limits and colimits. These can be handled the same way as products and coproducts. Formulating a language like signatures or the simply typed lambda calculus is a bit more complicated, but not that hard. I may make a follow-up article covering this among other things. I also have a side project (don’t hold your breath), that implements the internal language of a category with finite limits. The result looks roughly like a simple version of an algebraic specification language like the <a href="https://cseweb.ucsd.edu/~goguen/sys/obj.html">OBJ family</a>. The <code>RING</code> theory described in the <a href="http://maude.lcc.uma.es/manual271/maude-manualch6.html#x41-880006.3">Maude manual</a> gives an idea of what it would look like. In fact, here’s an example of the current actual syntax I’m using.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
-<pre><code>theory Categories
-    type O
-    type A
-    given src : A -&gt; O
-    given tgt : A -&gt; O
-
-    given id : O -&gt; A
-    satisfying o:O | src (id o) = o, tgt (id o) = o
-
-    given c : { f:A, g:A | src f = tgt g } -&gt; A
-    satisfying (f, g):{ f:A, g:A | src f = tgt g }
-        | tgt (c (f, g)) = tgt f, src (c (f, g)) = src g
-    satisfying &quot;left unit&quot; (o, f):{ o:O, f:A | tgt f = o }
-        | c (id o, f) = f
-    satisfying &quot;right unit&quot; (o, f):{ o:O, f:A | src f = o }
-        | c (f, id o) = f
-    satisfying &quot;associativity&quot; (f, g, h):{ f:A, g:A, h:A | src f = tgt g, src g = tgt h }
-        | c (c (f, g), h) = c (f, c (g, h))
-endtheory</code></pre>
-<p>It turns out this is a particularly interesting spot in the design space. The fact that the theory of theories with finite limits is itself a theory with finite limits has interesting consequences. It is still relatively weak though. For example, it’s not possible to describe the theory of fields in this language.</p>
-<p>There are other directions one could go. For example, the internal logic of monoidal categories is (a fragment of) ordered linear logic. You can cross this bridge either way. You can look at different languages and consider what categorical structure is needed to support the features of the language, or you can add features to the category and see how that impacts the internal language. The relationship is similar to the source language and a core/intermediate language in a compiler, e.g. GHC Haskell and <a href="https://ghc.haskell.org/trac/ghc/wiki/Commentary/Compiler/FC">System Fc</a>.</p>
-<h2 id="decoder">Decoder</h2>
-<p>If you’ve looked at category theory at all, you can probably make most of the connections without me telling you. The table below outlines the mapping, but there are some subtleties. First, as a somewhat technical detail, my definition of a theory corresponds to a <em>small</em> category, i.e. a category which has a set of objects and a set of arrows. For more programmer types, you should think of “set” as <code>Set</code> in Agda, i.e. similar to the <code>*</code> kind in Haskell. Usually “category” means “locally small category” which may have a proper class of objects and between any two objects a set of arrows (though the union of all those sets may be a proper class). Again, for programmers, the distinction between “class” and “set” is basically the difference between <code>Set</code> and <code>Set1</code> in Agda.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> To make my definition of theory closer to this, all that is necessary is instead of having a set of function symbols, have a family of sets indexed by pairs of objects. Here’s what a partial definition in Agda of the two scenarios would look like:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode agda"><code class="sourceCode agda"><span id="cb5-1"><a href="#cb5-1"></a><span class="co">-- Small category (the definition I used)</span></span>
-<span id="cb5-2"><a href="#cb5-2"></a><span class="kw">record</span> SmallCategory <span class="ot">:</span> <span class="dt">Set1</span> <span class="kw">where</span></span>
-<span id="cb5-3"><a href="#cb5-3"></a>    <span class="kw">field</span></span>
-<span id="cb5-4"><a href="#cb5-4"></a>        objects <span class="ot">:</span> <span class="dt">Set</span></span>
-<span id="cb5-5"><a href="#cb5-5"></a>        arrows <span class="ot">:</span> <span class="dt">Set</span></span>
-<span id="cb5-6"><a href="#cb5-6"></a>        src <span class="ot">:</span> arrows <span class="ot">-&gt;</span> objects</span>
-<span id="cb5-7"><a href="#cb5-7"></a>        tgt <span class="ot">:</span> arrows <span class="ot">-&gt;</span> objects</span>
-<span id="cb5-8"><a href="#cb5-8"></a>        <span class="ot">...</span></span>
-<span id="cb5-9"><a href="#cb5-9"></a></span>
-<span id="cb5-10"><a href="#cb5-10"></a><span class="co">-- Locally small category</span></span>
-<span id="cb5-11"><a href="#cb5-11"></a><span class="kw">record</span> LocallySmallCategory <span class="ot">:</span> <span class="dt">Set2</span> <span class="kw">where</span></span>
-<span id="cb5-12"><a href="#cb5-12"></a>    <span class="kw">field</span></span>
-<span id="cb5-13"><a href="#cb5-13"></a>        objects <span class="ot">:</span> <span class="dt">Set1</span></span>
-<span id="cb5-14"><a href="#cb5-14"></a>        hom <span class="ot">:</span> objects <span class="ot">-&gt;</span> objects <span class="ot">-&gt;</span> <span class="dt">Set</span></span>
-<span id="cb5-15"><a href="#cb5-15"></a>        <span class="ot">...</span></span>
-<span id="cb5-16"><a href="#cb5-16"></a></span>
-<span id="cb5-17"><a href="#cb5-17"></a><span class="co">-- Different presentation of a small category</span></span>
-<span id="cb5-18"><a href="#cb5-18"></a><span class="kw">record</span> SmallCategory&#39; <span class="ot">:</span> <span class="dt">Set1</span> <span class="kw">where</span></span>
-<span id="cb5-19"><a href="#cb5-19"></a>    <span class="kw">field</span></span>
-<span id="cb5-20"><a href="#cb5-20"></a>        objects <span class="ot">:</span> <span class="dt">Set</span></span>
-<span id="cb5-21"><a href="#cb5-21"></a>        hom <span class="ot">:</span> objects <span class="ot">-&gt;</span> objects <span class="ot">-&gt;</span> <span class="dt">Set</span></span>
-<span id="cb5-22"><a href="#cb5-22"></a>        <span class="ot">...</span></span></code></pre></div>
-<p>The benefit of the notion of locally small category is that <code>Set</code> itself is a locally small category. The distinction I was making between interpretations into theories and interpretations into <strong>Set</strong> was due to the fact that <strong>Set</strong> wasn’t a theory. If I used a definition theory corresponding to a locally small category, I could have combined the notions of interpretation by making <strong>Set</strong> a theory. The notion of a small category, though, is still useful. Also, an interpretation into <strong>Set</strong> corresponds to the usual notion of a model or semantics, while interpretations into other theories was a less emphasized concept in traditional model theory and universal algebra.</p>
-<p>A less technical and more significant difference is that my definition of a theory doesn’t correspond to a category, but rather to a <em>presentation</em> of a category, from which a category can be generated. The analog of arrows in a category is <em>terms</em>, not function symbols. This is a bit more natural route from the model theory/universal algebra/programming side. Similarly, having an explicit collection of equations, rather than just an equivalence relation on terms is part of the presentation of the category but not part of the category itself.</p>
-<table class="table table-striped table-sm">
-<thead>
-<tr>
-<th>
-model theory
-</th>
-<th>
-category theory
-</th>
-</thead>
-<tbody>
-<tr>
-<td>
-sort
-</td>
-<td>
-object
-</td>
-</tr>
-<tr>
-<td>
-term
-</td>
-<td>
-arrow
-</td>
-</tr>
-<tr>
-<td>
-function symbol
-</td>
-<td>
-generating arrow
-</td>
-</tr>
-<tr>
-<td>
-theory
-</td>
-<td>
-presentation of a (small) category
-</td>
-</tr>
-<tr>
-<td>
-collage
-</td>
-<td>
-collage, <a href="https://ncatlab.org/nlab/show/cograph+of+a+profunctor">cograph of a profunctor</a>
-</td>
-</tr>
-<tr>
-<td>
-bridge
-</td>
-<td>
-<a href="https://ncatlab.org/nlab/show/heteromorphism">heteromorphism</a>
-</td>
-</tr>
-<tr>
-<td>
-signature
-</td>
-<td>
-presentation of a (small) category with finite products
-</td>
-</tr>
-<tr>
-<td>
-interpretation into sets, aka models
-</td>
-<td>
-a functor into <strong>Set</strong>, a (co)presheaf
-</td>
-</tr>
-<tr>
-<td>
-interpretation into a theory
-</td>
-<td>
-functor
-</td>
-</tr>
-<tr>
-<td>
-homomorphism
-</td>
-<td>
-natural transformation
-</td>
-</tr>
-<tr>
-<td>
-simply typed lambda calculus (with products)
-</td>
-<td>
-a cartesian closed category
-</td>
-</tr>
-</tbody>
-</table>
-<h2 id="conclusion">Conclusion</h2>
-<p>In some ways I’ve stopped just when things were about to get good. I may do a follow-up to elaborate on this good stuff. Some examples are: if I expand the definition so that <strong>Set</strong> becomes a “theory”, then interpretations also form such a “theory”, and these are often what we’re really interested in. The category of finite-product preserving interpretations of the theory of groups essentially <em>is</em> the category of groups. In fact, universal algebra is, in categorical terms, just the study of categories with finite products and finite-product preserving functors from them, particularly into <strong>Set</strong>. It’s easy to generalize this in many directions. It’s also easy to make very general definitions, like a general definition of a free algebraic structure. In general, we’re usually more interested in the interpretations of a theory than the theory itself.</p>
-<p>While I often do advocate thinking in terms of internal languages of categories, I’m not sure that it is a preferable perspective for the very basics of category theory. Nevertheless, there are a few reasons for why I wrote this. First, this very syntactical approach is, I think, more accessible to someone coming from a programming background. From this view, a category is a very simple programming language. Adding structure to the category corresponds to adding features to this programming language. Interpretations are denotational semantics.</p>
-<p>Another aspect about this presentation that is quite different is the use and emphasis on collages. Collages correspond to profunctors, a crucially important and enabling concept that is rarely covered in categorical introductions. The characterization of profunctors as collages in Vaughn Pratt’s paper (not using that name) was one of the things I enjoyed about that paper and part of what prompted me to start writing this. In earlier drafts of this article, I was unable to incorporate collages in a meaningful way as I was trying to start from profunctors. This approach just didn’t add value. Collages just looked like a bizarre curio and weren’t integrated into the narrative at all. For other reasons, though, I ended up revisiting the idea of a heteromorphism. My (fairly superficial) opinion is that once you have the notion of functors and natural transformations, adding the notion of heteromorphisms has a low power-to-weight ratio, though it does make some things a bit nicer. Nevertheless, in thinking of how best to fit them into this context, it was clear that collages provided the perfect mechanism (which isn’t a big surprise), and the result works rather nicely. When I realized a fact that can be cryptically but compactly represented as #ccK_ccT ≃ bbbI xx ccT# where #bbbI# is the interval category, i.e. two objects with a single arrow joining them, I realized that this is actually an interesting perspective. Since most of this article was written at that point, I wove collages into the narrative replacing some things. If, though, I had started with this perspective from the beginning I suspect I would have made a significantly different article, though the latter sections would likely be similar.</p>
-<section class="footnotes" role="doc-endnotes">
-<hr />
-<ol>
-<li id="fn1" role="doc-endnote"><p>It’s actually better to organize this as a <em>family</em> of collections of function symbols indexed by pairs of sorts.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2" role="doc-endnote"><p>Instead of having equations that generate an equivalence relation on (raw) terms, we could simply require an equivalence relation on (raw) terms be directly provided.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3" role="doc-endnote"><p>Collaging is actually quite natural in this context. I already intend to support one theory importing another. A collage is just a theory that imports two others and then adds function symbols between them.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn4" role="doc-endnote"><p>For programmers familiar with Agda, at least, if you haven’t made this connection, this might help you understand and appreciate what a “class” is versus a “set” and what “size issues” are, which is typically handled extremely vaguely in a lot of the literature.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-</ol>
-</section>]]></summary>
-</entry>
-<entry>
-    <title>Constant-time Binary Logarithm</title>
-    <link href="https://derekelkins.github.io/posts/find-first-set.html" />
-    <id>https://derekelkins.github.io/posts/find-first-set.html</id>
-    <published>2016-11-09 23:48:33-08:00</published>
-    <updated>2016-11-10T07:48:33Z</updated>
-    <summary type="html"><![CDATA[<h2 id="introduction">Introduction</h2>
-<p>I’ve been watching the <a href="https://courses.csail.mit.edu/6.851/spring14/lectures/">Spring 2012 lectures for MIT 6.851 Advanced Data Structures</a> with Prof. Erik Demaine. In lecture 12, “Fusion Trees”, it mentions a constant time algorithm for finding the index of the first most significant 1 bit in a word, i.e. the binary logarithm. Assuming word operations are constant time, i.e. in the Word RAM model, the below algorithm takes 27 word operations (not counting copying). When I compiled it with GHC 8.0.1 -O2 the core of the algorithm was 44 straight-line instructions. The theoretically interesting thing is, other than changing the constants, the same algorithm works for any word size that’s an even power of 2. Odd powers of two need a slight tweak. This is demonstrated for <code>Word64</code>, <code>Word32</code>, and <code>Word16</code>. It should be possible to do this for any arbitrary word size <code>w</code>.</p>
-<p>The <code>clz</code> instruction <a href="https://hackage.haskell.org/package/base-4.8.2.0/docs/Data-Bits.html#v:countLeadingZeros">can be used to implement</a> this function, but this is a potential simulation if that or a similar instruction wasn’t available. It’s probably not the fastest way. Similarly, find first set and count trailing zeros <a href="https://en.wikipedia.org/wiki/Find_first_set">can be implemented</a> in terms of this operation.</p>
-<h2 id="code">Code</h2>
-<p>Below is the complete code. You can also download it <a href="/posts/raw/FFS.hs">here</a>.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1"></a><span class="ot">{-# LANGUAGE BangPatterns #-}</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">import</span> <span class="dt">Data.Word</span></span>
-<span id="cb1-3"><a href="#cb1-3"></a><span class="kw">import</span> <span class="dt">Data.Bits</span></span>
-<span id="cb1-4"><a href="#cb1-4"></a></span>
-<span id="cb1-5"><a href="#cb1-5"></a><span class="co">-- Returns 0-based bit index of most significant bit that is 1. Assumes input is non-zero.</span></span>
-<span id="cb1-6"><a href="#cb1-6"></a><span class="co">-- That is, 2^indexOfMostSignificant1 x &lt;= x &lt; 2^(indexOfMostSignificant1 x + 1)</span></span>
-<span id="cb1-7"><a href="#cb1-7"></a><span class="co">-- From Erik Demaine&#39;s presentation in Spring 2012 lectures of MIT 6.851, particularly &quot;Lecture 12: Fusion Trees&quot;.</span></span>
-<span id="cb1-8"><a href="#cb1-8"></a><span class="co">-- Takes 26 (source-level) straight-line word operations.</span></span>
-<span id="cb1-9"><a href="#cb1-9"></a><span class="ot">indexOfMostSignificant1 ::</span> <span class="dt">Word64</span> <span class="ot">-&gt;</span> <span class="dt">Word64</span></span>
-<span id="cb1-10"><a href="#cb1-10"></a>indexOfMostSignificant1 w <span class="ot">=</span> idxMsbyte <span class="op">.|.</span> idxMsbit</span>
-<span id="cb1-11"><a href="#cb1-11"></a>    <span class="kw">where</span></span>
-<span id="cb1-12"><a href="#cb1-12"></a>        <span class="co">-- top bits of each byte</span></span>
-<span id="cb1-13"><a href="#cb1-13"></a>        <span class="op">!</span>wtbs <span class="ot">=</span> w <span class="op">.&amp;.</span> <span class="bn">0x8080808080808080</span></span>
-<span id="cb1-14"><a href="#cb1-14"></a>        </span>
-<span id="cb1-15"><a href="#cb1-15"></a>        <span class="co">-- all but top bits of each byte producing 8 7-bit chunks</span></span>
-<span id="cb1-16"><a href="#cb1-16"></a>        <span class="op">!</span>wbbs <span class="ot">=</span> w <span class="op">.&amp;.</span> <span class="bn">0x7F7F7F7F7F7F7F7F</span>              </span>
-<span id="cb1-17"><a href="#cb1-17"></a></span>
-<span id="cb1-18"><a href="#cb1-18"></a>        <span class="co">-- parallel compare of each 7-bit chunk to 0, top bit set in result if 7-bit chunk was not 0</span></span>
-<span id="cb1-19"><a href="#cb1-19"></a>        <span class="op">!</span>pc <span class="ot">=</span> parallelCompare <span class="bn">0x8080808080808080</span> wbbs</span>
-<span id="cb1-20"><a href="#cb1-20"></a></span>
-<span id="cb1-21"><a href="#cb1-21"></a>        <span class="co">-- top bit of each byte set if the byte has any bits set in w</span></span>
-<span id="cb1-22"><a href="#cb1-22"></a>        <span class="op">!</span>ne <span class="ot">=</span> wtbs <span class="op">.|.</span> pc                             </span>
-<span id="cb1-23"><a href="#cb1-23"></a></span>
-<span id="cb1-24"><a href="#cb1-24"></a>        <span class="co">-- a summary of which bytes (except the first) are non-zero as a 7-bit bitfield, i.e. top bits collected into bottom byte</span></span>
-<span id="cb1-25"><a href="#cb1-25"></a>        <span class="op">!</span>summary <span class="ot">=</span> sketch ne <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span></span>
-<span id="cb1-26"><a href="#cb1-26"></a></span>
-<span id="cb1-27"><a href="#cb1-27"></a>        <span class="co">-- parallel compare summary to powers of two</span></span>
-<span id="cb1-28"><a href="#cb1-28"></a>        <span class="op">!</span>cmpp2 <span class="ot">=</span> parallelCompare <span class="bn">0xFFBF9F8F87838180</span> (<span class="bn">0x0101010101010101</span> <span class="op">*</span> summary)</span>
-<span id="cb1-29"><a href="#cb1-29"></a>        </span>
-<span id="cb1-30"><a href="#cb1-30"></a>        <span class="co">-- index of most significant non-zero byte * 8</span></span>
-<span id="cb1-31"><a href="#cb1-31"></a>        <span class="op">!</span>idxMsbyte <span class="ot">=</span> sumTopBits8 cmpp2                </span>
-<span id="cb1-32"><a href="#cb1-32"></a></span>
-<span id="cb1-33"><a href="#cb1-33"></a>        <span class="co">-- most significant 7-bits of most significant non-zero byte</span></span>
-<span id="cb1-34"><a href="#cb1-34"></a>        <span class="op">!</span>msbyte <span class="ot">=</span> ((w <span class="ot">`unsafeShiftR`</span> (<span class="fu">fromIntegral</span> idxMsbyte)) <span class="op">.&amp;.</span> <span class="bn">0xFF</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span></span>
-<span id="cb1-35"><a href="#cb1-35"></a></span>
-<span id="cb1-36"><a href="#cb1-36"></a>        <span class="co">-- parallel compare msbyte to powers of two</span></span>
-<span id="cb1-37"><a href="#cb1-37"></a>        <span class="op">!</span>cmpp2&#39; <span class="ot">=</span> parallelCompare <span class="bn">0xFFBF9F8F87838180</span> (<span class="bn">0x0101010101010101</span> <span class="op">*</span> msbyte)</span>
-<span id="cb1-38"><a href="#cb1-38"></a></span>
-<span id="cb1-39"><a href="#cb1-39"></a>        <span class="co">-- index of most significant non-zero bit in msbyte</span></span>
-<span id="cb1-40"><a href="#cb1-40"></a>        <span class="op">!</span>idxMsbit <span class="ot">=</span> sumTopBits cmpp2&#39; </span>
-<span id="cb1-41"><a href="#cb1-41"></a></span>
-<span id="cb1-42"><a href="#cb1-42"></a>        <span class="co">-- Maps top bits of each byte into lower byte assuming all other bits are 0.</span></span>
-<span id="cb1-43"><a href="#cb1-43"></a>        <span class="co">-- 0x2040810204081 = sum [2^j | j &lt;- map (\i -&gt; 49 - 7*i) [0..7]]</span></span>
-<span id="cb1-44"><a href="#cb1-44"></a>        <span class="co">-- In general if w = 2^(2*k+p) and p = 0 or 1 the formula is:</span></span>
-<span id="cb1-45"><a href="#cb1-45"></a>        <span class="co">-- sum [2^j | j &lt;- map (\i -&gt; w-(2^k-1) - 2^(k+p) - (2^(k+p) - 1)*i) [0..2^k-1]]</span></span>
-<span id="cb1-46"><a href="#cb1-46"></a>        <span class="co">-- Followed by shifting right by w - 2^k</span></span>
-<span id="cb1-47"><a href="#cb1-47"></a>        sketch w <span class="ot">=</span> (w <span class="op">*</span> <span class="bn">0x2040810204081</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">56</span></span>
-<span id="cb1-48"><a href="#cb1-48"></a></span>
-<span id="cb1-49"><a href="#cb1-49"></a>        parallelCompare w1 w2 <span class="ot">=</span> complement (w1 <span class="op">-</span> w2) <span class="op">.&amp;.</span> <span class="bn">0x8080808080808080</span></span>
-<span id="cb1-50"><a href="#cb1-50"></a>        sumTopBits w <span class="ot">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="op">*</span> <span class="bn">0x0101010101010101</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">56</span></span>
-<span id="cb1-51"><a href="#cb1-51"></a>        sumTopBits8 w <span class="ot">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="op">*</span> <span class="bn">0x0808080808080808</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">56</span></span>
-<span id="cb1-52"><a href="#cb1-52"></a></span>
-<span id="cb1-53"><a href="#cb1-53"></a><span class="ot">indexOfMostSignificant1_w32 ::</span> <span class="dt">Word32</span> <span class="ot">-&gt;</span> <span class="dt">Word32</span></span>
-<span id="cb1-54"><a href="#cb1-54"></a>indexOfMostSignificant1_w32 w <span class="ot">=</span> idxMsbyte <span class="op">.|.</span> idxMsbit</span>
-<span id="cb1-55"><a href="#cb1-55"></a>    <span class="kw">where</span> <span class="op">!</span>wtbs <span class="ot">=</span> w <span class="op">.&amp;.</span> <span class="bn">0x80808080</span></span>
-<span id="cb1-56"><a href="#cb1-56"></a>          <span class="op">!</span>wbbs <span class="ot">=</span> w <span class="op">.&amp;.</span> <span class="bn">0x7F7F7F7F</span></span>
-<span id="cb1-57"><a href="#cb1-57"></a>          <span class="op">!</span>pc <span class="ot">=</span> parallelCompare <span class="bn">0x80808080</span> wbbs</span>
-<span id="cb1-58"><a href="#cb1-58"></a>          <span class="op">!</span>ne <span class="ot">=</span> wtbs <span class="op">.|.</span> pc</span>
-<span id="cb1-59"><a href="#cb1-59"></a>          <span class="op">!</span>summary <span class="ot">=</span> sketch ne <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span></span>
-<span id="cb1-60"><a href="#cb1-60"></a>          <span class="op">!</span>cmpp2 <span class="ot">=</span> parallelCompare <span class="bn">0xFF838180</span> (<span class="bn">0x01010101</span> <span class="op">*</span> summary)</span>
-<span id="cb1-61"><a href="#cb1-61"></a>          <span class="op">!</span>idxMsbyte <span class="ot">=</span> sumTopBits8 cmpp2</span>
-<span id="cb1-62"><a href="#cb1-62"></a>          <span class="op">!</span>msbyte <span class="ot">=</span> ((w <span class="ot">`unsafeShiftR`</span> (<span class="fu">fromIntegral</span> idxMsbyte)) <span class="op">.&amp;.</span> <span class="bn">0xFF</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span></span>
-<span id="cb1-63"><a href="#cb1-63"></a>          <span class="op">!</span>cmpp2&#39; <span class="ot">=</span> parallelCompare <span class="bn">0x87838180</span> (<span class="bn">0x01010101</span> <span class="op">*</span> msbyte)</span>
-<span id="cb1-64"><a href="#cb1-64"></a></span>
-<span id="cb1-65"><a href="#cb1-65"></a>          <span class="co">-- extra step when w is not an even power of two</span></span>
-<span id="cb1-66"><a href="#cb1-66"></a>          <span class="op">!</span>cmpp2&#39;&#39; <span class="ot">=</span> parallelCompare <span class="bn">0xFFBF9F8F</span> (<span class="bn">0x01010101</span> <span class="op">*</span> msbyte)</span>
-<span id="cb1-67"><a href="#cb1-67"></a>          <span class="op">!</span>idxMsbit <span class="ot">=</span> sumTopBits cmpp2&#39; <span class="op">+</span> sumTopBits cmpp2&#39;&#39;</span>
-<span id="cb1-68"><a href="#cb1-68"></a></span>
-<span id="cb1-69"><a href="#cb1-69"></a>          sketch w <span class="ot">=</span> (w <span class="op">*</span> <span class="bn">0x204081</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">28</span></span>
-<span id="cb1-70"><a href="#cb1-70"></a>          parallelCompare w1 w2 <span class="ot">=</span> complement (w1 <span class="op">-</span> w2) <span class="op">.&amp;.</span> <span class="bn">0x80808080</span></span>
-<span id="cb1-71"><a href="#cb1-71"></a>          sumTopBits w <span class="ot">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="op">*</span> <span class="bn">0x01010101</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">24</span></span>
-<span id="cb1-72"><a href="#cb1-72"></a>          sumTopBits8 w <span class="ot">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">7</span>) <span class="op">*</span> <span class="bn">0x08080808</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">24</span></span>
-<span id="cb1-73"><a href="#cb1-73"></a></span>
-<span id="cb1-74"><a href="#cb1-74"></a><span class="ot">indexOfMostSignificant1_w16 ::</span> <span class="dt">Word16</span> <span class="ot">-&gt;</span> <span class="dt">Word16</span></span>
-<span id="cb1-75"><a href="#cb1-75"></a>indexOfMostSignificant1_w16 w <span class="ot">=</span> idxMsnibble <span class="op">.|.</span> idxMsbit</span>
-<span id="cb1-76"><a href="#cb1-76"></a>    <span class="kw">where</span> <span class="op">!</span>wtbs <span class="ot">=</span> w <span class="op">.&amp;.</span> <span class="bn">0x8888</span></span>
-<span id="cb1-77"><a href="#cb1-77"></a>          <span class="op">!</span>wbbs <span class="ot">=</span> w <span class="op">.&amp;.</span> <span class="bn">0x7777</span></span>
-<span id="cb1-78"><a href="#cb1-78"></a>          <span class="op">!</span>pc <span class="ot">=</span> parallelCompare <span class="bn">0x8888</span> wbbs</span>
-<span id="cb1-79"><a href="#cb1-79"></a>          <span class="op">!</span>ne <span class="ot">=</span> wtbs <span class="op">.|.</span> pc</span>
-<span id="cb1-80"><a href="#cb1-80"></a>          <span class="op">!</span>summary <span class="ot">=</span> sketch ne <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span></span>
-<span id="cb1-81"><a href="#cb1-81"></a>          <span class="op">!</span>cmpp2 <span class="ot">=</span> parallelCompare <span class="bn">0xFB98</span> (<span class="bn">0x1111</span> <span class="op">*</span> summary)</span>
-<span id="cb1-82"><a href="#cb1-82"></a>          <span class="op">!</span>idxMsnibble <span class="ot">=</span> sumTopBits4 cmpp2</span>
-<span id="cb1-83"><a href="#cb1-83"></a>          <span class="op">!</span>msnibble <span class="ot">=</span> ((w <span class="ot">`unsafeShiftR`</span> (<span class="fu">fromIntegral</span> idxMsnibble)) <span class="op">.&amp;.</span> <span class="bn">0xF</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">1</span></span>
-<span id="cb1-84"><a href="#cb1-84"></a>          <span class="op">!</span>cmpp2&#39; <span class="ot">=</span> parallelCompare <span class="bn">0xFB98</span> (<span class="bn">0x1111</span> <span class="op">*</span> msnibble)</span>
-<span id="cb1-85"><a href="#cb1-85"></a>          <span class="op">!</span>idxMsbit <span class="ot">=</span> sumTopBits cmpp2&#39;</span>
-<span id="cb1-86"><a href="#cb1-86"></a></span>
-<span id="cb1-87"><a href="#cb1-87"></a>          sketch w <span class="ot">=</span> (w <span class="op">*</span> <span class="bn">0x249</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">12</span></span>
-<span id="cb1-88"><a href="#cb1-88"></a>          parallelCompare w1 w2 <span class="ot">=</span> complement (w1 <span class="op">-</span> w2) <span class="op">.&amp;.</span> <span class="bn">0x8888</span></span>
-<span id="cb1-89"><a href="#cb1-89"></a>          sumTopBits w <span class="ot">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">3</span>) <span class="op">*</span> <span class="bn">0x1111</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">12</span></span>
-<span id="cb1-90"><a href="#cb1-90"></a>          sumTopBits4 w <span class="ot">=</span> ((w <span class="ot">`unsafeShiftR`</span> <span class="dv">3</span>) <span class="op">*</span> <span class="bn">0x4444</span>) <span class="ot">`unsafeShiftR`</span> <span class="dv">12</span></span></code></pre></div>]]></summary>
 </entry>
 
 </feed>

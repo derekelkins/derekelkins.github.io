@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">Internal Language of a Monoidal Category</h2>
     <p class="blog-post-meta">May 22, 2020 08:46 UTC 
         
-        (Last updated on May 22, 2020 08:46 UTC)
+        (Last updated on July  6, 2020 02:02 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -54,8 +54,8 @@
     <h2 id="introduction">Introduction</h2>
 <p>This is the first post in a series of posts on doing enriched indexed category theory and using the notion of an internal language to make this look relatively mundane. The internal language aspects are useful for other purposes too, as will be illustrated in this post, for example. This is related to the post <a href="../posts/category-theory-syntactically.html">Category Theory, Syntactically</a>. In particular, it can be considered half-way between the unary theories and the finite product theories described there.</p>
 <p>First in this series – this post – covers the internal language of a monoidal category. This is fairly straightforward, but it already provides some use. For example, the category of endofunctors on a category is a strict monoidal category, and so we can take a different perspective on natural transformations. This will also motivate the notions of a (virtual) bicategory and an actegory. Throughout this post, I’ll give a fairly worked example of turning some categorical content into <a href="../posts/understanding-typing-judgments.html">rules</a> of a type-/proof-theory.</p>
-<p>The second post will add indexing to the notion of monoidal category and introduce the very powerful and useful notion of an <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal category</a>.</p>
-<p>The third post will formulate the notion of <a href="https://arxiv.org/abs/1212.3914">categories enriched in an indexed monoidal category</a> and give the definitions which don’t require any additional assumptions.</p>
+<p>The <a href="../posts/internal-language-of-indexed-monoidal-categories.html">second post</a> will add indexing to the notion of monoidal category and introduce the very powerful and useful notion of an <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal category</a>.</p>
+<p>The <a href="../posts/enriched-indexed-categories-syntactically.html">third post</a> will formulate the notion of <a href="https://arxiv.org/abs/1212.3914">categories enriched in an indexed monoidal category</a> and give the definitions which don’t require any additional assumptions.</p>
 <p>The fourth post will introduce the notion and internal language for an indexed cosmos. Normally, when we do enriched category theory, we want the category into which we’re enriching to not be just a monoidal category but a <a href="https://ncatlab.org/nlab/show/cosmos">cosmos</a>. This provides many additional properties. An indexed cosmos is just the analogue of that for indexed monoidal categories.</p>
 <p>The fifth post will then formulate categorical concepts for our enriched indexed categories that require some or all of these additional properties provided by an indexed cosmos.</p>
 <p>At some point, there will be a post on <a href="https://ncatlab.org/nlab/show/virtual+double+category">virtual double categories</a> as they (or, even better, <a href="https://arxiv.org/abs/1910.11189">augmented virtual double categories</a>) are what will really be behind the notion of enriched indexed categories we’ll define. Basically, we’ll secretly be spelling out a specific instance of the |\mathsf{Mod}| construction.</p>
@@ -118,11 +118,14 @@ a_1 : A_1, \dots, a_n : A_n \vdash E : B\end{align}$$</span><br /> will represen
 <h2 id="appendix">Appendix</h2>
 <h3 id="rules-for-a-monoidal-category">Rules for a Monoidal Category</h3>
 <p><br /><span class="math display">$$\begin{gather}
-\dfrac{}{\vdash I}I\text{F} \qquad
-\dfrac{\vdash A_1 \quad \cdots \quad \vdash A_n}{\vdash A_1 \otimes \cdots \otimes A_n}{\otimes_n}\text{F}, n \geq 1
- \\ \\
 \dfrac{\vdash A}{a : A \vdash a : A}\text{Ax} \qquad
 \dfrac{\Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Delta_n \vdash E_n : A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E: B}{\Delta_l, \Delta_1, \dots, \Delta_n, \Delta_r \vdash E[E_1/a_1,\dots,E_n/a_n] : B}\text{Cut}
+ \\ \\
+\dfrac{}{\vdash I}I\text{F} \qquad
+\dfrac{\vdash A_1 \quad \cdots \quad \vdash A_n}{\vdash A_1 \otimes \cdots \otimes A_n}{\otimes_n}\text{F}, n \geq 1 \qquad
+\dfrac{\mathsf A : \mathsf{Type}}{\vdash \mathsf A}\text{PrimType}
+ \\ \\
+\dfrac{\Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Delta_n \vdash E_n : A_n \quad \mathsf f : (A_1, \dots, A_n) \to B}{\Delta_1, \dots, \Delta_n \vdash \mathsf f(E_1, \dots, E_n) : B}\text{PrimTerm}
  \\ \\
 \dfrac{}{\vdash * : I}I\text{I} \qquad
 \dfrac{\Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Delta_n \vdash E_n : A_n}{\Delta_1,\dots,\Delta_n \vdash E_1 \otimes \cdots \otimes E_n : A_1 \otimes \cdots \otimes A_n}{\otimes_n}\text{I}
@@ -133,20 +136,21 @@ a_1 : A_1, \dots, a_n : A_n \vdash E : B\end{align}$$</span><br /> will represen
 <h3 id="equations">Equations</h3>
 <p><br /><span class="math display">$$\begin{gather}
 \dfrac{\Delta \vdash E : B}{\Delta \vdash (\mathsf{match}\ {*}\ \mathsf{as}\ {*}\ \mathsf{in}\ E) = E : B}{*}\beta \qquad
-\dfrac{\Delta \vdash E : I \quad a : I, \Delta_l, \Delta_r \vdash E' : B}{\Delta_l, \Delta, \Delta_r \vdash E'[E/a] = (\mathsf{match}\ E\ \mathsf{as}\ {*}\ \mathsf{in}\ E'[*/a]) : B}{*}\eta
+\dfrac{\Delta \vdash E : I \quad \Delta_l, a : I, \Delta_r \vdash E' : B}{\Delta_l, \Delta, \Delta_r \vdash E'[E/a] = (\mathsf{match}\ E\ \mathsf{as}\ {*}\ \mathsf{in}\ E'[*/a]) : B}{*}\eta
  \\ \\
-\dfrac{\Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Delta_n \vdash E_n : A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E : B}{\Delta_l, \Delta_1, \dots, \Delta_n, \Delta_r \vdash (\mathsf{match}\ E_1\otimes\cdots\otimes E_n\ \mathsf{as}\ a_1\otimes\cdots\otimes a_n\ \mathsf{in}\ E) = E[E_1/a_1, \dots, E_n/a_n] : B}{\otimes}\beta
-\\ \\ 
-\dfrac{\Delta \vdash E : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a : A_1 \otimes \cdots \otimes A_n, \Delta_r \vdash E' : B}{\Delta_l, \Delta, \Delta_r \vdash E'[E/a] = (\mathsf{match}\ E\ \mathsf{as}\ a_1\otimes\cdots\otimes a_n\ \mathsf{in}\ E'[(a_1\otimes\cdots\otimes a_n)/a]) : B}{\otimes}\eta
+\dfrac{\Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Delta_n \vdash E_n : A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E : B}{\Delta_l, \Delta_1, \dots, \Delta_n, \Delta_r \vdash (\mathsf{match}\ E_1\otimes\cdots\otimes E_n\ \mathsf{as}\ a_1\otimes\cdots\otimes a_n\ \mathsf{in}\ E) = E[E_1/a_1, \dots, E_n/a_n] : B}{\otimes_n}\beta
+\\ \\
+\dfrac{\Delta \vdash E : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a : A_1 \otimes \cdots \otimes A_n, \Delta_r \vdash E' : B}{\Delta_l, \Delta, \Delta_r \vdash E'[E/a] = (\mathsf{match}\ E\ \mathsf{as}\ a_1\otimes\cdots\otimes a_n\ \mathsf{in}\ E'[(a_1\otimes\cdots\otimes a_n)/a]) : B}{\otimes_n}\eta
  \\ \\
 \dfrac{\Delta \vdash E_1 : I \quad \Delta_l, \Delta_r \vdash E_2 : I \quad \Delta_l', \Delta_r' \vdash E_3 : C}{\Delta_l', \Delta_l, \Delta, \Delta_r, \Delta_r' \vdash (\mathsf{match}\ (\mathsf{match}\ E_1\ \mathsf{as}\ {*}\ \mathsf{in}\ E_2)\ \mathsf{as}\ {*}\ \mathsf{in}\ E_3) = (\mathsf{match}\ E_1\ \mathsf{as}\ {*}\ \mathsf{in}\ \mathsf{match}\ E_2\ \mathsf{as}\ {*}\ \mathsf{in}\ E_3) : C}{*}{*}\text{CC}
  \\ \\
-\dfrac{\Delta \vdash E_1 : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E_2 : I\quad \Delta_l', \Delta_r' \vdash E_3 : C}{\Delta_l', \Delta_l, \Delta, \Delta_r, \Delta_r' \vdash (\mathsf{match}\ (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E_2)\ \mathsf{as}\ {*}\ \mathsf{in}\ E_3) \\ \qquad \qquad \qquad \quad \, = (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ \mathsf{match}\ E_2\ \mathsf{as}\ {*}\ \mathsf{in}\ E_3) : C}{\otimes}{*}\text{CC}
+\dfrac{\Delta \vdash E_1 : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E_2 : I\quad \Delta_l', \Delta_r' \vdash E_3 : C}{\Delta_l', \Delta_l, \Delta, \Delta_r, \Delta_r' \vdash (\mathsf{match}\ (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E_2)\ \mathsf{as}\ {*}\ \mathsf{in}\ E_3) \\ \qquad \qquad \qquad \quad \, = (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ \mathsf{match}\ E_2\ \mathsf{as}\ {*}\ \mathsf{in}\ E_3) : C}{\otimes_n}{*}\text{CC}
  \\ \\
-\dfrac{\Delta \vdash E_1 : I \quad \Delta_l, \Delta_r \vdash E_2 : B_1 \otimes \cdots \otimes B_m \quad \Delta_l', b_1 : B_1, \dots, b_m : B_m, \Delta_r' \vdash E_3 : C}{\Delta_l', \Delta_l, \Delta, \Delta_r, \Delta_r' \vdash (\mathsf{match}\ (\mathsf{match}\ E_1\ \mathsf{as}\ {*}\ \mathsf{in}\ E_2)\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) \\ \qquad \qquad \qquad \quad \, = (\mathsf{match}\ E_1\ \mathsf{as}\ {*}\ \mathsf{in}\ \mathsf{match}\ E_2\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) : C}{*}{\otimes}\text{CC}
+\dfrac{\Delta \vdash E_1 : I \quad \Delta_l, \Delta_r \vdash E_2 : B_1 \otimes \cdots \otimes B_m \quad \Delta_l', b_1 : B_1, \dots, b_m : B_m, \Delta_r' \vdash E_3 : C}{\Delta_l', \Delta_l, \Delta, \Delta_r, \Delta_r' \vdash (\mathsf{match}\ (\mathsf{match}\ E_1\ \mathsf{as}\ {*}\ \mathsf{in}\ E_2)\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) \\ \qquad \qquad \qquad \quad \, = (\mathsf{match}\ E_1\ \mathsf{as}\ {*}\ \mathsf{in}\ \mathsf{match}\ E_2\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) : C}{*}{\otimes_m}\text{CC}
  \\ \\
-\dfrac{\Delta \vdash E_1 : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E_2 : B_1 \otimes \cdots \otimes B_m \quad \Delta_l', b_1 : B_1, \dots, b_m : B_m, \Delta_r' \vdash E_3 : C}{\Delta_l', \Delta_l, \Delta, \Delta_r, \Delta_r' \vdash (\mathsf{match}\ (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E_2)\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) \\ \qquad \qquad \qquad \quad \, = (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ \mathsf{match}\ E_2\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) : C}{\otimes}{\otimes}\text{CC}
+\dfrac{\Delta \vdash E_1 : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E_2 : B_1 \otimes \cdots \otimes B_m \quad \Delta_l', b_1 : B_1, \dots, b_m : B_m, \Delta_r' \vdash E_3 : C}{\Delta_l', \Delta_l, \Delta, \Delta_r, \Delta_r' \vdash (\mathsf{match}\ (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E_2)\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) \\ \qquad \qquad \qquad \quad \, = (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ \mathsf{match}\ E_2\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) : C}{\otimes_n}{\otimes_m}\text{CC}
 \end{gather}$$</span><br /></p>
+<p>|\mathsf A : \mathsf{Type}| means that |\mathsf A| is a primitive type in the signature. |\mathsf f : (A_1, \dots, A_n) \to B| means that |\mathsf f| is assigned this type in the signature.</p>
 <p>I did not write them, but the usual laws for equality (reflexivity and indiscernability of identicals) should be included.</p>
 <p>A theory in this language is free to introduce additional linear types and linear operations.</p>
 <h3 id="interpretation-into-a-monoidal-category">Interpretation into a monoidal category</h3>
@@ -165,7 +169,7 @@ a_1 : A_1, \dots, a_n : A_n \vdash E : B\end{align}$$</span><br /> will represen
 \den{a} =\, &amp; id_{\den{A}} \text{ where } a : A \\
 \den{*} =\, &amp; id_I \\
 \den{E_1 \otimes \cdots \otimes E_n} =\, &amp; \den{E_1} \otimes \cdots \otimes \den{E_n} \text{ where }\Delta_i \vdash E_i : A_i \\
-\den{\mathsf{match}\ E\ \mathsf{as}\ {*}\ \mathsf{in}\ E'} =\, &amp; 
+\den{\mathsf{match}\ E\ \mathsf{as}\ {*}\ \mathsf{in}\ E'} =\, &amp;
     \den{E'} \circ (id_{\den{\Delta_l}} \otimes (\lambda_{\den{\Delta_r}} \circ (\den{E} \otimes id_{\den{\Delta_r}}))) \\
 \den{\mathsf{match}\ E\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E'} =\, &amp;
     \den{E'} \circ (id_{\den{\Delta_l}} \otimes \den{E} \otimes id_{\den{\Delta_r}}) \\
