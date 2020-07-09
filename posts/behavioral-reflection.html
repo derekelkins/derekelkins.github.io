@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">Behavioral Reflection</h2>
     <p class="blog-post-meta">November 17, 2015 00:54 UTC 
         
-        (Last updated on August 24, 2019 21:37 UTC)
+        (Last updated on July  9, 2020 00:39 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -55,7 +55,7 @@
 <p>The ultimate goal of behavioral reflection (aka procedural reflection and no doubt other things) is to make a language where programs within the language are able to completely redefine the language as it executes. This is arguably the pinnacle of expressive power. This also means, though, local reasoning about code is utterly impossible, essentially by design.</p>
 <p>Smalltalk is probably the language closest to this that is widely used. The Common Lisp MOP (Meta-Object Protocol) is also inspired by research in this vein. The ability to mutate classes and handle calls to missing methods as present in, e.g. Ruby, are also examples of very limited forms of behavioral reflection. (Though, for the latter, often the term “structural reflection” is used instead, reserving “behavioral reflection” for things beyond mere structural reflection.)</p>
 <h3 id="very-brief-history">Very Brief History</h3>
-<p>The seminal reference for behavioral reflection is Brian Smith’s 1982 <a href="http://publications.csail.mit.edu/lcs/specpub.php?id=840">thesis</a> on 3-LISP. This was followed by the languages <a href="http://cs.au.dk/~hosc/vol01/01-wand-friedman.html">Brown</a>, <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.40.2018&amp;rep=rep1&amp;type=pdf">Blond</a>, <a href="ftp://html.soic.indiana.edu/pub/techreports/TR362.pdf">Refci</a>, and <a href="http://www.is.ocha.ac.jp/~asai/Black/">Black</a> in chronological order. This is not a comprehensive list, and the last time I was in to this was about a decade ago. (Sure enough, there is some new work on Black and some very new citations of Black.)</p>
+<p>The seminal reference for behavioral reflection is Brian Smith’s 1982 thesis, “<a href="http://publications.csail.mit.edu/lcs/pubs/pdf/MIT-LCS-TR-272.pdf">Reflection and Semantics in a Procedural Language</a>” on 3-LISP. This was followed by the languages Brown in “<a href="https://doi.org/10.1007/BF01806174">The mystery of the tower revealed: A nonreflective description of the reflective tower</a>”, Blond in “<a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.40.2018&amp;rep=rep1&amp;type=pdf">Intensions and Extensions in a Reflective Tower</a>”, Refci in “<a href="ftp://html.soic.indiana.edu/pub/techreports/TR362.pdf">Language Extension via First-class Interpreters</a>”, and <a href="http://www.is.ocha.ac.jp/~asai/Black/">Black</a> in “The Reflective Language Black” in chronological order. This is not a comprehensive list, and the last time I was in to this was about a decade ago. (Sure enough, there is some new work on Black and some very new citations of Black.)</p>
 <!--[Reflection for the Masses](http://www.p-cos.net/documents/s32008.pdf) by Herzeel, Constanza, and D'Hondt.-->
 <h3 id="core-idea">Core Idea</h3>
 <p>The core idea is simply to expose the state of the (potentially conceptual) interpreter and allow it to be manipulated.</p>
@@ -73,9 +73,9 @@
 <p>You can get a copy of the full version of the code from <a href="../posts/raw/CEK.hs">here</a>.</p>
 <p>I arbitrarily decided to start from the CEK machine: an abstract machine for the untyped call-by-value lambda calculus. (CEK stands for Control-Environment-Kontinuation, these being the three pieces of interpreter state with control being the expression driving evaluation.) While a call-by-value language is probably the way to go because both <code>reify</code> and <code>reflect</code> are very impure operations (particularly <code>reflect</code>), the main motivation for choosing this machine was that the state components correspond in a direct way to concepts that are natural to the programmer. Compare this to the SECD machine which stands for Stack-Environment-Control-Dump.</p>
 <p>The AST uses deBruijn indices.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">data</span> <span class="dt">Expr</span> </span>
-<span id="cb1-2"><a href="#cb1-2"></a>    <span class="ot">=</span> <span class="dt">EVar</span> <span class="op">!</span><span class="dt">Int</span> </span>
-<span id="cb1-3"><a href="#cb1-3"></a>    <span class="op">|</span> <span class="dt">ELam</span> <span class="dt">Expr</span> </span>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">data</span> <span class="dt">Expr</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a>    <span class="ot">=</span> <span class="dt">EVar</span> <span class="op">!</span><span class="dt">Int</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>    <span class="op">|</span> <span class="dt">ELam</span> <span class="dt">Expr</span></span>
 <span id="cb1-4"><a href="#cb1-4"></a>    <span class="op">|</span> <span class="dt">Expr</span> <span class="op">:@:</span> <span class="dt">Expr</span></span></code></pre></div>
 <p>The only types of values we have are closures. The two additional pieces of interpreter state are the environment and the continuation (the call stack).</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">data</span> <span class="dt">Value</span> <span class="ot">=</span> <span class="dt">Closure</span> <span class="dt">Expr</span> <span class="dt">Env</span></span>
@@ -123,7 +123,7 @@
 <div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1"></a><span class="ot">inject ::</span> <span class="dt">Value</span> <span class="ot">-&gt;</span> (<span class="dt">Expr</span>, <span class="dt">Env</span>)</span>
 <span id="cb7-2"><a href="#cb7-2"></a>inject (<span class="dt">Closure</span> b env) <span class="ot">=</span> (<span class="dt">ELam</span> b, env)</span>
 <span id="cb7-3"><a href="#cb7-3"></a>inject v <span class="ot">=</span> (<span class="dt">EInject</span> v, [])</span>
-<span id="cb7-4"><a href="#cb7-4"></a> </span>
+<span id="cb7-4"><a href="#cb7-4"></a></span>
 <span id="cb7-5"><a href="#cb7-5"></a><span class="ot">cek ::</span> <span class="dt">Expr</span> <span class="ot">-&gt;</span> <span class="dt">Env</span> <span class="ot">-&gt;</span> <span class="dt">Kont</span> <span class="ot">-&gt;</span> <span class="dt">Value</span></span>
 <span id="cb7-6"><a href="#cb7-6"></a>cek (<span class="dt">EVar</span> i) env k <span class="ot">=</span> cek e env' k <span class="kw">where</span> (e, env') <span class="ot">=</span> inject (env <span class="op">!!</span> i)</span>
 <span id="cb7-7"><a href="#cb7-7"></a><span class="op">...</span></span>
@@ -140,7 +140,7 @@
 <span id="cb8-4"><a href="#cb8-4"></a></span>
 <span id="cb8-5"><a href="#cb8-5"></a>loop <span class="ot">=</span> lam (\x <span class="ot">-&gt;</span> x <span class="op">:@</span> x) <span class="op">:@</span> lam (\x <span class="ot">-&gt;</span> x <span class="op">:@</span> x)</span>
 <span id="cb8-6"><a href="#cb8-6"></a></span>
-<span id="cb8-7"><a href="#cb8-7"></a>tailEnv <span class="ot">=</span> lam (\e <span class="ot">-&gt;</span> paraEnv <span class="op">:@</span> e <span class="op">:@</span> _Nil </span>
+<span id="cb8-7"><a href="#cb8-7"></a>tailEnv <span class="ot">=</span> lam (\e <span class="ot">-&gt;</span> paraEnv <span class="op">:@</span> e <span class="op">:@</span> _Nil</span>
 <span id="cb8-8"><a href="#cb8-8"></a>                                  <span class="op">:@</span> lam (\_ <span class="ot">-&gt;</span> lam (\x <span class="ot">-&gt;</span> lam (\_ <span class="ot">-&gt;</span> x))))</span>
 <span id="cb8-9"><a href="#cb8-9"></a></span>
 <span id="cb8-10"><a href="#cb8-10"></a>tailKont <span class="ot">=</span> lam (\k <span class="ot">-&gt;</span> paraKont <span class="op">:@</span> k <span class="op">:@</span> _Done</span>
@@ -150,12 +150,12 @@
 <span id="cb8-14"><a href="#cb8-14"></a>eval <span class="ot">=</span> lam (\c <span class="ot">-&gt;</span> reify <span class="op">:@</span> lam (\e <span class="ot">-&gt;</span> lam (\k <span class="ot">-&gt;</span> reflect <span class="op">:@</span> c <span class="op">:@</span> (tailEnv <span class="op">:@</span> e) <span class="op">:@</span> k)))</span>
 <span id="cb8-15"><a href="#cb8-15"></a></span>
 <span id="cb8-16"><a href="#cb8-16"></a>quote <span class="ot">=</span> reify <span class="op">:@</span> lam (\e <span class="ot">-&gt;</span> lam (\k <span class="ot">-&gt;</span> reflect <span class="op">:@</span> (_Inject <span class="op">:@</span> c k) <span class="op">:@</span> e <span class="op">:@</span> (tailKont <span class="op">:@</span> k)))</span>
-<span id="cb8-17"><a href="#cb8-17"></a>    <span class="kw">where</span> c k <span class="ot">=</span> paraKont <span class="op">:@</span> k <span class="op">:@</span> garbage </span>
-<span id="cb8-18"><a href="#cb8-18"></a>                              <span class="op">:@</span> lam (\x <span class="ot">-&gt;</span> (lam (\_ <span class="ot">-&gt;</span> lam (\_ <span class="ot">-&gt;</span> lam (\_ <span class="ot">-&gt;</span> x))))) </span>
+<span id="cb8-17"><a href="#cb8-17"></a>    <span class="kw">where</span> c k <span class="ot">=</span> paraKont <span class="op">:@</span> k <span class="op">:@</span> garbage</span>
+<span id="cb8-18"><a href="#cb8-18"></a>                              <span class="op">:@</span> lam (\x <span class="ot">-&gt;</span> (lam (\_ <span class="ot">-&gt;</span> lam (\_ <span class="ot">-&gt;</span> lam (\_ <span class="ot">-&gt;</span> x)))))</span>
 <span id="cb8-19"><a href="#cb8-19"></a>                              <span class="op">:@</span> lam (\_ <span class="ot">-&gt;</span> lam (\_ <span class="ot">-&gt;</span> lam (\_ <span class="ot">-&gt;</span> garbage)))</span>
 <span id="cb8-20"><a href="#cb8-20"></a>          garbage <span class="ot">=</span> _Inject <span class="op">:@</span> _Zero</span>
 <span id="cb8-21"><a href="#cb8-21"></a></span>
-<span id="cb8-22"><a href="#cb8-22"></a>callCC <span class="ot">=</span> lam (\f <span class="ot">-&gt;</span> reify <span class="op">:@</span> lam (\e <span class="ot">-&gt;</span> lam (\k <span class="ot">-&gt;</span> </span>
+<span id="cb8-22"><a href="#cb8-22"></a>callCC <span class="ot">=</span> lam (\f <span class="ot">-&gt;</span> reify <span class="op">:@</span> lam (\e <span class="ot">-&gt;</span> lam (\k <span class="ot">-&gt;</span></span>
 <span id="cb8-23"><a href="#cb8-23"></a>            f <span class="op">:@</span> lam (\a <span class="ot">-&gt;</span> reflect <span class="op">:@</span> (_Inject <span class="op">:@</span> a) <span class="op">:@</span> (tailEnv <span class="op">:@</span> e) <span class="op">:@</span> k))))</span>
 <span id="cb8-24"><a href="#cb8-24"></a></span>
 <span id="cb8-25"><a href="#cb8-25"></a>example1 <span class="ot">=</span> evaluate <span class="op">$</span> quote <span class="op">:@</span> loop <span class="co">-- output looks like: Expr ((\a -&gt; a a) (\a -&gt; a a))</span></span>
