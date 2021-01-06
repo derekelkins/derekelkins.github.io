@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="A blog mostly on math, physics, and computer science.">
+    <meta name="author" content="Derek Elkins">
+    <!--<link rel="icon" href="/images/favicon.ico">-->
+
+    <title>Overlaps</title>
+    <!-- Bootstrap core CSS -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="../css/blog.css" rel="stylesheet">
+    <link href="../css/syntax.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="blog-masthead">
+      <div class="container">
+        <nav class="blog-nav">
+          <a class="blog-nav-item " href="../">Home</a>
+          <a class="blog-nav-item " href="../about.html">About</a>
+          <a class="blog-nav-item " href="../contact.html">Contact</a>
+          <a class="blog-nav-item " href="../readinglist.html">Reading List</a>
+          <a class="blog-nav-item " href="../archive.html">Archive</a>
+          <a class="blog-nav-item pull-right" href="../rss.xml">RSS</a>
+          <a class="blog-nav-item pull-right" href="../atom.xml">Atom</a>
+        </nav>
+      </div>
+    </div>
+
+    <div class="container">
+      
+      
+      <div class="row">
+        
+        <div class="col-sm-12 blog-main">
+        
+          <div class="blog-post">
+    <h2 class="blog-post-title" style="margin-top: 30px;">Overlaps</h2>
+    <p class="blog-post-meta">January  6, 2021 03:46 UTC 
+        
+        (Last updated on January  6, 2021 03:47 UTC)
+    </p>
+    <h6 class="blog-post-meta">
+        
+        Tags: <a title="All pages tagged 'math'." href="../tags/math.html">math</a>, <a title="All pages tagged 'logic'." href="../tags/logic.html">logic</a>, <a title="All pages tagged 'category theory'." href="../tags/category%20theory.html">category theory</a>
+        
+    </h6>
+
+    <p><strong>tl;dr</strong> The notion of two sets overlapping is very common. Often it is expressed via |A \cap B \neq \varnothing|. Constructively, this is not the best definition as it does not imply |\exists x. x \in A \land x \in B|. Even classically, this second-class treatment of overlapping obscures important and useful connections. In particular, writing |U \between A| for “|U| overlaps |A|”, we have a De Morgan-like duality situation with |\between| being dual to |\subseteq|. Recognizing and exploiting this duality, in part by using more appropriate notation for “overlaps”, can lead to new concepts and connections.</p>
+<h3 id="introduction">Introduction</h3>
+<p>The most common way I’ve seen the statement “|A| overlaps |B|” formalized is |A \cap B \neq \varnothing|. To a constructivist, this definition isn’t very satisfying. In particular, this definition of overlaps does not allow us to constructively conclude that there exists an element contained in both |A| and |B|. That is, |A \cap B \neq \varnothing| does not imply |\exists x. x \in A \land x \in B| constructively.</p>
+<p>As is usually the case, even if you are not philosophically a constructivist, taking a constructivist perspective can often lead to better definitions and easier to see connections. In this case, constructivism suggests the more positive statement |\exists x. x \in A \land x \in B| be the definition of “overlaps”. However, given that we now have two (constructively) non-equivalent definitions, it is better to introduce notation to abstract from the particular definition. In many cases, it makes sense to have a primitive notion of “overlaps”. Here I will use the notation |A \between B| which is the most common option I’ve seen.</p>
+<h3 id="properties">Properties</h3>
+<p>We can more compactly write the quantifier-based definition as |\exists x \in A.x \in B| using a common set-theoretic abbreviation. This presentation suggests a perhaps surprising connection. If we swap the quantifier, we get |\forall x\in A.x \in B| which is commonly abbreviated |A \subseteq B|. This leads to a duality between |\subseteq| and |\between|, particularly in topological contexts. In particular, if we pick a containing set |X|, then |\neg(U \between A) \iff U \subseteq A^c| where the complement is relative to |X|, and |A| is assumed to be a subset of |X|. This is a De Morgan-like duality.</p>
+<p>If we want to characterize these operations via an adjunction, or, more precisely, a Galois connection, we have a slight awkwardness arising from |\subseteq| and |\between| being binary predicates on sets. So, as a first step we’ll identify sets with predicates via, for a set |A|, |\underline A(x) \equiv x \in A|. In terms of predicates, the adjunctions we want are just a special case of the adjunctions characterizing the quantifiers.</p>
+<p>\[\underline U(x) \land P \to \underline A(x) \iff P \to U \subseteq A\]</p>
+<p>\[U \between B \to Q \iff \underline B(x) \to (\underline U(x) \to Q)\]</p>
+<p>What we actually want is a formula of the form |U \between B \to Q \iff B \subseteq (\dots)|. To do this, we need an operation that will allow us to produce a set from a predicate. This is exactly what set comprehension does. For reasons that will become increasingly clear, we’ll assume that |A| and |B| are subsets of a set |X|. We will then consider quantification relative to |X|. The result we get is:</p>
+<p>\[\{x \in U \mid P\} \subseteq A \iff \{x \in X \mid x \in U \land P\} \subseteq A \iff P \to U \subseteq A\]</p>
+<p>\[U \between B \to Q \iff B \subseteq \{x \in X \mid x \in U \to Q\} \iff B \subseteq \{x \in U \mid \neg Q\}^c\]</p>
+<p>The first and last equivalences require additionally assuming |U \subseteq X|. The last equivalence requires classical reasoning. You can already see motivation to limit to subsets of |X| here. First, set complementation, the |(-)^c|, only makes sense relative to some containing set. Next, if we choose |Q \equiv \top|, then the latter formulas state that <em>no matter what |B| is</em> it should be a subset of the expression that follows it. Without constraining to subsets of |X|, this would require a universal set which doesn’t exist in typical set theories.</p>
+<p>Choosing |P| as |\top|, |Q| as |\bot|, and |B| as |A^c| leads to the familiar |\neg (U \between A^c) \iff U \subseteq A|, i.e. |U| is a subset of |A| if and only if it doesn’t overlap |A|’s complement.</p>
+<p>Incidentally, characterizing |\subseteq| and |\between| in terms of Galois connections, i.e. adjunctions, immediately gives us some properties for free via continuity. We have |U \subseteq \bigcap_{i \in I}A_i \iff \forall i\in I.U \subseteq A_i| and |U \between \bigcup_{i \in I}A_i \iff \exists i \in I.U \between A_i|. This is relative to a containing set |X|, so |\bigcap_{i \in \varnothing}A_i = X|, and |U| and each |A_i| are assumed to be subsets of |X|.</p>
+<h3 id="categorical-perspective">Categorical Perspective</h3>
+<p>Below I’ll perform a categorical analysis of the situation. I’ll mostly be using categorical notation and perspectives to manipulate normal sets. That said, almost all of what I say will be able to be generalized immediately just by reinterpreting the symbols.</p>
+<p>To make things a bit cleaner in the future, and to make it easier to apply these ideas beyond sets, I’ll introduce the concept of a <a href="https://en.wikipedia.org/wiki/Heyting_algebra">Heyting algebra</a>. A Heyting algebra is a partially ordered set |H| satisfying the following:</p>
+<ol type="1">
+<li>|H| has two elements called |\top| and |\bot| satisfying for all |x| in |H|, |\bot \leq x \leq \top|.</li>
+<li>We have operations |\land| and |\lor| satisfying for all |x|, |y|, |z| in |H|, |x \leq y \land z| if and only |x \leq y| and |x \leq z|, and similarly for |\lor|, |x \lor y \leq z| if and only |x \leq z| and |y \leq z|.</li>
+<li>We have an operation |\to| satisfying for all |x|, |y|, and |z| in |H|, |x \land y \leq z| if and only if |x \leq y \to z|.</li>
+</ol>
+<p>For those familiar with category theory, you might recognize this as simply the decategorification of the notion of a <a href="https://ncatlab.org/nlab/show/bicartesian+closed+category">bicartesian closed category</a>. We can define the <strong>pseudo-complement</strong>, |\neg x \equiv x \to \bot|.</p>
+<p>Any <a href="https://en.wikipedia.org/wiki/Boolean_algebra_(structure)">Boolean algebra</a> is an example of a Heyting algebra where we can define |x \to y| via |\neg x \lor y| where here |\neg| is taken as primitive. In particular, subsets of a given set ordered by inclusion form a Boolean algebra, and thus a Heyting algebra. The |\to| operation can also be characterized by |x \leq y \iff (x \to y) = \top|. This lets us immediately see that for subsets of |X|, |(A \to B) = \{x \in X \mid x \in A \to x \in B\}|. All this can be generalized to the subobjects in any <a href="https://ncatlab.org/nlab/show/Heyting+category">Heyting category</a>.</p>
+<p>As the notation suggests, intuitionistic logic (and thus classical logic) is another example of a Heyting algebra.</p>
+<p>We’ll write |\mathsf{Sub}(X)| for the partially ordered set of subsets of |X| ordered by inclusion. As mentioned above, this is (classically) a Boolean algebra and thus a Heyting algebra. Any function |f : X \to Y| gives a monotonic function |f^* : \mathsf{Sub}(Y) \to \mathsf{Sub}(X)|. Note the swap. |f^*(U) \equiv f^{-1}(U)|. (Alternatively, if we think of subsets in terms of characteristic functions, |f^*(U) \equiv U \circ f|.) Earlier, we needed a way to turn predicates into sets. In this case, we’ll go the other way and identify truth values with subsets of |1| where |1| stands for an arbitrary singleton set. That is, |\mathsf{Sub}(1)| is the poset of truth values. |1| being the terminal object of |\mathbf{Set}| induces the (unique) function |!_U : U \to 1| for any set |U|. This leads to the important monotonic function |!_U^* : \mathsf{Sub}(1) \to \mathsf{Sub}(U)|. This can be described as |!_U^*(P) = \{x \in U \mid P\}|. Note, |P| cannot contain |x| as a free variable. In particular |!_U^*(\bot) = \varnothing| and |!_U^*(\top) = U|. This monotonic function has left and right adjoints:</p>
+<p>\[\exists_U \dashv {!_U^*} \dashv \forall_U : \mathsf{Sub}(U) \to \mathsf{Sub}(1)\]</p>
+<p>|F \dashv G| for monotonic functions |F : X \to Y| and |G : Y \to X| means |\forall x \in X. \forall y \in Y.F(x) \leq_Y y \iff x \leq_X G(y)|.</p>
+<p>|\exists_U(A) \equiv \exists x \in U. x \in A| and |\forall_U(A) \equiv \forall x \in U. x \in A|. It’s easily verified that each of these functions are monotonic.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>It seems like we should be done. These formulas are the formulas I originally gave for |\between| and |\subseteq| in terms of quantifiers. The problem here is that these functions are only defined for subsets of |U|. This is especially bad for interpreting |U \between A| as |\exists_U(A)| as it excludes most of the interesting cases where |U| partially overlaps |A|. What we need is a way to extend |\exists_U| / |\forall_U| beyond subsets of |U|. That is, we need a suitable monotonic function |\mathsf{Sub}(X) \to \mathsf{Sub}(U)|.</p>
+<p>Assume |U \subseteq X| and that we have an inclusion |\iota_U : U \hookrightarrow X|. Then |\iota_U^* : \mathsf{Sub}(X) \to \mathsf{Sub}(U)| and |\iota_U^*(A) = U \cap A|. This will indeed allow us to define |\subseteq| and |\between| as |U \subseteq A \equiv \forall_U(\iota_U^*(A))| and |U \between A \equiv \exists_U(\iota_U^*(A))|. We have:</p>
+<p>\[\iota_U[-] \dashv \iota_U^* \dashv U \to \iota_U[-] : \mathsf{Sub}(U) \to \mathsf{Sub}(X)\]</p>
+<p>Here, |\iota_U[-]| is the direct image of |\iota_U|. This doesn’t really do anything in this case except witness that if |A \subseteq U| then |A \subseteq X| because |U \subseteq X|.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+<p>We can recover the earlier adjunctions by simply using these two pairs of adjunctions. \[\begin{align} U \between B \to Q &amp; \iff \exists_U(\iota_U^*(B)) \to Q \\ &amp; \iff \iota_U^*(B) \subseteq {!}_U^*(Q) \\ &amp; \iff B \subseteq U \to \iota_U[{!}_U^*(Q)] \\ &amp; \iff B \subseteq \{x \in X \mid x \in U \to Q\} \end{align}\]</p>
+<p>Here the |\iota_U[-]| is crucial so that we use the |\to| of |\mathsf{Sub}(X)| and not |\mathsf{Sub}(U)|.</p>
+<p>\[\begin{align} P \to U \subseteq A &amp; \iff P \to \forall_U(\iota_U^*(A)) \\ &amp; \iff {!}_U^*(P) \subseteq \iota_U^*(A) \\ &amp; \iff \iota_U[{!}_U^*(P)] \subseteq A \\ &amp; \iff \{x \in X \mid x \in U \land P\} \subseteq A \end{align}\]</p>
+<p>In this case, the |\iota_U[-]| is truly doing nothing because |\{x \in X \mid x \in U \land P\}| is the same as |\{x \in U \mid P\}|.</p>
+<p>While we have |{!}_U^* \circ \exists_U \dashv {!}_U^* \circ \forall_U|, we see that the inclusion of |\iota_U^*| is what breaks the direct connection between |U \between A| and |U \subseteq A|.</p>
+<h3 id="examples">Examples</h3>
+<p>As a first example, write |\mathsf{Int}A| for the <strong>interior</strong> of |A| and |\bar A| for the <strong>closure</strong> of |A| each with respect to some <a href="https://en.wikipedia.org/wiki/Topological_space#Definition_via_open_sets">topology</a> on a containing set |X|. One way to define |\mathsf{Int}A| is |x \in \mathsf{Int}A| if and only if there exists an open set containing |x| that’s a subset of |A|. Writing |\mathcal O(X)| for the set of open sets, we can express this definition in symbols: \[x \in \mathsf{Int}A \iff \exists U \in \mathcal O(X). x \in U \land U \subseteq A\] We have a “dual” notion: \[x \in \bar A \iff \forall U \in \mathcal O(X). x \in U \to U \between A\] That is, |x| is in the closure of |A| if and only if every open set containing |x| overlaps |A|.</p>
+<p>As another example, here is a fairly unusual way of characterizing a compact subset |Q|. |Q| is <strong>compact</strong> if and only if |\{U \in \mathcal O(X) \mid Q \subseteq U\}| is open in |\mathcal O(X)| equipped with the <a href="https://ncatlab.org/nlab/show/Scott+topology">Scott topology</a><a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>. As before, this suggests a “dual” notion characterized by |\{U \in \mathcal O(X) \mid O \between U\}| being an open subset. A set |O| satisfying this is called <a href="https://ncatlab.org/nlab/show/overt+space"><strong>overt</strong></a>. This concept is never mentioned in traditional presentations of point-set topology because <em>every</em> subset is overt. However, if we don’t require that <em>arbitrary</em> unions of open sets are open (and only require finite unions to be open) as happens in <a href="https://ncatlab.org/nlab/show/synthetic+topology">synthetic topology</a> or if we aren’t working in a classical context then overtness becomes a meaningful concept.</p>
+<p>One benefit of the intersection-based definition of overlaps is that it is straightforward to generalize to many sets overlapping, namely |\bigcap_{i\in I} A_i \neq \varnothing|. This is also readily expressible using quantifiers as: |\exists x.\forall i \in I. x \in A_i|. As before, having an explicit “universe” set also clarifies this. So, |\exists x \in X.\forall i \in I. x \in A_i| with |\forall i \in I. A_i \subseteq X| would be better. The connection of |\between| to |\subseteq| suggests instead of this fully symmetric presentation, it may still be worthwhile to single out a set producing |\exists x \in U.\forall i \in I. x \in A_i| where |U \subseteq X|. This can be read as “there is a point in |U| that touches/meets/overlaps every |A_i|”. If desired we could notate this as |U \between \bigcap_{i \in I}A_i|. Negating and complementing the |A_i| leads to the dual notion |\forall x \in U.\exists i \in I.x \in A_i| which is equivalent to |U \subseteq \bigcup_{i \in I}A_i|. This dual notion could be read as “the |A_i| (jointly) cover |U|” which is another common and important concept in mathematics.</p>
+<h3 id="conclusion">Conclusion</h3>
+<p>Ultimately, the concept of two (or more) sets overlapping comes up quite often. The usual circumlocution, |A \cap B \neq \varnothing|, is both notationally and conceptually clumsy. Treating overlapping as a first-class notion via notation and formulating definitions in terms of it can reveal some common and important patterns.</p>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p>If one wanted to be super pedantic, I should technically write something like |\{\star \mid \exists x \in U. x \in A\}| where |1 = \{\star\}| because elements of |\mathsf{Sub}(1)| are subsets of |1|. Instead, we’ll conflate subsets of |1| and truth values.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p>If we think of subobjects as (equivalence classes of) monomorphisms as is typical in category theory, then because |\iota_U| is itself a monomorphism, the direct image, |\iota_U[-]|, is simply post-composition by |\iota_U|, i.e. |\iota_U \circ {-}|.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3" role="doc-endnote"><p>The Scott topology is the natural topology on the space of continuous functions |X \to \Sigma| where |\Sigma| is the <a href="https://en.wikipedia.org/wiki/Sierpi%C5%84ski_space">Sierpinski space</a>.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_shortname = 'hedonisticlearning';
+        var disqus_identifier = '71bfb06a-0ff4-4d3e-b3fe-d8b59b164256';
+        var disqus_title = 'Overlaps';
+        
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript> 
+</div>
+
+        </div><!-- /.blog-main -->
+        
+        
+      </div><!-- /.row -->
+    </div><!-- /.container -->
+
+    <footer class="blog-footer">
+      <p>Site generated by <a href="http://jaspervdj.be/hakyll">Hakyll</a></p>
+      <p>
+        <a href="#">Back to top</a>
+      </p>
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js" integrity="sha384-6ePHh72Rl3hKio4HiJ841psfsRJveeS+aLoaEf3BWfS+gTF0XdAqku2ka8VddikM" crossorigin="anonymous"></script>
+    <!-- <script type="text/javascript" src="/js/jquery.min.js"></script> -->
+    <script type="text/javascript" src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!--<script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>-->
+    <script type="text/javascript">
+        var disqus_shortname = 'hedonisticlearning';
+        (function () {
+            var s = document.createElement('script'); s.async = true;
+            s.type = 'text/javascript';
+            s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
+            (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+        }());
+    </script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_HTMLorMML.js" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script>
+    <!-- <script type="text/javascript" src="/js/MathJax-2.7.7/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script> -->
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+          extensions: ['asciimath2jax.js'],
+          asciimath2jax: {
+              delimiters: [['#','#']],
+              processClass: 'asciimath'
+          },
+          tex2jax: {
+              inlineMath: [['|','|']]
+          }
+        });
+    </script>
+  </body>
+</html>
