@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">Internal Language of a Monoidal Category</h2>
     <p class="blog-post-meta">May 22, 2020 08:46 UTC 
         
-        (Last updated on July  6, 2020 02:02 UTC)
+        (Last updated on February 13, 2021 21:39 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -72,7 +72,7 @@ a_1 : A_1, \dots, a_n : A_n \vdash E : B\end{align}$$</span><br /> will represen
 <p>Since it’s useful to know, I’ll go into some detail on how we derive natural-deduction-style rules from this categorical data. First, we note that the above natural isomorphism (at least when |m=0| and |p=0|) has the form of a universal property using representability and, specifically, is a mapping-out property. That is, we are saying that the functor |\mathcal C(B_1, \dots, B_n; \_)| is represented by |B_1 \otimes \cdots \otimes B_n|. Let’s call the left to right direction of the above natural isomorphism |\varphi|. While this universal property can, of course, be represented by the natural isomorphism as above, it can also be equivalently represented by a universal element. Namely, one particularly notable choice for |D| is |B_1 \otimes \cdots \otimes B_n| itself, at which point we can consider |\eta = \varphi^{-1}(id_{B_1 \otimes \cdots \otimes B_n}) : (B_1, \dots, B_n) \to B_1 \otimes \cdots \otimes B_n|. By using naturality of |\varphi^{-1}|, we can easily show that |\varphi^{-1}(f) = f \circ \eta|. To witness the fact that |\varphi^{-1}(\varphi(f)) = f|, we need |\varphi(f) \circ \eta = f|. We’ve now shown that a natural transformation |\varphi| as above and an element (in this case a multiarrow) |\eta| which satisfy |\varphi(\eta) = id| and |\varphi(f) \circ \eta = f| is equivalent to the natural isomorphism above.</p>
 <p>To start translating this to rules, we look at |\eta| first. A direct translation would be to say we have the rule: <br /><span class="math display">$$\begin{align}
 \dfrac{}{a_1 : A_1, \dots, a_n : A_n \vdash \eta : A_1 \otimes \cdots \otimes A_n}
-\end{align}$$</span><br /> This is unnatural because it treats || like a primitive open term. This also means that to use |\eta|, we’d need to use the Cut rule (which corresponds to substitution/composition) which would stymie Cut elimination. The solution is to mix a use of Cut into the rule itself producing the term |\eta[E_1/a_1, \dots, E_n/a_n]| which I’ll write more perspicuously as |E_1 \otimes \cdots \otimes E_n|. This gives rise to the rule: <br /><span class="math display">$$\begin{align}
+\end{align}$$</span><br /> This is unnatural because it treats |\eta| like a primitive open term. This also means that to use |\eta|, we’d need to use the Cut rule (which corresponds to substitution/composition) which would stymie Cut elimination. The solution is to mix a use of Cut into the rule itself producing the term |\eta[E_1/a_1, \dots, E_n/a_n]| which I’ll write more perspicuously as |E_1 \otimes \cdots \otimes E_n|. This gives rise to the rule: <br /><span class="math display">$$\begin{align}
 \dfrac{\Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Delta_n \vdash E_n : A_n}{\Delta_1,\dots,\Delta_n \vdash E_1 \otimes \cdots \otimes E_n : A_1 \otimes \cdots \otimes A_n}{\otimes_n}\text{I}
 \end{align}$$</span><br /> Of course, we could restrict to just the |n=0| and |n=2| cases if we wanted. I’ll write the |n=0| case of |a_1\otimes\cdots\otimes a_n| as |*| in both the term and pattern cases. As the label for the rule, |\otimes_n I|, suggests, this is an introduction rule for |\otimes|.</p>
 <p>The rule corresponding to |\varphi| takes less massaging. We’ll do the same trick of incorporating a Cut (Where?), but this makes a fairly minor difference in this case. The rule we get is: <br /><span class="math display">$$\begin{align}
@@ -216,8 +216,8 @@ a_1 : A_1, \dots, a_n : A_n \vdash E : B\end{align}$$</span><br /> will represen
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js" integrity="sha384-6ePHh72Rl3hKio4HiJ841psfsRJveeS+aLoaEf3BWfS+gTF0XdAqku2ka8VddikM" crossorigin="anonymous"></script>
-    <!-- <script type="text/javascript" src="/js/jquery.min.js"></script> -->
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js" integrity="sha384-6ePHh72Rl3hKio4HiJ841psfsRJveeS+aLoaEf3BWfS+gTF0XdAqku2ka8VddikM" crossorigin="anonymous"></script> -->
+    <script type="text/javascript" src="../js/jquery.min.js"></script>
     <script type="text/javascript" src="../js/bootstrap.min.js"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <!--<script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>-->
@@ -230,14 +230,17 @@ a_1 : A_1, \dots, a_n : A_n \vdash E : B\end{align}$$</span><br /> will represen
             (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
         }());
     </script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_HTMLorMML.js" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script>
-    <!-- <script type="text/javascript" src="/js/MathJax-2.7.7/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script> -->
+    <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_HTMLorMML.js" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script> -->
+    <script type="text/javascript" src="../js/MathJax-2.7.7/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
     <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
           extensions: ['asciimath2jax.js'],
           asciimath2jax: {
               delimiters: [['#','#']],
               processClass: 'asciimath'
+          },
+          TeX: {
+              extensions: ['/js/xypic.js']
           },
           tex2jax: {
               inlineMath: [['|','|']]

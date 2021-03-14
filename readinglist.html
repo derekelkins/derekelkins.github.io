@@ -159,6 +159,7 @@
 <li><a href="http://martinfowler.com/articles/mocksArentStubs.html">Mocks Aren’t Stubs</a> by Martin Fowler</li>
 <li><a href="http://www.cs.cmu.edu/~rwh/theses/okasaki.pdf">Purely Functional Data Structures</a> by Chris Okasaki (thesis or book)</li>
 <li><a href="http://infoscience.epfl.ch/record/148043/files/DeprecatingObserversTR2010.pdf">Deprecating the Observer Pattern</a></li>
+<li><a href="https://arxiv.org/abs/2101.02690">Theorem Proving and Algebra</a> by Joseph Goguen (unfinish book)</li>
 <li>Dawson Engler:
 <ul>
 <li><a href="http://pdos.csail.mit.edu/~engler/">http://pdos.csail.mit.edu/~engler/</a> and <a href="http://www.stanford.edu/~engler/">http://www.stanford.edu/~engler/</a></li>
@@ -178,6 +179,7 @@
 <li>Daniel Bernstein - <a href="http://cr.yp.to/djb.html">http://cr.yp.to/djb.html</a> <a href="http://cr.yp.to/">http://cr.yp.to/</a></li>
 <li><a href="http://www.credentica.com/the_mit_pressbook.html">Rethinking Public Key Infrastructure and Digital Certificates</a> - UProve</li>
 <li><a href="http://www.amazon.com/gp/product/0764549758">Malicious Cryptography</a></li>
+<li><a href="https://noiseprotocol.org/">Noise Protocol</a> - Some implemented and analyzed building block cryptographic protocols.</li>
 </ul>
 <h4 id="dbms-implementation">DBMS Implementation</h4>
 <ul>
@@ -245,10 +247,11 @@
 <li><a href="http://bayes.wustl.edu/etj/articles/well.pdf">The Well-Posed Problem</a>, but see <a href="https://arxiv.org/abs/1503.09072">Failure and Uses of Jaynes’ Principle of Transformation Groups</a></li>
 <li><a href="http://bayes.wustl.edu/etj/articles/confidence.pdf">Confidence Intervals vs Bayesian Intervals</a></li>
 </ul></li>
+<li>David Hestenes’ <a href="http://geocalc.clas.asu.edu/">Geometric Calculus</a></li>
 <li>Judea Pearl “Causality: Models, Reasoning, and Inference”</li>
 <li>“Entropy and the Time Evolution of Macroscopic Systems” by Walter T. Grandy Jr.</li>
 <li><a href="https://ccrma.stanford.edu/~jos/pasp/">Physical Audio Signal Processing</a> by <a href="https://ccrma.stanford.edu/~jos/Welcome.html">Julius O. Smith</a></li>
-<li><a href="http://arxiv.org/abs/0808.0012">Lectures on Probability, Entropy, and Statistical Physics</a> by Ariel Caticha</li>
+<li><a href="https://livealbany.sharepoint.com/:b:/s/web_physics/EaNIFrMDD21GiGWpZX9iGbcBN-vVKOcj7SCz7xXdnpOPXg?e=kZUZIl">Entropic Inference and the Foundations of Physics</a> by <a href="https://www.albany.edu/physics/faculty/ariel-caticha">Ariel Caticha</a> or the older <a href="http://arxiv.org/abs/0808.0012">Lectures on Probability, Entropy, and Statistical Physics</a>.</li>
 </ul>
 <h3 id="mathematics">Mathematics</h3>
 <ul>
@@ -361,6 +364,7 @@
 * John C. Reynolds - Programming language semantics
 * Edsgar Dijkstra - Formal methods
 * Edwin T. Jaynes - Probability theory/statistical mechanics/physics
+* Joseph Goguen - Algebraic Specification, OBJ, Institutions
 -->
         </div><!-- /.blog-main -->
         
@@ -378,8 +382,8 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js" integrity="sha384-6ePHh72Rl3hKio4HiJ841psfsRJveeS+aLoaEf3BWfS+gTF0XdAqku2ka8VddikM" crossorigin="anonymous"></script>
-    <!-- <script type="text/javascript" src="/js/jquery.min.js"></script> -->
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js" integrity="sha384-6ePHh72Rl3hKio4HiJ841psfsRJveeS+aLoaEf3BWfS+gTF0XdAqku2ka8VddikM" crossorigin="anonymous"></script> -->
+    <script type="text/javascript" src="./js/jquery.min.js"></script>
     <script type="text/javascript" src="./js/bootstrap.min.js"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <!--<script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>-->
@@ -392,14 +396,17 @@
             (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
         }());
     </script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_HTMLorMML.js" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script>
-    <!-- <script type="text/javascript" src="/js/MathJax-2.7.7/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script> -->
+    <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_HTMLorMML.js" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script> -->
+    <script type="text/javascript" src="./js/MathJax-2.7.7/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
     <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
           extensions: ['asciimath2jax.js'],
           asciimath2jax: {
               delimiters: [['#','#']],
               processClass: 'asciimath'
+          },
+          TeX: {
+              extensions: ['/js/xypic.js']
           },
           tex2jax: {
               inlineMath: [['|','|']]
