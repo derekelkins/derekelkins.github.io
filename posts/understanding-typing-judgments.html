@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">Understanding typing judgments</h2>
     <p class="blog-post-meta">April 13, 2016 02:41 UTC 
         
-        (Last updated on November 25, 2021 12:01 UTC)
+        (Last updated on November 25, 2021 14:00 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -197,7 +197,7 @@ e ::= v | e e | e[τ] | x</code></pre>
 <p>The main reason I included the signature, beyond just covering it for the cases when it is included, is that sometimes certain rules can be better understood as manipulations of the signature. For example, in <em>logic</em>, universal quantification is often described by a rule like:</p>
 <p>\[\frac{\Gamma \vdash P[x\mapsto c] \quad c\ \mathrm{fresh}}{\Gamma \vdash \forall x.P}\]</p>
 <p>What’s happening and what “freshness” is is made a bit clearer by employing a signature (which for logic is usually just a list of constants similar to our <code>TypeContext</code>):</p>
-<p>\[\frac{\Gamma \vdash_(\Sigma, c) P[x\mapsto c] \quad c \notin \Sigma}{\Gamma \vdash_\Sigma \forall x.P}\]</p>
+<p>\[\frac{\Gamma \vdash_{\Sigma, c} P[x\mapsto c] \quad c \notin \Sigma}{\Gamma \vdash_\Sigma \forall x.P}\]</p>
 <h4 id="judgment">Judgment</h4>
 <p>To define the typing rules we need two judgements. The first, |\Delta \vdash \tau|, will be a simple judgement that says |\tau| is a well formed type in |\Delta|. This basically just requires that all variables are bound.</p>
 <p>\[\frac{\alpha \in \Delta}{\Delta \vdash \alpha}\]</p>
