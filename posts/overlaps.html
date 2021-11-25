@@ -96,7 +96,7 @@
 <p>One benefit of the intersection-based definition of overlaps is that it is straightforward to generalize to many sets overlapping, namely |\bigcap_{i\in I} A_i \neq \varnothing|. This is also readily expressible using quantifiers as: |\exists x.\forall i \in I. x \in A_i|. As before, having an explicit “universe” set also clarifies this. So, |\exists x \in X.\forall i \in I. x \in A_i| with |\forall i \in I. A_i \subseteq X| would be better. The connection of |\between| to |\subseteq| suggests instead of this fully symmetric presentation, it may still be worthwhile to single out a set producing |\exists x \in U.\forall i \in I. x \in A_i| where |U \subseteq X|. This can be read as “there is a point in |U| that touches/meets/overlaps every |A_i|”. If desired we could notate this as |U \between \bigcap_{i \in I}A_i|. Negating and complementing the |A_i| leads to the dual notion |\forall x \in U.\exists i \in I.x \in A_i| which is equivalent to |U \subseteq \bigcup_{i \in I}A_i|. This dual notion could be read as “the |A_i| (jointly) cover |U|” which is another common and important concept in mathematics.</p>
 <h3 id="conclusion">Conclusion</h3>
 <p>Ultimately, the concept of two (or more) sets overlapping comes up quite often. The usual circumlocution, |A \cap B \neq \varnothing|, is both notationally and conceptually clumsy. Treating overlapping as a first-class notion via notation and formulating definitions in terms of it can reveal some common and important patterns.</p>
-<section class="footnotes" role="doc-endnotes">
+<section class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr />
 <ol>
 <li id="fn1" role="doc-endnote"><p>If one wanted to be super pedantic, I should technically write something like |\{\star \mid \exists x \in U. x \in A\}| where |1 = \{\star\}| because elements of |\mathsf{Sub}(1)| are subsets of |1|. Instead, we’ll conflate subsets of |1| and truth values.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
@@ -154,11 +154,6 @@
     <script type="text/javascript" src="../js/MathJax-2.7.7/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
     <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
-          extensions: ['asciimath2jax.js'],
-          asciimath2jax: {
-              delimiters: [['#','#']],
-              processClass: 'asciimath'
-          },
           TeX: {
               extensions: ['/js/xypic.js']
           },
