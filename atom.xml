@@ -1167,7 +1167,7 @@ w(a,1)--w(b,1)----acq(a)------------------acq(b)--
 <p>Let |\mathcal C| be an <a href="https://ncatlab.org/nlab/show/indexed+category"><strong>|\mathbf S|-indexed category</strong></a>, i.e. a <a href="https://ncatlab.org/nlab/show/pseudofunctor">pseudofunctor</a> |\mathbf S^{op} \to \mathbf{Cat}| where |\mathbf S| is an ordinary category. Write |\mathcal C^I| for |\mathcal C(I)| and |f^* : \mathcal C^J \to \mathcal C^I| for |\mathcal C(f)| where |f : I \to J|. The functors |f^*| will be called <strong>reindexing functors</strong>. |\mathcal C| has <strong>|\mathbf S|-indexed coproducts</strong> whenever</p>
 <ol type="1">
 <li>each reindexing functor |f^*| has a left adjoint |\Sigma_f|, and</li>
-<li>the Beck-Chevalley condition holds, i.e. whenever <span class="math display">$$\require{AMScd}\begin{CD}
+<li>the Beck-Chevalley condition holds, i.e. whenever <span class="math display">$$\require{amscd}\begin{CD}
    I @&gt;h&gt;&gt; J \\
    @VkVV @VVfV \\
    K @&gt;&gt;g&gt; L

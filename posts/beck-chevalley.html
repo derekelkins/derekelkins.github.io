@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">Beck-Chevalley</h2>
     <p class="blog-post-meta">February 23, 2020 07:59 UTC 
         
-        (Last updated on February 23, 2020 07:59 UTC)
+        (Last updated on November 25, 2021 15:28 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -57,7 +57,7 @@
 <p>Let |\mathcal C| be an <a href="https://ncatlab.org/nlab/show/indexed+category"><strong>|\mathbf S|-indexed category</strong></a>, i.e. a <a href="https://ncatlab.org/nlab/show/pseudofunctor">pseudofunctor</a> |\mathbf S^{op} \to \mathbf{Cat}| where |\mathbf S| is an ordinary category. Write |\mathcal C^I| for |\mathcal C(I)| and |f^* : \mathcal C^J \to \mathcal C^I| for |\mathcal C(f)| where |f : I \to J|. The functors |f^*| will be called <strong>reindexing functors</strong>. |\mathcal C| has <strong>|\mathbf S|-indexed coproducts</strong> whenever</p>
 <ol type="1">
 <li>each reindexing functor |f^*| has a left adjoint |\Sigma_f|, and</li>
-<li>the Beck-Chevalley condition holds, i.e. whenever <span class="math display">$$\require{AMScd}\begin{CD}
+<li>the Beck-Chevalley condition holds, i.e. whenever <span class="math display">$$\require{amscd}\begin{CD}
    I @&gt;h&gt;&gt; J \\
    @VkVV @VVfV \\
    K @&gt;&gt;g&gt; L
@@ -163,16 +163,19 @@ U^I(F^f)^{-1} \circ \eta_{\mathcal D(f)}^I = U_{F^J}^f \circ \mathcal D(f)\eta^J
         }());
     </script>
     <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_HTMLorMML.js" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script> -->
-    <script type="text/javascript" src="../js/MathJax-2.7.7/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
-    <script type="text/x-mathjax-config">
-        MathJax.Hub.Config({
-          TeX: {
-              extensions: ['/js/xypic.js']
-          },
-          tex2jax: {
-              inlineMath: [['|','|']]
-          }
-        });
+    <!--<script type="text/javascript" src="/js/MathJax-2.7.7/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>-->
+    <script>
+        MathJax ={
+            loader: {
+                load: ['ui/lazy', '[custom]/xypic.js'],
+                paths: { custom: '/js' }
+            },
+            tex: {
+                packages: { '[+]': ['xypic'] },
+                inlineMath: [['|','|']]
+            }
+        };
     </script>
+    <script type="text/javascript" src="../js/MathJax-3/es5/tex-mml-chtml.js"></script>
   </body>
 </html>
