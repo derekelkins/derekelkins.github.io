@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">A better way to write convolution</h2>
     <p class="blog-post-meta">September 14, 2015 06:12 UTC 
         
-        (Last updated on November 24, 2021 09:09 UTC)
+        (Last updated on December 30, 2021 14:11 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -68,6 +68,7 @@
 <p>and we’re done. It’s clear the associativity of convolution comes from the associativity of addition and distributivity. In fact, the commutativity also came from the commutativity of addition. This suggests a simple but broad generalization. Simply replace the |+| in the indexing with any binary operation, i.e.:</p>
 <p>\[(f * g)(n) = \sum_{j \oplus k=n} f(j)g(k)\]</p>
 <p>Usually |\oplus| is taken to be an operation of a group, and this makes sense when you need to support the equivalent of |n-k|, but there’s really nothing keeping it from being a monoid, and the unit isn’t doing anything so why not a semigroup, and we only really need associativity if we want the convolution to be associative, and nothing requires |n| to be the same type as |j| or |k| or for them to be the same type as each other for that matter… Of course having a group structure reduces the often sticky problem of factoring |n| into all the pairs of |j| and |k| such that |j \oplus k = n| to the problem of “simply” enumerating the group.</p>
+<p>As an update: Conal Elliott uses a similarly generalized notion of convolution in <a href="https://arxiv.org/abs/1903.10677">Generalized Convolution and Efficient Language Recognition</a>. In particular, the generalization using an arbitrary binary function |\oplus| allows things like heterogeneous index types. For example, if we want to convolve size-indexed arrays, we have a problem, but we can finesse it by viewing <code>Vec n x</code> as <code>Fin n -&gt; x</code>. With traditional convolution, we’d still have a problem since <code>(+)</code> requires its arguments to be the same type and the type of the result, so not <code>Fin n -&gt; Fin m -&gt; Fin (m + n - 1)</code>. This isn’t a problem for |\oplus| though.</p>
 <p>Here’s some code for the free monoid (i.e. lists) case:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.Monoid</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.List</span></span>
@@ -76,25 +77,25 @@
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Num</span> a <span class="ot">=&gt;</span> <span class="dt">CommutativeMonoid</span> (<span class="dt">Sum</span> a)</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">-- Overly generalized convolve</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ot">ogconvolve ::</span> (<span class="dt">CommutativeMonoid</span> m) <span class="ot">=&gt;</span> (a <span class="ot">-&gt;</span> b <span class="ot">-&gt;</span> m) <span class="ot">-&gt;</span> (n <span class="ot">-&gt;</span> [(j,k)]) <span class="ot">-&gt;</span> (j <span class="ot">-&gt;</span> a) <span class="ot">-&gt;</span> (k <span class="ot">-&gt;</span> b) <span class="ot">-&gt;</span> n <span class="ot">-&gt;</span> m</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ot">ogconvolve ::</span> (<span class="dt">CommutativeMonoid</span> m) <span class="ot">=&gt;</span> (a <span class="ot">-&gt;</span> b <span class="ot">-&gt;</span> m) <span class="ot">-&gt;</span> (n <span class="ot">-&gt;</span> [(j, k)]) <span class="ot">-&gt;</span> (j <span class="ot">-&gt;</span> a) <span class="ot">-&gt;</span> (k <span class="ot">-&gt;</span> b) <span class="ot">-&gt;</span> n <span class="ot">-&gt;</span> m</span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>ogconvolve mul factor f g n <span class="ot">=</span> <span class="fu">mconcat</span> (<span class="fu">map</span> (<span class="fu">uncurry</span> (\j k <span class="ot">-&gt;</span> mul (f j) (g k))) (factor n))</span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="ot">gconvolve ::</span> <span class="dt">Num</span> m <span class="ot">=&gt;</span> (n <span class="ot">-&gt;</span> [(n,n)]) <span class="ot">-&gt;</span> (n <span class="ot">-&gt;</span> m) <span class="ot">-&gt;</span> (n <span class="ot">-&gt;</span> m) <span class="ot">-&gt;</span> n <span class="ot">-&gt;</span> m</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="ot">gconvolve ::</span> <span class="dt">Num</span> m <span class="ot">=&gt;</span> (n <span class="ot">-&gt;</span> [(n, n)]) <span class="ot">-&gt;</span> (n <span class="ot">-&gt;</span> m) <span class="ot">-&gt;</span> (n <span class="ot">-&gt;</span> m) <span class="ot">-&gt;</span> n <span class="ot">-&gt;</span> m</span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>gconvolve factor f g n <span class="ot">=</span> getSum (ogconvolve (\a b <span class="ot">-&gt;</span> <span class="dt">Sum</span> (a<span class="op">*</span>b)) factor f g n)</span>
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="ot">lconvolve ::</span> <span class="dt">Num</span> m <span class="ot">=&gt;</span> ([a] <span class="ot">-&gt;</span> m) <span class="ot">-&gt;</span> ([a] <span class="ot">-&gt;</span> m) <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> m</span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>lconvolve <span class="ot">=</span> gconvolve (\as <span class="ot">-&gt;</span> <span class="fu">zip</span> (inits as) (tails as))</span></code></pre></div>
-<p>You may have noticed that we never actually use |\oplus| anywhere. It’s only significance is to define the valid factorizations. I.e. there’s an implicit constraint in the above code that</p>
+<p>You may have noticed that we never actually use |\oplus| anywhere. It’s only significance is to define the valid factorizations. That is, there’s an implicit constraint in the above code that</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">all</span> (\(j,k) <span class="ot">-&gt;</span> n <span class="op">==</span> j <span class="ot">`oplus`</span> k) (factor n)</span></code></pre></div>
 <p>and also that</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>factor n <span class="op">==</span> nub (factor n)</span></code></pre></div>
-<p>i.e. no duplicates. (Conceptually, factor spits out a set, indeed the graph of the relation |(j,k)\mapsto j \oplus k=n|.)</p>
+<p>i.e. no duplicates. (Conceptually, <code>factor</code> spits out a set, indeed the graph of the relation |(j,k)\mapsto j \oplus k=n|.)</p>
 <p>The commutative monoid constraint and <code>mul</code> function were just for the heck of it, but why a commutative monoid and not an arbitrary monoid? Well, we don’t want the result to depend on how <code>factor</code> spits out the factors. In other words, if it actually did return a set then we can’t depend on the order of the elements in the set if we want a well-defined function.</p>
 <p>Here’s where I tell you that <code>lconvolve</code> is an important function for something. I suspect it or a variant probably is, but I don’t know. Here’s another monoid case, commutative this time, that definitely is important and interesting: <a href="https://en.wikipedia.org/wiki/Dirichlet_convolution">Dirichlet convolution</a>.</p>
 <p>Here’s the typical bad definition:</p>
 <p>\[(f \star g)(n) = \sum_{d\mid n} f(d)g\left(\frac{n}{d}\right)\] where |d\mid n| means |d| evenly divides |n|.</p>
 <p>These are the coefficients of the product of two Dirichlet series. For example,</p>
-<p>\[F(s) = \sum_{n=1}^\infty f(n)n^{-s} \qquad G(s) = \sum_{n=1}^\infty g(n)n^{-s} \\ F(s)G(s) = \sum_{n=1}^\infty (f \star g)(n)n^{-s}\]</p>
+<p>\[\begin{gather} F(s) = \sum_{n=1}^\infty f(n)n^{-s} \qquad G(s) = \sum_{n=1}^\infty g(n)n^{-s} \\ F(s)G(s) = \sum_{n=1}^\infty (f \star g)(n)n^{-s} \end{gather}\]</p>
 <p>We again see a situation where the correspondence doesn’t just jump out at you (or at least it didn’t to me originally) until you realize the above sum can be written:</p>
 <p>\[(f \star g)(n) = \sum_{ab=n} f(a)g(b)\]</p>
 <p>then it’s pretty easy to see that it is right. We can start doing a lot of number theory with the above combined with the <a href="https://en.wikipedia.org/wiki/Euler_product">Euler product</a> formula:</p>
