@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">Enriched Indexed Categories, Syntactically</h2>
     <p class="blog-post-meta">July  6, 2020 05:03 UTC 
         
-        (Last updated on July  6, 2020 07:17 UTC)
+        (Last updated on January  6, 2022 12:07 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -51,10 +51,18 @@
         
     </h6>
 
-    <h2 id="introduction">Introduction</h2>
+    <script>
+extraMacros = {
+  proarrow: "{\\mathrel{-\\!\\!\\!\\mapsto}}",
+  V: "{\\mathcal V}",
+  O: "{\\mathsf O}",
+  A: "{\\mathsf A}",
+};
+</script>
+<h2 id="introduction">Introduction</h2>
 <p>This is part 3 in a series. See <a href="../posts/internal-language-of-indexed-monoidal-categories.html">the previous part about internal languages for indexed monoidal categories</a> upon which this part heavily depends.</p>
 <p>In category theory, the hom-sets between two objects can often be equipped with some extra structure which is respected by identities and composition. For example, the set of group homomorphisms between two abelian groups is itself an abelian group by defining the operations pointwise. Similarly, the set of monotonic functions between two partially ordered sets (posets) is a poset again by defining the ordering pointwise. Linear functions between vector spaces form a vector space. The set of functors between small categories is a small category. Of course, the structure on the hom-sets can be different than the objects. Trivially, with the earlier examples a vector space is an abelian group, so we could say that linear functions form an abelian group instead of a vector space. Likewise groups are monoids. Less trivially, the set of relations between two sets is a partially ordered set via inclusion. There are many cases where instead of hom-sets we have hom-objects that aren’t naturally thought of as sets. For example, we can have hom-objects be non-negative (extended) real numbers from which the category laws become the laws of a generalized metric space. We can identify posets with categories who hom-objects are elements of a two element set or, even better, a two element poset with one element less than or equal to the other.</p>
-<p>This general process is called <a href="https://ncatlab.org/nlab/show/enriched+category+theory">enriching</a> a category in some other category which is almost always called |\newcommand{\V}{\mathcal V}\V| in the generic case. We then talk about having |\V|-categories and |\V|-functors, etc. In a specific case, it will be something like |\mathbf{Ab}|-categories for an |\mathbf{Ab}|-enriched category, where |\mathbf{Ab}| is the category of abelian groups. Unsurprisingly, not just <em>any</em> category will do for |\V|. However, it turns out very little structure is needed to define a notion of |\V|-category, |\V|-functor, |\V|-natural transformation, and |\V|-profunctor. The usual “baseline” is that |\V| is a <a href="https://ncatlab.org/nlab/show/monoidal+category">monoidal category</a>. As mentioned in the previous post, paraphrasing Bénabou, notions of “families of objects/arrows” are ubiquitous and fundamental in category theory. It is useful for our purposes to make this structure explicit. For very little cost, this will also provide a vastly more general notion that will readily capture enriched categories, <a href="https://ncatlab.org/nlab/show/indexed+category">indexed categories</a>, and categories that are simultaneously indexed and enriched, of which <a href="https://ncatlab.org/nlab/show/internal+category">internal categories</a> are an example. The tool for this is a <a href="https://ncatlab.org/nlab/show/Grothendieck+fibration">(Grothendieck) fibration</a> aka a fibered category or the mostly equivalent concept of an indexed category.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>This general process is called <a href="https://ncatlab.org/nlab/show/enriched+category+theory">enriching</a> a category in some other category which is almost always called |\V| in the generic case. We then talk about having |\V|-categories and |\V|-functors, etc. In a specific case, it will be something like |\mathbf{Ab}|-categories for an |\mathbf{Ab}|-enriched category, where |\mathbf{Ab}| is the category of abelian groups. Unsurprisingly, not just <em>any</em> category will do for |\V|. However, it turns out very little structure is needed to define a notion of |\V|-category, |\V|-functor, |\V|-natural transformation, and |\V|-profunctor. The usual “baseline” is that |\V| is a <a href="https://ncatlab.org/nlab/show/monoidal+category">monoidal category</a>. As mentioned in the previous post, paraphrasing Bénabou, notions of “families of objects/arrows” are ubiquitous and fundamental in category theory. It is useful for our purposes to make this structure explicit. For very little cost, this will also provide a vastly more general notion that will readily capture enriched categories, <a href="https://ncatlab.org/nlab/show/indexed+category">indexed categories</a>, and categories that are simultaneously indexed and enriched, of which <a href="https://ncatlab.org/nlab/show/internal+category">internal categories</a> are an example. The tool for this is a <a href="https://ncatlab.org/nlab/show/Grothendieck+fibration">(Grothendieck) fibration</a> aka a fibered category or the mostly equivalent concept of an indexed category.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
 <p>To that end, instead of just a monoidal category, we’ll be using <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal categories</a>. Typically, to get an experience as much like ordinary category theory as possible, additional structure is assumed on |\V|. In particular, it is assumed to be an <a href="https://ncatlab.org/nlab/show/cosmos#indexed_bnabou_cosmoi">(indexed) cosmos</a> which means that it is an indexed symmetric monoidally closed category with indexed coproducts preserved by |\otimes| and indexed products and fiberwise finite limits and colimits (preserved by the indexed structure). This is quite a lot more structure which I’ll introduce in later parts. In this part, I’ll make no assumptions beyond having an indexed monoidal category.</p>
 <!--more-->
 <h2 id="basic-category-theory-in-indexed-monoidal-categories">Basic Category Theory in Indexed Monoidal Categories</h2>
@@ -64,8 +72,8 @@
 <h3 id="small-v-categories">Small |\V|-categories</h3>
 <p>The <strong>theory of a small |\V|-category</strong> consists of:</p>
 <ul>
-<li>an index type |\newcommand{\O}{\mathsf O}\O|,</li>
-<li>a linear type |\newcommand{\A}{\mathsf A}s, t : \O \vdash \A(t, s)|,</li>
+<li>an index type |\O|,</li>
+<li>a linear type |s, t : \O \vdash \A(t, s)|,</li>
 <li>a linear term |s : \O; \vdash \mathsf{id} : \A(s, s)|, and</li>
 <li>a linear term |s, u, t : \O; g : \A(t, u), f : \A(u, s) \vdash g \circ f : \A(t, s)|</li>
 </ul>
@@ -120,7 +128,7 @@ s : \O_x, t : \O_y; f : \A(t, s)
     \vdash \mathsf F'(f) \circ' \tau = \tau \circ' \mathsf F(f) : \A'(\mathsf F'(t), \mathsf F(s))
 \end{gather}$$</span></p>
 <h3 id="v-profunctors">|\V|-profunctors</h3>
-<p>Here’s where we need to depart from the usual story. In the usual story, a |\mathbf V|-enriched profunctor |\newcommand{\proarrow}{\mathrel{-\!\!\!\mapsto}} P : \mathcal C \proarrow \mathcal D| is a |\mathbf V|-enriched functor |P : \mathcal C\otimes\mathcal D^{op}\to\mathbf V| (or, often, the opposite convention is used |P : \mathcal C^{op}\otimes\mathcal D \to \mathbf V|). There are many problems with this definition in our context.</p>
+<p>Here’s where we need to depart from the usual story. In the usual story, a |\mathbf V|-enriched profunctor |P : \mathcal C \proarrow \mathcal D| is a |\mathbf V|-enriched functor |P : \mathcal C\otimes\mathcal D^{op}\to\mathbf V| (or, often, the opposite convention is used |P : \mathcal C^{op}\otimes\mathcal D \to \mathbf V|). There are many problems with this definition in our context.</p>
 <ol type="1">
 <li>Without symmetry, we have no definition of opposite category.</li>
 <li>Without symmetry, the tensor product of |\mathbf V|-enriched categories doesn’t make sense.</li>
@@ -250,14 +258,15 @@ t, s : \O^0; f : \A^0(t, s) \vdash \mathsf Q_l(f, \tau()) = \mathsf Q_r(\tau(), 
     <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_HTMLorMML.js" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script> -->
     <!--<script type="text/javascript" src="/js/MathJax-2.7.7/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>-->
     <script>
-        MathJax ={
+        MathJax = {
             loader: {
                 load: ['ui/lazy', '[custom]/xypic.js'],
                 paths: { custom: '/js' }
             },
             tex: {
                 packages: { '[+]': ['xypic'] },
-                inlineMath: [['|','|']]
+                inlineMath: [['|','|']],
+                macros: window.extraMacros || {}
             }
         };
     </script>

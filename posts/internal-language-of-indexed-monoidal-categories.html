@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">Internal Language of Indexed Monoidal Categories</h2>
     <p class="blog-post-meta">July  6, 2020 02:00 UTC 
         
-        (Last updated on February 13, 2021 23:48 UTC)
+        (Last updated on January  6, 2022 12:04 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -51,14 +51,20 @@
         
     </h6>
 
-    <h2 id="introduction">Introduction</h2>
+    <script>
+extraMacros = {
+  V: "{\\mathcal V}",
+  den: ["{[\\!\[#1]\\!]}", 1]
+};
+</script>
+<h2 id="introduction">Introduction</h2>
 <p>This is part 2 in a series. See <a href="../posts/internal-language-of-a-monoidal-category.html">the previous part about internal languages for (non-indexed) monoidal categories</a>. The main application I have in mind – enriching in indexed monoidal categories – is covered in the <a href="../posts/enriched-indexed-categories-syntactically.html">next post</a>.</p>
 <p>As Jean Bénabou pointed out in <a href="http://dx.doi.org/10.2307/2273784">Fibered Categories and the Foundations of Naive Category Theory</a> (<a href="https://pdfs.semanticscholar.org/a7ba/3c5b0431adf514595d53ea393910c9230745.pdf">PDF</a>) notions of “families of objects/arrows” are ubiquitous and fundamental in category theory. One of the more noticeable places early on is in the definition of a natural transformation as a family of arrows. However, even in the definition of category, identities and compositions are families of functions, or, in the enriched case, arrows of |\mathbf V|. From a foundational perspective, one place where this gets really in-your-face is when trying to formalize the notion of (co)completeness. It is straightforward to make a first-order theory of a finitely complete category, e.g. <a href="https://ncatlab.org/nlab/show/fully+formal+ETCS#the_theory_of_finitely_complete_categories">this one</a>. For arbitrary products and thus limits, we need to talk about families of objects. To formalize the usual meaning of this in a first-order theory would require attaching an entire first-order theory of sets, e.g. <strong>ZFC</strong>, to our notion of complete category. If your goals are of a foundational nature like Bénabou’s were, then this is unsatisfactory. Instead, we can abstract out what we need of the notion of “family”. The result turns out to be equivalent to the notion of a <a href="https://ncatlab.org/nlab/show/Grothendieck+fibration">fibration</a>.</p>
 <p>My motivations here are not foundational but leaving the notion of “family” entirely meta-theoretical means not being able to talk about it except in the semantics. Bénabou’s comment suggests that at the semantic level we want not just a monoidal category, but a fibration of monoidal categories<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. At the syntactic level, it suggests that there should be a built-in notion of “family” in our language. We accomplish both of these goals by formulating the internal language of an <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal category</a>.</p>
 <p>As a benefit, we can generalize to other notions of “family” than set-indexed families. We’ll clearly be able to formulate the notion of an <a href="https://ncatlab.org/nlab/show/enriched+category">enriched category</a>. It’s also clear that we’ll be able to formulate the notion of an <a href="https://ncatlab.org/nlab/show/indexed+category">indexed category</a>. Of course, we’ll also be able to formulate the notion of a category that is both enriched and indexed which includes the important special case of an <a href="https://ncatlab.org/nlab/show/internal+category">internal category</a>. We can also consider cases with trivial indexing which, in the unenriched case, will give us monoids, and in the |\mathbf{Ab}|-enriched case will give us rings.</p>
 <!--more-->
 <h2 id="indexed-monoidal-categories">Indexed Monoidal Categories</h2>
-<p>Following Shulman’s <a href="https://arxiv.org/abs/1212.3914">Enriched indexed categories</a>, let |\mathbf{S}| be a category with a cartesian monoidal structure, i.e. finite products. Then an |\mathbf{S}|-indexed monoidal category is simply a pseudofunctor |\newcommand{\V}{\mathcal V}\V : \mathbf{S}^{op} \to \mathbf{MonCat}|. A <a href="https://ncatlab.org/nlab/show/pseudofunctor">pseudofunctor</a> is like a functor except that the functor laws only hold up to isomorphism, e.g. |\V(id)\cong id|. |\mathbf{MonCat}| is the |2|-category of monoidal categories, <a href="https://ncatlab.org/nlab/show/monoidal+functor">strong monoidal functors</a><a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>, and <a href="https://ncatlab.org/nlab/show/monoidal+natural+transformation">monoidal natural transformations</a>. We’ll write |\V(X)| as |\V^X| and |\V(f)| as |f^*|. We’ll never have multiple relevant indexed monoidal categories so this notation will never be ambiguous. We’ll call the categories |\V^X| <strong>fiber categories</strong> and the functors |f^*| <strong>reindexing functors</strong>. The cartesian monoidal structure on |\mathbf S| becomes relevant when we want to equip the total category, |\int\V|, (computed via the <a href="https://ncatlab.org/nlab/show/Grothendieck+construction">Grothendieck construction</a> in the usual way) with a monoidal structure. In particular, the tensor product of |A \in \V^X| and |B \in \V^Y| is an object |A\otimes B \in \V^{X\times Y}| calculated as |\pi_1^*(A) \otimes_{X\times Y} \pi_2^*(B)| where |\otimes_{X\times Y}| is the monoidal tensor in |\V^{X\times Y}|. The unit, |I|, is the unit |I_1 \in \V^1|.</p>
+<p>Following Shulman’s <a href="https://arxiv.org/abs/1212.3914">Enriched indexed categories</a>, let |\mathbf{S}| be a category with a cartesian monoidal structure, i.e. finite products. Then an |\mathbf{S}|-indexed monoidal category is simply a pseudofunctor |\V : \mathbf{S}^{op} \to \mathbf{MonCat}|. A <a href="https://ncatlab.org/nlab/show/pseudofunctor">pseudofunctor</a> is like a functor except that the functor laws only hold up to isomorphism, e.g. |\V(id)\cong id|. |\mathbf{MonCat}| is the |2|-category of monoidal categories, <a href="https://ncatlab.org/nlab/show/monoidal+functor">strong monoidal functors</a><a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>, and <a href="https://ncatlab.org/nlab/show/monoidal+natural+transformation">monoidal natural transformations</a>. We’ll write |\V(X)| as |\V^X| and |\V(f)| as |f^*|. We’ll never have multiple relevant indexed monoidal categories so this notation will never be ambiguous. We’ll call the categories |\V^X| <strong>fiber categories</strong> and the functors |f^*| <strong>reindexing functors</strong>. The cartesian monoidal structure on |\mathbf S| becomes relevant when we want to equip the total category, |\int\V|, (computed via the <a href="https://ncatlab.org/nlab/show/Grothendieck+construction">Grothendieck construction</a> in the usual way) with a monoidal structure. In particular, the tensor product of |A \in \V^X| and |B \in \V^Y| is an object |A\otimes B \in \V^{X\times Y}| calculated as |\pi_1^*(A) \otimes_{X\times Y} \pi_2^*(B)| where |\otimes_{X\times Y}| is the monoidal tensor in |\V^{X\times Y}|. The unit, |I|, is the unit |I_1 \in \V^1|.</p>
 <p>The two main examples are: |\mathcal Fam(\mathbf V)| where |\mathbf V| is a (non-indexed) monoidal category and |\mathcal Self(\mathbf S)| where |\mathbf S| is a category with finite limits. |\mathcal Fam(\mathbf V)| is a |\mathbf{Set}|-indexed monoidal category with |\mathcal Fam(\mathbf V)^X| defined as the set of |X|-indexed families of objects of |\mathbf V|, families of arrows between them, and an index-wise monoidal product. We can identify |\mathcal Fam(\mathbf V)^X| with the functor category |[DX, \mathbf V]| where |D : \mathbf{Set} \to \mathbf{cat}| takes a set |X| to a small discrete category. Enriching in indexed monoidal category |\mathcal Fam(\mathbf V)| will be equivalent to enriching in the non-indexed monoidal category |\mathbf V|, i.e. the usual notion of enrichment in a monoidal category. |\mathcal Self(\mathbf S)| is an |\mathbf S|-indexed monoidal category and |\mathcal Self(\mathbf S)^X| is the slice category |\mathbf S/X| with its cartesian monoidal structure. |f^*| is the pullback functor. |\mathcal Self(\mathbf S)|-enriched categories are categories internal to |\mathbf S|. A third example we’ll find interesting is |\mathcal Const(\mathbf V)| for a (non-indexed) monoidal category, |\mathbf V|, which is a |\mathbf 1|-indexed monoidal category, which corresponds to an object of |\mathbf{MonCat}|, namely |\mathbf V|.</p>
 <h2 id="the-internal-language-of-indexed-monoidal-categories">The Internal Language of Indexed Monoidal Categories</h2>
 <p>This builds on the internal language of a monoidal category described in the previous post. We’ll again have <strong>linear types</strong> and <strong>linear terms</strong> which will be interpreted into objects and arrows in the fiber categories. To indicate the dependence on the indexing, we’ll use two contexts: |\Gamma| will be an <strong>index context</strong> containing <strong>index types</strong> and <strong>index variables</strong>, which will be interpreted into objects and arrows of |\mathbf S|, while |\Delta|, the <strong>linear context</strong>, will contain linear types and linear variables as before except now linear types will be able to depend on <strong>index terms</strong>. So we’ll have judgements that look like: <span class="math display">$$\begin{gather}
@@ -137,7 +143,7 @@
 <p>See the discussion in <a href="../posts/internal-language-of-a-monoidal-category.html">the previous part</a> about the commuting conversion (|\text{CC}|) rules.</p>
 <p>A theory in this language is free to introduce additional index types, operations on indexes, linear types, and linear operations.</p>
 <h2 id="interpretation-into-an-mathbf-s-indexed-monoidal-category">Interpretation into an |\mathbf S|-indexed monoidal category</h2>
-<p>Fix an |\mathbf S|-indexed monoidal category |\V|. Write |\newcommand{\den}[1]{[\![#1]\!]}\den{-}| for the (overloaded) interpretation function. Its value on primitive operations is left as a parameter.</p>
+<p>Fix an |\mathbf S|-indexed monoidal category |\V|. Write |\den{-}| for the (overloaded) interpretation function. Its value on primitive operations is left as a parameter.</p>
 <p>Associators for the semantic |\times| and |\otimes| will be omitted below.</p>
 <h3 id="interpretation-of-index-types">Interpretation of Index Types</h3>
 <p><span class="math display">$$\begin{align}
@@ -256,14 +262,15 @@
     <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_HTMLorMML.js" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script> -->
     <!--<script type="text/javascript" src="/js/MathJax-2.7.7/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>-->
     <script>
-        MathJax ={
+        MathJax = {
             loader: {
                 load: ['ui/lazy', '[custom]/xypic.js'],
                 paths: { custom: '/js' }
             },
             tex: {
                 packages: { '[+]': ['xypic'] },
-                inlineMath: [['|','|']]
+                inlineMath: [['|','|']],
+                macros: window.extraMacros || {}
             }
         };
     </script>

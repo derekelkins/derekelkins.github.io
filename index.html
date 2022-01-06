@@ -164,10 +164,18 @@
 
     <div class="panel-body">
         
-            <h2 id="introduction">Introduction</h2>
+            <script>
+extraMacros = {
+  proarrow: "{\\mathrel{-\\!\\!\\!\\mapsto}}",
+  V: "{\\mathcal V}",
+  O: "{\\mathsf O}",
+  A: "{\\mathsf A}",
+};
+</script>
+<h2 id="introduction">Introduction</h2>
 <p>This is part 3 in a series. See <a href="./posts/internal-language-of-indexed-monoidal-categories.html">the previous part about internal languages for indexed monoidal categories</a> upon which this part heavily depends.</p>
 <p>In category theory, the hom-sets between two objects can often be equipped with some extra structure which is respected by identities and composition. For example, the set of group homomorphisms between two abelian groups is itself an abelian group by defining the operations pointwise. Similarly, the set of monotonic functions between two partially ordered sets (posets) is a poset again by defining the ordering pointwise. Linear functions between vector spaces form a vector space. The set of functors between small categories is a small category. Of course, the structure on the hom-sets can be different than the objects. Trivially, with the earlier examples a vector space is an abelian group, so we could say that linear functions form an abelian group instead of a vector space. Likewise groups are monoids. Less trivially, the set of relations between two sets is a partially ordered set via inclusion. There are many cases where instead of hom-sets we have hom-objects that aren’t naturally thought of as sets. For example, we can have hom-objects be non-negative (extended) real numbers from which the category laws become the laws of a generalized metric space. We can identify posets with categories who hom-objects are elements of a two element set or, even better, a two element poset with one element less than or equal to the other.</p>
-<p>This general process is called <a href="https://ncatlab.org/nlab/show/enriched+category+theory">enriching</a> a category in some other category which is almost always called |\newcommand{\V}{\mathcal V}\V| in the generic case. We then talk about having |\V|-categories and |\V|-functors, etc. In a specific case, it will be something like |\mathbf{Ab}|-categories for an |\mathbf{Ab}|-enriched category, where |\mathbf{Ab}| is the category of abelian groups. Unsurprisingly, not just <em>any</em> category will do for |\V|. However, it turns out very little structure is needed to define a notion of |\V|-category, |\V|-functor, |\V|-natural transformation, and |\V|-profunctor. The usual “baseline” is that |\V| is a <a href="https://ncatlab.org/nlab/show/monoidal+category">monoidal category</a>. As mentioned in the previous post, paraphrasing Bénabou, notions of “families of objects/arrows” are ubiquitous and fundamental in category theory. It is useful for our purposes to make this structure explicit. For very little cost, this will also provide a vastly more general notion that will readily capture enriched categories, <a href="https://ncatlab.org/nlab/show/indexed+category">indexed categories</a>, and categories that are simultaneously indexed and enriched, of which <a href="https://ncatlab.org/nlab/show/internal+category">internal categories</a> are an example. The tool for this is a <a href="https://ncatlab.org/nlab/show/Grothendieck+fibration">(Grothendieck) fibration</a> aka a fibered category or the mostly equivalent concept of an indexed category.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>This general process is called <a href="https://ncatlab.org/nlab/show/enriched+category+theory">enriching</a> a category in some other category which is almost always called |\V| in the generic case. We then talk about having |\V|-categories and |\V|-functors, etc. In a specific case, it will be something like |\mathbf{Ab}|-categories for an |\mathbf{Ab}|-enriched category, where |\mathbf{Ab}| is the category of abelian groups. Unsurprisingly, not just <em>any</em> category will do for |\V|. However, it turns out very little structure is needed to define a notion of |\V|-category, |\V|-functor, |\V|-natural transformation, and |\V|-profunctor. The usual “baseline” is that |\V| is a <a href="https://ncatlab.org/nlab/show/monoidal+category">monoidal category</a>. As mentioned in the previous post, paraphrasing Bénabou, notions of “families of objects/arrows” are ubiquitous and fundamental in category theory. It is useful for our purposes to make this structure explicit. For very little cost, this will also provide a vastly more general notion that will readily capture enriched categories, <a href="https://ncatlab.org/nlab/show/indexed+category">indexed categories</a>, and categories that are simultaneously indexed and enriched, of which <a href="https://ncatlab.org/nlab/show/internal+category">internal categories</a> are an example. The tool for this is a <a href="https://ncatlab.org/nlab/show/Grothendieck+fibration">(Grothendieck) fibration</a> aka a fibered category or the mostly equivalent concept of an indexed category.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
 <p>To that end, instead of just a monoidal category, we’ll be using <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal categories</a>. Typically, to get an experience as much like ordinary category theory as possible, additional structure is assumed on |\V|. In particular, it is assumed to be an <a href="https://ncatlab.org/nlab/show/cosmos#indexed_bnabou_cosmoi">(indexed) cosmos</a> which means that it is an indexed symmetric monoidally closed category with indexed coproducts preserved by |\otimes| and indexed products and fiberwise finite limits and colimits (preserved by the indexed structure). This is quite a lot more structure which I’ll introduce in later parts. In this part, I’ll make no assumptions beyond having an indexed monoidal category.</p>
 
             <h6><a href="./posts/enriched-indexed-categories-syntactically.html">Read more...</a></h6>
@@ -178,7 +186,7 @@
         <h6 class="blog-post-meta">
             July  6, 2020 05:03 UTC
             
-            (Last updated on July  6, 2020 07:17 UTC)
+            (Last updated on January  6, 2022 12:07 UTC)
 
             
                 Tags: <a title="All pages tagged 'math'." href="./tags/math.html">math</a>, <a title="All pages tagged 'category theory'." href="./tags/category%20theory.html">category theory</a>
@@ -198,7 +206,13 @@
 
     <div class="panel-body">
         
-            <h2 id="introduction">Introduction</h2>
+            <script>
+extraMacros = {
+  V: "{\\mathcal V}",
+  den: ["{[\\!\[#1]\\!]}", 1]
+};
+</script>
+<h2 id="introduction">Introduction</h2>
 <p>This is part 2 in a series. See <a href="./posts/internal-language-of-a-monoidal-category.html">the previous part about internal languages for (non-indexed) monoidal categories</a>. The main application I have in mind – enriching in indexed monoidal categories – is covered in the <a href="./posts/enriched-indexed-categories-syntactically.html">next post</a>.</p>
 <p>As Jean Bénabou pointed out in <a href="http://dx.doi.org/10.2307/2273784">Fibered Categories and the Foundations of Naive Category Theory</a> (<a href="https://pdfs.semanticscholar.org/a7ba/3c5b0431adf514595d53ea393910c9230745.pdf">PDF</a>) notions of “families of objects/arrows” are ubiquitous and fundamental in category theory. One of the more noticeable places early on is in the definition of a natural transformation as a family of arrows. However, even in the definition of category, identities and compositions are families of functions, or, in the enriched case, arrows of |\mathbf V|. From a foundational perspective, one place where this gets really in-your-face is when trying to formalize the notion of (co)completeness. It is straightforward to make a first-order theory of a finitely complete category, e.g. <a href="https://ncatlab.org/nlab/show/fully+formal+ETCS#the_theory_of_finitely_complete_categories">this one</a>. For arbitrary products and thus limits, we need to talk about families of objects. To formalize the usual meaning of this in a first-order theory would require attaching an entire first-order theory of sets, e.g. <strong>ZFC</strong>, to our notion of complete category. If your goals are of a foundational nature like Bénabou’s were, then this is unsatisfactory. Instead, we can abstract out what we need of the notion of “family”. The result turns out to be equivalent to the notion of a <a href="https://ncatlab.org/nlab/show/Grothendieck+fibration">fibration</a>.</p>
 <p>My motivations here are not foundational but leaving the notion of “family” entirely meta-theoretical means not being able to talk about it except in the semantics. Bénabou’s comment suggests that at the semantic level we want not just a monoidal category, but a fibration of monoidal categories<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. At the syntactic level, it suggests that there should be a built-in notion of “family” in our language. We accomplish both of these goals by formulating the internal language of an <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal category</a>.</p>
@@ -212,7 +226,7 @@
         <h6 class="blog-post-meta">
             July  6, 2020 02:00 UTC
             
-            (Last updated on February 13, 2021 23:48 UTC)
+            (Last updated on January  6, 2022 12:04 UTC)
 
             
                 Tags: <a title="All pages tagged 'math'." href="./tags/math.html">math</a>, <a title="All pages tagged 'category theory'." href="./tags/category%20theory.html">category theory</a>
@@ -232,7 +246,13 @@
 
     <div class="panel-body">
         
-            <h2 id="introduction">Introduction</h2>
+            <script>
+extraMacros = {
+  V: "{\\mathbf V}",
+  den: ["{[\\!\[#1]\\!]}", 1]
+};
+</script>
+<h2 id="introduction">Introduction</h2>
 <p>This is the first post in a series of posts on doing enriched indexed category theory and using the notion of an internal language to make this look relatively mundane. The internal language aspects are useful for other purposes too, as will be illustrated in this post, for example. This is related to the post <a href="./posts/category-theory-syntactically.html">Category Theory, Syntactically</a>. In particular, it can be considered half-way between the unary theories and the finite product theories described there.</p>
 <p>First in this series – this post – covers the internal language of a monoidal category. This is fairly straightforward, but it already provides some use. For example, the category of endofunctors on a category is a strict monoidal category, and so we can take a different perspective on natural transformations. This will also motivate the notions of a (virtual) bicategory and an actegory. Throughout this post, I’ll give a fairly worked example of turning some categorical content into <a href="./posts/understanding-typing-judgments.html">rules</a> of a type-/proof-theory.</p>
 <p>The <a href="./posts/internal-language-of-indexed-monoidal-categories.html">second post</a> will add indexing to the notion of monoidal category and introduce the very powerful and useful notion of an <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal category</a>.</p>
@@ -249,7 +269,7 @@
         <h6 class="blog-post-meta">
             May 22, 2020 08:46 UTC
             
-            (Last updated on November 25, 2021 17:18 UTC)
+            (Last updated on January  6, 2022 12:10 UTC)
 
             
                 Tags: <a title="All pages tagged 'math'." href="./tags/math.html">math</a>, <a title="All pages tagged 'category theory'." href="./tags/category%20theory.html">category theory</a>
@@ -450,8 +470,15 @@ X @&gt;&gt;&gt; \mathsf P(A \times B) \\
 
     <div class="panel-body">
         
-            <p>In category theory a concept is called <strong>absolute</strong> if it is preserved by <em>all</em> functors. Identity arrows and composition are absolute by the definition of functor. Less trivially, isomorphisms are absolute. In general, anything that is described by a diagram commuting is absolute as that diagram will be preserved by any functor. This is generally the case, but if I tell you something is an absolute epimorphism, it’s not clear what diagram is causing that; the notion of epimorphism itself doesn’t reduce to the commutativity of a particular diagram.</p>
-<p>Below I’ll be focused primarily on <a href="https://ncatlab.org/nlab/show/absolute+colimit">absolute colimits</a> as those are the most commonly used examples. They are an important part of the theory of <a href="https://ncatlab.org/nlab/show/monadicity+theorem">monadicity</a>. The trick to many questions about absolute colimits and related concepts is to see what it means for |\newcommand{\Set}{\mathbf{Set}}\newcommand{\Hom}{\mathsf{Hom}} \newcommand{onto}{\twoheadrightarrow}\Hom| functors to preserve them.</p>
+            <script>
+extraMacros = {
+  Set: "{\\mathbf{Set}}",
+  Hom: "{\\mathsf{Hom}}",
+  onto: "{\\twoheadrightarrow}"
+};
+</script>
+<p>In category theory a concept is called <strong>absolute</strong> if it is preserved by <em>all</em> functors. Identity arrows and composition are absolute by the definition of functor. Less trivially, isomorphisms are absolute. In general, anything that is described by a diagram commuting is absolute as that diagram will be preserved by any functor. This is generally the case, but if I tell you something is an absolute epimorphism, it’s not clear what diagram is causing that; the notion of epimorphism itself doesn’t reduce to the commutativity of a particular diagram.</p>
+<p>Below I’ll be focused primarily on <a href="https://ncatlab.org/nlab/show/absolute+colimit">absolute colimits</a> as those are the most commonly used examples. They are an important part of the theory of <a href="https://ncatlab.org/nlab/show/monadicity+theorem">monadicity</a>. The trick to many questions about absolute colimits and related concepts is to see what it means for |\Hom| functors to preserve them.</p>
 
             <h6><a href="./posts/absolute-colimits.html">Read more...</a></h6>
         
@@ -461,7 +488,7 @@ X @&gt;&gt;&gt; \mathsf P(A \times B) \\
         <h6 class="blog-post-meta">
             May 18, 2019 23:59 UTC
             
-            (Last updated on November 26, 2021 01:38 UTC)
+            (Last updated on January  6, 2022 12:12 UTC)
 
             
                 Tags: <a title="All pages tagged 'math'." href="./tags/math.html">math</a>, <a title="All pages tagged 'category theory'." href="./tags/category%20theory.html">category theory</a>
@@ -591,14 +618,15 @@ X @&gt;&gt;&gt; \mathsf P(A \times B) \\
     <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_HTMLorMML.js" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script> -->
     <!--<script type="text/javascript" src="/js/MathJax-2.7.7/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>-->
     <script>
-        MathJax ={
+        MathJax = {
             loader: {
                 load: ['ui/lazy', '[custom]/xypic.js'],
                 paths: { custom: '/js' }
             },
             tex: {
                 packages: { '[+]': ['xypic'] },
-                inlineMath: [['|','|']]
+                inlineMath: [['|','|']],
+                macros: window.extraMacros || {}
             }
         };
     </script>
