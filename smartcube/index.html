@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8" />
+        <title>SmartCube Trainer</title>
+        
+        
+      <script type="module" crossorigin src="/smartcube/assets/index.cfbe656e.js"></script>
+      <link rel="stylesheet" href="/smartcube/assets/index.22297e3e.css">
+    </head>
+    <body>
+        <div id="overlay" class="TRAIN_PAGE">
+            <div id="appBar">
+                <div id="tabBar">
+                    <div id="settingsTab">Settings</div>
+                    <div id="solveTab">Solve</div>
+                    <div id="scrambleTab">Scramble</div>
+                    <div id="trainTab">Train</div>
+                    <div id="historyTab">History</div>
+                    <div id="adminTab">Admin</div>
+                    <div id="helpTab">Help</div>
+                </div>
+                <div id="buttonBar">
+                    <button id="start" class="start">Start</button>
+                    <button id="center" title="Recenter the gyroscope reference frame.">Center</button>
+                    <button id="reset" title="Reset the cube to a solved state.">Reset</button>
+                    <button id="connect" class="disabled" title="Connect to Bluetooth cube.">Connect</button>
+                    <input type="text" id="mac" placeholder="00:00:00:00:00:00" required
+                        pattern="[a-fA-F0-9][a-fA-F0-9]:[a-fA-F0-9][a-fA-F0-9]:[a-fA-F0-9][a-fA-F0-9]:[a-fA-F0-9][a-fA-F0-9]:[a-fA-F0-9][a-fA-F0-9]:[a-fA-F0-9][a-fA-F0-9]"/>
+                </div>
+                <div id="rightBar">
+                    <div id="powerIndicator"><div id="powerBar"></div></div>
+                </div>
+            </div>
+            <div id="settingsBody">
+                <div class="form">
+                    <div class="formRow">
+                        <div class="fieldName" title="Display the cube on the Solve, Scramble, and Train pages.">Show Cube:</div>
+                        <div><input type="checkbox" id="showCube" checked /></div>
+                    </div>
+                    <div class="formRow">
+                        <div class="fieldName" title="Have displayed cube follow gyroscope readings including in reconstruction.">Enable Gyroscope:</div>
+                        <div><input type="checkbox" id="enableGyroscope" checked /></div>
+                    </div>
+                    <div class="formRow">
+                        <div class="fieldName" title="Record gyroscope readings in addition to moves when training.">Record Gyroscope:</div>
+                        <div><input type="checkbox" id="recordGyroscope" checked /></div>
+                    </div>
+
+                    <div class="formRow">
+                        <div class="fieldName">R Face Color:</div>
+                        <div><input type="text" id="redColor" class="colorInput" value="#B90000" /></div>
+                        <div id="redSwatch" class="swatch" style="background-color: #B90000"></div>
+                    </div>
+                    <div class="formRow">
+                        <div class="fieldName">L Face Color:</div>
+                        <div><input type="text" id="orangeColor" class="colorInput" value="#FF5900" /></div>
+                        <div id="orangeSwatch" class="swatch" style="background-color: #FF5900"></div>
+                    </div>
+                    <div class="formRow">
+                        <div class="fieldName">U Face Color:</div>
+                        <div><input type="text" id="whiteColor" class="colorInput" value="#FFFFFF" /></div>
+                        <div id="whiteSwatch" class="swatch" style="background-color: #FFFFFF"></div>
+                    </div>
+                    <div class="formRow">
+                        <div class="fieldName">D Face Color:</div>
+                        <div><input type="text" id="yellowColor" class="colorInput" value="#FFD500" /></div>
+                        <div id="yellowSwatch" class="swatch" style="background-color: #FFD500"></div>
+                    </div>
+                    <div class="formRow">
+                        <div class="fieldName">F Face Color:</div>
+                        <div><input type="text" id="greenColor" class="colorInput" value="#009B48" /></div>
+                        <div id="greenSwatch" class="swatch" style="background-color: #009B48"></div>
+                    </div>
+                    <div class="formRow">
+                        <div class="fieldName">B Face Color:</div>
+                        <div><input type="text" id="blueColor" class="colorInput" value="#0045AD" /></div>
+                        <div id="blueSwatch" class="swatch" style="background-color: #0045AD"></div>
+                    </div>
+                    <div class="formRow">
+                        <div class="fieldName">Internal Face Color:</div>
+                        <div><input type="text" id="internalColor" class="colorInput" value="#300040" /></div>
+                        <div id="internalSwatch" class="swatch" style="background-color: #300040"></div>
+                    </div>
+                </div>
+                <button id="resetSettings">Reset to Defaults</button>
+            </div>
+            <div id="historyBody">
+                Personal Best
+                <table id="pb">
+                    <thead>
+                        <th>No.</th>
+                        <th>Date</th></th>
+                        <th>Time&nbsp;(s)</th>
+                        <th title="Number of moves according to the Half-Turn Metric">Move Count (HTM)</th>
+                        <th>Turns Per Second</th>
+                        <th></th>
+                    </thead>
+                    <tbody id="pbTable"><tbody>
+                </table>
+                <table>
+                    <thead>
+                        <th>No.</th>
+                        <th>Date</th></th>
+                        <th>Time&nbsp;(s)</th>
+                        <th title="Number of moves according to the Half-Turn Metric">Move Count (HTM)</th>
+                        <th>Turns Per Second</th>
+                        <th></th>
+                    </thead>
+                    <tbody id="historyTable"><tbody>
+                </table>
+            </div>
+            <div id="detailedStatsBody">
+                    <div class="form">
+                        <div class="formRow"><div class="fieldName">Date:</div><div id="dateField"></div></div>
+                        <div class="formRow"><div class="fieldName">Time&nbsp;(s):</div><div id="timeField"></div></div>
+                        <div class="formRow"><div class="fieldName" title="Number of moves according to the Half-Turn Metric">Move Count (HTM):</div><div id="countField"></div></div>
+                        <div class="formRow"><div class="fieldName">Turns per Second:</div><div id="tpsField"></div></div>
+                        <div class="formRow"><div class="fieldName">Scramble:</div><div id="scrambleField"></div></div>
+                        <div class="formRow"><div class="fieldName">Moves:</div><div id="moveField"></div></div>
+                    </div>
+                    <table>
+                        <thead>
+                            <th>Stage</th>
+                            <th>Time&nbsp;(s)</th>
+                            <th title="Number of moves according to the Half-Turn Metric">Move Count (HTM)</th>
+                            <th>Turns Per Second</th>
+                        </thead>
+                        <tbody id="stageTable"><tbody>
+                    </table>
+            </div>
+            <div id="adminBody">
+                <p>The history is stored in your browser's Local Storage so clearing your browser history will wipeout this history.
+                Exporting is recommended.</p>
+                <div>
+                    <button id="clearHistory">Clear History</button>
+                    <button id="exportHistory">Export History</button>
+                    Import History: <input type="file" id="importHistory" />
+                </div>
+            </div>
+            <div id="helpBody">
+                <h2 id="overview">Overview</h2>
+                <p>This page is designed to work with the GAN356i3 smart cube and any cubes that
+                use a compatible protocol. This does <em>not</em> include earlier GAN smart cubes
+                such as the GANi2.</p>
+                <p>This page supports the gyroscope data, i.e. how the cube is oriented in space,
+                in addition to the turn data. On tabs displaying the cube, you can rotate the view
+                of the cube by dragging on the screen. You can also zoom with a scroll up/down gesture.
+                Many tabs, such as the Scramble tab, will display a move sequence that updates as
+                you make turns. The moves are given from the standard orientation of White on top
+                and Green facing you. The move sequence has a little bit of smarts so if the next
+                two moves are independent, e.g. R L', they can be performed in either order which
+                additionally means slice moves could be used, e.g. M' in this case. Admittedly,
+                using slice moves for this isn't as useful as it could be as it also effectively
+                rotates the cube but the remaining moves are still in the original orientation.
+                (In theory, I could use the gyroscope data to detect cube rotations and always
+                display moves relative to the actual orientation of the cube. This would be
+                pretty slick and, if done well, would make performing scrambles much more
+                ergonomic. It would also allow recording moves more accurately, e.g. being
+                able to tell when a pair of R L' moves was actually an M' move and recording
+                rotations in addition to turns. These are things I want to explore.)</p>
+                <p>This page provides typical cubing functionality. It will give solutions
+                for cubes, provide random scrambles, and allow you to time solves and keep a history
+                of solves. It also allows replaying recorded solves.</p>
+                <p>Without a smart cube connected, there is not much that you can do on this page.
+                The Scramble tab would still be useful, and you can replay existing or imported solves.
+                If this is the first time you've visited this page, a solve is included in the History
+                to demonstrate replay.</p>
+                <p>Currently, since I am not personally interested in competitions, I haven't implemented
+                Stackmat support or mimicking this with spacebar, nor have I implemented a time limit for
+                inspection. This means you have unlimited inspection time and timing starts once you've
+                completed the first turn (as opposed to once your hands come off the Stackmat) and stops
+                as soon as the cube is solved (as opposed to once your hands return to the Stackmat). All
+                of this means you will get better times than in a competition setup. It also means that it
+                is impossible to get +2s as the timer will not stop unless the cube is solved. Adding
+                support for these things would not be difficult if there is interest.</p>
+                <!-- TODO: Add link to the project when I create a repository for it. -->
+                <a href="https://github.com/DerekElkins/">GitHub</a>
+                <h2 id="buttons">Buttons</h2>
+                <h3 id="contextual-button">Contextual</h3>
+                <p>There's a colored button that changes what it does depending on the current
+                view and state. For example, it toggles between "Start" and "Cancel" on the Solve,
+                Scramble, and Train tabs.</p>
+                <h3 id="center-button">Center</h3>
+                <p>This resets the orientation of the cube to the initial orientation.
+                (TODO: This is different from resetting the view if you've rotated the view.
+                This is pretty confusing, so I will likely change what this does at some point.)</p>
+                <h3 id="reset-button">Reset</h3>
+                <p>This tells the cube itself to reset itself to the solved position. This will usually
+                not be necessary, but the cube can occasionally get out of sync. Also, if you were to take
+                the cube apart for maintenance and put it back together, the cube would have no way of knowing
+                where the pieces are and this would allow you to correct that.</p>
+                <h3 id="connect-button">Connect</h3>
+                <p>This opens a screen to discover and connect to your device. This screen is browser-specific,
+                but should be similar to connecting to other Bluetooth devices. This button is only enabled
+                when the input beside it contains a valid MAC address. NOTE: A valid MAC address isn't
+                necessarily the <em>correct</em> MAC address, so if you run into trouble after connecting,
+                make sure you've entered the correct MAC address.</p>
+                <h2 id="tabs">Tabs</h2>
+                <h3 id="settings-tab">Settings</h3>
+                <p>This tab maintains some basic settings for display and recording. The items there have tooltips
+                to explain them in more detail. I'll highlight a few of the settings here. First, this is where
+                the colors of the cube can be set. Second, the Enable Gyroscope option controls whether the
+                displayed cube will reorient as you move it around or when when replaying from a recording. If
+                the movement of the cube is distracting in a replay, you can disable this option. Finally, the
+                Record Gyroscope option controls whether the gyroscope data is stored in the recording. This is
+                off by default as it adds a lot of data to the history. However, solves that are made with this
+                option disabled will not include the gyroscope data and thus won't be able to be shown during
+                replay.</p>
+                <h3 id="solve-tab">Solve</h3>
+                <p>This tab displays and guides you through a solution to the cube in its current state.</p>
+                <h3 id="scramble-tab">Scramble</h3>
+                <p>This tab generates, displays, and guides you through a random scramble. The scramble is from
+                the current state of the cube. If you wish to share the scramble with someone else you should
+                start with a solved cube.</p>
+                <h3 id="train-tab">Train</h3>
+                <p>This is the main tab. It provides a scramble. Once the scramble is completed, the next
+                turn will start a timer that will stop when the cube is solved. Once the cube is solved,
+                a recording will be saved to the History.</p>
+                <h3 id="history-tab">History</h3>
+                <p>This tab shows a list of all recorded solutions from the Train tab, most recent first. It
+                also displays your current Personal Best from the history. The table displays when the recording
+                was made, what the time was, the number of moves, and the average turns per second for the solve.
+                You can click on the Details button in each row to get more detail about that particular recording.</p>
+                <h3 id="detailed-stats">Detailed Stats</h3>
+                <p>This screen shows a more detailed breakdown of a recording. In addition to the data displayed
+                on the History tab, it shows the exact sequence of moves and provides a scramble to quickly get
+                to the same starting state. This screen also includes a breakdown of the statistics for each
+                stage for the CFOP method. Finally, on this page the Contextual button allows going to a
+                Reconstruction screen which will display a replay the solve.</p>
+                <h3 id="reconstruction">Reconstruction</h3>
+                This replays the solve with the same timing as it was performed.
+                <h3 id="admin-tab">Admin</h3>
+                <p>This tab allows clearing, exporting, and importing the History. As the History is stored in
+                the browser's Local Storage, clearing browser's history would eliminate this History. As such,
+                it is a good idea to export the History and save it on your computer periodically. You can
+                re-import it later if necessary, e.g. if you've cleared your browser's history. You could also
+                import solves from other people for the purposes of looking at the reconstructions.</p>
+
+                <h2 id="faq">FAQ</h2>
+                <h3 id="browser-support">Browser support and enabling Web Bluetooth.</h3>
+                <p>This page uses <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Bluetooth_API#browser_compatibility">Web Bluetooth</a>.
+                This is currently an experimental API. Most mainstream desktop browsers, with the notable exception of Firefox, support it, but
+                only after experimental APIs are enabled. Currently, for mobile browsers, only Chrome Android supports this API.
+                See the above link for the latest status.</p>
+
+                <p>For supported browsers, you can enable support by enabling the <a href="about:flags#enable-experimental-web-platform-features">Experimental Web Platform features flag</a>.</p>
+
+                <h3 id="how-do-i-get-mac-address">How do I get the MAC address?</h3>
+                <p>For Chrome, you can go to <a href="about://bluetooth-internals/">about://bluetooth-internals/</a>
+                and look for your device which will have a name like "GANi3xxx" and the MAC address will be in the
+                Address column for the table. <em><b>NOTE</b></em>: Clicking the previous link will not work, you need
+                to copy and paste it. It will look something like "AB:12:34:02:47:A8". Don't confuse this
+                address for the Address of the Adapter which is on the Adapter tab of this page.</p>
+
+                <p>You can get the MAC Address using OS specific tools as well.</p>
+
+                <h3 id="why-do-you-need-mac-address">Why do you need the MAC address?</h3>
+                <p>There are two parts of this answer. First, why is the MAC address necessary at all?
+                Second, why you can't get it for me?</p>
+
+                <p>For the first, the MAC address is used as part of the key to decrypt the messages coming from the cube.
+                This encryption provides no security benefit as the key is essentially public knowledge &mdash; your cube is literally broadcasting the MAC address.
+                The purpose of this encryption seems to solely to make reverse engineering the protocol more difficult to
+                make making tools like this page more difficult.</p>
+
+                <p>For the second, the Web Bluetooth specification intentionally does not provide a way for a website to get
+                the MAC address of a Bluetooth device. The purpose of this is to protect privacy. The MAC address isn't sensitive
+                information, again, it is literally broadcast by the device. Instead, the concern is that websites will use
+                the MAC address of devices to fingerprint website visitors. Not only do I have no interest in this, this page
+                sends no data or requests to the server once the page is loaded. This page can be used entirely offline once
+                it's been loaded.</p>
+
+                <h3 id="why-cant-you-reconnect">Why can't you automatically reconnect?</h3>
+                <p>If you don't perform a turn on the cube for a while (several minutes), it will automatically
+                enter a sleep mode. If you start turning after that, the cube will wake up but you will need to
+                reconnect to the page. It is necessary to manually reconnect because 1) your computer is not
+                constantly checking for devices, and 2) the Web Bluetooth API requires Bluetooth connections to
+                only happen in response to a user-interaction, e.g. clicking a button. The purpose of the latter
+                is to avoid websites surreptitiously connecting to Bluetooth devices without user's knowledge.</p>
+            </div>
+            <div id="timer">0:00.00</div>
+            <div id="scramble">Perform a move and undo it to start, e.g. U U'.</div>
+        </div>
+        <div id="container"></div>
+        <div id="splash">Initializing...</div>
+        
+    </body>
+</html>
