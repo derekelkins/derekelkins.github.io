@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="A blog mostly on math, physics, and computer science.">
+    <meta name="author" content="Derek Elkins">
+    <!--<link rel="icon" href="/images/favicon.ico">-->
+
+    <title>Preserving, Reflecting, and Creating Limits</title>
+    <!-- Bootstrap core CSS -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="../css/blog.css" rel="stylesheet">
+    <link href="../css/syntax.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="blog-masthead">
+      <div class="container">
+        <nav class="blog-nav">
+          <a class="blog-nav-item " href="../">Home</a>
+          <a class="blog-nav-item " href="../about.html">About</a>
+          <a class="blog-nav-item " href="../contact.html">Contact</a>
+          <a class="blog-nav-item " href="../readinglist.html">Reading List</a>
+          <a class="blog-nav-item " href="../archive.html">Archive</a>
+          <a class="blog-nav-item pull-right" href="../rss.xml">RSS</a>
+          <a class="blog-nav-item pull-right" href="../atom.xml">Atom</a>
+        </nav>
+      </div>
+    </div>
+
+    <div class="container">
+      
+      
+      <div class="row">
+        
+        <div class="col-sm-12 blog-main">
+        
+          <div class="blog-post">
+    <h2 class="blog-post-title" style="margin-top: 30px;">Preserving, Reflecting, and Creating Limits</h2>
+    <p class="blog-post-meta">March 21, 2023 05:39 UTC 
+        
+        (Last updated on March 21, 2023 07:26 UTC)
+    </p>
+    <h6 class="blog-post-meta">
+        
+        Tags: <a title="All pages tagged 'math'." href="../tags/math.html">math</a>, <a title="All pages tagged 'category theory'." href="../tags/category%20theory.html">category theory</a>
+        
+    </h6>
+
+    <h2 id="introduction">Introduction</h2>
+<p>This is a brief article about the notions of preserving, reflecting, and creating limits and,
+by duality, colimits. Preservation is relatively intuitive, but the distinction between
+reflection and creation is subtle.</p>
+<h2 id="preservation-of-limits">Preservation of Limits</h2>
+<p>A functor, |F|, <strong>preserves limits</strong> when it takes limiting cones to limiting cones. As
+often happens in category theory texts, the notation focuses on the objects. You’ll often
+see things like |F(X \times Y) \cong FX \times FY|, but implied is that one direction of
+this isomorphism is the canonical morphism |\langle F\pi_1, F\pi_2\rangle|. To put it yet
+another way, in this example we require |F(X \times Y)| to satisfy the universal property
+of a product with the projections |F\pi_1| and |F\pi_2|.</p>
+<p>Other than that subtlety, preservation is fairly intuitive.</p>
+<h2 id="reflection-of-limits-versus-creation-of-limits">Reflection of Limits versus Creation of Limits</h2>
+<p>A functor, |F|, <strong>reflects limits</strong> when whenever the image of a <em>cone</em> is a limiting cone,
+then the original cone was a limiting cone. For products this would mean that if we
+had a wedge |A \stackrel{p}{\leftarrow} Z \stackrel{q}{\to} B|, and |FZ| was the product
+of |FA| and |FB| with projections |Fp| and |Fq|, then |Z| was the product of |A| and |B|
+with projections |p| and |q|.</p>
+<p>A functor, |F|, <strong>creates limits</strong> when whenever the image of a <em><strong>diagram</strong> has a limit</em>,
+then the diagram itself has a limit and |F| preserves the limiting cones. For products
+this would mean if |FX| and |FY| had a product, |FX \times FY|, then |X| and |Y| have
+a product and |F(X \times Y) \cong FX \times FY| via the canonical morphism.</p>
+<p>Creation of limits implies reflection of limits since we can just ignore the apex of the
+cone. While creation is more powerful, often reflection is enough in practice as we usually
+have a candidate limit, i.e. a cone. Again, this is often not made too explicit.</p>
+<h3 id="example">Example</h3>
+<p>Consider the posets:</p>
+<p><span class="math display">$$\xymatrix{
+     &amp;          &amp;                   &amp; c \\
+X\ar@{}[r]|{\Large{=}} &amp; a \ar[r] &amp; b \ar[ur] \ar[dr] &amp;   \\
+     &amp;          &amp;                   &amp; d 
+\save "1,2"."3,4"*+[F]\frm{}
+\restore
+} \qquad \xymatrix{
+     &amp;                   &amp; c \\
+Y\ar@{}[r]|{\Large{=}} &amp; b \ar[ur] \ar[dr] &amp;   \\
+     &amp;                   &amp; d 
+\save "1,2"."3,3"*+[F]\frm{}
+\restore
+} \qquad \xymatrix{
+     &amp; c \\ 
+Z\ar@{}[r]|{\Large{=}} &amp;   \\ 
+     &amp; d
+\save "1,2"."3,2"*+[F]\frm{}
+\restore
+}$$</span></p>
+<h4 id="failure-of-reflection">Failure of reflection</h4>
+<p>Let |X=\{a, b, c, d\}| with |a \leq b \leq c| and |b \leq d| mapping to |Y=\{b, c, d\}|
+where |a \mapsto b|. Reflection fails because |a| maps to a meet but is not itself a meet.</p>
+<h4 id="failure-of-creation">Failure of creation</h4>
+<p>If we change the source to just |Z=\{c, d\}|, then creation fails because |c| and |d| have a meet
+in the image but not in the source. Reflection succeeds, though, because there are no
+non-trivial cones in the source, so every cone (trivially) gets mapped to a limit cone.
+It’s just that we don’t have any cones with both |c| and |d| in them.</p>
+<p>In general, recasting reflection and creation of limits for posets gives us: Let |F: X \to Y| be
+a monotonic function. |F| reflects limits if every lower bound that |F| maps to a meet is
+already a meet. |F| creates limits if whenever |F[U]| has a meet for |U \subseteq X|, then |U|
+already had a meet and |F| sends the meet of |U| to the meet of |F[U]|.</p>
+
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_shortname = 'hedonisticlearning';
+        var disqus_identifier = 'e09446bb-cbc9-4eed-81d0-eee5c51653b5';
+        var disqus_title = 'Preserving, Reflecting, and Creating Limits';
+        
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript> 
+</div>
+
+        </div><!-- /.blog-main -->
+        
+        
+      </div><!-- /.row -->
+    </div><!-- /.container -->
+
+    <footer class="blog-footer">
+      <p>Site generated by <a href="http://jaspervdj.be/hakyll">Hakyll</a></p>
+      <p>
+        <a href="#">Back to top</a>
+      </p>
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js" integrity="sha384-6ePHh72Rl3hKio4HiJ841psfsRJveeS+aLoaEf3BWfS+gTF0XdAqku2ka8VddikM" crossorigin="anonymous"></script> -->
+    <script type="text/javascript" src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!--<script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>-->
+    <script type="text/javascript">
+        var disqus_shortname = 'hedonisticlearning';
+        (function () {
+            var s = document.createElement('script'); s.async = true;
+            s.type = 'text/javascript';
+            s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
+            (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+        }());
+    </script>
+    <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_HTMLorMML.js" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script> -->
+    <!--<script type="text/javascript" src="/js/MathJax-2.7.7/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>-->
+    <script>
+        MathJax = {
+            loader: {
+                load: ['ui/lazy', '[custom]/xypic.js'],
+                paths: { custom: '/js' }
+            },
+            tex: {
+                packages: { '[+]': ['xypic'] },
+                inlineMath: [['|','|']],
+                macros: window.extraMacros || {}
+            }
+        };
+    </script>
+    <script type="text/javascript" src="../js/MathJax-3/es5/tex-mml-chtml.js"></script>
+  </body>
+</html>

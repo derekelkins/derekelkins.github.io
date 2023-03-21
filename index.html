@@ -46,63 +46,291 @@
           
     <div class="blog-post teaser panel panel-default">
     <div class="panel-heading">
+        <h2 class="blog-post-title"><a href="./posts/preserves-reflects-creates.html">Preserving, Reflecting, and Creating Limits</a></h2>
+        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="e09446bb-cbc9-4eed-81d0-eee5c51653b5" href="./posts/preserves-reflects-creates.html#disqus_thread"></a></h6>
+    </div>
+
+    <div class="panel-body">
+        
+            <h2 id="introduction">Introduction</h2>
+<p>This is a brief article about the notions of preserving, reflecting, and creating limits and,
+by duality, colimits. Preservation is relatively intuitive, but the distinction between
+reflection and creation is subtle.</p>
+<h2 id="preservation-of-limits">Preservation of Limits</h2>
+<p>A functor, |F|, <strong>preserves limits</strong> when it takes limiting cones to limiting cones. As
+often happens in category theory texts, the notation focuses on the objects. You’ll often
+see things like |F(X \times Y) \cong FX \times FY|, but implied is that one direction of
+this isomorphism is the canonical morphism |\langle F\pi_1, F\pi_2\rangle|. To put it yet
+another way, in this example we require |F(X \times Y)| to satisfy the universal property
+of a product with the projections |F\pi_1| and |F\pi_2|.</p>
+<p>Other than that subtlety, preservation is fairly intuitive.</p>
+<h2 id="reflection-of-limits-versus-creation-of-limits">Reflection of Limits versus Creation of Limits</h2>
+<p>A functor, |F|, <strong>reflects limits</strong> when whenever the image of a <em>cone</em> is a limiting cone,
+then the original cone was a limiting cone. For products this would mean that if we
+had a wedge |A \stackrel{p}{\leftarrow} Z \stackrel{q}{\to} B|, and |FZ| was the product
+of |FA| and |FB| with projections |Fp| and |Fq|, then |Z| was the product of |A| and |B|
+with projections |p| and |q|.</p>
+<p>A functor, |F|, <strong>creates limits</strong> when whenever the image of a <em><strong>diagram</strong> has a limit</em>,
+then the diagram itself has a limit and |F| preserves the limiting cones. For products
+this would mean if |FX| and |FY| had a product, |FX \times FY|, then |X| and |Y| have
+a product and |F(X \times Y) \cong FX \times FY| via the canonical morphism.</p>
+<p>Creation of limits implies reflection of limits since we can just ignore the apex of the
+cone. While creation is more powerful, often reflection is enough in practice as we usually
+have a candidate limit, i.e. a cone. Again, this is often not made too explicit.</p>
+<h3 id="example">Example</h3>
+<p>Consider the posets:</p>
+<p><span class="math display">$$\xymatrix{
+     &amp;          &amp;                   &amp; c \\
+X\ar@{}[r]|{\Large{=}} &amp; a \ar[r] &amp; b \ar[ur] \ar[dr] &amp;   \\
+     &amp;          &amp;                   &amp; d 
+\save "1,2"."3,4"*+[F]\frm{}
+\restore
+} \qquad \xymatrix{
+     &amp;                   &amp; c \\
+Y\ar@{}[r]|{\Large{=}} &amp; b \ar[ur] \ar[dr] &amp;   \\
+     &amp;                   &amp; d 
+\save "1,2"."3,3"*+[F]\frm{}
+\restore
+} \qquad \xymatrix{
+     &amp; c \\ 
+Z\ar@{}[r]|{\Large{=}} &amp;   \\ 
+     &amp; d
+\save "1,2"."3,2"*+[F]\frm{}
+\restore
+}$$</span></p>
+<h4 id="failure-of-reflection">Failure of reflection</h4>
+<p>Let |X=\{a, b, c, d\}| with |a \leq b \leq c| and |b \leq d| mapping to |Y=\{b, c, d\}|
+where |a \mapsto b|. Reflection fails because |a| maps to a meet but is not itself a meet.</p>
+<h4 id="failure-of-creation">Failure of creation</h4>
+<p>If we change the source to just |Z=\{c, d\}|, then creation fails because |c| and |d| have a meet
+in the image but not in the source. Reflection succeeds, though, because there are no
+non-trivial cones in the source, so every cone (trivially) gets mapped to a limit cone.
+It’s just that we don’t have any cones with both |c| and |d| in them.</p>
+<p>In general, recasting reflection and creation of limits for posets gives us: Let |F: X \to Y| be
+a monotonic function. |F| reflects limits if every lower bound that |F| maps to a meet is
+already a meet. |F| creates limits if whenever |F[U]| has a meet for |U \subseteq X|, then |U|
+already had a meet and |F| sends the meet of |U| to the meet of |F[U]|.</p>
+        
+    </div>
+
+    <div class="panel-footer">
+        <h6 class="blog-post-meta">
+            March 21, 2023 05:39 UTC
+            
+            (Last updated on March 21, 2023 07:26 UTC)
+
+            
+                Tags: <a title="All pages tagged 'math'." href="./tags/math.html">math</a>, <a title="All pages tagged 'category theory'." href="./tags/category%20theory.html">category theory</a>
+            
+        </h6>
+    </div>
+
+</div><!-- /.blog-post -->
+
+
+
+    <div class="blog-post teaser panel panel-default">
+    <div class="panel-heading">
         <h2 class="blog-post-title"><a href="./posts/overlaps.html">Overlaps</a></h2>
         <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="71bfb06a-0ff4-4d3e-b3fe-d8b59b164256" href="./posts/overlaps.html#disqus_thread"></a></h6>
     </div>
 
     <div class="panel-body">
         
-            <p><strong>tl;dr</strong> The notion of two sets overlapping is very common. Often it is expressed via |A \cap B \neq \varnothing|. Constructively, this is not the best definition as it does not imply |\exists x. x \in A \land x \in B|. Even classically, this second-class treatment of overlapping obscures important and useful connections. In particular, writing |U \between A| for “|U| overlaps |A|”, we have a De Morgan-like duality situation with |\between| being dual to |\subseteq|. Recognizing and exploiting this duality, in part by using more appropriate notation for “overlaps”, can lead to new concepts and connections.</p>
+            <p><strong>tl;dr</strong> The notion of two sets overlapping is very common. Often it is expressed
+via |A \cap B \neq \varnothing|. Constructively, this is not the best definition
+as it does not imply |\exists x. x \in A \land x \in B|. Even classically, this
+second-class treatment of overlapping obscures important and useful connections.
+In particular, writing |U \between A| for “|U| overlaps |A|”, we have a De Morgan-like
+duality situation with |\between| being dual to |\subseteq|. Recognizing and
+exploiting this duality, in part by using more appropriate notation for “overlaps”,
+can lead to new concepts and connections.</p>
 <h3 id="introduction">Introduction</h3>
-<p>The most common way I’ve seen the statement “|A| overlaps |B|” formalized is |A \cap B \neq \varnothing|. To a constructivist, this definition isn’t very satisfying. In particular, this definition of overlaps does not allow us to constructively conclude that there exists an element contained in both |A| and |B|. That is, |A \cap B \neq \varnothing| does not imply |\exists x. x \in A \land x \in B| constructively.</p>
-<p>As is usually the case, even if you are not philosophically a constructivist, taking a constructivist perspective can often lead to better definitions and easier to see connections. In this case, constructivism suggests the more positive statement |\exists x. x \in A \land x \in B| be the definition of “overlaps”. However, given that we now have two (constructively) non-equivalent definitions, it is better to introduce notation to abstract from the particular definition. In many cases, it makes sense to have a primitive notion of “overlaps”. Here I will use the notation |A \between B| which is the most common option I’ve seen.</p>
+<p>The most common way I’ve seen the statement “|A| overlaps |B|” formalized
+is |A \cap B \neq \varnothing|. To a constructivist, this definition isn’t
+very satisfying. In particular, this definition of overlaps does not allow
+us to constructively conclude that there exists an element contained in both
+|A| and |B|. That is, |A \cap B \neq \varnothing| does not imply
+|\exists x. x \in A \land x \in B| constructively.</p>
+<p>As is usually the case, even if you are not philosophically a constructivist,
+taking a constructivist perspective can often lead to better definitions and
+easier to see connections. In this case, constructivism suggests the more positive
+statement |\exists x. x \in A \land x \in B| be the definition of “overlaps”.
+However, given that we now have two (constructively) non-equivalent definitions,
+it is better to introduce notation to abstract from the particular definition. In
+many cases, it makes sense to have a primitive notion of “overlaps”. Here I will
+use the notation |A \between B| which is the most common option I’ve seen.</p>
 <h3 id="properties">Properties</h3>
-<p>We can more compactly write the quantifier-based definition as |\exists x \in A.x \in B| using a common set-theoretic abbreviation. This presentation suggests a perhaps surprising connection. If we swap the quantifier, we get |\forall x\in A.x \in B| which is commonly abbreviated |A \subseteq B|. This leads to a duality between |\subseteq| and |\between|, particularly in topological contexts. In particular, if we pick a containing set |X|, then |\neg(U \between A) \iff U \subseteq A^c| where the complement is relative to |X|, and |A| is assumed to be a subset of |X|. This is a De Morgan-like duality.</p>
-<p>If we want to characterize these operations via an adjunction, or, more precisely, a Galois connection, we have a slight awkwardness arising from |\subseteq| and |\between| being binary predicates on sets. So, as a first step we’ll identify sets with predicates via, for a set |A|, |\underline A(x) \equiv x \in A|. In terms of predicates, the adjunctions we want are just a special case of the adjunctions characterizing the quantifiers.</p>
+<p>We can more compactly write the quantifier-based definition as |\exists x \in A.x \in B|
+using a common set-theoretic abbreviation. This presentation suggests a perhaps surprising
+connection. If we swap the quantifier, we get |\forall x\in A.x \in B| which is commonly
+abbreviated |A \subseteq B|. This leads to a duality between |\subseteq| and |\between|,
+particularly in topological contexts. In particular, if we pick a containing set |X|,
+then |\neg(U \between A) \iff U \subseteq A^c| where the complement is relative to |X|,
+and |A| is assumed to be a subset of |X|. This is a De Morgan-like duality.</p>
+<p>If we want to characterize these operations via an adjunction, or, more precisely, a Galois
+connection, we have a slight awkwardness arising from |\subseteq| and |\between| being
+binary predicates on sets. So, as a first step we’ll identify sets with predicates via, for
+a set |A|, |\underline A(x) \equiv x \in A|. In terms of predicates, the adjunctions we
+want are just a special case of the adjunctions characterizing the quantifiers.</p>
 <p>\[\underline U(x) \land P \to \underline A(x) \iff P \to U \subseteq A\]</p>
 <p>\[U \between B \to Q \iff \underline B(x) \to (\underline U(x) \to Q)\]</p>
-<p>What we actually want is a formula of the form |U \between B \to Q \iff B \subseteq (\dots)|. To do this, we need an operation that will allow us to produce a set from a predicate. This is exactly what set comprehension does. For reasons that will become increasingly clear, we’ll assume that |A| and |B| are subsets of a set |X|. We will then consider quantification relative to |X|. The result we get is:</p>
+<p>What we actually want is a formula of the form |U \between B \to Q \iff B \subseteq (\dots)|.
+To do this, we need an operation that will allow us to produce a set from a predicate. This is
+exactly what set comprehension does. For reasons that will become increasingly clear, we’ll
+assume that |A| and |B| are subsets of a set |X|. We will then consider quantification relative
+to |X|. The result we get is:</p>
 <p>\[\{x \in U \mid P\} \subseteq A \iff \{x \in X \mid x \in U \land P\} \subseteq A \iff P \to U \subseteq A\]</p>
 <p>\[U \between B \to Q \iff B \subseteq \{x \in X \mid x \in U \to Q\} \iff B \subseteq \{x \in U \mid \neg Q\}^c\]</p>
-<p>The first and last equivalences require additionally assuming |U \subseteq X|. The last equivalence requires classical reasoning. You can already see motivation to limit to subsets of |X| here. First, set complementation, the |(-)^c|, only makes sense relative to some containing set. Next, if we choose |Q \equiv \top|, then the latter formulas state that <em>no matter what |B| is</em> it should be a subset of the expression that follows it. Without constraining to subsets of |X|, this would require a universal set which doesn’t exist in typical set theories.</p>
-<p>Choosing |P| as |\top|, |Q| as |\bot|, and |B| as |A^c| leads to the familiar |\neg (U \between A^c) \iff U \subseteq A|, i.e. |U| is a subset of |A| if and only if it doesn’t overlap |A|’s complement.</p>
-<p>Incidentally, characterizing |\subseteq| and |\between| in terms of Galois connections, i.e. adjunctions, immediately gives us some properties for free via continuity. We have |U \subseteq \bigcap_{i \in I}A_i \iff \forall i\in I.U \subseteq A_i| and |U \between \bigcup_{i \in I}A_i \iff \exists i \in I.U \between A_i|. This is relative to a containing set |X|, so |\bigcap_{i \in \varnothing}A_i = X|, and |U| and each |A_i| are assumed to be subsets of |X|.</p>
+<p>The first and last equivalences require additionally assuming |U \subseteq X|.
+The last equivalence requires classical reasoning. You can already see motivation to
+limit to subsets of |X| here. First, set complementation, the |(-)^c|, only makes sense relative to
+some containing set. Next, if we choose |Q \equiv \top|, then the latter formulas
+state that <em>no matter what |B| is</em> it should be a subset of the expression that
+follows it. Without constraining to subsets of |X|, this would require a universal
+set which doesn’t exist in typical set theories.</p>
+<p>Choosing |P| as |\top|, |Q| as |\bot|, and |B| as |A^c| leads to the
+familiar |\neg (U \between A^c) \iff U \subseteq A|, i.e. |U| is a
+subset of |A| if and only if it doesn’t overlap |A|’s complement.</p>
+<p>Incidentally, characterizing |\subseteq| and |\between| in terms of Galois
+connections, i.e. adjunctions, immediately gives us some properties for free via continuity.
+We have |U \subseteq \bigcap_{i \in I}A_i \iff \forall i\in I.U \subseteq A_i|
+and |U \between \bigcup_{i \in I}A_i \iff \exists i \in I.U \between A_i|. This
+is relative to a containing set |X|, so |\bigcap_{i \in \varnothing}A_i = X|, and |U|
+and each |A_i| are assumed to be subsets of |X|.</p>
 <h3 id="categorical-perspective">Categorical Perspective</h3>
-<p>Below I’ll perform a categorical analysis of the situation. I’ll mostly be using categorical notation and perspectives to manipulate normal sets. That said, almost all of what I say will be able to be generalized immediately just by reinterpreting the symbols.</p>
-<p>To make things a bit cleaner in the future, and to make it easier to apply these ideas beyond sets, I’ll introduce the concept of a <a href="https://en.wikipedia.org/wiki/Heyting_algebra">Heyting algebra</a>. A Heyting algebra is a partially ordered set |H| satisfying the following:</p>
+<p>Below I’ll perform a categorical analysis of the situation. I’ll mostly be using categorical
+notation and perspectives to manipulate normal sets. That said, almost all of what I say will
+be able to be generalized immediately just by reinterpreting the symbols.</p>
+<p>To make things a bit cleaner in the future, and to make it easier to apply these ideas
+beyond sets, I’ll introduce the concept of a <a href="https://en.wikipedia.org/wiki/Heyting_algebra">Heyting algebra</a>.
+A Heyting algebra is a partially ordered set |H| satisfying the following:</p>
 <ol type="1">
 <li>|H| has two elements called |\top| and |\bot| satisfying for all |x| in |H|, |\bot \leq x \leq \top|.</li>
-<li>We have operations |\land| and |\lor| satisfying for all |x|, |y|, |z| in |H|, |x \leq y \land z| if and only |x \leq y| and |x \leq z|, and similarly for |\lor|, |x \lor y \leq z| if and only |x \leq z| and |y \leq z|.</li>
-<li>We have an operation |\to| satisfying for all |x|, |y|, and |z| in |H|, |x \land y \leq z| if and only if |x \leq y \to z|.</li>
+<li>We have operations |\land| and |\lor| satisfying for all |x|, |y|, |z| in |H|,
+|x \leq y \land z| if and only |x \leq y| and |x \leq z|, and similarly for |\lor|,
+|x \lor y \leq z| if and only |x \leq z| and |y \leq z|.</li>
+<li>We have an operation |\to| satisfying for all |x|, |y|, and |z| in |H|,
+|x \land y \leq z| if and only if |x \leq y \to z|.</li>
 </ol>
-<p>For those familiar with category theory, you might recognize this as simply the decategorification of the notion of a <a href="https://ncatlab.org/nlab/show/bicartesian+closed+category">bicartesian closed category</a>. We can define the <strong>pseudo-complement</strong>, |\neg x \equiv x \to \bot|.</p>
-<p>Any <a href="https://en.wikipedia.org/wiki/Boolean_algebra_(structure)">Boolean algebra</a> is an example of a Heyting algebra where we can define |x \to y| via |\neg x \lor y| where here |\neg| is taken as primitive. In particular, subsets of a given set ordered by inclusion form a Boolean algebra, and thus a Heyting algebra. The |\to| operation can also be characterized by |x \leq y \iff (x \to y) = \top|. This lets us immediately see that for subsets of |X|, |(A \to B) = \{x \in X \mid x \in A \to x \in B\}|. All this can be generalized to the subobjects in any <a href="https://ncatlab.org/nlab/show/Heyting+category">Heyting category</a>.</p>
-<p>As the notation suggests, intuitionistic logic (and thus classical logic) is another example of a Heyting algebra.</p>
-<p>We’ll write |\mathsf{Sub}(X)| for the partially ordered set of subsets of |X| ordered by inclusion. As mentioned above, this is (classically) a Boolean algebra and thus a Heyting algebra. Any function |f : X \to Y| gives a monotonic function |f^* : \mathsf{Sub}(Y) \to \mathsf{Sub}(X)|. Note the swap. |f^*(U) \equiv f^{-1}(U)|. (Alternatively, if we think of subsets in terms of characteristic functions, |f^*(U) \equiv U \circ f|.) Earlier, we needed a way to turn predicates into sets. In this case, we’ll go the other way and identify truth values with subsets of |1| where |1| stands for an arbitrary singleton set. That is, |\mathsf{Sub}(1)| is the poset of truth values. |1| being the terminal object of |\mathbf{Set}| induces the (unique) function |!_U : U \to 1| for any set |U|. This leads to the important monotonic function |!_U^* : \mathsf{Sub}(1) \to \mathsf{Sub}(U)|. This can be described as |!_U^*(P) = \{x \in U \mid P\}|. Note, |P| cannot contain |x| as a free variable. In particular |!_U^*(\bot) = \varnothing| and |!_U^*(\top) = U|. This monotonic function has left and right adjoints:</p>
+<p>For those familiar with category theory, you might recognize this as simply the decategorification
+of the notion of a <a href="https://ncatlab.org/nlab/show/bicartesian+closed+category">bicartesian closed category</a>.
+We can define the <strong>pseudo-complement</strong>, |\neg x \equiv x \to \bot|.</p>
+<p>Any <a href="https://en.wikipedia.org/wiki/Boolean_algebra_(structure)">Boolean algebra</a> is an
+example of a Heyting algebra where we can define |x \to y| via |\neg x \lor y| where
+here |\neg| is taken as primitive. In particular, subsets of a given set ordered by
+inclusion form a Boolean algebra, and thus a Heyting algebra. The |\to| operation can also
+be characterized by |x \leq y \iff (x \to y) = \top|. This lets us immediately see
+that for subsets of |X|, |(A \to B) = \{x \in X \mid x \in A \to x \in B\}|. All
+this can be generalized to the subobjects in any <a href="https://ncatlab.org/nlab/show/Heyting+category">Heyting category</a>.</p>
+<p>As the notation suggests, intuitionistic logic (and thus classical logic) is another
+example of a Heyting algebra.</p>
+<p>We’ll write |\mathsf{Sub}(X)| for the partially ordered set of subsets of |X| ordered
+by inclusion. As mentioned above, this is (classically) a Boolean algebra and thus a
+Heyting algebra. Any function |f : X \to Y| gives a monotonic function
+|f^* : \mathsf{Sub}(Y) \to \mathsf{Sub}(X)|. Note the swap. |f^*(U) \equiv f^{-1}(U)|.
+(Alternatively, if we think of subsets in terms of characteristic functions, |f^*(U) \equiv U \circ f|.)
+Earlier, we needed a way to turn predicates into sets. In this case, we’ll go the other way
+and identify truth values with subsets of |1| where |1| stands for an arbitrary singleton set.
+That is, |\mathsf{Sub}(1)| is the poset of truth values. |1| being the terminal object of |\mathbf{Set}|
+induces the (unique) function |!_U : U \to 1| for any set |U|. This leads to the important
+monotonic function |!_U^* : \mathsf{Sub}(1) \to \mathsf{Sub}(U)|. This can be described
+as |!_U^*(P) = \{x \in U \mid P\}|. Note, |P| cannot contain |x| as a free variable.
+In particular |!_U^*(\bot) = \varnothing| and |!_U^*(\top) = U|. This monotonic function
+has left and right adjoints:</p>
 <p>\[\exists_U \dashv {!_U^*} \dashv \forall_U : \mathsf{Sub}(U) \to \mathsf{Sub}(1)\]</p>
-<p>|F \dashv G| for monotonic functions |F : X \to Y| and |G : Y \to X| means |\forall x \in X. \forall y \in Y.F(x) \leq_Y y \iff x \leq_X G(y)|.</p>
-<p>|\exists_U(A) \equiv \exists x \in U. x \in A| and |\forall_U(A) \equiv \forall x \in U. x \in A|. It’s easily verified that each of these functions are monotonic.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
-<p>It seems like we should be done. These formulas are the formulas I originally gave for |\between| and |\subseteq| in terms of quantifiers. The problem here is that these functions are only defined for subsets of |U|. This is especially bad for interpreting |U \between A| as |\exists_U(A)| as it excludes most of the interesting cases where |U| partially overlaps |A|. What we need is a way to extend |\exists_U| / |\forall_U| beyond subsets of |U|. That is, we need a suitable monotonic function |\mathsf{Sub}(X) \to \mathsf{Sub}(U)|.</p>
-<p>Assume |U \subseteq X| and that we have an inclusion |\iota_U : U \hookrightarrow X|. Then |\iota_U^* : \mathsf{Sub}(X) \to \mathsf{Sub}(U)| and |\iota_U^*(A) = U \cap A|. This will indeed allow us to define |\subseteq| and |\between| as |U \subseteq A \equiv \forall_U(\iota_U^*(A))| and |U \between A \equiv \exists_U(\iota_U^*(A))|. We have:</p>
+<p>|F \dashv G| for monotonic functions |F : X \to Y| and |G : Y \to X|
+means |\forall x \in X. \forall y \in Y.F(x) \leq_Y y \iff x \leq_X G(y)|.</p>
+<p>|\exists_U(A) \equiv \exists x \in U. x \in A| and |\forall_U(A) \equiv \forall x \in U. x \in A|.
+It’s easily verified that each of these functions are monotonic.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>It seems like we should be done. These formulas are the formulas I originally gave for
+|\between| and |\subseteq| in terms of quantifiers. The problem here is that these functions
+are only defined for subsets of |U|. This is especially bad for interpreting |U \between A|
+as |\exists_U(A)| as it excludes most of the interesting cases where |U| partially overlaps |A|.
+What we need is a way to extend |\exists_U| / |\forall_U| beyond subsets of |U|. That is,
+we need a suitable monotonic function |\mathsf{Sub}(X) \to \mathsf{Sub}(U)|.</p>
+<p>Assume |U \subseteq X| and that we have an inclusion |\iota_U : U \hookrightarrow X|.
+Then |\iota_U^* : \mathsf{Sub}(X) \to \mathsf{Sub}(U)| and |\iota_U^*(A) = U \cap A|.
+This will indeed allow us to define |\subseteq| and |\between| as |U \subseteq A \equiv \forall_U(\iota_U^*(A))|
+and |U \between A \equiv \exists_U(\iota_U^*(A))|. We have:</p>
 <p>\[\iota_U[-] \dashv \iota_U^* \dashv U \to \iota_U[-] : \mathsf{Sub}(U) \to \mathsf{Sub}(X)\]</p>
-<p>Here, |\iota_U[-]| is the direct image of |\iota_U|. This doesn’t really do anything in this case except witness that if |A \subseteq U| then |A \subseteq X| because |U \subseteq X|.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
-<p>We can recover the earlier adjunctions by simply using these two pairs of adjunctions. \[\begin{align} U \between B \to Q &amp; \iff \exists_U(\iota_U^*(B)) \to Q \\ &amp; \iff \iota_U^*(B) \subseteq {!}_U^*(Q) \\ &amp; \iff B \subseteq U \to \iota_U[{!}_U^*(Q)] \\ &amp; \iff B \subseteq \{x \in X \mid x \in U \to Q\} \end{align}\]</p>
-<p>Here the |\iota_U[-]| is crucial so that we use the |\to| of |\mathsf{Sub}(X)| and not |\mathsf{Sub}(U)|.</p>
-<p>\[\begin{align} P \to U \subseteq A &amp; \iff P \to \forall_U(\iota_U^*(A)) \\ &amp; \iff {!}_U^*(P) \subseteq \iota_U^*(A) \\ &amp; \iff \iota_U[{!}_U^*(P)] \subseteq A \\ &amp; \iff \{x \in X \mid x \in U \land P\} \subseteq A \end{align}\]</p>
-<p>In this case, the |\iota_U[-]| is truly doing nothing because |\{x \in X \mid x \in U \land P\}| is the same as |\{x \in U \mid P\}|.</p>
-<p>While we have |{!}_U^* \circ \exists_U \dashv {!}_U^* \circ \forall_U|, we see that the inclusion of |\iota_U^*| is what breaks the direct connection between |U \between A| and |U \subseteq A|.</p>
+<p>Here, |\iota_U[-]| is the direct image of |\iota_U|. This doesn’t really do anything in this case
+except witness that if |A \subseteq U| then |A \subseteq X| because |U \subseteq X|.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+<p>We can recover the earlier adjunctions by simply using these two pairs of adjunctions.
+\[\begin{align}
+U \between B \to Q
+&amp; \iff \exists_U(\iota_U^*(B)) \to Q \\
+&amp; \iff \iota_U^*(B) \subseteq {!}_U^*(Q) \\
+&amp; \iff B \subseteq U \to \iota_U[{!}_U^*(Q)] \\
+&amp; \iff B \subseteq \{x \in X \mid x \in U \to Q\}
+\end{align}\]</p>
+<p>Here the |\iota_U[-]| is crucial so that we use the |\to| of |\mathsf{Sub}(X)|
+and not |\mathsf{Sub}(U)|.</p>
+<p>\[\begin{align}
+P \to U \subseteq A
+&amp; \iff P \to \forall_U(\iota_U^*(A)) \\
+&amp; \iff {!}_U^*(P) \subseteq \iota_U^*(A) \\
+&amp; \iff \iota_U[{!}_U^*(P)] \subseteq A \\
+&amp; \iff \{x \in X \mid x \in U \land P\} \subseteq A
+\end{align}\]</p>
+<p>In this case, the |\iota_U[-]| is truly doing nothing because |\{x \in X \mid x \in U \land P\}|
+is the same as |\{x \in U \mid P\}|.</p>
+<p>While we have |{!}_U^* \circ \exists_U \dashv {!}_U^* \circ \forall_U|, we
+see that the inclusion of |\iota_U^*| is what breaks the direct connection between
+|U \between A| and |U \subseteq A|.</p>
 <h3 id="examples">Examples</h3>
-<p>As a first example, write |\mathsf{Int}A| for the <strong>interior</strong> of |A| and |\bar A| for the <strong>closure</strong> of |A| each with respect to some <a href="https://en.wikipedia.org/wiki/Topological_space#Definition_via_open_sets">topology</a> on a containing set |X|. One way to define |\mathsf{Int}A| is |x \in \mathsf{Int}A| if and only if there exists an open set containing |x| that’s a subset of |A|. Writing |\mathcal O(X)| for the set of open sets, we can express this definition in symbols: \[x \in \mathsf{Int}A \iff \exists U \in \mathcal O(X). x \in U \land U \subseteq A\] We have a “dual” notion: \[x \in \bar A \iff \forall U \in \mathcal O(X). x \in U \to U \between A\] That is, |x| is in the closure of |A| if and only if every open set containing |x| overlaps |A|.</p>
-<p>As another example, here is a fairly unusual way of characterizing a compact subset |Q|. |Q| is <strong>compact</strong> if and only if |\{U \in \mathcal O(X) \mid Q \subseteq U\}| is open in |\mathcal O(X)| equipped with the <a href="https://ncatlab.org/nlab/show/Scott+topology">Scott topology</a><a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>. As before, this suggests a “dual” notion characterized by |\{U \in \mathcal O(X) \mid O \between U\}| being an open subset. A set |O| satisfying this is called <a href="https://ncatlab.org/nlab/show/overt+space"><strong>overt</strong></a>. This concept is never mentioned in traditional presentations of point-set topology because <em>every</em> subset is overt. However, if we don’t require that <em>arbitrary</em> unions of open sets are open (and only require finite unions to be open) as happens in <a href="https://ncatlab.org/nlab/show/synthetic+topology">synthetic topology</a> or if we aren’t working in a classical context then overtness becomes a meaningful concept.</p>
-<p>One benefit of the intersection-based definition of overlaps is that it is straightforward to generalize to many sets overlapping, namely |\bigcap_{i\in I} A_i \neq \varnothing|. This is also readily expressible using quantifiers as: |\exists x.\forall i \in I. x \in A_i|. As before, having an explicit “universe” set also clarifies this. So, |\exists x \in X.\forall i \in I. x \in A_i| with |\forall i \in I. A_i \subseteq X| would be better. The connection of |\between| to |\subseteq| suggests instead of this fully symmetric presentation, it may still be worthwhile to single out a set producing |\exists x \in U.\forall i \in I. x \in A_i| where |U \subseteq X|. This can be read as “there is a point in |U| that touches/meets/overlaps every |A_i|”. If desired we could notate this as |U \between \bigcap_{i \in I}A_i|. Negating and complementing the |A_i| leads to the dual notion |\forall x \in U.\exists i \in I.x \in A_i| which is equivalent to |U \subseteq \bigcup_{i \in I}A_i|. This dual notion could be read as “the |A_i| (jointly) cover |U|” which is another common and important concept in mathematics.</p>
+<p>As a first example, write |\mathsf{Int}A| for the <strong>interior</strong> of |A| and |\bar A| for the <strong>closure</strong> of |A|
+each with respect to some <a href="https://en.wikipedia.org/wiki/Topological_space#Definition_via_open_sets">topology</a>
+on a containing set |X|.
+One way to define |\mathsf{Int}A| is |x \in \mathsf{Int}A| if and only if there exists an open set
+containing |x| that’s a subset of |A|. Writing |\mathcal O(X)| for the set of open sets, we
+can express this definition in symbols:
+\[x \in \mathsf{Int}A \iff \exists U \in \mathcal O(X). x \in U \land U \subseteq A\]
+We have a “dual” notion:
+\[x \in \bar A \iff \forall U \in \mathcal O(X). x \in U \to U \between A\]
+That is, |x| is in the closure of |A| if and only if every open set containing |x| overlaps |A|.</p>
+<p>As another example, here is a fairly unusual way of characterizing a compact subset |Q|.
+|Q| is <strong>compact</strong> if and only if |\{U \in \mathcal O(X) \mid Q \subseteq U\}| is open
+in |\mathcal O(X)| equipped with the <a href="https://ncatlab.org/nlab/show/Scott+topology">Scott topology</a><a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>.
+As before, this suggests a “dual” notion characterized by |\{U \in \mathcal O(X) \mid O \between U\}|
+being an open subset. A set |O| satisfying this is called <a href="https://ncatlab.org/nlab/show/overt+space"><strong>overt</strong></a>.
+This concept is never mentioned in traditional presentations of point-set topology because <em>every</em>
+subset is overt. However, if we don’t require that <em>arbitrary</em> unions of open sets are open (and only require
+finite unions to be open) as happens in <a href="https://ncatlab.org/nlab/show/synthetic+topology">synthetic topology</a>
+or if we aren’t working in a classical context then overtness becomes a meaningful concept.</p>
+<p>One benefit of the intersection-based definition of overlaps is that it is
+straightforward to generalize to many sets overlapping, namely |\bigcap_{i\in I} A_i \neq \varnothing|.
+This is also readily expressible using quantifiers as: |\exists x.\forall i \in I. x \in A_i|.
+As before, having an explicit “universe” set also clarifies this. So,
+|\exists x \in X.\forall i \in I. x \in A_i| with |\forall i \in I. A_i \subseteq X| would
+be better. The connection of |\between| to |\subseteq| suggests instead of this fully
+symmetric presentation, it may still be worthwhile to single out a set producing
+|\exists x \in U.\forall i \in I. x \in A_i| where |U \subseteq X|. This can be
+read as “there is a point in |U| that touches/meets/overlaps every |A_i|”.
+If desired we could notate this as |U \between \bigcap_{i \in I}A_i|. Negating and
+complementing the |A_i| leads to the dual notion |\forall x \in U.\exists i \in I.x \in A_i|
+which is equivalent to |U \subseteq \bigcup_{i \in I}A_i|. This dual notion could
+be read as “the |A_i| (jointly) cover |U|” which is another common and important concept
+in mathematics.</p>
 <h3 id="conclusion">Conclusion</h3>
-<p>Ultimately, the concept of two (or more) sets overlapping comes up quite often. The usual circumlocution, |A \cap B \neq \varnothing|, is both notationally and conceptually clumsy. Treating overlapping as a first-class notion via notation and formulating definitions in terms of it can reveal some common and important patterns.</p>
-<section class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<p>Ultimately, the concept of two (or more) sets overlapping comes up quite often. The usual
+circumlocution, |A \cap B \neq \varnothing|, is both notationally and conceptually clumsy.
+Treating overlapping as a first-class notion via notation and formulating definitions in terms
+of it can reveal some common and important patterns.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr />
 <ol>
-<li id="fn1" role="doc-endnote"><p>If one wanted to be super pedantic, I should technically write something like |\{\star \mid \exists x \in U. x \in A\}| where |1 = \{\star\}| because elements of |\mathsf{Sub}(1)| are subsets of |1|. Instead, we’ll conflate subsets of |1| and truth values.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2" role="doc-endnote"><p>If we think of subobjects as (equivalence classes of) monomorphisms as is typical in category theory, then because |\iota_U| is itself a monomorphism, the direct image, |\iota_U[-]|, is simply post-composition by |\iota_U|, i.e. |\iota_U \circ {-}|.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3" role="doc-endnote"><p>The Scott topology is the natural topology on the space of continuous functions |X \to \Sigma| where |\Sigma| is the <a href="https://en.wikipedia.org/wiki/Sierpi%C5%84ski_space">Sierpinski space</a>.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn1"><p>If one wanted to be super pedantic, I should technically write something like
+|\{\star \mid \exists x \in U. x \in A\}| where |1 = \{\star\}|
+because elements of |\mathsf{Sub}(1)| are subsets of |1|. Instead, we’ll conflate subsets
+of |1| and truth values.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>If we think
+of subobjects as (equivalence classes of) monomorphisms as is typical in category theory,
+then because |\iota_U| is itself a monomorphism, the direct image, |\iota_U[-]|, is simply
+post-composition by |\iota_U|, i.e. |\iota_U \circ {-}|.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>The
+Scott topology is the natural topology on the space of continuous functions |X \to \Sigma| where
+|\Sigma| is the <a href="https://en.wikipedia.org/wiki/Sierpi%C5%84ski_space">Sierpinski space</a>.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
         
@@ -133,7 +361,15 @@
     <div class="panel-body">
         
             <h2 id="introduction">Introduction</h2>
-<p>Complex-step differentiation is a simple and effective technique for numerically differentiating a(n analytic) function. Discussing it is a neat combination of complex analysis, numerical analysis, and ring theory. We’ll see that it is very closely connected to forward-mode automatic differentiation (FAD). For better or worse, while widely applicable, the scenarios where complex-step differentiation is the <em>best</em> solution are a bit rare. To apply complex-step differentiation, you need a version of your desired function that operates on complex numbers. If you have that, then you can apply complex-step differentiation immediately. Otherwise, you need to adapt the function to complex arguments. This can be done essentially automatically using the same techniques as automatic differentiation, but at that point you might as well use automatic differentiation. Adapting the code to complex numbers or AD takes about the same amount of effort, however, the AD version will be more efficient, more accurate, and easier to use.</p>
+<p>Complex-step differentiation is a simple and effective technique for numerically differentiating a(n analytic) function.
+Discussing it is a neat combination of complex analysis, numerical analysis, and ring theory. We’ll see that it is very
+closely connected to forward-mode automatic differentiation (FAD). For better or worse, while widely applicable, the scenarios
+where complex-step differentiation is the <em>best</em> solution are a bit rare. To apply complex-step differentiation, you need
+a version of your desired function that operates on complex numbers. If you have that, then you can apply complex-step
+differentiation immediately. Otherwise, you need to adapt the function to complex arguments. This can be done essentially
+automatically using the same techniques as automatic differentiation, but at that point you might as well use automatic
+differentiation. Adapting the code to complex numbers or AD takes about the same amount of effort, however, the AD version
+will be more efficient, more accurate, and easier to use.</p>
 <p>Nevertheless, this serves as a simple example to illustrate several theoretical and practical ideas.</p>
 
             <h6><a href="./posts/complex-step-differentiation.html">Read more...</a></h6>
@@ -173,10 +409,38 @@ extraMacros = {
 };
 </script>
 <h2 id="introduction">Introduction</h2>
-<p>This is part 3 in a series. See <a href="./posts/internal-language-of-indexed-monoidal-categories.html">the previous part about internal languages for indexed monoidal categories</a> upon which this part heavily depends.</p>
-<p>In category theory, the hom-sets between two objects can often be equipped with some extra structure which is respected by identities and composition. For example, the set of group homomorphisms between two abelian groups is itself an abelian group by defining the operations pointwise. Similarly, the set of monotonic functions between two partially ordered sets (posets) is a poset again by defining the ordering pointwise. Linear functions between vector spaces form a vector space. The set of functors between small categories is a small category. Of course, the structure on the hom-sets can be different than the objects. Trivially, with the earlier examples a vector space is an abelian group, so we could say that linear functions form an abelian group instead of a vector space. Likewise groups are monoids. Less trivially, the set of relations between two sets is a partially ordered set via inclusion. There are many cases where instead of hom-sets we have hom-objects that aren’t naturally thought of as sets. For example, we can have hom-objects be non-negative (extended) real numbers from which the category laws become the laws of a generalized metric space. We can identify posets with categories who hom-objects are elements of a two element set or, even better, a two element poset with one element less than or equal to the other.</p>
-<p>This general process is called <a href="https://ncatlab.org/nlab/show/enriched+category+theory">enriching</a> a category in some other category which is almost always called |\V| in the generic case. We then talk about having |\V|-categories and |\V|-functors, etc. In a specific case, it will be something like |\mathbf{Ab}|-categories for an |\mathbf{Ab}|-enriched category, where |\mathbf{Ab}| is the category of abelian groups. Unsurprisingly, not just <em>any</em> category will do for |\V|. However, it turns out very little structure is needed to define a notion of |\V|-category, |\V|-functor, |\V|-natural transformation, and |\V|-profunctor. The usual “baseline” is that |\V| is a <a href="https://ncatlab.org/nlab/show/monoidal+category">monoidal category</a>. As mentioned in the previous post, paraphrasing Bénabou, notions of “families of objects/arrows” are ubiquitous and fundamental in category theory. It is useful for our purposes to make this structure explicit. For very little cost, this will also provide a vastly more general notion that will readily capture enriched categories, <a href="https://ncatlab.org/nlab/show/indexed+category">indexed categories</a>, and categories that are simultaneously indexed and enriched, of which <a href="https://ncatlab.org/nlab/show/internal+category">internal categories</a> are an example. The tool for this is a <a href="https://ncatlab.org/nlab/show/Grothendieck+fibration">(Grothendieck) fibration</a> aka a fibered category or the mostly equivalent concept of an indexed category.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
-<p>To that end, instead of just a monoidal category, we’ll be using <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal categories</a>. Typically, to get an experience as much like ordinary category theory as possible, additional structure is assumed on |\V|. In particular, it is assumed to be an <a href="https://ncatlab.org/nlab/show/cosmos#indexed_bnabou_cosmoi">(indexed) cosmos</a> which means that it is an indexed symmetric monoidally closed category with indexed coproducts preserved by |\otimes| and indexed products and fiberwise finite limits and colimits (preserved by the indexed structure). This is quite a lot more structure which I’ll introduce in later parts. In this part, I’ll make no assumptions beyond having an indexed monoidal category.</p>
+<p>This is part 3 in a series. See <a href="./posts/internal-language-of-indexed-monoidal-categories.html">the previous part about internal languages for indexed monoidal categories</a>
+upon which this part heavily depends.</p>
+<p>In category theory, the hom-sets between two objects can often be equipped with some extra structure which is respected
+by identities and composition. For example, the set of group homomorphisms between two abelian groups is itself an abelian group by defining
+the operations pointwise. Similarly, the set of monotonic functions between two partially ordered sets (posets) is a poset
+again by defining the ordering pointwise. Linear functions between vector spaces form a vector space. The set of functors
+between small categories is a small category. Of course, the structure
+on the hom-sets can be different than the objects. Trivially, with the earlier examples a vector space is an abelian group, so we could
+say that linear functions form an abelian group instead of a vector space. Likewise groups are monoids. Less trivially, the set of relations
+between two sets is a partially ordered set via inclusion. There are many cases where instead of hom-sets we have hom-objects that
+aren’t naturally thought of as sets. For example, we can have hom-objects be non-negative (extended) real numbers from which
+the category laws become the laws of a generalized metric space. We can identify posets with categories who hom-objects are elements
+of a two element set or, even better, a two element poset with one element less than or equal to the other.</p>
+<p>This general process is called <a href="https://ncatlab.org/nlab/show/enriched+category+theory">enriching</a> a category in some other
+category which is almost always called |\V| in the generic
+case. We then talk about having |\V|-categories and |\V|-functors, etc. In a specific case, it will be something
+like |\mathbf{Ab}|-categories for an |\mathbf{Ab}|-enriched category, where |\mathbf{Ab}| is the category of abelian groups.
+Unsurprisingly, not just <em>any</em> category will do for |\V|. However, it turns out very little structure is needed to define
+a notion of |\V|-category, |\V|-functor, |\V|-natural transformation, and |\V|-profunctor. The
+usual “baseline” is that |\V| is a <a href="https://ncatlab.org/nlab/show/monoidal+category">monoidal category</a>. As mentioned in the previous
+post, paraphrasing Bénabou, notions of “families of objects/arrows” are ubiquitous and fundamental in category theory. It is useful for
+our purposes to make this structure explicit. For very little cost, this will also provide a vastly more general notion that will readily
+capture enriched categories, <a href="https://ncatlab.org/nlab/show/indexed+category">indexed categories</a>, and categories that are simultaneously
+indexed and enriched, of which <a href="https://ncatlab.org/nlab/show/internal+category">internal categories</a> are an example. The tool for this is
+a <a href="https://ncatlab.org/nlab/show/Grothendieck+fibration">(Grothendieck) fibration</a> aka a fibered category or the mostly equivalent concept
+of an indexed category.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>To that end, instead of just a monoidal category, we’ll be using <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal categories</a>.
+Typically, to get an experience as much like ordinary category theory as possible, additional structure is assumed on |\V|. In
+particular, it is assumed to be an <a href="https://ncatlab.org/nlab/show/cosmos#indexed_bnabou_cosmoi">(indexed) cosmos</a> which means
+that it is an indexed symmetric monoidally closed category with indexed coproducts preserved by |\otimes| and indexed products
+and fiberwise finite limits and colimits (preserved by the indexed structure). This is quite a lot more structure which I’ll introduce
+in later parts. In this part, I’ll make no assumptions beyond having an indexed monoidal category.</p>
 
             <h6><a href="./posts/enriched-indexed-categories-syntactically.html">Read more...</a></h6>
         
@@ -213,10 +477,29 @@ extraMacros = {
 };
 </script>
 <h2 id="introduction">Introduction</h2>
-<p>This is part 2 in a series. See <a href="./posts/internal-language-of-a-monoidal-category.html">the previous part about internal languages for (non-indexed) monoidal categories</a>. The main application I have in mind – enriching in indexed monoidal categories – is covered in the <a href="./posts/enriched-indexed-categories-syntactically.html">next post</a>.</p>
-<p>As Jean Bénabou pointed out in <a href="http://dx.doi.org/10.2307/2273784">Fibered Categories and the Foundations of Naive Category Theory</a> (<a href="https://pdfs.semanticscholar.org/a7ba/3c5b0431adf514595d53ea393910c9230745.pdf">PDF</a>) notions of “families of objects/arrows” are ubiquitous and fundamental in category theory. One of the more noticeable places early on is in the definition of a natural transformation as a family of arrows. However, even in the definition of category, identities and compositions are families of functions, or, in the enriched case, arrows of |\mathbf V|. From a foundational perspective, one place where this gets really in-your-face is when trying to formalize the notion of (co)completeness. It is straightforward to make a first-order theory of a finitely complete category, e.g. <a href="https://ncatlab.org/nlab/show/fully+formal+ETCS#the_theory_of_finitely_complete_categories">this one</a>. For arbitrary products and thus limits, we need to talk about families of objects. To formalize the usual meaning of this in a first-order theory would require attaching an entire first-order theory of sets, e.g. <strong>ZFC</strong>, to our notion of complete category. If your goals are of a foundational nature like Bénabou’s were, then this is unsatisfactory. Instead, we can abstract out what we need of the notion of “family”. The result turns out to be equivalent to the notion of a <a href="https://ncatlab.org/nlab/show/Grothendieck+fibration">fibration</a>.</p>
-<p>My motivations here are not foundational but leaving the notion of “family” entirely meta-theoretical means not being able to talk about it except in the semantics. Bénabou’s comment suggests that at the semantic level we want not just a monoidal category, but a fibration of monoidal categories<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. At the syntactic level, it suggests that there should be a built-in notion of “family” in our language. We accomplish both of these goals by formulating the internal language of an <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal category</a>.</p>
-<p>As a benefit, we can generalize to other notions of “family” than set-indexed families. We’ll clearly be able to formulate the notion of an <a href="https://ncatlab.org/nlab/show/enriched+category">enriched category</a>. It’s also clear that we’ll be able to formulate the notion of an <a href="https://ncatlab.org/nlab/show/indexed+category">indexed category</a>. Of course, we’ll also be able to formulate the notion of a category that is both enriched and indexed which includes the important special case of an <a href="https://ncatlab.org/nlab/show/internal+category">internal category</a>. We can also consider cases with trivial indexing which, in the unenriched case, will give us monoids, and in the |\mathbf{Ab}|-enriched case will give us rings.</p>
+<p>This is part 2 in a series. See <a href="./posts/internal-language-of-a-monoidal-category.html">the previous part about internal languages for (non-indexed) monoidal categories</a>.
+The main application I have in mind – enriching in indexed monoidal categories – is covered in the <a href="./posts/enriched-indexed-categories-syntactically.html">next post</a>.</p>
+<p>As Jean Bénabou pointed out in <a href="http://dx.doi.org/10.2307/2273784">Fibered Categories and the Foundations of Naive Category Theory</a> (<a href="https://pdfs.semanticscholar.org/a7ba/3c5b0431adf514595d53ea393910c9230745.pdf">PDF</a>)
+notions of “families of objects/arrows” are ubiquitous and fundamental in category theory. One of the more noticeable places early
+on is in the definition of a natural transformation as a family of arrows. However, even in the definition of category, identities and
+compositions are families of functions, or, in the enriched case, arrows of |\mathbf V|. From a foundational perspective, one place
+where this gets really in-your-face is when trying to formalize the notion of (co)completeness. It is straightforward to make a first-order
+theory of a finitely complete category, e.g. <a href="https://ncatlab.org/nlab/show/fully+formal+ETCS#the_theory_of_finitely_complete_categories">this one</a>.
+For arbitrary products and thus limits, we need to talk about families of objects. To formalize the usual meaning of this in a
+first-order theory would require attaching an entire first-order theory of sets, e.g. <strong>ZFC</strong>, to our notion of complete category.
+If your goals are of a foundational nature like Bénabou’s were, then this is unsatisfactory. Instead, we can abstract out what we need
+of the notion of “family”. The result turns out to be equivalent to the notion of a <a href="https://ncatlab.org/nlab/show/Grothendieck+fibration">fibration</a>.</p>
+<p>My motivations here are not foundational but leaving the notion of “family” entirely meta-theoretical means not being able to talk
+about it except in the semantics. Bénabou’s comment suggests that at the semantic level we want not just a monoidal category, but a
+fibration of monoidal categories<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.
+At the syntactic level, it suggests that there should be a built-in notion of “family” in our
+language. We accomplish both of these goals by formulating the internal language of an <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal category</a>.</p>
+<p>As a benefit, we can generalize to other notions of “family” than set-indexed families. We’ll clearly be able to formulate
+the notion of an <a href="https://ncatlab.org/nlab/show/enriched+category">enriched category</a>. It’s also clear that we’ll be able to formulate
+the notion of an <a href="https://ncatlab.org/nlab/show/indexed+category">indexed category</a>. Of course, we’ll also be able to formulate
+the notion of a category that is both enriched and indexed which includes the important special case of an <a href="https://ncatlab.org/nlab/show/internal+category">internal category</a>.
+We can also consider cases with trivial indexing which, in the unenriched case, will give us monoids, and in the |\mathbf{Ab}|-enriched
+case will give us rings.</p>
 
             <h6><a href="./posts/internal-language-of-indexed-monoidal-categories.html">Read more...</a></h6>
         
@@ -253,13 +536,31 @@ extraMacros = {
 };
 </script>
 <h2 id="introduction">Introduction</h2>
-<p>This is the first post in a series of posts on doing enriched indexed category theory and using the notion of an internal language to make this look relatively mundane. The internal language aspects are useful for other purposes too, as will be illustrated in this post, for example. This is related to the post <a href="./posts/category-theory-syntactically.html">Category Theory, Syntactically</a>. In particular, it can be considered half-way between the unary theories and the finite product theories described there.</p>
-<p>First in this series – this post – covers the internal language of a monoidal category. This is fairly straightforward, but it already provides some use. For example, the category of endofunctors on a category is a strict monoidal category, and so we can take a different perspective on natural transformations. This will also motivate the notions of a (virtual) bicategory and an actegory. Throughout this post, I’ll give a fairly worked example of turning some categorical content into <a href="./posts/understanding-typing-judgments.html">rules</a> of a type-/proof-theory.</p>
-<p>The <a href="./posts/internal-language-of-indexed-monoidal-categories.html">second post</a> will add indexing to the notion of monoidal category and introduce the very powerful and useful notion of an <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal category</a>.</p>
-<p>The <a href="./posts/enriched-indexed-categories-syntactically.html">third post</a> will formulate the notion of <a href="https://arxiv.org/abs/1212.3914">categories enriched in an indexed monoidal category</a> and give the definitions which don’t require any additional assumptions.</p>
-<p>The fourth post will introduce the notion and internal language for an indexed cosmos. Normally, when we do enriched category theory, we want the category into which we’re enriching to not be just a monoidal category but a <a href="https://ncatlab.org/nlab/show/cosmos">cosmos</a>. This provides many additional properties. An indexed cosmos is just the analogue of that for indexed monoidal categories.</p>
-<p>The fifth post will then formulate categorical concepts for our enriched indexed categories that require some or all of these additional properties provided by an indexed cosmos.</p>
-<p>At some point, there will be a post on <a href="https://ncatlab.org/nlab/show/virtual+double+category">virtual double categories</a> as they (or, even better, <a href="https://arxiv.org/abs/1910.11189">augmented virtual double categories</a>) are what will really be behind the notion of enriched indexed categories we’ll define. Basically, we’ll secretly be spelling out a specific instance of the |\mathsf{Mod}| construction.</p>
+<p>This is the first post in a series of posts on doing enriched indexed category theory and using the notion of
+an internal language to make this look relatively mundane. The internal language aspects are useful for other
+purposes too, as will be illustrated in this post, for example. This is related to the
+post <a href="./posts/category-theory-syntactically.html">Category Theory, Syntactically</a>. In particular, it can be considered
+half-way between the unary theories and the finite product theories described there.</p>
+<p>First in this series – this post – covers the internal language of a monoidal category. This is fairly
+straightforward, but it already provides some use. For example, the category of endofunctors on a category is a
+strict monoidal category, and so we can take a different perspective on natural transformations. This
+will also motivate the notions of a (virtual) bicategory and an actegory. Throughout this post, I’ll give a
+fairly worked example of turning some categorical content into <a href="./posts/understanding-typing-judgments.html">rules</a> of a type-/proof-theory.</p>
+<p>The <a href="./posts/internal-language-of-indexed-monoidal-categories.html">second post</a> will add indexing to the notion of monoidal category and introduce the very powerful and useful
+notion of an <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal category</a>.</p>
+<p>The <a href="./posts/enriched-indexed-categories-syntactically.html">third post</a> will formulate the notion
+of <a href="https://arxiv.org/abs/1212.3914">categories enriched in an indexed monoidal category</a>
+and give the definitions which don’t require any additional assumptions.</p>
+<p>The fourth post will introduce the notion and internal language for an indexed cosmos. Normally, when we do
+enriched category theory, we want the category into which we’re enriching to not be just a monoidal category
+but a <a href="https://ncatlab.org/nlab/show/cosmos">cosmos</a>. This provides many additional properties. An indexed
+cosmos is just the analogue of that for indexed monoidal categories.</p>
+<p>The fifth post will then formulate categorical concepts for our enriched indexed categories that require
+some or all of these additional properties provided by an indexed cosmos.</p>
+<p>At some point, there will be a post on <a href="https://ncatlab.org/nlab/show/virtual+double+category">virtual double categories</a>
+as they (or, even better, <a href="https://arxiv.org/abs/1910.11189">augmented virtual double categories</a>) are what will
+really be behind the notion of enriched indexed categories we’ll define. Basically, we’ll secretly be spelling out
+a specific instance of the |\mathsf{Mod}| construction.</p>
 
             <h6><a href="./posts/internal-language-of-a-monoidal-category.html">Read more...</a></h6>
         
@@ -290,46 +591,119 @@ extraMacros = {
     <div class="panel-body">
         
             <h3 id="introduction">Introduction</h3>
-<p>When I was young and dumb and first learning category theory, I got it into my head that arguments involving sets were not “categorical”. This is not completely crazy as the idea of category theory being an alternate “foundation” and categorical critiques of set theoretic reasoning are easy to find. As such, I tended to neglect techniques that significantly leveraged |\mathbf{Set}|, and, in particular, representability. Instead, I’d prefer arguments using universal arrows as those translate naturally and directly to 2-categories.</p>
-<p>This was a mistake. I have long since completely reversed my position on this for both practical and theoretical reasons. Practically, representability and related techniques provide very concise definitions which lead to concise proofs which I find relatively easy to formulate and easy to verify. This is especially true when combined with the (co)end calculus. It’s also the case that for a lot of math you simply don’t need any potential generality you might gain by, e.g. being able to use an arbitrary 2-category. Theoretically, I’ve gained a better understanding of where and how category theory is (or is not) “foundational”, and a better understanding of what about set theory categorists were critiquing. Category theory as a whole does <em>not</em> provide an alternate foundation for mathematics as that term is usually understood by mathematicians. A branch of category theory, topos theory, does, but a topos is fairly intentionally designed to give a somewhat |\mathbf{Set}|-like experience. Similarly, many approaches to higher category theory still include a |\mathbf{Set}|-like level.</p>
-<p>This is, of course, not to suggest ideas like universal arrows <em>aren’t</em> important or can’t lead to elegant proofs.</p>
-<p>Below is a particular example of attacking a problem from the perspective of representability. I use this example more because it is a neat proof that I hadn’t seen before. There are plenty of simpler compelling examples, such as proving that right(/left) adjoints are (co)continuous, and I regularly use representability in proofs I presented on, e.g. the Math StackExchange.</p>
+<p>When I was young and dumb and first learning category theory, I got it into my head
+that arguments involving sets were not “categorical”. This is not completely crazy
+as the idea of category theory being an alternate “foundation” and categorical
+critiques of set theoretic reasoning are easy to find. As such, I tended to neglect
+techniques that significantly leveraged |\mathbf{Set}|, and, in particular,
+representability. Instead, I’d prefer arguments using universal arrows as those
+translate naturally and directly to 2-categories.</p>
+<p>This was a mistake. I have long since completely reversed my position on this for
+both practical and theoretical reasons. Practically, representability and related
+techniques provide very concise definitions which lead to concise proofs which I
+find relatively easy to formulate and easy to verify. This is especially true when
+combined with the (co)end calculus. It’s also the case that for a lot of math you
+simply don’t need any potential generality you might gain by, e.g. being able to
+use an arbitrary 2-category. Theoretically, I’ve gained a better understanding
+of where and how category theory is (or is not) “foundational”, and a better understanding
+of what about set theory categorists were critiquing. Category theory as a whole
+does <em>not</em> provide an alternate foundation for mathematics as that term is usually
+understood by mathematicians. A branch of category theory, topos theory, does, but
+a topos is fairly intentionally designed to give a somewhat |\mathbf{Set}|-like
+experience. Similarly, many approaches to higher category theory still include
+a |\mathbf{Set}|-like level.</p>
+<p>This is, of course, not to suggest ideas like universal arrows <em>aren’t</em> important
+or can’t lead to elegant proofs.</p>
+<p>Below is a particular example of attacking a problem from the perspective of
+representability. I use this example more because it is a neat proof that I hadn’t
+seen before. There are plenty of simpler compelling examples, such as proving
+that right(/left) adjoints are (co)continuous, and I regularly use
+representability in proofs I presented on, e.g. the Math StackExchange.</p>
 <h3 id="the-problem">The Problem</h3>
-<p>An <a href="https://ncatlab.org/nlab/show/topos#ElementaryTopos">elementary topos</a>, |\mathcal E|, can be described as a category with finite limits and power objects. Having <a href="https://ncatlab.org/nlab/show/power+object">power objects</a> means having a functor |\mathsf P : \mathcal E^{op} \to \mathcal E| such that |\mathcal E(A,\mathsf PB) \cong \mathsf{Sub}(A \times B)| natural in |A| and |B| where |\mathsf{Sub}| is the (contravariant) functor that takes an object to its set of <a href="https://ncatlab.org/nlab/show/subobject">subobjects</a>. The action of |\mathsf{Sub}(f)| for an arrow |f : A \to B| is a function |m \mapsto f^*(m)| where |m| is a (representative) monomorphism and |f^*(m)| is the pullback of |f| along |m| which is a monomorphism by basic facts about pullbacks. In diagrammatic form: <span class="math display">$$\require{amscd}
+<p>An <a href="https://ncatlab.org/nlab/show/topos#ElementaryTopos">elementary topos</a>,
+|\mathcal E|, can be described as a category with finite limits and power
+objects. Having <a href="https://ncatlab.org/nlab/show/power+object">power objects</a> means having a
+functor |\mathsf P : \mathcal E^{op} \to \mathcal E| such that |\mathcal
+E(A,\mathsf PB) \cong \mathsf{Sub}(A \times B)| natural in |A| and |B|
+where |\mathsf{Sub}| is the (contravariant) functor that takes an object to
+its set of <a href="https://ncatlab.org/nlab/show/subobject">subobjects</a>.
+The action of |\mathsf{Sub}(f)| for an arrow |f : A \to B| is a function |m \mapsto f^*(m)|
+where |m| is a (representative) monomorphism and |f^*(m)| is the pullback of
+|f| along |m| which is a monomorphism by basic facts about pullbacks. In diagrammatic form:
+<span class="math display">$$\require{amscd}
 \begin{CD}
 f^{-1}(B') @&gt;f^\ast(m)&gt;&gt; A \\
 @VVV @VVfV \\
 B' @&gt;&gt;m&gt; B
 \end{CD}$$</span></p>
-<p>This is a characterization of |\mathsf P| via representability. We are saying that |\mathsf PB| represents the functor |\mathsf{Sub}(- \times B)| parameterized in |B|.</p>
-<p>A well-known and basic fact about elementary toposes is that they are <a href="https://ncatlab.org/nlab/show/cartesian+closed+category">cartesian closed</a>. (Indeed, finite limits + cartesian closure + a <a href="https://ncatlab.org/nlab/show/subobject+classifier">subobject classifier</a> is a common alternative definition.) Cartesian closure can be characterized as |\mathcal E(- \times A, B) \cong \mathcal E(-,B^A)| which characterizes the exponent, |B^A|, via representability. Namely, that |B^A| represents the functor |\mathcal E(- \times A, B)| parameterized in |A|. Proving that elementary toposes are cartesian closed is not too difficult, but it is a bit fiddly. This is the example that I’m going to use.</p>
+<p>This is a characterization of |\mathsf P| via representability. We are saying
+that |\mathsf PB| represents the functor |\mathsf{Sub}(- \times B)|
+parameterized in |B|.</p>
+<p>A well-known and basic fact about elementary toposes is that they are
+<a href="https://ncatlab.org/nlab/show/cartesian+closed+category">cartesian closed</a>.
+(Indeed, finite limits + cartesian closure + a <a href="https://ncatlab.org/nlab/show/subobject+classifier">subobject classifier</a>
+is a common alternative definition.) Cartesian closure can be characterized
+as |\mathcal E(- \times A, B) \cong \mathcal E(-,B^A)| which characterizes the exponent,
+|B^A|, via representability. Namely, that |B^A| represents the functor |\mathcal E(- \times A, B)|
+parameterized in |A|. Proving that elementary toposes are cartesian closed is
+not too difficult, but it is a bit fiddly. This is the example that I’m going to use.</p>
 <h3 id="common-setup">Common Setup</h3>
 <p>All the proofs I reference rely on the following basic facts about an elementary topos.</p>
 <p>We have the monomorphism |\top : 1 \to \mathsf P1| induced by the identity arrow |\mathsf P1 \to \mathsf P1|.</p>
-<p>We need the lemma that |\mathcal E(A \times B,PC) \cong \mathcal E(A,\mathsf P(B \times C))|. <strong>Proof</strong>: <span class="math display">$$\begin{align}
+<p>We need the lemma that |\mathcal E(A \times B,PC) \cong \mathcal E(A,\mathsf P(B \times C))|. <strong>Proof</strong>:
+<span class="math display">$$\begin{align}
 \mathcal E(A \times B,\mathsf PC) \cong \mathsf{Sub}((A \times B) \times C) \cong \mathsf{Sub}(A \times (B \times C)) \cong \mathcal E(A,\mathsf P(B \times C))\ \square
 \end{align}$$</span></p>
-<p>Since the arrow |\langle id_A, f\rangle : A \to A \times B| is a monomorphism for any arrow |f : A \to B|, the map |f \mapsto \langle id, f \rangle| is a map from |\mathcal E(-, B)| to |\mathsf{Sub}(- \times B)|. Using |\mathsf{Sub}(- \times B) \cong \mathcal E(-,\mathsf PB)|, we get a map |\mathcal E(-, B) \to \mathsf{Sub}(- \times B) \cong \mathcal E(-,\mathsf PB)|. By Yoneda, i.e. by evaluating it at |id|, we get the singleton map: |\{\}_B : B \to \mathsf PB|. If we can show that |\{\}| is a monomorphism, then, since |\mathsf PA \cong \mathsf P(A \times 1)|, we’ll get an arrow |\sigma : \mathsf PA \to \mathsf P1| such that</p>
+<p>Since the arrow |\langle id_A, f\rangle : A \to A \times B| is a monomorphism
+for any arrow |f : A \to B|, the map |f \mapsto \langle id, f \rangle| is a
+map from |\mathcal E(-, B)| to |\mathsf{Sub}(- \times B)|. Using
+|\mathsf{Sub}(- \times B) \cong \mathcal E(-,\mathsf PB)|, we get a map
+|\mathcal E(-, B) \to \mathsf{Sub}(- \times B) \cong \mathcal E(-,\mathsf PB)|.
+By Yoneda, i.e. by evaluating it at |id|, we get the
+singleton map: |\{\}_B : B \to \mathsf PB|. If we can show that |\{\}| is
+a monomorphism, then, since |\mathsf PA \cong \mathsf P(A \times 1)|, we’ll
+get an arrow |\sigma : \mathsf PA \to \mathsf P1| such that</p>
 <p><span class="math display">$$\begin{CD}
 A @&gt;\{\}_A&gt;&gt; \mathsf PA \\
 @VVV @VV\sigma_AV \\
 1 @&gt;&gt;\top&gt; \mathsf P1
 \end{CD}$$</span></p>
 <p>is a pullback.</p>
-<p>|\{\}_A| is a monomorphism because any |f, g : X \to A| gets mapped by the above to |\langle id_X, f\rangle| and |\langle id_X, g\rangle| which represent the same subobject when |\{\} \circ f = \{\} \circ g|. Therefore, there’s an isomorphism |j : X \cong X| such that |\langle id_X, f\rangle \circ j = \langle j, f \circ j\rangle = \langle id_X, g\rangle| but this means |j = id_X| and thus |f = g|.</p>
+<p>|\{\}_A| is a monomorphism because any |f, g : X \to A| gets mapped
+by the above to |\langle id_X, f\rangle| and |\langle id_X, g\rangle| which
+represent the same subobject when |\{\} \circ f = \{\} \circ g|. Therefore,
+there’s an isomorphism |j : X \cong X| such
+that |\langle id_X, f\rangle \circ j = \langle j, f \circ j\rangle = \langle id_X, g\rangle|
+but this means |j = id_X| and thus |f = g|.</p>
 <h3 id="other-proofs">Other Proofs</h3>
-<p>To restate the problem: given the above setup, we want to show that the elementary topos |\mathcal E| is cartesian closed.</p>
-<p><a href="http://www.tac.mta.ca/tac/reprints/articles/12/tr12.pdf#page=170">Toposes, Triples, and Theories</a> by Barr and Wells actually provides <em>two</em> proofs of this statement: Theorem 4.1 of Chapter 5. The first proof is in exactly the representability-style approach I’m advocating, but it relies on earlier results about how a topos relates to its slice categories. The second proof is more concrete and direct, but it also involves |\mathsf P\mathsf P\mathsf P\mathsf P B|…</p>
-<p><a href="https://doi.org/10.1007/978-1-4612-0927-0">Sheaves in Geometry and Logic</a> by Mac Lane and Moerdijk also has this result as Theorem 1 of section IV.2 “The Construction of Exponentials”. The proof starts on page 167 and finishes on 169. The idea is to take the set theoretic construction of functions via their graphs and interpret that into topos concepts. This proof involves a decent amount of equational reasoning (either via diagrams or via generalized elements).</p>
+<p>To restate the problem: given the above setup, we want to show that the elementary
+topos |\mathcal E| is cartesian closed.</p>
+<p><a href="http://www.tac.mta.ca/tac/reprints/articles/12/tr12.pdf#page=170">Toposes, Triples, and Theories</a>
+by Barr and Wells actually provides <em>two</em> proofs of this statement: Theorem 4.1 of
+Chapter 5. The first proof is in exactly the representability-style approach
+I’m advocating, but it relies on earlier results about how a topos relates to
+its slice categories. The second proof is more concrete and direct, but it also
+involves |\mathsf P\mathsf P\mathsf P\mathsf P B|…</p>
+<p><a href="https://doi.org/10.1007/978-1-4612-0927-0">Sheaves in Geometry and Logic</a> by
+Mac Lane and Moerdijk also has this result as Theorem 1 of section IV.2 “The
+Construction of Exponentials”. The proof starts on page 167 and finishes on 169.
+The idea is to take the set theoretic construction of functions via their
+graphs and interpret that into topos concepts. This proof involves a decent
+amount of equational reasoning (either via diagrams or via generalized
+elements).</p>
+<p><a href="https://topologicalmusings.wordpress.com/2008/09/10/etcs-internalizing-the-logic/">Todd Trimble’s argument</a>
+is very similar to the following argument.</p>
 <h3 id="dans-proof-via-representability">Dan’s Proof via Representability</h3>
-<p>Contrast these to Dan Doel’s proof<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> using representability, which proceeds as follows. (Any mistakes are mine.)</p>
+<p>Contrast these to Dan Doel’s proof<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>
+using representability, which proceeds as follows. (Any mistakes are mine.)</p>
 <p>Start with the pullback induced by the singleton map.</p>
 <p><span class="math display">$$\begin{CD}
 B @&gt;\{\}_B&gt;&gt; \mathsf PB \\
 @VVV @VV\sigma_BV \\
 1 @&gt;&gt;\top&gt; \mathsf P1
 \end{CD}$$</span></p>
-<p>Apply the functor |\mathcal E(= \times A,-)| which preserves the fact that it is a pullback via continuity. <span class="math display">$$\begin{CD}
+<p>Apply the functor |\mathcal E(= \times A,-)| which preserves the fact that it is a pullback via continuity.
+<span class="math display">$$\begin{CD}
 \mathcal{E}(-\times A,B) @&gt;&gt;&gt; \mathcal{E}(- \times A,\mathsf PB) \\
 @VVV @VVV \\
 \mathcal{E}(- \times A,1) @&gt;&gt;&gt; \mathcal{E}(- \times A,\mathsf P1)
@@ -340,7 +714,8 @@ B @&gt;\{\}_B&gt;&gt; \mathsf PB \\
 <li>|\mathcal E(- \times A,\mathsf PB) \cong \mathcal E(-,\mathsf P(A \times B))| (by definition of power objects)</li>
 <li>|\mathcal E(- \times A,\mathsf P1) \cong \mathcal E(-,\mathsf PA)| (because |A \times 1 \cong A|)</li>
 </ul>
-<p>This means that the above pullback is also the pullback of <span class="math display">$$\begin{CD}
+<p>This means that the above pullback is also the pullback of
+<span class="math display">$$\begin{CD}
 \mathcal E(-\times A,B) @&gt;&gt;&gt; \mathcal E(-,\mathsf P(A\times B)) \\
 @VVV @VVV \\
 \mathcal E(-,1) @&gt;&gt;&gt; \mathcal E(-,\mathsf PA)
@@ -351,17 +726,20 @@ X @&gt;&gt;&gt; \mathsf P(A \times B) \\
 @VVV @VVV \\
 1 @&gt;&gt;&gt; \mathsf PA
 \end{CD}$$</span></p>
-<p>where the bottom and right arrows are induced by the corresponding arrows of the previous diagram by Yoneda. Applying |\mathcal E(=,-)| to this diagram gives another pullback diagram by continuity</p>
+<p>where the bottom and right arrows are induced by the corresponding arrows of the previous diagram
+by Yoneda. Applying |\mathcal E(=,-)| to this diagram gives another pullback diagram by continuity</p>
 <p><span class="math display">$$\begin{CD}
 \mathcal E(-,X) @&gt;&gt;&gt; \mathcal E(-,\mathsf P(A\times B)) \\
 @VVV @VVV \\
 \mathcal E(-,1) @&gt;&gt;&gt; \mathcal E(-,\mathsf PA)
 \end{CD}$$</span></p>
-<p>which is to say |\mathcal E(- \times A, B) \cong \mathcal E(-, X)| because pullbacks are unique up to isomorphism, so |X| satisfies the universal property of |B^A|, namely |\mathcal E(- \times A, B) \cong \mathcal E(-,B^A)|.</p>
-<section class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<p>which is to say |\mathcal E(- \times A, B) \cong \mathcal E(-, X)| because
+pullbacks are unique up to isomorphism, so |X| satisfies the universal property
+of |B^A|, namely |\mathcal E(- \times A, B) \cong \mathcal E(-,B^A)|.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr />
 <ol>
-<li id="fn1" role="doc-endnote"><p>Sent to me almost exactly three years ago.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn1"><p>Sent to me almost exactly three years ago.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
         
@@ -371,7 +749,7 @@ X @&gt;&gt;&gt; \mathsf P(A \times B) \\
         <h6 class="blog-post-meta">
             May  4, 2020 17:21 UTC
             
-            (Last updated on November 25, 2021 16:39 UTC)
+            (Last updated on March  2, 2023 01:37 UTC)
 
             
                 Tags: <a title="All pages tagged 'math'." href="./tags/math.html">math</a>, <a title="All pages tagged 'category theory'." href="./tags/category%20theory.html">category theory</a>
@@ -392,7 +770,13 @@ X @&gt;&gt;&gt; \mathsf P(A \times B) \\
     <div class="panel-body">
         
             <h2 id="introduction">Introduction</h2>
-<p>Recursive helping is a technique for implementing lock-free concurrent data structures and algorithms. I’m going to illustrate this in the case of implementing a multi-variable compare-and-swap (MCAS) in terms of a single variable compare-and-swap. Basically everything I’m going to talk about comes from Keir Fraser’s PhD Thesis, <a href="https://www.cl.cam.ac.uk/techreports/UCAM-CL-TR-579.html">Practical Lock-Freedom</a> (2004) which I <strong>strongly</strong> recommend. Fraser’s thesis goes much further than this, e.g. fine-grained lock-free implementations of software transactional memory (STM)<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. Fraser went on to contribute to the initial implementations of STM in Haskell, though his thesis uses C++.</p>
+<p>Recursive helping is a technique for implementing lock-free concurrent data structures and algorithms.
+I’m going to illustrate this in the case of implementing a multi-variable compare-and-swap (MCAS)
+in terms of a single variable compare-and-swap. Basically everything I’m going to talk about
+comes from Keir Fraser’s PhD Thesis, <a href="https://www.cl.cam.ac.uk/techreports/UCAM-CL-TR-579.html">Practical Lock-Freedom</a> (2004)
+which I <strong>strongly</strong> recommend. Fraser’s thesis goes much further than this, e.g. fine-grained lock-free implementations
+of software transactional memory (STM)<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. Fraser went on
+to contribute to the initial implementations of STM in Haskell, though his thesis uses C++.</p>
 
             <h6><a href="./posts/recursive-helping.html">Read more...</a></h6>
         
@@ -422,19 +806,30 @@ X @&gt;&gt;&gt; \mathsf P(A \times B) \\
 
     <div class="panel-body">
         
-            <p>This is a fairly technical article. This article will most likely not have any significance for you if you haven’t heard of the Beck-Chevalley condition before.</p>
+            <p>This is a fairly technical article. This article will most likely not have any significance for you if you
+haven’t heard of the Beck-Chevalley condition before.</p>
 <h2 id="introduction">Introduction</h2>
 <p>When one talks about “indexed (co)products” in an indexed category, it is often described as follows:</p>
-<p>Let |\mathcal C| be an <a href="https://ncatlab.org/nlab/show/indexed+category"><strong>|\mathbf S|-indexed category</strong></a>, i.e. a <a href="https://ncatlab.org/nlab/show/pseudofunctor">pseudofunctor</a> |\mathbf S^{op} \to \mathbf{Cat}| where |\mathbf S| is an ordinary category. Write |\mathcal C^I| for |\mathcal C(I)| and |f^* : \mathcal C^J \to \mathcal C^I| for |\mathcal C(f)| where |f : I \to J|. The functors |f^*| will be called <strong>reindexing functors</strong>. |\mathcal C| has <strong>|\mathbf S|-indexed coproducts</strong> whenever</p>
+<p>Let |\mathcal C| be an <a href="https://ncatlab.org/nlab/show/indexed+category"><strong>|\mathbf S|-indexed category</strong></a>,
+i.e. a <a href="https://ncatlab.org/nlab/show/pseudofunctor">pseudofunctor</a> |\mathbf S^{op} \to \mathbf{Cat}|
+where |\mathbf S| is an ordinary category.
+Write |\mathcal C^I| for |\mathcal C(I)| and |f^* : \mathcal C^J \to \mathcal C^I| for |\mathcal C(f)|
+where |f : I \to J|. The functors |f^*| will be called <strong>reindexing functors</strong>. |\mathcal C| has <strong>|\mathbf S|-indexed
+coproducts</strong> whenever</p>
 <ol type="1">
 <li>each reindexing functor |f^*| has a left adjoint |\Sigma^f|, and</li>
 <li>the Beck-Chevalley condition holds, i.e. whenever <span class="math display">$$\require{amscd}\begin{CD}
    I @&gt;h&gt;&gt; J \\
    @VkVV @VVfV \\
    K @&gt;&gt;g&gt; L
-\end{CD}$$</span> is a pullback square in |\mathbf S|, then the canonical morphism |\Sigma^k \circ h^* \to g^* \circ \Sigma^f| is an isomorphism.</li>
+\end{CD}$$</span> is a pullback square in |\mathbf S|, then the canonical
+morphism |\Sigma^k \circ h^* \to g^* \circ \Sigma^f| is an isomorphism.</li>
 </ol>
-<p>The first condition is reasonable, especially motivated with some examples, but the second condition is more mysterious. It’s clear that you’d need <em>something</em> more than simply a family of adjunctions, but it’s not clear how you could calculate the particular condition quoted. That’s the goal of this article. I will not cover what the Beck-Chevalley condition is intuitively saying. I cover that in <a href="https://math.stackexchange.com/a/2203383">this Stack Exchange answer</a> from a logical perspective, though there are definitely other possible perspectives as well.</p>
+<p>The first condition is reasonable, especially motivated with some examples, but the second condition is more
+mysterious. It’s clear that you’d need <em>something</em> more than simply a family of adjunctions, but it’s not
+clear how you could calculate the particular condition quoted. That’s the goal of this article. I will not
+cover what the Beck-Chevalley condition is intuitively saying. I cover that in <a href="https://math.stackexchange.com/a/2203383">this Stack Exchange answer</a>
+from a logical perspective, though there are definitely other possible perspectives as well.</p>
 <p>Some questions are:</p>
 <ol type="1">
 <li>Where does the Beck-Chevalley condition come from?</li>
@@ -477,8 +872,18 @@ extraMacros = {
   onto: "{\\twoheadrightarrow}"
 };
 </script>
-<p>In category theory a concept is called <strong>absolute</strong> if it is preserved by <em>all</em> functors. Identity arrows and composition are absolute by the definition of functor. Less trivially, isomorphisms are absolute. In general, anything that is described by a diagram commuting is absolute as that diagram will be preserved by any functor. This is generally the case, but if I tell you something is an absolute epimorphism, it’s not clear what diagram is causing that; the notion of epimorphism itself doesn’t reduce to the commutativity of a particular diagram.</p>
-<p>Below I’ll be focused primarily on <a href="https://ncatlab.org/nlab/show/absolute+colimit">absolute colimits</a> as those are the most commonly used examples. They are an important part of the theory of <a href="https://ncatlab.org/nlab/show/monadicity+theorem">monadicity</a>. The trick to many questions about absolute colimits and related concepts is to see what it means for |\Hom| functors to preserve them.</p>
+<p>In category theory a concept is called <strong>absolute</strong> if it is preserved
+by <em>all</em> functors. Identity arrows and composition are absolute by the definition of
+functor. Less trivially, isomorphisms are absolute. In general, anything that
+is described by a diagram commuting is absolute as that diagram will be preserved
+by any functor. This is generally the case, but if I tell you something is an
+absolute epimorphism, it’s not clear what diagram is causing that; the notion
+of epimorphism itself doesn’t reduce to the commutativity of a particular diagram.</p>
+<p>Below I’ll be focused primarily on <a href="https://ncatlab.org/nlab/show/absolute+colimit">absolute colimits</a>
+as those are the most commonly used examples. They are an important part of the theory of
+<a href="https://ncatlab.org/nlab/show/monadicity+theorem">monadicity</a>. The trick to
+many questions about absolute colimits and related concepts is to see what it
+means for |\Hom| functors to preserve them.</p>
 
             <h6><a href="./posts/absolute-colimits.html">Read more...</a></h6>
         
@@ -500,42 +905,6 @@ extraMacros = {
 
 
 
-    <div class="blog-post teaser panel panel-default">
-    <div class="panel-heading">
-        <h2 class="blog-post-title"><a href="./posts/finite.html">Finite</a></h2>
-        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="0b86a098-b8c4-47aa-bc63-ef7cfa0681cf" href="./posts/finite.html#disqus_thread"></a></h6>
-    </div>
-
-    <div class="panel-body">
-        
-            <h3 id="introduction">Introduction</h3>
-<p>When sets are first introduced to students, usually examples are used with finite, explicitly presented sets. For example, |\{1,2,3\} \cup \{2,3,4\} = \{1,2,3,4\}|. This is the beginning of the idea that a set is a “collection” of things. Later, when infinite sets are introduced, the idea that sets are “collections” of things is still commonly used as the intuitive basis for the definitions. While I personally find this a bit of a philosophical bait-and-switch, my main issue with it is that I don’t think it does a good job reflecting how we work with sets day-to-day nor for more in-depth set-theoretic investigations. Instead, I recommend thinking about infinite sets as defined by properties and |x \in X| for some infinite set |X| means checking whether it satisfies the property defining |X|, <em>not</em> rummaging through the infinite elements that make up |X| and seeing if |x| is amongst them. This perspective closely reflects how we prove things about infinite sets. It makes it much clearer that the job is to find logical relationships between the properties that define sets.</p>
-<p>Of course, this view can also be applied to finite sets and <em>should</em> be applied to them. For a constructivist, the notion of “finite set” splits into multiple inequivalent notions, and it is quite easy to show that there is a subset of |\{0,1\}| which is not “finite” with respect to strong notions of “finite” that are commonly used by constructivists. Today, though, I’ll stick with classical logic and classical set theory. In particular, I’m going to talk about the <a href="https://en.wikipedia.org/wiki/Internal_set_theory">Internal Set Theory</a> of Edward Nelson, or mostly the small fragment he used in <a href="https://web.math.princeton.edu/~nelson/books/rept.pdf">Radically Elementary Probability Theory</a>. In the <a href="https://web.math.princeton.edu/~nelson/books/1.pdf">first chapter of an unfinished book on Internal Set Theory</a>, he states the following:</p>
-<blockquote>
-<p>Perhaps it is fair to say that “finite” does not mean what we have always thought it to mean. What have we always thought it to mean? I used to think that I knew what I had always thought it to mean, but I no longer think so.</p>
-</blockquote>
-<p>While it may be a bit strong to say that Internal Set Theory leads to some question about what “finite” means, I think it makes a good case for questioning what “finite set” means. These concerns are similar to the relativity of the notion of “(un)countable set”.</p>
-
-            <h6><a href="./posts/finite.html">Read more...</a></h6>
-        
-    </div>
-
-    <div class="panel-footer">
-        <h6 class="blog-post-meta">
-            March 26, 2018 07:57 UTC
-            
-            (Last updated on November 25, 2021 10:16 UTC)
-
-            
-                Tags: <a title="All pages tagged 'math'." href="./tags/math.html">math</a>, <a title="All pages tagged 'logic'." href="./tags/logic.html">logic</a>
-            
-        </h6>
-    </div>
-
-</div><!-- /.blog-post -->
-
-
-
 
         </div><!-- /.blog-main -->
         
@@ -545,6 +914,8 @@ extraMacros = {
                 <div class="panel-heading"><h4>Recent</h4></div>
                 <div class="panel-body">
                     <ol class="list-unstyled">
+                        
+                          <li><div class="blog-post-link">2023-03-21 - <a href="./posts/preserves-reflects-creates.html">Preserving, Reflecting, and Creating Limits</a></div></li>
                         
                           <li><div class="blog-post-link">2021-01-06 - <a href="./posts/overlaps.html">Overlaps</a></div></li>
                         
@@ -564,8 +935,6 @@ extraMacros = {
                         
                           <li><div class="blog-post-link">2019-05-18 - <a href="./posts/absolute-colimits.html">Absolute Colimits</a></div></li>
                         
-                          <li><div class="blog-post-link">2018-03-26 - <a href="./posts/finite.html">Finite</a></div></li>
-                        
                     </ol>
                 </div>
               </div>
@@ -575,12 +944,12 @@ extraMacros = {
                     <ol class="list-unstyled">
                       <li><a href="./tags/Agda.html">Agda (1)</a></li>
 <li><a href="./tags/CS.html">CS (3)</a></li>
-<li><a href="./tags/category%20theory.html">category theory (10)</a></li>
+<li><a href="./tags/category%20theory.html">category theory (11)</a></li>
 <li><a href="./tags/concurrency.html">concurrency (1)</a></li>
 <li><a href="./tags/geometric%20algebra.html">geometric algebra (1)</a></li>
 <li><a href="./tags/javascript.html">javascript (1)</a></li>
 <li><a href="./tags/logic.html">logic (3)</a></li>
-<li><a href="./tags/math.html">math (17)</a></li>
+<li><a href="./tags/math.html">math (18)</a></li>
 <li><a href="./tags/programming.html">programming (4)</a></li>
 <li><a href="./tags/type%20theory.html">type theory (2)</a></li>
                     </ol>
