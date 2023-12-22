@@ -8,8 +8,335 @@
         <name>Derek Elkins</name>
         <email>derek.a.elkins+blog@gmail.com</email>
     </author>
-    <updated>2023-03-21T05:39:28Z</updated>
+    <updated>2023-12-22T02:47:57Z</updated>
     <entry>
+    <title>What is the coproduct of two groups?</title>
+    <link href="https://derekelkins.github.io/posts/what-is-the-coproduct-of-two-groups.html" />
+    <id>https://derekelkins.github.io/posts/what-is-the-coproduct-of-two-groups.html</id>
+    <published>2023-12-21 18:47:57-08:00</published>
+    <updated>2023-12-22T02:47:57Z</updated>
+    <summary type="html"><![CDATA[<h2 id="introduction">Introduction</h2>
+<p>The purpose of this article is to answer the question: what is the coproduct
+of two groups? The approach, however, will be somewhat absurd. Instead of
+simply presenting a construction and proving that it satisfies the appropriate
+universal property, I want to find the general answer and simply instantiate
+it for the case of groups.</p>
+<p>Specifically, this will be a path through the theory of Lawvere theories and
+their models with the goal of motivating some of the theory around it in
+pursuit of the answer to this relatively simple question.</p>
+<p>If you really just want to know the answer to the title question, then the
+construction is usually called the <a href="https://en.wikipedia.org/wiki/Free_product">free product</a>
+and is described on the linked Wikipedia page.</p>
+<!--more-->
+<h2 id="groups-as-models-of-a-lawvere-theory">Groups as Models of a Lawvere Theory</h2>
+<p>A group is a model of an equational theory. This means a group is described by a set
+equipped with a collection of operations that must satisfy some equations. So we’d
+have a set, |G|, and operations |\mathtt{e} : () \to G|, |\mathtt{i} : G \to G|,
+and |\mathtt{m} : G \times G \to G|. These operations satisfy the equations,
+\[
+\begin{align}
+\mathtt{m}(\mathtt{m}(x, y), z) = \mathtt{m}(x, \mathtt{m}(y, z)) \\
+\mathtt{m}(\mathtt{e}(), x) = x = \mathtt{m}(x, \mathtt{e}()) \\
+\mathtt{m}(\mathtt{i}(x), x) = \mathtt{e}() = \mathtt{m}(x, \mathtt{i}(x))
+\end{align}
+\]
+universally quantified over |x|, |y|, and |z|.</p>
+<p>These equations can easily be represented by commutative diagrams, i.e. equations
+of compositions of arrows, in any category with finite products of an object, |G|,
+with itself. For example, the left inverse law becomes:
+\[
+\mathtt{m} \circ (\mathtt{i} \times id_G) = \mathtt{e} \circ {!}_G
+\]
+where |{!}_G : G \to 1| is the unique arrow into the terminal object corresponding
+to the |0|-ary product of copies of |G|.</p>
+<p>One nice thing about this categorical description is that we can now talk about
+a group object in any category with finite products. Even better, we can make this
+pattern describing what a group is first-class. The (<strong>Lawvere</strong>) <strong>theory of a
+group</strong> is a (small) category, |\mathcal{T}_{\mathbf{Grp}}| whose objects are an object |\mathsf{G}| and
+all its powers, |\mathsf{G}^n|, where |\mathsf{G}^0 = 1|
+and |\mathsf{G}^{n+1} = \mathsf{G} \times \mathsf{G}^n|. The arrows consist
+of the relevant projection and tupling operations, the three arrows above,
+|\mathsf{m} : \mathsf{G}^2 \to \mathsf{G}^1|, |\mathsf{i} : \mathsf{G}^1 \to \mathsf{G}^1|,
+|\mathsf{e} : \mathsf{G}^0 \to \mathsf{G}^1|, and all composites that could
+be made with these arrows. See my <a href="http://localhost:8000/posts/category-theory-syntactically.html#finite-product-theories">previous article</a>
+for a more explicit description of this, but it should be fairly intuitive.</p>
+<p>An actual group is then, simply, a finite-product-preserving functor
+|\mathcal{T}_{\mathbf{Grp}} \to \mathbf{Set}|. It must be finite-product-preserving
+so the image of |\mathsf{m}| actually gets sent to a binary function
+and not some function with some arbitrary domain. The category, |\mathbf{Grp}|, of
+groups and group homomorphisms is equivalent to the category |\mathbf{Mod}_{\mathcal{T}_{\mathbf{Grp}}}|
+which is defined to be the full subcategory of the category of functors from |\mathcal{T}_{\mathbf{Grp}} \to \mathbf{Set}|
+consisting of the functors which preserve finite products. While we’ll not explore it more
+here, we could use <em>any</em> category with finite products as the target, not just |\mathbf{Set}|.
+For example, we’ll show that |\mathbf{Grp}| has finite products, and in fact all limits
+and colimits, so we can talk about the models of the theory of groups in the
+category of groups. This turns out to be equivalent to the category of Abelian
+groups via the well-known <a href="https://en.wikipedia.org/wiki/Eckmann%E2%80%93Hilton_argument">Eckmann-Hilton argument</a>.</p>
+<h2 id="a-bit-of-organization">A Bit of Organization</h2>
+<p>First, a construction that will become even more useful later. Given any category, |\mathcal{C}|,
+we define |\mathcal{C}^{\times}|, or, more precisely, an inclusion |\sigma : \mathcal{C} \hookrightarrow \mathcal{C}^{\times}|
+to be the <strong>free category-with-finite-products generated from</strong> |\mathcal{C}|. Its universal property is:
+given any functor |F : \mathcal{C} \to \mathcal{E}| into a category-with-finite-products |\mathcal E|,
+there exists a unique finite-product-preserving functor |\bar{F} : \mathcal{C}^{\times} \to \mathcal E|
+such that |F = \bar{F} \circ \sigma|.</p>
+<p>An explicit construction of |\mathcal{C}^{\times}| is the following. Its objects consist
+of (finite) lists of objects of |\mathcal{C}| with concatenation as the categorical product
+and the empty list as the terminal object. The arrows are tuples with a component for each
+object in the codomain list. Each component is a pair of an index into the domain list and
+an arrow from the corresponding object in the domain list to the object in the codomain list
+for this component. For example, the arrow |[A, B] \to [B, A]| would be |((1, id_B), (0, id_A))|.
+Identity and composition is straightforward. |\sigma| then maps each object to a singleton
+list and each arrow |f| to |((0, f))|.</p>
+<p>Like most free constructions, this construction completely ignores any finite products the
+original category may have had. In particular, we want the category
+|\mathcal{T}_{\mathbf{Set}} = \mathbf{1}^{\times}|, called <strong>the theory of a set</strong>.
+The fact that the one object of the category |\mathbf{1}| is terminal has nothing to do
+with its image via |\sigma| which is not the terminal object.</p>
+<p>We now define the general notion of a (<strong>Lawvere</strong>) <strong>theory</strong> as a small category
+with finite products, |\mathcal{T}|, equipped with a finite-product-preserving, identity-on-objects
+functor |\mathcal{T}_{\mathbf{Set}} \to \mathcal{T}|. A <strong>morphism of</strong> (<strong>Lawvere</strong>) <strong>theories</strong>
+is a finite-product-preserving functor that preserves these inclusions a la:
+\[
+\xymatrix {
+&amp; \mathcal{T}_{\mathbf{Set}} \ar[dl] \ar[dr] &amp; \\
+\mathcal{T}_1 \ar[rr] &amp; &amp; \mathcal{T}_2
+}
+\]</p>
+<p>The identity-on-objects aspect of the inclusion of |\mathcal{T}_{\mathbf{Set}}|
+along with finite-product-preservation ensures that the only objects in |\mathcal{T}|
+are powers of a single object which we’ll generically call |\mathsf{G}|. This is
+sometimes called the “generic object”, though the term “generic object” has other
+meanings in category theory.</p>
+<p>A <strong>model of a theory</strong> (in |\mathbf{Set}|) is then simply a finite-product-preserving
+functor into |\mathbf{Set}|. |\mathbf{Mod}_{\mathcal{T}}| is the full subcategory
+of functors from |\mathcal{T} \to \mathbf{Set}| which preserve finite products.
+The <strong>morphisms of models</strong> are simply the natural transformations. As an exercise,
+you should show that for a natural transformation |\tau : M \to N| where |M|
+and |N| are two models of the same theory, |\tau_{\mathsf{G}^n} = \tau_{\mathsf{G}}^n|.</p>
+<h2 id="the-easy-categorical-constructions">The Easy Categorical Constructions</h2>
+<p>This relatively simple definition of model already gives us a large swathe of results.
+An easy result in basic category theory is that (co)limits in functor
+categories are computed pointwise whenever the corresponding (co)limits exist
+in the codomain category. In our case, |\mathbf{Set}| has all (co)limits, so
+all categories of |\mathbf{Set}|-valued functors have all (co)limits and they
+are computed pointwise.</p>
+<p>However, the (co)limit of finite-product-preserving functors into |\mathbf{Set}|
+may not be finite-product-preserving, so we don’t immediately get that |\mathbf{Mod}_{\mathcal{T}}|
+has all (co)limits (and they are computed pointwise). That said, finite products
+are limits and limits commute with each other, so we <em>do</em> get that |\mathbf{Mod}_{\mathcal{T}}|
+has all limits and they are computed pointwise. Similarly, sifted colimits, which are
+colimits that commute with finite products in |\mathbf{Set}| also exist and are
+computed pointwise in |\mathbf{Mod}_{\mathcal{T}}|. Sifted colimits include the
+better known filtered colimits which commute with all finite limits.</p>
+<p>I’ll not elaborate on sifted colimits.
+We’re here for (finite) coproducts, and, as you’ve probably already guessed,
+coproducts are not sifted colimits.</p>
+<h2 id="when-the-coproduct-of-groups-is-easy">When the Coproduct of Groups is Easy</h2>
+<p>There is one class of groups whose coproduct is easy to compute for
+general reasons: the free groups. The free group construction, like
+most “free constructions”, is a left adjoint and left adjoints
+preserve colimits, so the coproduct of two free groups is just the
+free group on the coproduct, i.e. disjoint union, of their generating
+sets. We haven’t defined the free group yet, though.</p>
+<p>Normally, the free group construction would be defined as left
+adjoint to the underlying set functor. We have a very straightforward
+way to define the underlying set functor. Define |U : \mathbf{Mod}_{\mathcal T} \to \mathbf{Set}|
+as |U(M) = M(\mathsf{G}^1)| and |U(\tau) = \tau_{\mathsf{G}^1}|.
+Identifying |\mathsf{G}^1| with the functor |\mathsf G : \mathbf{1} \to \mathcal{T}|
+we have |U(M) = M \circ \mathsf{G}| giving a functor |\mathbf{1} \to \mathbf{Set}|
+which we identify with a set. The left adjoint to precomposition
+by |\mathsf{G}| is the left Kan extension along |\mathsf{G}|.</p>
+<p>We then compute |F(S) = \mathrm{Lan}_{\mathsf{G}}(S)
+\cong \int^{{*} : \mathbf{1}} \mathcal{T}(\mathsf{G}({*}), {-}) \times S({*})
+\cong \mathcal{T}(\mathsf{G}^1, {-}) \times S|. This is the left
+Kan extension and does form an adjunction but <em>not</em> with the category
+of models because the functor produced by |F(S)| does not preserve finite products.
+We should have |F(S)(\mathsf{G}^n) \cong F(S)(\mathsf{G})^n|, but substituting
+in the definition of |F(S)| clearly does not satisfy this. For example,
+consider |F(\varnothing)(\mathsf{G}^0)|.</p>
+<p>We can and will show that the left Kan extension of a functor into |\mathbf{Set}|
+preserves finite products when the original functor did. Once
+we have that result we can correct our definition of the free construction.
+We simply replace |S : \mathbf{1} \to \mathbf{Set}| with a functor that
+<em>does</em> preserve finite products, namely |\bar{S} : \mathbf{1}^{\times} \to \mathbf{Set}|.
+Of course, |\mathbf{1}^{\times}| is exactly our definition of |\mathcal{T}_{\mathbf{Set}}|.
+We see now that a model of |\mathcal{T}_{\mathbf{Set}}| is the same thing as having
+a set, hence the name. Indeed, we have an equivalence of categories between |\mathbf{Set}|
+and |\mathbf{Mod}_{\mathcal{T}_{\mathbf{Set}}}|. (More generally, this theory is called
+“the theory of an object” as we may consider models in categories other than |\mathbf{Set}|,
+and we’ll still have this relation.)</p>
+<p>The correct definition of |F| is |F(S) = \mathrm{Lan}_{\iota}(\bar S)
+\cong \int^{\mathsf{G}^n:\mathcal{T}_{\mathbf{Set}}} \mathcal{T}(\iota(\mathsf{G}^n), {-}) \times \bar{S}(\mathsf{G}^n)
+\cong \int^{\mathsf{G}^n:\mathcal{T}_{\mathbf{Set}}} \mathcal{T}(\iota(\mathsf{G}^n), {-}) \times S^n|
+where |\iota : \mathcal{T}_{\mathbf{Set}} \to \mathcal{T}| is the inclusion
+we give as part of the definition of a theory. We can also see |\iota| as |\bar{\mathsf{G}}|.</p>
+<p>We can start to see the term algebra in this definition. An element of |F(S)| is
+a choice of |n|, an |n|-tuple of elements of |S|, and a (potentially compound) |n|-ary operation.
+We can think of an element of |\mathcal{T}(\mathsf{G}^n, {-})| as a term with |n|
+free variables which we’ll label with the elements of |S^n| in |F(S)|. The equivalence
+relation in the explicit construction of the coend allows us to swap projections and
+tupling morphisms from the term to the tuple of labels. For example, it equates a
+unary term paired with one label with a binary term paired with two labels but where
+the binary term immediately discards one of its inputs. Essentially, if you are
+given a unary term and two labels, you can either discard one of the labels or you
+can make the unary term binary by precomposing with a projection. Similarly for
+tupling.</p>
+<p>It’s still not obvious this definition produces a functor which preserves finite products.
+As a lemma to help in the proof of that fact, we have a bit of <a href="https://arxiv.org/abs/1501.02503">coend calculus</a>.</p>
+<p><strong>Lemma 1</strong>: Let |F \dashv U : \mathcal{D} \to \mathcal{C}| and |H : \mathcal D^{op} \times \mathcal{C} \to \mathcal{E}|.
+Then, |\int^C H(FC, C) \cong \int^D H(D, UD)| when one, and thus both, exist. <strong>Proof</strong>:
+\[
+\begin{align}
+\mathcal{E}\left(\int^C H(FC, C), {-}\right)
+&amp; \cong \int_C \mathcal{E}(H(FC, C), {-}) \tag{continuity} \\
+&amp; \cong \int_C \int_D [\mathcal{D}(FC, D), \mathcal{E}(H(D, C), {-})] \tag{Yoneda} \\
+&amp; \cong \int_C \int_D [\mathcal{C}(C, UD), \mathcal{E}(H(D, C), {-})] \tag{adjunction} \\
+&amp; \cong \int_D \int_C [\mathcal{C}(C, UD), \mathcal{E}(H(D, C), {-})] \tag{Fubini} \\
+&amp; \cong \int_D \mathcal{E}(H(D, UD), {-}) \tag{Yoneda} \\
+&amp; \cong \mathcal{E}\left(\int^D H(D, UD), {-}\right) \tag{continuity} \\
+&amp; \square
+\end{align}
+\]</p>
+<p>Using the adjunction |\Delta \dashv \times : \mathcal{C} \times \mathcal{C}\to \mathcal{C}|
+gives the following corollary.</p>
+<p><strong>Corollary 2</strong>: For any |H : \mathcal{C}^{op} \times \mathcal{C}^{op} \times \mathcal{C} \to \mathcal{E}|,
+\[\int^{C} H(C, C, C) \cong \int^{C_1}\int^{C_2} H(C_1, C_2, C_1 \times C_2)\] when
+both exists. This allows us to combine two (co)ends into one.</p>
+<p>Now our theorem.</p>
+<p><strong>Theorem 3</strong>: Let |F : \mathcal{T}_1 \to \mathbf{Set}| and |J : \mathcal{T}_1 \to \mathcal{T}_2|
+where |\mathcal{T}_1| and |\mathcal{T}_2| have finite products. Then |\mathrm{Lan}_J(F)|
+preserves finite products if |F| does.</p>
+<p><strong>Proof</strong>:
+\[
+\begin{flalign}
+\mathrm{Lan}_J(F)(X \times Y)
+&amp; \cong \int^A \mathcal{T}_2(J(A), X \times Y) \times F(A) \tag{coend formula for left Kan extension} \\
+&amp; \cong \int^A \mathcal{T}_2(J(A), X) \times \mathcal{T}_2(J(A), Y) \times F(A) \tag{continuity} \\
+&amp; \cong \int^{A_1}\int^{A_2}\mathcal{T}_2(J(A_1), X) \times \mathcal{T}_2(J(A_2), Y) \times F(A_1 \times A_2) \tag{Corollary 2} \\
+&amp; \cong \int^{A_1}\int^{A_2}\mathcal{T}_2(J(A_1), X) \times \mathcal{T}_2(J(A_2), Y) \times F(A_1) \times F(A_2) \tag{finite product preservation} \\
+&amp; \cong \left(\int^{A_1}\mathcal{T}_2(J(A_1), X) \times F(A_1) \right) \times \left(\int^{A_2}\mathcal{T}_2(J(A_2), Y) \times F(A_2)\right) \tag{commutativity and cocontinuity of $\times$} \\
+&amp; \cong \mathrm{Lan}_J(F)(X) \times \mathrm{Lan}_J(F)(Y) \tag{coend formula for left Kan extension} \\
+&amp; \square
+\end{flalign}
+\]</p>
+<h2 id="the-coproduct-of-groups">The Coproduct of Groups</h2>
+<p>To get general coproducts (and all colimits), we’ll show that |\mathbf{Mod}_{\mathcal{T}}|
+is a <em>reflective</em> subcategory of |[\mathcal{T}, \mathbf{Set}]|. Write
+|\iota : \mathbf{Mod}_{\mathcal{T}} \hookrightarrow [\mathcal{T}, \mathbf{Set}]|.
+If we had a functor |R| such that |R \dashv \iota|, then we have
+|R \circ \iota = Id| which allows us to quickly produce colimits
+in the subcategory via |\int^I D(I) \cong R\int^I \iota D(I)|.
+It’s easy to verify that |R\int^I \iota D(I)| has the appropriate universal property
+to be |\int^I D(I)|.</p>
+<p>We’ll compute |R| by composing two adjunctions. First,
+we have |\bar{({-})} \dashv \iota({-}) \circ \sigma : \mathbf{Mod}_{\mathcal{T}^{\times}} \to [\mathcal T, \mathbf{Set}]|.
+This is essentially the universal property of |\mathcal{T}^{\times}|.
+When |\mathcal{T}| has finite products, which, of course, we’re assuming,
+then we can use the universal property of |\mathcal{T}^{\times}| to factor |Id_{\mathcal{T}}|
+into |Id = \bar{Id} \circ \sigma|. The second adjunction is then |\mathrm{Lan}_{\bar{Id}} \dashv {-} \circ \bar{Id} : \mathbf{Mod}_{\mathcal{T}} \to \mathbf{Mod}_{\mathcal{T}^{\times}}|.
+The left adjoint sends finite-product-preserving functors to finite-product-preserving functors
+via Theorem 3. The right adjoint is the composition of finite-product-preserving functors.</p>
+<p>The composite of the left adjoints is |\iota({-} \circ \bar{Id}) \circ \sigma = \iota({-}) \circ \bar{Id} \circ \sigma = \iota({-})|.
+The composite of the right adjoint is
+\[
+\begin{align}
+R(F)
+&amp; = \mathrm{Lan}_{\bar{Id}}(\bar{F}) \\
+&amp; \cong \int^X \mathcal{T}(\bar{Id}(X), {-}) \times \bar{F}(X) \\
+&amp; \cong \int^X \mathcal{T}\left(\prod_{i=1}^{\lvert X\rvert} X_i, {-}\right) \times \prod_{i=1}^{\lvert X \rvert} F(X_i)
+\end{align}
+\] where we view the list |X : \mathcal{T}^{\times}| as a |\lvert X\rvert|-tuple with components |X_i|.</p>
+<p>This construction of the reflector, |R|, is quite similar to the free construction.
+The main difference is that here we factor |Id| via |\mathcal{T}^{\times}| where there we factored
+|\mathsf{G} : \mathbf{1} \to \mathcal{T}| via |\mathbf{1}^{\times} = \mathcal{T}_{\mathbf{Set}}|.</p>
+<p>Let’s now explicitly describe the coproducts via |R|. As a warm-up, we’ll consider the initial object, i.e.
+nullary coproducts. We consider |R(\Delta 0)|. Because |0 \times S = 0|, the only case in the coend
+that isn’t |0| is when |\lvert X \rvert = 0| so the underlying set of the coend reduces to
+|\mathcal{T}(\mathsf{G}^0, \mathsf{G}^1)|, i.e. the nullary terms. For groups, this is just the unit
+element. For bounded lattices, it would be the two element set consisting of the top and bottom elements.
+For lattices without bounds, it would be the empty set. Of course, |R(\Delta 0)| matches |F(0)|, i.e.
+the free model on |0|.</p>
+<p>Next, we consider two models |G| and |H|. First, we compute to the coproduct of |G| and |H| as (plain)
+functors which is just computed pointwise, i.e. |(G+H)(\mathsf{G}^n) = G(\mathsf{G}^n)+H(\mathsf{G}^n) \cong G(\mathsf{G^1})^n + H(\mathsf{G^1})^n|.
+Considering the case where |X_i = \mathsf{G}^1| for all |i| and where |\lvert X \rvert = n|, which
+subsumes all the other cases, we see we have a term with |n| free variables each labelled by either
+an element of |G| or an element of |H|. If we normalized the term into a list of variables representing
+a product of variables, then we’d have a essentially a <strong>word</strong> as described on <a href="https://en.wikipedia.org/wiki/Free_product#Construction">the Wikipedia page
+for the free product</a>. If we then only considered
+quotienting by the equivalences induced by projection and tupling, we’d have the free group on the
+disjoint union of the underlying sets of the |G| and |H|. However, for |R|, we quotient also by
+the action of the other operations. The lists of objects with |X_i \neq \mathsf{G}^1| come in here
+to support equating non-unary ops. For example, a pair of the binary term |\mathsf{m}| and
+the 2-tuple of elements |(g_1, g_2)| for |g_1, g_2 \in U(G)|, will be equated with the pair of
+the unary term |id| and the 1-tuple of elements |(g)| where |g = g_1 g_2| in |G|. Similarly for
+|H| and the other operations (and terms generally). Ultimately, the quotient identifies every
+element with an element that consists of a pair of a term that is a fully right associated
+set of multiplications ending in a unit where each variable is labelled with an element from
+|U(G)| or |U(H)| in an alternating fashion. These are the <strong>reduced words</strong> in the Wikipedia
+article.</p>
+<p>This, perhaps combined with a more explicit spelling out of the equivalence relation, should make
+it clear that this construction does actually correspond to the usual free product construction.
+The name “free product” is also made a bit clearer, as we are essentially building the free
+group on the disjoint union of the underlying sets of the inputs, and then quotienting that to
+get the result. While there are some categorical treatments of normalization, the normalization
+arguments used above were not guided by the category theory. The (underlying sets of the) models
+produced by the above |F| and |R| functors big equivalence classes of “terms”. The above constructions
+provide no guidance for finding “good” representatives of those equivalence classes.</p>
+<h2 id="conclusions">Conclusions</h2>
+<p>This was, of course, a very complex and round-about way of answering the title question.
+Obviously the real goal was illustrating these ideas and illustrating how “abstract” categorical
+reasoning can lead to relatively “concrete” results. Of course, these concrete constructions
+are derived from other concrete constructions, usually concrete constructions of limits and
+colimits in |\mathbf{Set}|. That said, category theory allows you to get a lot from a small
+collection of relatively simple concrete constructions. Essentially, category theory is like
+a programming language with a small set of primitives. You can write “abstract” programs in
+terms of that language, but once you provide an “implementation” for those primitives, all
+those “abstract” programs can be made concrete.</p>
+<p>I picked (finite) coproducts, in particular, as they are where a bunch of complexity suddenly
+arises when studying algebraic objects categorically, but (finite) coproducts are still
+fairly simple.</p>
+<p>For Lawvere theories, one thing to note is that the Lawvere theory is independent of the
+presentation. Any presentation of the axioms of a group would give rise to the same Lawvere
+theory. Of course, to explicitly describe the category would end up requiring a presentation
+of the category anyway. Beyond Lawvere theories are algebraic theories and algebraic categories,
+and further into essentially algebraic theories and categories. These extend to the multi-sorted
+case and then into the finite limit preserving case. The theory of categories, for example,
+cannot be presented as a Lawvere theory but is an essentially algebraic theory. There’s much
+more that can be said even about specifically Lawvere theories, both from a theoretical
+perspective, starting with monadicity, and from practical perspectives like algebraic effects.</p>
+<p>Familiarity with the properties of functor categories, and especially categories of (co)presheaves
+was behind many of these results, and many that I only mentioned in passing. It is always
+useful to learn more about categories of presheaves. That said, most of the theory works
+in an enriched context and often without too many assumptions. The fact that all we need
+to talk about models is for the codomains of the functors to have finite products allows
+quite broad application. We can talk about algebraic objects almost anywhere. For example,
+sheaves of rings, groups, etc. can equivalently be described as models of the theories of
+rings, groups, etc. in sheaves of sets.</p>
+<p>Kan extensions unsurprisingly played a large role, as they almost always do when you’re
+talking about (co)presheaves. One of the motivations for me to make this article was
+a happy confluence of things I was reading leading to a nice, coend calculus way of
+describing and proving finite-product-preservation for free models.</p>
+<p>Thinking about what <em>exactly</em> was going on around finite-product-preservation was fairly interesting.
+The incorrect definition of the free model functor could be corrected in a different
+(though, of course, ultimately equivalent) way. The key is to remember that the coend
+formula for the left Kan extension is generally a <em>copower</em> and not a cartesian product.
+The copower for |\mathbf{Set}|-valued functors is different from the copower for
+finite-product-preserving |\mathbf{Set}|-valued functors. For a category with (arbitrary)
+coproducts, the copower corresponds to the coproduct of a constant family. We get,
+|F(S) \cong \coprod_{S} \mathcal T(\mathsf{G}^1, {-})| as is immediately
+evident from |F| being a left adjoint and a set |S| being the coproduct of |1| |S|-many times.
+For the purposes of this article, this would have been less than satisfying as figuring
+out what coproducts were was the nominal point.</p>
+<p>That said, it isn’t completely unsatisfying
+as this defines the free model in terms of a coproduct of, specifically, representables
+and those are more tractable. In particular, an easy and neat exercise is to work
+out what |\mathcal{T}(\mathsf{G}^n, {-}) + \mathcal{T}(\mathsf{G}^m, {-})| is.
+Just use Yoneda and work out what must be true of the mapping out property, and remember
+that the object you’re mapping into preserves finite products. Once you have finite
+coproducts described, you can get all the rest via filtered colimits, and since those
+commute with finite products that gives us arbitrary coproducts.</p>]]></summary>
+</entry>
+<entry>
     <title>Preserving, Reflecting, and Creating Limits</title>
     <link href="https://derekelkins.github.io/posts/preserves-reflects-creates.html" />
     <id>https://derekelkins.github.io/posts/preserves-reflects-creates.html</id>
@@ -1238,7 +1565,7 @@ calculated as |\pi_1^*(A) \otimes_{X\times Y} \pi_2^*(B)| where |\otimes_{X\time
 The unit, |I|, is the unit |I_1 \in \V^1|.</p>
 <p>The two main examples are: |\mathcal Fam(\mathbf V)| where |\mathbf V| is a (non-indexed) monoidal category and |\mathcal Self(\mathbf S)|
 where |\mathbf S| is a category with finite limits. |\mathcal Fam(\mathbf V)| is a |\mathbf{Set}|-indexed monoidal category
-with |\mathcal Fam(\mathbf V)^X| defined as the set of |X|-indexed families of objects of |\mathbf V|, families of arrows between them, and
+with |\mathcal Fam(\mathbf V)^X| defined as the category of |X|-indexed families of objects of |\mathbf V|, families of arrows between them, and
 an index-wise monoidal product. We can identify |\mathcal Fam(\mathbf V)^X| with the functor category |[DX, \mathbf V]| where |D : \mathbf{Set} \to \mathbf{cat}| takes
 a set |X| to a small discrete category. Enriching in indexed monoidal category |\mathcal Fam(\mathbf V)| will be equivalent to enriching
 in the non-indexed monoidal category |\mathbf V|, i.e. the usual notion of enrichment in a monoidal category. |\mathcal Self(\mathbf S)| is
@@ -2451,127 +2778,6 @@ and for a formulation of |\mathcal P|-(co)products as a <em>fibered</em> adjunct
 is just whiskering, |\mathcal C_{\mathcal P^{op}}|, but |\mathcal P^{op} : p^{op} \to \{{-}\}^{op}|.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>]]></summary>
-</entry>
-<entry>
-    <title>Absolute Colimits</title>
-    <link href="https://derekelkins.github.io/posts/absolute-colimits.html" />
-    <id>https://derekelkins.github.io/posts/absolute-colimits.html</id>
-    <published>2019-05-18 16:59:33-07:00</published>
-    <updated>2019-05-18T23:59:33Z</updated>
-    <summary type="html"><![CDATA[<script>
-extraMacros = {
-  Set: "{\\mathbf{Set}}",
-  Hom: "{\\mathsf{Hom}}",
-  onto: "{\\twoheadrightarrow}"
-};
-</script>
-<p>In category theory a concept is called <strong>absolute</strong> if it is preserved
-by <em>all</em> functors. Identity arrows and composition are absolute by the definition of
-functor. Less trivially, isomorphisms are absolute. In general, anything that
-is described by a diagram commuting is absolute as that diagram will be preserved
-by any functor. This is generally the case, but if I tell you something is an
-absolute epimorphism, it’s not clear what diagram is causing that; the notion
-of epimorphism itself doesn’t reduce to the commutativity of a particular diagram.</p>
-<p>Below I’ll be focused primarily on <a href="https://ncatlab.org/nlab/show/absolute+colimit">absolute colimits</a>
-as those are the most commonly used examples. They are an important part of the theory of
-<a href="https://ncatlab.org/nlab/show/monadicity+theorem">monadicity</a>. The trick to
-many questions about absolute colimits and related concepts is to see what it
-means for |\Hom| functors to preserve them.</p>
-<!--more-->
-<h2 id="non-examples">Non-Examples</h2>
-<p>To start, we can show that certain colimits <em>cannot</em> be absolute, at least for |\Set|-enriched
-category theory. In particular, initial objects and coproducts are never absolute. Using the
-trick above, this is easily proven.</p>
-<p>\[\Hom(0,0)\cong 1 \not\cong 0\]</p>
-<p>\[\Set(\Hom(X+Y,Z),1)\cong 1 \not\cong 2\cong\Set(\Hom(X,Z),1)+\Set(\Hom(Y,Z),1)\]</p>
-<h2 id="absolute-epimorphisms">Absolute Epimorphisms</h2>
-<p>What do absolute epimorphisms look like? We know that there <em>are</em> absolute epimorphisms because
-a split epimorphism is defined by a certain diagram commuting. Are there other absolute epimorphisms?
-To find out, we apply our trick.</p>
-<p>Let |r: X\onto Y| be an arbitrary absolute epimorphism. Absoluteness implies the surjection
-\[\Hom(Y, r):\Hom(Y, X) \onto \Hom(Y, Y)\]
-but this means that for every arrow |f:Y\to Y|, there’s an arrow |s:Y\to X| such
-that |f = r \circ s|. As you can no doubt guess, we want to choose |f=id_Y|, and we then have
-that |r| is a split epimorphism. Therefore split epimorphisms are the only
-examples of absolute epimorphisms.</p>
-<h2 id="split-coequalizers">Split Coequalizers</h2>
-<p>Now let’s consider the coequalizer case. Let |f,g:X\to Y| and |e:Y\onto C| be their coequalizer which
-we’ll assume is absolute. Before we pull out our trick, we can immediately use the previous result to
-show that |e| has a section, i.e. an arrow |s : C\rightarrowtail Y| such that |id_C=e\circ s|. Moving on,
-we use the trick to get the diagram:
-\[\Hom(Y,X)\rightrightarrows\Hom(Y,Y)\onto\Hom(Y,C)\]</p>
-<p>Next, we use the explicit construction of the coequalizer in |\Set| which
-|\Hom(Y,C)| is supposed to be canonically isomorphic to. That is, the
-coequalizer of |\Hom(Y,f)| and |\Hom(Y,g)| is |\Hom(Y,Y)| quotiented by the
-equivalence relation generated by the relation, |{\sim}|, which identifies
-|h, k: Y \to Y| when |\exists j:Y\to X.h = f\circ j \land k = g\circ j|. Let
-|[h]| represent the equivalence class of |h|. That is, |h \mapsto [h]|
-corresponds to the function |\Hom(Y, Y) \onto \Hom(Y, Y)/{\sim^*}|, where
-|\sim^*| is the reflexive, symmetric, transitive closure of |\sim|,
-witnessing the set-theoretic coequalizer. The claim that |\Hom(Y,C)| is (with
-|\Hom(Y,e)|) a coequalizer of the above arrows implies that we have a
-canonical isomorphism |\bar e : \Hom(Y, Y)/{\sim} \cong \Hom(Y, C)| such
-that |e\circ h = \bar e([h])| and thus |[h]=\bar e^{-1}(e\circ h)|. Of
-course, our next move is to choose |h=id_Y| giving |e=\bar e([id_Y])|.
-However, |e=e\circ s\circ e = \bar e([s\circ e])| so we get
-|[id_Y]=[s\circ e]| because |\bar e| is invertible.</p>
-<p>Expanding the definition of |[id_Y]|, we have |[id_Y] = \{h:Y\to Y\mid id_Y\sim^* h\}|.
-Therefore |id_Y \sim^* s\circ e|. Now let’s make a simplifying assumption and
-assume further that |id_Y \sim s\circ e|, i.e. that |id_Y| is <em>directly</em> related
-to |s\circ e| by |\sim|. By definition of |\sim| this means there is a |t : Y\to X|
-such that |id_Y = f\circ t| and |s\circ e = g\circ t|. A given triple of |f|, |g|,
-and |e| such that |e\circ f = e\circ g| and equipped with a |s : C\to Y| and |t : Y\to X|
-satisfying the previous two equations along with |e\circ s = id_C| is called a
-<a href="https://ncatlab.org/nlab/show/split+coequalizer"><strong>split coequalizer</strong></a>. This data is
-specified diagrammatically and so is preserved by all functors, thus split
-coequalizers are absolute. All that we need to show is that this data is
-enough, on its own, to show that |e| is a coequalizer.</p>
-<p>Given any |q : Y\to Z| such that |q\circ f = q\circ g|, we need to show that
-there exists a unique arrow |C\to Z| which |q| factors through via |e|, i.e. |q = k \circ e|
-for some (unique) |k|. The obvious candidate is |q\circ s| leading to us needing to verify
-that |q=q\circ s\circ e|. We calculate as follows: \[
-\begin{align}
-q \circ s \circ e &amp; = q \circ g \circ t \\
-&amp; = q \circ f \circ t \\
-&amp; = q
-\end{align}\]
-Uniqueness then quickly follows since if |q = k\circ e| then
-|q\circ s = k\circ e \circ s = k|. |\square|</p>
-<p>There’s actually an even simpler example where |s\circ e = id_Y| which
-corresponds to the trivial case where |f=g|.</p>
-<h2 id="absolute-coequalizers">Absolute Coequalizers</h2>
-<p>Split coequalizers show that (non-trivial) absolute coequalizers can exist, but
-they don’t exhaust all the possibilities. The obvious cause of this is the
-simplifying assumption we made where we said |id_Y\sim s\circ e| rather than
-|id_Y\sim^* s\circ e|. In the general case, the equivalence will be
-witnessed by a sequence of arrows |t_i : Y\to X| such that we have either
-|s\circ e = g\circ t_0| or |s \circ e = f\circ t_0|, then |f\circ t_0 = g\circ t_1|
-or |g\circ t_0 = f\circ t_1| respectively, and so on until we
-get to |f\circ t_n = id_Y| or |g\circ t_n = id_Y|. As a diagram, this is a
-fan of diamonds of the form |f\circ t_i = g\circ t_{i+1}| or |g\circ t_i = f\circ t_{i+1}|
-with a diamond with side |s\circ e| on one end of the fan and
-a triangle with |id_Y| on the other. All this data is diagrammatic so it is
-preserved by all functors making the coequalizer absolute. That it <em>is</em> a
-coequalizer uses the same proof as for split coequalizers except that we have a
-series of equalities to show that |q\circ s \circ e = q|, namely all those
-pasted together diamonds. There is no conceptual difficulty here; it’s just
-awkward to notate.</p>
-<h2 id="absolute-colimits">Absolute Colimits</h2>
-<p>The absolute coequalizer case captures the spirit of the general case, but you
-can see an explicit description of the general case
-<a href="https://ncatlab.org/nlab/show/absolute+colimit#particular_absolute_colimits_2">here</a>.
-I’m not going to work through it, but you could as an exercise. Less tediously,
-you could work through absolute pushouts. If |P| is the pushout of
-|Y \leftarrow X \to Z|, then the functors to consider are |\Hom(P,-)| and
-|\Hom(Y,-)+\Hom(Z,-)|. For each, the pushout in |\Set| can be turned into a
-coequalizer of a coproduct. For the first functor, as before, this gives us an
-inverse image of |id_P| which will either be an arrow |P\to Y| or an arrow
-|P\to Z| which will play the role of |s|. The other functor produces a
-coequalizer of |\Hom(Y,Y)+\Hom(Z,Y)+\Hom(Y,Z)+\Hom(Z,Z)|. The generating
-relation of the equivalence relation states that there exists either an arrow
-|Y\to X| or an arrow |Z\to X| such that the appropriate equation holds. The
-story plays out much as before except that we have a sequence of arrows from
-two different hom-sets.</p>]]></summary>
 </entry>
 
 </feed>

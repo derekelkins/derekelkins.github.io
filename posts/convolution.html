@@ -53,22 +53,48 @@
 
     <p>Normally discrete convolution is written as follows:</p>
 <p>\[(f * g)(n) = \sum_{k=0}^n f(k)g(n-k)\]</p>
-<p>It is not immediately obvious from this that |f * g = g * f|. Consider this alternate representation:</p>
+<p>It is not immediately obvious from this that |f * g = g * f|. Consider this
+alternate representation:</p>
 <p>\[(f * g)(n) = \sum_{j+k=n} f(j)g(k)\]</p>
-<p>This formula is obviously symmetric in |f| and |g| and it clarifies an important invariant. For example, to multiply two polynomials (or formal power series) we convolve their coefficients. This looks like:</p>
+<p>This formula is obviously symmetric in |f| and |g| and it clarifies an important invariant.
+For example, to multiply two polynomials (or formal power series) we convolve their coefficients.
+This looks like:</p>
 <p>Let |P(x) = \sum_k a_k x^k| and |Q(x) = \sum_k b_k x^k| then</p>
 <p>\[P(x)Q(x) = \sum_{j+k=n} a_j b_k x^n\]</p>
-<p>This emphasizes that the |n|th coefficient is the product of the coefficients whose degrees sum to |n|. (You may recognize this as the convolution theorem.)</p>
+<p>This emphasizes that the |n|th coefficient is the product of the coefficients whose degrees sum to |n|.
+(You may recognize this as the convolution theorem.)</p>
 <!--more-->
-<p>There is one subtle difference. In this alternate representation, it very much matters what the domain of |j| and |k| are. If |j| and |k| are naturals, we get what we started with. But if they are integers, then we have:</p>
+<p>There is one subtle difference. In this alternate representation, it very much matters what the domain
+of |j| and |k| are. If |j| and |k| are naturals, we get what we started with. But if they are integers,
+then we have:</p>
 <p>\[\sum_{j+k=n} f(j)g(k) = \sum_{k=-\infty}^\infty f(k)g(n-k)\]</p>
-<p>In many combinatorial situations this makes no difference and may even be preferable. If, however, you are doing something like a short-time Fourier transform, then you probably don’t want to include an infinite number of entries (but you probably aren’t indexing by |\mathbb Z|). Personally, I view this as a feature; you should be clear about the domain of your variables.</p>
-<p>Let’s prove that |*| is associative, i.e. |((f * g) * h)(n) = (f * (g * h))(n)|. Expanding the left hand side we get:</p>
+<p>In many combinatorial situations this makes no difference and may even be preferable. If, however, you
+are doing something like a short-time Fourier transform, then you probably don’t want to include an
+infinite number of entries (but you probably aren’t indexing by |\mathbb Z|). Personally, I view this as
+a feature; you should be clear about the domain of your variables.</p>
+<p>Let’s prove that |*| is associative, i.e.
+|((f * g) * h)(n) = (f * (g * h))(n)|. Expanding the left hand side we get:</p>
 <p>\[\sum_{m+k=n} \sum_{i+j=m} f(i)g(j)h(k) = \sum_{i+j+k=n} f(i)g(j)h(k) = \sum_{i+m=n} \sum_{j+k=m} f(i)g(j)h(k)\]</p>
-<p>and we’re done. It’s clear the associativity of convolution comes from the associativity of addition and distributivity. In fact, the commutativity also came from the commutativity of addition. This suggests a simple but broad generalization. Simply replace the |+| in the indexing with any binary operation, i.e.:</p>
+<p>and we’re done. It’s clear the associativity of convolution comes from the associativity of
+addition and distributivity. In fact, the commutativity also came from the commutativity of addition. This
+suggests a simple but broad generalization. Simply replace the |+| in the indexing with any binary operation,
+i.e.:</p>
 <p>\[(f * g)(n) = \sum_{j \oplus k=n} f(j)g(k)\]</p>
-<p>Usually |\oplus| is taken to be an operation of a group, and this makes sense when you need to support the equivalent of |n-k|, but there’s really nothing keeping it from being a monoid, and the unit isn’t doing anything so why not a semigroup, and we only really need associativity if we want the convolution to be associative, and nothing requires |n| to be the same type as |j| or |k| or for them to be the same type as each other for that matter… Of course having a group structure reduces the often sticky problem of factoring |n| into all the pairs of |j| and |k| such that |j \oplus k = n| to the problem of “simply” enumerating the group.</p>
-<p>As an update: Conal Elliott uses a similarly generalized notion of convolution in <a href="https://arxiv.org/abs/1903.10677">Generalized Convolution and Efficient Language Recognition</a>. In particular, the generalization using an arbitrary binary function |\oplus| allows things like heterogeneous index types. For example, if we want to convolve size-indexed arrays, we have a problem, but we can finesse it by viewing <code>Vec n x</code> as <code>Fin n -&gt; x</code>. With traditional convolution, we’d still have a problem since <code>(+)</code> requires its arguments to be the same type and the type of the result, so not <code>Fin n -&gt; Fin m -&gt; Fin (m + n - 1)</code>. This isn’t a problem for |\oplus| though.</p>
+<p>Usually |\oplus| is taken to be an operation of a group, and this makes sense when you need to support the
+equivalent of |n-k|, but there’s really nothing keeping it from being a monoid, and the unit isn’t doing
+anything so why not a semigroup, and we only really need associativity if we want the convolution to be
+associative, and nothing requires |n| to be the same type as |j| or |k| or for them to be the same type
+as each other for that matter… Of course having a group structure reduces the often sticky problem of
+factoring |n| into all the pairs of |j| and |k| such that |j \oplus k = n| to the problem of “simply”
+enumerating the group.</p>
+<p>As an update: Conal Elliott uses a similarly generalized notion of convolution in
+<a href="https://arxiv.org/abs/1903.10677">Generalized Convolution and Efficient Language Recognition</a>.
+In particular, the generalization using an arbitrary binary function |\oplus| allows
+things like heterogeneous index types. For example, if we want to convolve size-indexed
+arrays, we have a problem, but we can finesse it by viewing <code>Vec n x</code> as <code>Fin n -&gt; x</code>.
+With traditional convolution, we’d still have a problem since <code>(+)</code> requires its arguments
+to be the same type and the type of the result, so not <code>Fin n -&gt; Fin m -&gt; Fin (m + n - 1)</code>.
+This isn’t a problem for |\oplus| though.</p>
 <p>Here’s some code for the free monoid (i.e. lists) case:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.Monoid</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.List</span></span>
@@ -85,26 +111,48 @@
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="ot">lconvolve ::</span> <span class="dt">Num</span> m <span class="ot">=&gt;</span> ([a] <span class="ot">-&gt;</span> m) <span class="ot">-&gt;</span> ([a] <span class="ot">-&gt;</span> m) <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> m</span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>lconvolve <span class="ot">=</span> gconvolve (\as <span class="ot">-&gt;</span> <span class="fu">zip</span> (inits as) (tails as))</span></code></pre></div>
-<p>You may have noticed that we never actually use |\oplus| anywhere. It’s only significance is to define the valid factorizations. That is, there’s an implicit constraint in the above code that</p>
+<p>You may have noticed that we never actually use |\oplus| anywhere. It’s only significance is to define the
+valid factorizations. That is, there’s an implicit constraint in the above code that</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">all</span> (\(j,k) <span class="ot">-&gt;</span> n <span class="op">==</span> j <span class="ot">`oplus`</span> k) (factor n)</span></code></pre></div>
 <p>and also that</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>factor n <span class="op">==</span> nub (factor n)</span></code></pre></div>
-<p>i.e. no duplicates. (Conceptually, <code>factor</code> spits out a set, indeed the graph of the relation |(j,k)\mapsto j \oplus k=n|.)</p>
-<p>The commutative monoid constraint and <code>mul</code> function were just for the heck of it, but why a commutative monoid and not an arbitrary monoid? Well, we don’t want the result to depend on how <code>factor</code> spits out the factors. In other words, if it actually did return a set then we can’t depend on the order of the elements in the set if we want a well-defined function.</p>
-<p>Here’s where I tell you that <code>lconvolve</code> is an important function for something. I suspect it or a variant probably is, but I don’t know. Here’s another monoid case, commutative this time, that definitely is important and interesting: <a href="https://en.wikipedia.org/wiki/Dirichlet_convolution">Dirichlet convolution</a>.</p>
+<p>i.e. no duplicates. (Conceptually, <code>factor</code> spits out a set, indeed the graph
+of the relation |(j,k)\mapsto j \oplus k=n|.)</p>
+<p>The commutative monoid constraint and <code>mul</code> function were just for the heck of it, but why a commutative
+monoid and not an arbitrary monoid? Well, we don’t want the result to depend on how <code>factor</code> spits out
+the factors. In other words, if it actually did return a set then we can’t depend on the order of the
+elements in the set if we want a well-defined function.</p>
+<p>Here’s where I tell you that <code>lconvolve</code> is an important function for something. I suspect it or a
+variant probably is, but I don’t know. Here’s another monoid case, commutative this time, that
+definitely is important and interesting: <a href="https://en.wikipedia.org/wiki/Dirichlet_convolution">Dirichlet convolution</a>.</p>
 <p>Here’s the typical bad definition:</p>
 <p>\[(f \star g)(n) = \sum_{d\mid n} f(d)g\left(\frac{n}{d}\right)\] where |d\mid n| means |d| evenly divides |n|.</p>
 <p>These are the coefficients of the product of two Dirichlet series. For example,</p>
-<p>\[\begin{gather} F(s) = \sum_{n=1}^\infty f(n)n^{-s} \qquad G(s) = \sum_{n=1}^\infty g(n)n^{-s} \\ F(s)G(s) = \sum_{n=1}^\infty (f \star g)(n)n^{-s} \end{gather}\]</p>
-<p>We again see a situation where the correspondence doesn’t just jump out at you (or at least it didn’t to me originally) until you realize the above sum can be written:</p>
+<p>\[\begin{gather}
+F(s) = \sum_{n=1}^\infty f(n)n^{-s} \qquad G(s) = \sum_{n=1}^\infty g(n)n^{-s} \\
+F(s)G(s) = \sum_{n=1}^\infty (f \star g)(n)n^{-s}
+\end{gather}\]</p>
+<p>We again see a situation where the correspondence doesn’t just jump out at you (or at least it didn’t to
+me originally) until you realize the above sum can be written:</p>
 <p>\[(f \star g)(n) = \sum_{ab=n} f(a)g(b)\]</p>
-<p>then it’s pretty easy to see that it is right. We can start doing a lot of number theory with the above combined with the <a href="https://en.wikipedia.org/wiki/Euler_product">Euler product</a> formula:</p>
+<p>then it’s pretty easy to see that it is right. We can start doing a lot of number theory with the
+above combined with the <a href="https://en.wikipedia.org/wiki/Euler_product">Euler product</a> formula:</p>
 <p>\[\sum_{n=1}^\infty f(n)n^{-s} = \prod_{p\ \mathrm{prime}} \sum_{n=0}^\infty f(p^n)p^{-ns}\]</p>
-<p>where |f| is multiplicative, which means |f(ab) = f(a)f(b)| when |a| and |b| are coprime. (The real significance of |f| being multiplicative is that it is equivalent to |f| being completely determined by its values on prime powers.) It turns out it is surprisingly easy and fun to derive various <a href="https://en.wikipedia.org/wiki/Arithmetic_function">arithmetic functions</a> and identities between them. Here’s a brief teaser.</p>
+<p>where |f| is multiplicative, which means |f(ab) = f(a)f(b)| when |a| and |b| are coprime. (The
+real significance of |f| being multiplicative is that it is equivalent to |f| being completely
+determined by its values on prime powers.) It turns out it is surprisingly easy and fun to
+derive various <a href="https://en.wikipedia.org/wiki/Arithmetic_function">arithmetic functions</a> and identities
+between them. Here’s a brief teaser.</p>
 <p>|1(n) = 1| is a multiplicative function and this gives:</p>
 <p>\[\zeta(s) = \sum_{n=1}^\infty n^{-s} = \prod_{p\ \mathrm{prime}} \frac{1}{1-p^{-s}}\]</p>
 <p>where we’ve used the formula for the sum of a geometric series.</p>
-<p>So |\frac{1}{\zeta(s)} = \prod_{p\ \mathrm{prime}} 1-p^{-s} = \sum_{n=1}^\infty \mu(n)n^{-s}|. The question is now, what is |\mu|? Well, all we need to do is say what it is on prime powers and comparing the Euler product formula to the above we see, for prime |p|, |\mu(p) = -1| and |\mu(p^n) = 0| for |n &gt; 1|. This is the <a href="https://en.wikipedia.org/wiki/M%C3%B6bius_function">Möbius function</a>. Because |\zeta(s) \cdot \frac{1}{\zeta(s)} = 1| we have |(1 \star \mu)(n) = \sum_{d\mid n} \mu(d) = 0| for |n &gt; 1|. Continuing in this vein leads to analytic number theory and the Riemann hypothesis, though you may want to pick up the <a href="https://en.wikipedia.org/wiki/Mellin_transform">Mellin transform</a> along the way.</p>
+<p>So |\frac{1}{\zeta(s)} = \prod_{p\ \mathrm{prime}} 1-p^{-s} = \sum_{n=1}^\infty \mu(n)n^{-s}|. The question
+is now, what is |\mu|? Well, all we need to do is say what it is on prime powers and comparing
+the Euler product formula to the above we see, for prime |p|, |\mu(p) = -1| and |\mu(p^n) = 0| for |n &gt; 1|. This is
+the <a href="https://en.wikipedia.org/wiki/M%C3%B6bius_function">Möbius function</a>. Because
+|\zeta(s) \cdot \frac{1}{\zeta(s)} = 1| we have |(1 \star \mu)(n) = \sum_{d\mid n} \mu(d) = 0| for |n &gt; 1|.
+Continuing in this vein leads to analytic number theory and the Riemann hypothesis, though you may want
+to pick up the <a href="https://en.wikipedia.org/wiki/Mellin_transform">Mellin transform</a> along the way.</p>
 
     <div id="disqus_thread"></div>
     <script type="text/javascript">

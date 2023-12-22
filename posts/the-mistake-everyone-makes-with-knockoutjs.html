@@ -52,10 +52,18 @@
     </h6>
 
     <h3 id="introduction">Introduction</h3>
-<p><a href="http://knockoutjs.com">Knockout</a> is a nice JavaScript library for making values that automatically update when any of their “dependencies” update. Those dependencies can form an arbitrary directed acyclic graph. Many people seem to think of it as “yet another” templating library, but the core idea which is useful far beyond “templating” is the notion of observable values. One nice aspect is that it is a library and not a framework so you can use it as little or as much as you want and you can integrate it with other libraries and frameworks.</p>
-<p>At any rate, this article is more geared toward those who have already decided on using Knockout or a library (in any language) offering similar capabilities. I strongly suspect the issues and solutions I’ll discuss apply to all similar sorts of libraries. While I’ll focus on one particular example, the ideas behind it apply generally. This example, admittedly, is one that almost anyone will implement, and in my experience will do it incorrectly the first time and won’t realize the problem until later.</p>
+<p><a href="http://knockoutjs.com">Knockout</a> is a nice JavaScript library for making values that automatically update when any of their “dependencies” update. Those
+dependencies can form an arbitrary directed acyclic graph. Many people seem to think of it as “yet another” templating library, but the core idea which is
+useful far beyond “templating” is the notion of observable values. One nice aspect is that it is a library and not a framework so you can use it as little
+or as much as you want and you can integrate it with other libraries and frameworks.</p>
+<p>At any rate, this article is more geared toward those who have already decided on using Knockout or a library (in any language) offering similar capabilities. I
+strongly suspect the issues and solutions I’ll discuss apply to all similar sorts of libraries. While I’ll focus on one particular example, the ideas
+behind it apply generally. This example, admittedly, is one that almost anyone will implement, and in my experience will do it incorrectly the first time and
+won’t realize the problem until later.</p>
 <h3 id="the-problem">The Problem</h3>
-<p>When doing any front-end work, before long there will be a requirement to support “multi-select” of something. Of course, you want the standard select/deselect all functionality and for it to work correctly, and of course you want to do something with the items you’ve selected. Here’s a very simple example:</p>
+<p>When doing any front-end work, before long there will be a requirement to support “multi-select” of something. Of course, you want the standard
+select/deselect all functionality and for it to work correctly, and of course you want to do something with the items you’ve selected. Here’s
+a very simple example:</p>
 <div id="#badExample">
 Number selected: <span data-bind="text: $data.numberSelected()"></span>
 <table>
@@ -85,7 +93,8 @@ Add
 </tr>
 </table>
 </div>
-<p>Here, the number selected is an overly simple example of using the selected items. More realistically, the selected items will trigger other items to show up and/or trigger AJAX requests to update the data or populate other data. The HTML for this example is completely straightforward.</p>
+<p>Here, the number selected is an overly simple example of using the selected items. More realistically, the selected items will trigger other items
+to show up and/or trigger AJAX requests to update the data or populate other data. The HTML for this example is completely straightforward.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">&lt;div</span> <span class="er">id</span><span class="ot">=</span><span class="st">&quot;#badExample&quot;</span><span class="kw">&gt;</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    Number selected: <span class="kw">&lt;span</span> <span class="er">data-bind</span><span class="ot">=</span><span class="st">&quot;text: $data.numberSelected()&quot;</span><span class="kw">&gt;&lt;/span&gt;</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">&lt;table&gt;</span></span>
@@ -96,7 +105,11 @@ Add
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        <span class="kw">&lt;tr&gt;&lt;td&gt;&lt;button</span> <span class="er">data-bind</span><span class="ot">=</span><span class="st">&quot;click: function() { $data.add(); }&quot;</span><span class="kw">&gt;</span>Add<span class="kw">&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;</span></span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">&lt;/table&gt;</span></span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="kw">&lt;/div&gt;</span></span></code></pre></div>
-<p>The way nearly everyone (including me) first thinks to implement this is by adding a <code>selected</code> observable to each item and then having <code>allSelected</code> depend on all of the <code>selected</code> observables. Since we also want to write to <code>allSelected</code> to change the state of the <code>selected</code> observables we use a <a href="http://knockoutjs.com/documentation/computed-writable.html">writable computed observable</a>. This computed observable will loop through all the items and check to see if they are all set to determine it’s state. When it is updated, it will loop through all the <code>selected</code> observables and set them to the appropriate state. Here’s the full code listing.</p>
+<p>The way nearly everyone (including me) first thinks to implement this is by adding a <code>selected</code> observable to each item and then having <code>allSelected</code>
+depend on all of the <code>selected</code> observables. Since we also want to write to <code>allSelected</code> to change the state of the <code>selected</code> observables we
+use a <a href="http://knockoutjs.com/documentation/computed-writable.html">writable computed observable</a>. This computed observable will loop through all
+the items and check to see if they are all set to determine it’s state. When it is updated, it will loop through all the <code>selected</code> observables
+and set them to the appropriate state. Here’s the full code listing.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">var</span> badViewModel <span class="op">=</span> {</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">counter</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">items</span><span class="op">:</span> ko<span class="op">.</span><span class="fu">observableArray</span>()</span>
@@ -136,10 +149,23 @@ Add
 <span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span>
 <span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>ko<span class="op">.</span><span class="fu">applyBindings</span>(badViewModel<span class="op">,</span> <span class="bu">document</span><span class="op">.</span><span class="fu">getElementById</span>(<span class="st">'#badExample'</span>))<span class="op">;</span></span></code></pre></div>
-<p>This should be relatively straightforward, and it works, so what’s the problem? The problem can be seen in <code>numberSelected</code> (and it also comes up with <code>allSelected</code> which I’ll get to momentarily). <code>numberSelected</code> depends on <em>each</em> <code>selected</code> observable and so it will be fired <em>each</em> time <em>each</em> one updates. That means if you have 100 items, and you use the select all checkbox, <code>numberSelected</code> will be called 100 times. For this example, that doesn’t really matter. For a more realistic example than <code>numberSelected</code>, this may mean rendering one, then two, then three, … then 100 HTML fragments or making 100 AJAX requests. In fact, this same behavior is present in <code>allSelected</code>. When it is written, as it’s writing to the <code>selected</code> observables, it is also triggering <em>itself</em>.</p>
-<p>So the problem is updating <code>allSelected</code> or <code>numberSelected</code> can’t be done all at once, or to use database terminology, it can’t be updated atomically. One possible solution in newer versions of Knockout is to use <code>deferredUpdates</code> or, what I did back in the much earlier versions of Knockout, abuse the rate limiting features. The problem with this solution is that it makes updates asynchronous. If you’ve written your code to not care whether it was called synchronously or asynchronously, then this will work fine. If you haven’t, doing this throws you into a world of shared state concurrency and race conditions. In this case, this solution is far worse than the disease.</p>
+<p>This should be relatively straightforward, and it works, so what’s the problem? The problem can be seen in <code>numberSelected</code> (and it also comes up
+with <code>allSelected</code> which I’ll get to momentarily). <code>numberSelected</code> depends on <em>each</em> <code>selected</code> observable and so it will be fired <em>each</em> time <em>each</em>
+one updates. That means if you have 100 items, and you use the select all checkbox, <code>numberSelected</code> will be called 100 times. For this example,
+that doesn’t really matter. For a more realistic example than <code>numberSelected</code>, this may mean rendering one, then two, then three, … then 100 HTML
+fragments or making 100 AJAX requests. In fact, this same behavior is present in <code>allSelected</code>. When it is written, as it’s writing to the <code>selected</code>
+observables, it is also triggering <em>itself</em>.</p>
+<p>So the problem is updating <code>allSelected</code> or <code>numberSelected</code> can’t be done all at once, or to use database terminology, it can’t be updated atomically.
+One possible solution in newer versions of Knockout is to use <code>deferredUpdates</code> or, what I did back in the much earlier versions of Knockout, abuse the
+rate limiting features. The problem with this solution is that it makes updates asynchronous. If you’ve written your code to not care whether it was
+called synchronously or asynchronously, then this will work fine. If you haven’t, doing this throws you into a world of shared state concurrency and
+race conditions. In this case, this solution is far worse than the disease.</p>
 <h3 id="the-solution">The Solution</h3>
-<p>So, what’s the alternative? We want to update all selected items atomically; we can atomically update a single observable; so we’ll put all selected items into a single observable. Now an item determines if it is selected by checking whether it is in the collection of selected items. More abstractly, we make our observables more coarse-grained, and we have a bunch of small computed observables depend on a large observable instead of a large computed observable depending on a bunch of small observables as we had in the previous code. Here’s an example using the exact same HTML and presenting the same overt behavior.</p>
+<p>So, what’s the alternative? We want to update all selected items atomically; we can atomically update a single observable; so we’ll put all selected items
+into a single observable. Now an item determines if it is selected by checking whether it is in the collection of selected items. More abstractly,
+we make our observables more coarse-grained, and we have a bunch of small computed observables depend on a large observable instead of a large
+computed observable depending on a bunch of small observables as we had in the previous code. Here’s an example using the exact same HTML and
+presenting the same overt behavior.</p>
 <div id="#goodExample">
 Number selected: <span data-bind="text: $data.numberSelected()"></span>
 <table>
@@ -211,10 +237,23 @@ Add
 <span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span>
 <span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>ko<span class="op">.</span><span class="fu">applyBindings</span>(goodViewModel<span class="op">,</span> <span class="bu">document</span><span class="op">.</span><span class="fu">getElementById</span>(<span class="st">'#goodExample'</span>))<span class="op">;</span></span></code></pre></div>
-<p>One thing to note is that setting <code>allSelected</code> and <code>numberSelected</code> are now both simple operations. A write to an observable triggers a constant number of writes to other observables. In fact, there are only two (non-computed) observables. On the other hand, <em>reading</em> the <code>selected</code> observable is more expensive. Toggling all items has quadratic complexity. In fact, it had quadratic complexity before due to the feedback. However, unlike the previous code, this <em>also</em> has quadratic complexity when any <em>individual</em> item is toggled. Unlike the previous code, though, this is simply due to a poor choice of data structure. Equipping each item with an “ID” field and using an object as a hash map would reduce the complexity to linear. In practice, for this sort of scenario, it tends not to make a big difference. Also, Knockout won’t trigger dependents if the value doesn’t change, so there’s no risk of the extra work propagating into still more extra work. Nevertheless, while I endorse this solution for this particular problem, in general making <em>finer</em> grained observables can help limit the scope of changes so unnecessary work isn’t done.</p>
-<p>Still, the real concern and benefit of this latter approach isn’t the asymptotic complexity of the operations, but the <em>atomicity</em> of the operations. In the second solution, every update is atomic. There are no intermediate states on the way to a final state. This means that dependents, represented by <code>numberSelected</code> but which are realistically much more complicated, don’t get triggered excessively and don’t need to “compensate” for unintended intermediate values.</p>
+<p>One thing to note is that setting <code>allSelected</code> and <code>numberSelected</code> are now both simple operations. A write to an observable triggers a constant
+number of writes to other observables. In fact, there are only two (non-computed) observables. On the other hand, <em>reading</em> the <code>selected</code> observable
+is more expensive. Toggling all items has quadratic complexity. In fact, it had quadratic complexity before due to the feedback. However, unlike the
+previous code, this <em>also</em> has quadratic complexity when any <em>individual</em> item is toggled. Unlike the previous code, though, this is simply due to a
+poor choice of data structure. Equipping each item with an “ID” field and using an object as a hash map would reduce the complexity to linear. In
+practice, for this sort of scenario, it tends not to make a big difference. Also, Knockout won’t trigger dependents if the value doesn’t change, so
+there’s no risk of the extra work propagating into still more extra work. Nevertheless, while I endorse this solution for this particular problem,
+in general making <em>finer</em> grained observables can help limit the scope of changes so unnecessary work isn’t done.</p>
+<p>Still, the real concern and benefit of this latter approach isn’t the asymptotic complexity of the operations, but the <em>atomicity</em> of the operations.
+In the second solution, every update is atomic. There are no intermediate states on the way to a final state. This means that dependents, represented
+by <code>numberSelected</code> but which are realistically much more complicated, don’t get triggered excessively and don’t need to “compensate” for unintended intermediate
+values.</p>
 <h3 id="epilogue">Epilogue</h3>
-<p>We could take the coarse-graining to its logical conclusion and have the view model for an application be a single observable holding an object representing the entire view model (and containing no observables of its own). Taking this approach actually does have a lot of benefits, albeit there is little reason to use Knockout at that point. Instead this starts to lead to things like Facebook’s <a href="https://facebook.github.io/flux/">Flux</a> pattern and the pattern perhaps most clearly articulated by <a href="http://cycle.js.org/">Cycle JS</a>.</p>
+<p>We could take the coarse-graining to its logical conclusion and have the view model for an application be a single observable holding an object representing
+the entire view model (and containing no observables of its own). Taking this approach actually does have a lot of benefits, albeit there is little reason
+to use Knockout at that point. Instead this starts to lead to things like Facebook’s <a href="https://facebook.github.io/flux/">Flux</a> pattern and the pattern perhaps
+most clearly articulated by <a href="http://cycle.js.org/">Cycle JS</a>.</p>
 <script lang="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.3.0/knockout-min.js" integrity="sha384-bpY4Nxr8KotrByPQIhZdNw6qY1QFNMhtBX0QfW7o0e75Z3HAyJ4yeJByRGMMQ6I+" crossorigin="anonymous"></script>
 <script lang="text/javascript">
 // Bad View Model

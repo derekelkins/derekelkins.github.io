@@ -52,60 +52,137 @@
     </h6>
 
     <h3 id="introduction">Introduction</h3>
-<p>For many people interested in type systems and type theory, their first encounter with the literature presents them with this:</p>
+<p>For many people interested in type systems and type theory, their first encounter with the literature presents
+them with this:</p>
 <p>\[\frac{\Gamma,x:\tau_1 \vdash_\Sigma e : \tau_2}{\Gamma \vdash_\Sigma (\lambda x:\tau_1.e) : \tau_1 \to \tau_2} {\to}I\]</p>
 <p>\[\frac{\Gamma \vdash_\Sigma f : \tau_1 \to \tau_2 \qquad \Gamma \vdash_\Sigma x : \tau_1}{\Gamma \vdash_\Sigma f x : \tau_2} {\to}E\]</p>
-<p>Since this notation is ubiquitous, authors (reasonably) expect readers to already be familiar with it and thus provide no explanation. Because the notation is ubiquitous, the beginner looking for alternate resources will not escape it. All they will find is that the notation is everywhere but exists in myriad minor variations which may or may not indicate significant differences. At this point the options are: 1) to muddle on and hope understanding the notation isn’t too important, 2) look for introductory resources which typically take the form of $50+ 500+ page textbooks, or 3) give up.</p>
-<p>The goal of this article is to explain the notation part-by-part in common realizations, and to cover the main idea behind the notation which is the idea of an inductively defined relation. To eliminate ambiguity and make hand-waving impossible, I’ll ground the explanations in code, in particular, in <a href="http://wiki.portal.chalmers.se/agda/pmwiki.php">Agda</a>. That means for each example of the informal notation, there will be how it would be realized in Agda.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> It will become clear that I’m am not (just) using Agda as a formal notation to talk about these concepts, but that Agda’s<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> data type mechanism directly captures them<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>. The significance of this is that programmers are already familiar with many of the ideas behind the informal notation, and the notation is just obscuring this familiarity. Admittedly, Agda is itself pretty intimidating. I hope most of this article is accessible to those with familiarity with algebraic data types as they appear in Haskell, ML, Rust, or Swift with little to no need to look up details about Agda. Nevertheless, Agda at least has the benefit, when compared to the informal notation, of having a clear place to go to learn more, an unambiguous meaning, and tools that allow playing around with the ideas.</p>
+<p>Since this notation is ubiquitous, authors (reasonably) expect readers to already be familiar with it and thus
+provide no explanation. Because the notation is ubiquitous, the beginner looking for alternate resources
+will not escape it. All they will find is that the notation is everywhere but exists in myriad minor
+variations which may or may not indicate significant differences. At this point the options are:
+1) to muddle on and hope understanding the notation isn’t too important, 2) look for introductory resources
+which typically take the form of $50+ 500+ page textbooks, or 3) give up.</p>
+<p>The goal of this article is to explain the notation part-by-part in common realizations, and to cover the
+main idea behind the notation which is the idea of an inductively defined relation. To eliminate
+ambiguity and make hand-waving impossible, I’ll ground the explanations in code, in particular, in <a href="http://wiki.portal.chalmers.se/agda/pmwiki.php">Agda</a>.
+That means for each example of the informal notation, there will be how it would be realized in Agda.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>
+It will become clear that I’m am not (just) using Agda as a formal notation to talk about these concepts, but
+that Agda’s<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> data type
+mechanism directly captures them<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>. The significance
+of this is that programmers are already familiar with many of the ideas behind the informal notation, and the
+notation is just obscuring this familiarity. Admittedly, Agda is itself pretty intimidating. I hope most of this
+article is accessible to those with familiarity with algebraic data types as they appear in Haskell, ML, Rust, or
+Swift with little to no need to look up details about Agda. Nevertheless, Agda at least has the benefit, when
+compared to the informal notation, of having a clear place to go to learn more, an unambiguous meaning, and
+tools that allow playing around with the ideas.</p>
 <!--more-->
 <h3 id="parsing-and-reading">Parsing and reading</h3>
-<p>To start, if you are not already familiar with it, get familiar with the <a href="https://en.wikipedia.org/wiki/Greek_alphabet#Letters">Greek alphabet</a>. It will be far easier to (mentally) read mathematical notation of any kind if you can say “Gamma x” rather than “right angle thingy x” or “upside-down L x”.</p>
-<p>Using the example from the introduction, the whole thing is a <strong>rule</strong>. The “|{\to}I|” part is just the name of the rule (in this case being short for “|{\to}| Introduction”). This rule is only <em>part</em> of the definition of the <strong>judgment</strong> of the form:</p>
+<p>To start, if you are not already familiar with it, get familiar with the <a href="https://en.wikipedia.org/wiki/Greek_alphabet#Letters">Greek alphabet</a>.
+It will be far easier to (mentally) read mathematical notation of any kind if you can say “Gamma x” rather than
+“right angle thingy x” or “upside-down L x”.</p>
+<p>Using the example from the introduction, the whole thing is a <strong>rule</strong>. The “|{\to}I|” part is just the name
+of the rule (in this case being short for “|{\to}| Introduction”). This rule is only <em>part</em> of the definition
+of the <strong>judgment</strong> of the form:</p>
 <p>\[\Gamma \vdash_\Sigma e : \tau\]</p>
-<p>The judgment can be viewed as a proposition and the rule is an “if-then” statement read from top to bottom. So the “|{\to}I|” rule says, “<strong>if</strong> |\Gamma, x : \tau_1 \vdash_\Sigma e : \tau_2| <strong>then</strong> |\Gamma \vdash_\Sigma \lambda x : \tau_1.e : \tau_1 \to \tau_2|”. It is often profitable to read it bottom-up as “<strong>To prove</strong> |\Gamma \vdash_\Sigma \lambda x : \tau_1.e : \tau_1 \to \tau_2| <strong>you need to show</strong> |\Gamma, x : \tau_1 \vdash_\Sigma e : \tau_2|”.</p>
-<p>So what is the judgment saying? First, the judgment is, in this case, a four argument relation. The arguments of this relation are |\Gamma|, |\Sigma|, |e|, and |\tau|. We could say the name of this relation is the perspicuous |(\_)\vdash_{(\_)} (\_) : (\_)|. Note that it does not make sense to ask what “⊢” means or what “:” means anymore than it makes sense to ask what “-&gt;” means in Haskell’s <code class="sourceCode haskell">\ x <span class="ot">-&gt;</span> e</code>.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
-<p>In the context of type systems, |\Gamma| is called the <strong>context</strong>, |\Sigma| is called the <strong>signature</strong>, |e| is the <strong>term</strong> or <strong>expression</strong>, and |\tau| is the <strong>type</strong>. Given this, I would read |\Gamma \vdash_\Sigma e : \tau| as “the expression e has type tau in context gamma given signature sigma.” For the “|{\to}E|” rule we have, additionally, multiple judgements above the line. These are joined together by conjunction, that is, we’d read “|{\to}E|” as “<strong>if</strong> |\Gamma \vdash_\Sigma f : \tau_1 \to \tau_2| <strong>and</strong> |\Gamma \vdash_\Sigma x : \tau_1| <strong>then</strong> |\Gamma \vdash_\Sigma f x : \tau_2|</p>
-<p>In most recent type system research multiple judgments are necessary to describe the type system, and so you may see things like |\Gamma \vdash e &gt; \tau| or |\Gamma \vdash e_1 \sim e_2|. The key thing to remember is that these are completely distinct relations that will have their own definitions (although the collection of them will often be mutually recursively defined).</p>
+<p>The judgment can be viewed as a proposition and the rule is an “if-then” statement read from top to bottom.
+So the “|{\to}I|” rule says, “<strong>if</strong> |\Gamma, x : \tau_1 \vdash_\Sigma e : \tau_2| <strong>then</strong>
+|\Gamma \vdash_\Sigma \lambda x : \tau_1.e : \tau_1 \to \tau_2|”.
+It is often profitable to read it bottom-up as “<strong>To prove</strong> |\Gamma \vdash_\Sigma \lambda x : \tau_1.e : \tau_1 \to \tau_2|
+<strong>you need to show</strong> |\Gamma, x : \tau_1 \vdash_\Sigma e : \tau_2|”.</p>
+<p>So what is the judgment saying? First, the judgment is, in this case, a four argument relation. The
+arguments of this relation are |\Gamma|, |\Sigma|, |e|, and |\tau|. We could say the name of this relation
+is the perspicuous |(\_)\vdash_{(\_)} (\_) : (\_)|. Note that it does not make sense to ask what “⊢”
+means or what “:” means anymore than it makes sense to ask what “-&gt;” means in Haskell’s <code class="sourceCode haskell">\ x <span class="ot">-&gt;</span> e</code>.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+<p>In the context of type systems, |\Gamma| is called the <strong>context</strong>, |\Sigma| is called the <strong>signature</strong>,
+|e| is the <strong>term</strong> or <strong>expression</strong>, and |\tau| is the <strong>type</strong>. Given this, I would read
+|\Gamma \vdash_\Sigma e : \tau| as “the expression e has type tau in context gamma given signature sigma.”
+For the “|{\to}E|” rule we have, additionally, multiple judgements above the line. These are joined together by
+conjunction, that is, we’d read “|{\to}E|” as “<strong>if</strong> |\Gamma \vdash_\Sigma f : \tau_1 \to \tau_2| <strong>and</strong> |\Gamma \vdash_\Sigma x : \tau_1|
+<strong>then</strong> |\Gamma \vdash_\Sigma f x : \tau_2|</p>
+<p>In most recent type system research multiple judgments are necessary to describe the type system, and so you
+may see things like |\Gamma \vdash e &gt; \tau| or |\Gamma \vdash e_1 \sim e_2|. The key thing to remember is that these
+are completely distinct relations that will have their own definitions (although the collection of them will
+often be mutually recursively defined).</p>
 <h3 id="inductively-defined-relations">Inductively Defined Relations</h3>
 <h4 id="relations">Relations</h4>
-<p>Relations in set theory are boolean valued functions. Being programmers, and thus constructivists, we want evidence, so a relation |R : A \times B \to \mathbf 2| becomes a type constructor <code class="sourceCode agda">R <span class="ot">:</span> <span class="ot">(</span>A , B<span class="ot">)</span> <span class="ot">-&gt;</span> <span class="dt">Set</span></code>. |R(a,b)| holds if we have a value (proof/witness) <code class="sourceCode agda">w <span class="ot">:</span> R a b</code>. An <strong>inductively defined relation</strong> or <strong>judgment</strong> is then just a type constructor for an (inductive) data type. That means, if <code>R</code> is an inductively defined relation, then its definition is <code class="sourceCode agda"><span class="kw">data</span> R <span class="ot">:</span> A <span class="ot">-&gt;</span> B <span class="ot">-&gt;</span> <span class="dt">Set</span> <span class="kw">where</span> <span class="ot">...</span></code>. A <strong>rule</strong> is a constructor of this data type. A <strong>derivation</strong> is a value of this data type, and will usually be a tree-like structure. As a bit of ambiguity in the terminology (arguably arising from a common ambiguity in mathematical notation), it’s a bit more natural to use the term “judgment” to refer to something that can be (at the meta level) true or false. For example, we’d say |R(a,b)| is a judgment. Nevertheless, when we say something like “the typing judgment” it’s clear that we’re referring to the whole relation, i.e. |R|.</p>
+<p>Relations in set theory are boolean valued functions. Being programmers, and thus constructivists, we want
+evidence, so a relation |R : A \times B \to \mathbf 2| becomes a type constructor <code class="sourceCode agda">R <span class="ot">:</span> <span class="ot">(</span>A , B<span class="ot">)</span> <span class="ot">-&gt;</span> <span class="dt">Set</span></code>. |R(a,b)| holds
+if we have a value (proof/witness) <code class="sourceCode agda">w <span class="ot">:</span> R a b</code>. An <strong>inductively defined relation</strong> or <strong>judgment</strong> is then just a
+type constructor for an (inductive) data type. That means, if <code>R</code> is an inductively defined relation, then
+its definition is <code class="sourceCode agda"><span class="kw">data</span> R <span class="ot">:</span> A <span class="ot">-&gt;</span> B <span class="ot">-&gt;</span> <span class="dt">Set</span> <span class="kw">where</span> <span class="ot">...</span></code>. A <strong>rule</strong> is a constructor of this data type.
+A <strong>derivation</strong> is a value of this data type, and will usually be a tree-like structure. As a bit of
+ambiguity in the terminology (arguably arising from a common ambiguity in mathematical notation), it’s a bit
+more natural to use the term “judgment” to refer to something that can be (at the meta level) true or false.
+For example, we’d say |R(a,b)| is a judgment. Nevertheless, when we say something like “the typing judgment”
+it’s clear that we’re referring to the whole relation, i.e. |R|.</p>
 <h4 id="parameters-of-the-judgments">Parameters of the judgments</h4>
-<p>Since a judgment is a relation, we need to describe what the arguments to the relation look like. Typically something like <a href="https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_Form">BNF</a> is used. The BNF definitions provide the types used as parameters to the judgments. It is common to use a Fortran-esque style where a naming convention is used to avoid the need to explicitly declare the types of meta-variables. For example, the following says meta-variables like |n|, |m|, and |n_1| are all natural numbers.</p>
+<p>Since a judgment is a relation, we need to describe what the arguments to the relation look like. Typically
+something like <a href="https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_Form">BNF</a> is used.
+The BNF definitions provide the types used as parameters to the judgments. It is common to use a
+Fortran-esque style where a naming convention is used to avoid the need to explicitly declare the types
+of meta-variables. For example, the following says meta-variables like |n|, |m|, and |n_1| are all natural
+numbers.</p>
 <pre><code>n, m ::= Z | S n</code></pre>
 <p>BNF definitions translate readily to algebraic data types.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode agda"><code class="sourceCode agda"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> Nat <span class="ot">:</span> <span class="dt">Set</span> <span class="kw">where</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    Z <span class="ot">:</span> Nat</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    S <span class="ot">:</span> Nat <span class="ot">-&gt;</span> Nat</span></code></pre></div>
 <blockquote>
-<p>Agda note: <code class="sourceCode agda"><span class="dt">Set</span></code> is what is called <code class="sourceCode haskell"><span class="op">*</span></code> in Haskell. “Type” would be a better name. Also, these sidebars will cover details about Agda with the aim that readers unfamiliar with Agda don’t get tripped up by tangential details.</p>
+<p>Agda note: <code class="sourceCode agda"><span class="dt">Set</span></code> is what is called <code class="sourceCode haskell"><span class="op">*</span></code> in Haskell. “Type” would be a better name. Also,
+these sidebars will cover details about Agda with the aim that readers unfamiliar with Agda don’t get tripped
+up by tangential details.</p>
 </blockquote>
-<p>Sometimes it’s not possible to fully capture the constraints on well-formed syntax with BNF. In other words, only a subset of syntactically valid terms are well-formed. For example, <code class="sourceCode agda">Nat Nat</code> is syntactically valid but is not well-formed. We can pick out that subset with a predicate, i.e. a unary relation. This is, of course, nothing but another judgment. As an example, if we wired the <code class="sourceCode agda">Maybe</code> type into our type system, we’d likely have a judgment that looks like |\tau\ \mathtt{type}| which would include the following rule:</p>
+<p>Sometimes it’s not possible to fully capture the constraints on well-formed syntax with BNF. In other words,
+only a subset of syntactically valid terms are well-formed. For example, <code class="sourceCode agda">Nat Nat</code> is syntactically
+valid but is not well-formed. We can pick out that subset with a predicate, i.e. a unary relation. This is,
+of course, nothing but another judgment. As an example, if we wired the <code class="sourceCode agda">Maybe</code> type into our type
+system, we’d likely have a judgment that looks like |\tau\ \mathtt{type}| which would include the following rule:</p>
 <p>\[\frac{\tau\ \mathtt{type}}{(\mathrm{Maybe}\ \tau)\ \mathtt{type}}\]</p>
-<p>In a scenario like this, we’d also have to make sure the rules of our typing judgment also required the types involved to be well-formed. Modifying the example from the introduction, we’d get:</p>
+<p>In a scenario like this, we’d also have to make sure the rules of our typing judgment also required the types
+involved to be well-formed. Modifying the example from the introduction, we’d get:</p>
 <p>\[\frac{\Gamma,x:\tau_1 \vdash_\Sigma e : \tau_2 \qquad \tau_1\ \mathtt{type} \qquad \tau_2\ \mathtt{type}}{\Gamma \vdash_\Sigma (\lambda x:\tau_1.e) : \tau_1 \to \tau_2} {\to}I\]</p>
 <h4 id="a-simple-inductively-defined-relation-in-agda">A simple inductively defined relation in Agda</h4>
-<p>As a very simple example, let’s say we wanted to provide explicit evidence that one natural number was less than or equal to another in Agda. Scenarios like this are common in dependently typed programming, and so we’ll start with the Agda this time and then “informalize” it.</p>
+<p>As a very simple example, let’s say we wanted to provide explicit evidence that one natural number was
+less than or equal to another in Agda. Scenarios like this are common in dependently typed programming,
+and so we’ll start with the Agda this time and then “informalize” it.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode agda"><code class="sourceCode agda"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="ot">_</span>isLessThanOrEqualTo<span class="ot">_</span> <span class="ot">:</span> Nat <span class="ot">-&gt;</span> Nat <span class="ot">-&gt;</span> <span class="dt">Set</span> <span class="kw">where</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    Z&lt;=n <span class="ot">:</span> <span class="ot">{</span>n <span class="ot">:</span> Nat<span class="ot">}</span> <span class="ot">-&gt;</span> Z isLessThanOrEqualTo n</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    Sm&lt;=Sn <span class="ot">:</span> <span class="ot">{</span>m <span class="ot">:</span> Nat<span class="ot">}</span> <span class="ot">-&gt;</span> <span class="ot">{</span>n <span class="ot">:</span> Nat<span class="ot">}</span> <span class="ot">-&gt;</span> m isLessThanOrEqualTo n <span class="ot">-&gt;</span> <span class="ot">(</span>S m<span class="ot">)</span> isLessThanOrEqualTo <span class="ot">(</span>S n<span class="ot">)</span></span></code></pre></div>
 <blockquote>
-<p>Agda notes: In Agda identifiers can contain almost any character so <code class="sourceCode agda">Z&lt;=n</code> is just an identifier. Agda allows any identifier to be used infix (or more generally mixfix). The underscores mark where the arguments go. So <code class="sourceCode agda"><span class="ot">_</span>isLessThanOrEqualTo<span class="ot">_</span></code> is a binary infix operator. Finally, curly brackets indicate implicit arguments which can be omitted and Agda will “guess” their values. Usually, they’ll be obvious to Agda by unification.</p>
+<p>Agda notes: In Agda identifiers can contain almost any character so <code class="sourceCode agda">Z&lt;=n</code> is just an identifier.
+Agda allows any identifier to be used infix (or more generally mixfix). The underscores mark where the
+arguments go. So <code class="sourceCode agda"><span class="ot">_</span>isLessThanOrEqualTo<span class="ot">_</span></code> is a binary infix operator. Finally, curly brackets
+indicate implicit arguments which can be omitted and Agda will “guess” their values. Usually, they’ll be
+obvious to Agda by unification.</p>
 </blockquote>
-<p>In the informal notation, the types of the arguments are implied by the naming. <code>n</code> is a natural number because it was used as the metavariable (non-terminal) in the BNF for naturals. We also implicitly quantify over all free variables. In the Agda code, this quantification was explicit.</p>
+<p>In the informal notation, the types of the arguments are implied by the naming. <code>n</code> is a natural number because
+it was used as the metavariable (non-terminal) in the BNF for naturals. We also implicitly quantify over
+all free variables. In the Agda code, this quantification was explicit.</p>
 <p>\[\frac{}{Z \leq n} \mathtt{Z\leq n}\]</p>
 <p>\[\frac{m \leq n}{S m \leq S n} \mathtt{Sm\leq Sn}\]</p>
-<p>Again, I want to emphasize that these are <em>defining</em> <code>isLessThanOrEqualTo</code> and |\leq|. They can’t be wrong. They can only fail to coincide with our intuitions or to an alternate definition. A derivation that |2 \leq 3| looks like:</p>
+<p>Again, I want to emphasize that these are <em>defining</em> <code>isLessThanOrEqualTo</code> and |\leq|. They can’t be wrong.
+They can only fail to coincide with our intuitions or to an alternate definition. A derivation that |2 \leq 3|
+looks like:</p>
 <p>In Agda:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode agda"><code class="sourceCode agda"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>twoIsLessThanThree <span class="ot">:</span> <span class="ot">(</span>S <span class="ot">(</span>S Z<span class="ot">))</span> isLessThanOrEqualTo <span class="ot">(</span>S <span class="ot">(</span>S <span class="ot">(</span>S Z<span class="ot">)))</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>twoIsLessThanThree <span class="ot">=</span> Sm&lt;=Sn <span class="ot">(</span>Sm&lt;=Sn Z&lt;=n<span class="ot">)</span></span></code></pre></div>
 <p>In the informal notation:</p>
 <p>\[\frac{\frac{}{Z \leq S Z}}{\frac{S Z \leq S (S Z)}{S (S Z) \leq S (S (S Z))}}\]</p>
 <h3 id="big-step-operational-semantics">Big-step operational semantics</h3>
-<p>Here’s a larger example that also illustrates that these judgments do not need to be typing judgments. Here we’re defining a big-step operational semantics for the untyped lambda calculus.</p>
+<p>Here’s a larger example that also illustrates that these judgments do not need to be typing
+judgments. Here we’re defining a big-step operational semantics for the untyped lambda calculus.</p>
 <pre><code>x variable
 v ::= λx.e
 e ::= v | e e | x</code></pre>
-<p>In informal presentations, binders like |\lambda| are handled in a fairly relaxed manner. While the details of handling binders are tricky and error-prone, they are usually standard and so authors assume readers can fill in those details and are aware of the concerns (e.g. variable capture). In Agda, of course, we’ll need to spell out the details. There are <a href="https://namebinding.wordpress.com/">many approaches</a> for dealing with binders with different trade-offs. One of the newer and more convenient approaches is parametric higher-order abstract syntax (PHOAS). Higher-order abstract syntax (HOAS) approaches allow us to reuse the binding structure of the host language and thus eliminate much of the work. Below, this is realized by the <code class="sourceCode agda">Lambda</code> constructor taking a function as its argument. In a later section, I’ll use a different approach using deBruijn indices.</p>
+<p>In informal presentations, binders like |\lambda| are handled in a fairly relaxed manner. While the details
+of handling binders are tricky and error-prone, they are usually standard and so authors assume readers can
+fill in those details and are aware of the concerns (e.g. variable capture). In Agda, of course, we’ll need
+to spell out the details. There are <a href="https://namebinding.wordpress.com/">many approaches</a> for dealing with
+binders with different trade-offs. One of the newer and more convenient approaches is parametric higher-order
+abstract syntax (PHOAS). Higher-order abstract syntax (HOAS) approaches allow us to reuse the binding
+structure of the host language and thus eliminate much of the work. Below, this is realized by the
+<code class="sourceCode agda">Lambda</code> constructor taking a function as its argument. In a later section, I’ll use a different
+approach using deBruijn indices.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode agda"><code class="sourceCode agda"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- PHOAS approach to binding</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">mutual</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">data</span> Expr <span class="ot">(</span>A <span class="ot">:</span> <span class="dt">Set</span><span class="ot">)</span> <span class="ot">:</span> <span class="dt">Set</span> <span class="kw">where</span></span>
@@ -124,12 +201,26 @@ e ::= v | e e | x</code></pre>
 <span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>CValue <span class="ot">:</span> <span class="dt">Set1</span></span>
 <span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>CValue <span class="ot">=</span> <span class="ot">{</span>A <span class="ot">:</span> <span class="dt">Set</span><span class="ot">}</span> <span class="ot">-&gt;</span> Value A</span></code></pre></div>
 <blockquote>
-<p>Agda note: <code class="sourceCode agda"><span class="dt">Set1</span></code> is needed for technical reasons that are unimportant. You can just pretend it says <code class="sourceCode agda"><span class="dt">Set</span></code> instead. More important is that the definitions of <code class="sourceCode agda">Expr</code> and <code class="sourceCode agda">Value</code> are a bit different than the definition for <code class="sourceCode agda"><span class="ot">_</span>isLessThanOrEqualTo<span class="ot">_</span></code>. In particular, the argument <code class="sourceCode agda"><span class="ot">(</span>A <span class="ot">:</span> <span class="dt">Set</span><span class="ot">)</span></code> occurs to the left of the colon. When an argument occurs to the left of the colon we say it <strong>parameterizes</strong> the data declaration and that it is a <strong>parameter</strong>. When it occurs to the right of the colon we say it <strong>indexes</strong> the data declaration and that it is an <strong>index</strong>. The difference is that parameters must occur uniformly in the return type of the data constructors while indexes can be different in each data constructor. The arguments of an inductively defined relation like <code class="sourceCode agda"><span class="ot">_</span>isLessThanOrEqualTo<span class="ot">_</span></code> will always be indexes (though there could be additional parameters.)</p>
+<p>Agda note: <code class="sourceCode agda"><span class="dt">Set1</span></code> is needed for technical reasons that are unimportant. You can just pretend it
+says <code class="sourceCode agda"><span class="dt">Set</span></code> instead. More important is that the definitions of <code class="sourceCode agda">Expr</code> and <code class="sourceCode agda">Value</code>
+are a bit different than the definition for <code class="sourceCode agda"><span class="ot">_</span>isLessThanOrEqualTo<span class="ot">_</span></code>. In particular, the argument
+<code class="sourceCode agda"><span class="ot">(</span>A <span class="ot">:</span> <span class="dt">Set</span><span class="ot">)</span></code> occurs to the left of the colon. When an argument occurs to the left of the
+colon we say it <strong>parameterizes</strong> the data declaration and that it is a <strong>parameter</strong>. When it occurs to the
+right of the colon we say it <strong>indexes</strong> the data declaration and that it is an <strong>index</strong>. The difference
+is that parameters must occur uniformly in the return type of the data constructors while indexes can be
+different in each data constructor. The arguments of an inductively defined relation like
+<code class="sourceCode agda"><span class="ot">_</span>isLessThanOrEqualTo<span class="ot">_</span></code> will always be indexes (though there could be additional parameters.)</p>
 </blockquote>
 <p>\[\frac{e_1 \downarrow \lambda x.e \qquad e_2 \downarrow v_2 \qquad e[x\mapsto v_2] \downarrow v}{e_1 e_2 \downarrow v} \mathtt{App}\]</p>
 <p>\[\frac{}{v \downarrow v} \mathtt{Trivial}\]</p>
-<p>The |e \downarrow v| judgment (read as “the expression |e| evaluates to the value |v|”) defines a call-by-value evaluation relation. |e[x\mapsto v]| means “substitute |v| for |x| in the expression |e|”. This notation is not standardized; there are many variants. In more rigorous presentations this operation will be formally defined, but usually the authors assume you are familiar with it. In the |\mathtt{Trivial}| rule, the inclusion of values into expressions is implicitly used. Note that the rule is restricted to values only.</p>
-<p>The |\mathtt{App}| rule specifies call-by-value because the |e_2| expression is evaluated and then the resulting value is substituted into |e|. For call-by-name, we’d omit the evaluation of |e_2| and directly substitute |e_2| for |x| in |e|. Whether |e_1| or |e_2| is evaluated first (or in parallel) is not specified in this example.</p>
+<p>The |e \downarrow v| judgment (read as “the expression |e| evaluates to the value |v|”) defines a call-by-value
+evaluation relation. |e[x\mapsto v]| means “substitute |v| for |x| in the expression |e|”. This notation is not
+standardized; there are many variants. In more rigorous presentations this operation will be formally
+defined, but usually the authors assume you are familiar with it. In the |\mathtt{Trivial}| rule, the
+inclusion of values into expressions is implicitly used. Note that the rule is restricted to values only.</p>
+<p>The |\mathtt{App}| rule specifies call-by-value because the |e_2| expression is evaluated and then the resulting
+value is substituted into |e|. For call-by-name, we’d omit the evaluation of |e_2| and directly substitute
+|e_2| for |x| in |e|. Whether |e_1| or |e_2| is evaluated first (or in parallel) is not specified in this example.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode agda"><code class="sourceCode agda"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>subst <span class="ot">:</span> <span class="ot">{</span>A <span class="ot">:</span> <span class="dt">Set</span><span class="ot">}</span> <span class="ot">-&gt;</span> Expr <span class="ot">(</span>Expr A<span class="ot">)</span> <span class="ot">-&gt;</span> Expr A</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>subst <span class="ot">(</span>Var e<span class="ot">)</span> <span class="ot">=</span> e</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>subst <span class="ot">(</span>Val <span class="ot">(</span>Lambda b<span class="ot">))</span> <span class="ot">=</span> Val <span class="ot">(</span>Lambda <span class="ot">(λ</span> a <span class="ot">-&gt;</span> subst <span class="ot">(</span>b <span class="ot">(</span>Var a<span class="ot">))))</span></span>
@@ -144,13 +235,28 @@ e ::= v | e e | x</code></pre>
 <span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>        <span class="ot">-&gt;</span> e2 EvaluatesTo v2</span>
 <span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        <span class="ot">-&gt;</span> <span class="ot">(</span>subst <span class="ot">(</span>e <span class="ot">(</span>Val v2<span class="ot">)))</span> EvaluatesTo v</span>
 <span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>        <span class="ot">-&gt;</span> <span class="ot">(</span>App e1 e2<span class="ot">)</span> EvaluatesTo v</span></code></pre></div>
-<p>The <code class="sourceCode agda">EvaluateTrivial</code> constructor explicitly uses the <code class="sourceCode agda">Val</code> injection of values into expressions. The <code class="sourceCode agda">EvaluateApp</code> constructor starts off with a series of implicit arguments that introduce and quantify over the variables used in the rule. After those, each judgement above the line in the |\mathtt{App}| rule, becomes an argument to the <code class="sourceCode agda">EvaluateApp</code> constructor.</p>
-<p>In this case ↓ is defining a functional relation, meaning for every expression there’s at most one value that the expression evaluates to. So another natural way to interpret ↓ is as a definition, in logic programming style, of a (partial) recursive function. In other words we can use the concept of mode from logic programming and instead of treating the arguments to ↓ as inputs, we can treat the first as an input and the second as an output.</p>
-<p>↓ gives rise to a partial function because not every expression has a normal form. For <code class="sourceCode agda"><span class="ot">_</span>EvaluatesTo<span class="ot">_</span></code> this is realized by the fact that we simply won’t be able to construct a term of type <code class="sourceCode agda">e EvaluatesTo v</code> for any <code class="sourceCode agda">v</code> if <code class="sourceCode agda">e</code> doesn’t have a normal form. In fact, we can use the inductive structure of the relationship to help prove that statement. (Unfortunately, Agda doesn’t present a very good experience for data types indexed by functions, so the proof is not nearly as smooth as one would like.)</p>
+<p>The <code class="sourceCode agda">EvaluateTrivial</code> constructor explicitly uses the <code class="sourceCode agda">Val</code> injection of values into
+expressions. The <code class="sourceCode agda">EvaluateApp</code> constructor starts off with a series of implicit arguments that
+introduce and quantify over the variables used in the rule. After those, each judgement above the line
+in the |\mathtt{App}| rule, becomes an argument to the <code class="sourceCode agda">EvaluateApp</code> constructor.</p>
+<p>In this case ↓ is defining a functional relation, meaning for every expression there’s
+at most one value that the expression evaluates to. So another natural way to interpret ↓ is
+as a definition, in logic programming style, of a (partial) recursive function. In other words we can
+use the concept of mode from logic programming and instead of treating the arguments to ↓ as inputs,
+we can treat the first as an input and the second as an output.</p>
+<p>↓ gives rise to a partial function because not every expression has a normal form. For <code class="sourceCode agda"><span class="ot">_</span>EvaluatesTo<span class="ot">_</span></code>
+this is realized by the fact that we simply won’t be able to construct a term of type <code class="sourceCode agda">e EvaluatesTo v</code>
+for any <code class="sourceCode agda">v</code> if <code class="sourceCode agda">e</code> doesn’t have a normal form. In fact, we can use the inductive structure of
+the relationship to help prove that statement. (Unfortunately, Agda doesn’t present a very good experience
+for data types indexed by functions, so the proof is not nearly as smooth as one would like.)</p>
 <h3 id="type-systems">Type systems</h3>
-<p>Next we’ll turn to type systems which will present an even larger example, and will introduce some concepts that are specific to type systems (though, of course, they overlap greatly with concepts in logic due to the Curry-Howard correspondence.)</p>
+<p>Next we’ll turn to type systems which will present an even larger example, and will introduce some concepts
+that are specific to type systems (though, of course, they overlap greatly with concepts in logic due to the
+Curry-Howard correspondence.)</p>
 <h4 id="terms-and-types">Terms and types</h4>
-<p>Below is an informal presentation of the polymorphic lambda calculus with explicit type abstraction and type application. An interesting fact about the polymorphic lambda calculus is that we don’t need any base types. Via Church-encoding, we can define types like natural numbers and lists.</p>
+<p>Below is an informal presentation of the polymorphic lambda calculus with explicit type abstraction and
+type application. An interesting fact about the polymorphic lambda calculus is that we don’t need any
+base types. Via Church-encoding, we can define types like natural numbers and lists.</p>
 <pre><code>α type variable
 τ ::= τ → τ | ∀α. τ | α
 
@@ -158,7 +264,9 @@ x variable
 c constant
 v ::= λx:τ.e | Λτ.e | c
 e ::= v | e e | e[τ] | x</code></pre>
-<p>In this case I’ll be using deBruijn indices to handle the binding structure of the terms and types. This means instead of writing |\lambda x.\lambda y. x|, you would write |\lambda \lambda 1| where the |1| counts how many binders (lambdas) you need to traverse to reach the binding site.</p>
+<p>In this case I’ll be using deBruijn indices to handle the binding structure of the terms and types. This
+means instead of writing |\lambda x.\lambda y. x|, you would write |\lambda \lambda 1|
+where the |1| counts how many binders (lambdas) you need to traverse to reach the binding site.</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode agda"><code class="sourceCode agda"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> TType <span class="ot">:</span> <span class="dt">Set</span> <span class="kw">where</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    TTVar <span class="ot">:</span> Nat <span class="ot">-&gt;</span> TType                    <span class="co">-- α</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="ot">_</span>=&gt;<span class="ot">_</span> <span class="ot">:</span> TType <span class="ot">-&gt;</span> TType <span class="ot">-&gt;</span> TType          <span class="co">-- τ → τ</span></span>
@@ -176,10 +284,23 @@ e ::= v | e e | e[τ] | x</code></pre>
 <span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>        TTyLambda <span class="ot">:</span> TExpr <span class="ot">-&gt;</span> TValue         <span class="co">-- Λτ.e</span></span>
 <span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>        TConst <span class="ot">:</span> Nat <span class="ot">-&gt;</span> TValue              <span class="co">-- c</span></span></code></pre></div>
 <h4 id="the-context">The Context</h4>
-<p>In formulating the typing rules we need to deal with <strong>open terms</strong>, that is terms which refer to variables that they don’t bind. This should only happen if some enclosing terms <em>did</em> bind those variables, so we need to keep track of the variables that have been bound by enclosing terms. For example, when type checking |\lambda x:\tau.x|, we’ll need to type check the subterm |x| which does not contain enough information in itself for us to know what the type should be. So, we keep track of what variables have been bound (and to what type) in a <strong>context</strong> and then we can just look up the expected type. When authors bother formally spelling out the context, it will look something like the following:</p>
+<p>In formulating the typing rules we need to deal with <strong>open terms</strong>, that is terms which refer to variables
+that they don’t bind. This should only happen if some enclosing terms <em>did</em> bind those variables, so we
+need to keep track of the variables that have been bound by enclosing terms. For example, when type
+checking |\lambda x:\tau.x|, we’ll need to type check the subterm |x| which does not contain
+enough information in itself for us to know what the type should be. So, we keep track of what variables
+have been bound (and to what type) in a <strong>context</strong> and then we can just look up the expected type. When
+authors bother formally spelling out the context, it will look something like the following:</p>
 <pre><code>Γ ::= . | Γ, x:τ
 Δ ::= . | Δ, α</code></pre>
-<p>We see that this is just a (snoc) list. In the first case, |\Gamma|, it is a list of pairs of variables and types, i.e. an association list mapping variables to types. Often it will be treated as a finite mapping. In the second case, |\Delta|, it is a list of type variables. Since I’m using deBruijn notation, there are no variables so we end up with a list of types in the first case. In the second case, we would end up with a list of nothing in particular, i.e. a list of unit, but that is isomorphic to a natural number. In other words, the only purpose of the type context, |\Delta|, is to make sure we don’t use unbound variables, which in deBruijn notation just means we don’t have deBruijn indexes that try to traverse more lambdas than enclose them. The Agda code for the above is completely straight-forward.</p>
+<p>We see that this is just a (snoc) list. In the first case, |\Gamma|, it is a list of pairs of variables
+and types, i.e. an association list mapping variables to types. Often it will be treated as a finite mapping.
+In the second case, |\Delta|, it is a list of type variables. Since I’m using deBruijn notation, there are no
+variables so we end up with a list of types in the first case. In the second case, we would end up with a
+list of nothing in particular, i.e. a list of unit, but that is isomorphic to a natural number. In other
+words, the only purpose of the type context, |\Delta|, is to make sure we don’t use unbound variables, which
+in deBruijn notation just means we don’t have deBruijn indexes that try to traverse more lambdas than enclose
+them. The Agda code for the above is completely straight-forward.</p>
 <div class="sourceCode" id="cb11"><pre class="sourceCode agda"><code class="sourceCode agda"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> List <span class="ot">(</span>A <span class="ot">:</span> <span class="dt">Set</span><span class="ot">)</span> <span class="ot">:</span> <span class="dt">Set</span> <span class="kw">where</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    Nil <span class="ot">:</span> List A</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="ot">_</span>,<span class="ot">_</span> <span class="ot">:</span> List A <span class="ot">-&gt;</span> A <span class="ot">-&gt;</span> List A</span>
@@ -190,16 +311,24 @@ e ::= v | e e | e[τ] | x</code></pre>
 <span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>TypeContext <span class="ot">:</span> <span class="dt">Set</span></span>
 <span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>TypeContext <span class="ot">=</span> Nat</span></code></pre></div>
 <h4 id="the-signature">The Signature</h4>
-<p>Signatures keep track of what primitive, “user-defined” constants might exist. Often the signature is omitted since nothing particularly interesting happens with it. Indeed, that will be the case for us. Nevertheless, we see that the signature is just another association list mapping constants to types.</p>
+<p>Signatures keep track of what primitive, “user-defined” constants might exist. Often the signature
+is omitted since nothing particularly interesting happens with it. Indeed, that will be the case for
+us. Nevertheless, we see that the signature is just another association list mapping constants to
+types.</p>
 <pre><code>Σ ::= . | Σ, c:τ</code></pre>
 <div class="sourceCode" id="cb13"><pre class="sourceCode agda"><code class="sourceCode agda"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>Signature <span class="ot">:</span> <span class="dt">Set</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>Signature <span class="ot">=</span> List TType</span></code></pre></div>
-<p>The main reason I included the signature, beyond just covering it for the cases when it is included, is that sometimes certain rules can be better understood as manipulations of the signature. For example, in <em>logic</em>, universal quantification is often described by a rule like:</p>
+<p>The main reason I included the signature, beyond just covering it for the cases when it is included, is that
+sometimes certain rules can be better understood as manipulations of the signature. For example, in <em>logic</em>,
+universal quantification is often described by a rule like:</p>
 <p>\[\frac{\Gamma \vdash P[x\mapsto c] \quad c\ \mathrm{fresh}}{\Gamma \vdash \forall x.P}\]</p>
-<p>What’s happening and what “freshness” is is made a bit clearer by employing a signature (which for logic is usually just a list of constants similar to our <code>TypeContext</code>):</p>
+<p>What’s happening and what “freshness” is is made a bit clearer by employing a signature (which for logic is
+usually just a list of constants similar to our <code>TypeContext</code>):</p>
 <p>\[\frac{\Gamma \vdash_{\Sigma, c} P[x\mapsto c] \quad c \notin \Sigma}{\Gamma \vdash_\Sigma \forall x.P}\]</p>
 <h4 id="judgment">Judgment</h4>
-<p>To define the typing rules we need two judgements. The first, |\Delta \vdash \tau|, will be a simple judgement that says |\tau| is a well formed type in |\Delta|. This basically just requires that all variables are bound.</p>
+<p>To define the typing rules we need two judgements. The first, |\Delta \vdash \tau|, will be a simple
+judgement that says |\tau| is a well formed type in |\Delta|. This basically just requires that all variables are
+bound.</p>
 <p>\[\frac{\alpha \in \Delta}{\Delta \vdash \alpha}\]</p>
 <p>\[\frac{\Delta, \alpha \vdash \tau}{\Delta \vdash \forall \alpha. \tau}\]</p>
 <p>\[\frac{\Delta \vdash \tau_1 \quad \Delta \vdash \tau_2}{\Delta \vdash \tau_1 \to \tau_2}\]</p>
@@ -212,14 +341,19 @@ e ::= v | e e | e[τ] | x</code></pre>
 <span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    TyVarJ <span class="ot">:</span> <span class="ot">{</span>n <span class="ot">:</span> Nat<span class="ot">}</span> <span class="ot">-&gt;</span> <span class="ot">{</span>ctx <span class="ot">:</span> TypeContext<span class="ot">}</span> <span class="ot">-&gt;</span> n &lt; ctx <span class="ot">-&gt;</span> <span class="ot">(</span>TTVar n<span class="ot">)</span> isValidIn ctx</span>
 <span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    TyArrJ <span class="ot">:</span> <span class="ot">{</span>t1 t2 <span class="ot">:</span> TType<span class="ot">}</span> <span class="ot">-&gt;</span> <span class="ot">{</span>ctx <span class="ot">:</span> TypeContext<span class="ot">}</span> <span class="ot">-&gt;</span> t1 isValidIn ctx <span class="ot">-&gt;</span> t2 isValidIn ctx <span class="ot">-&gt;</span> <span class="ot">(</span>t1 =&gt; t2<span class="ot">)</span> isValidIn ctx</span>
 <span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    TyForallJ <span class="ot">:</span> <span class="ot">{</span>t <span class="ot">:</span> TType<span class="ot">}</span> <span class="ot">-&gt;</span> <span class="ot">{</span>ctx <span class="ot">:</span> TypeContext<span class="ot">}</span> <span class="ot">-&gt;</span> t isValidIn <span class="ot">(</span>S ctx<span class="ot">)</span> <span class="ot">-&gt;</span> <span class="ot">(</span>Forall t<span class="ot">)</span> isValidIn ctx</span></code></pre></div>
-<p>The meat is the following typing judgement, depending on the judgement defining well-formed types. I’m not really going to explain these rules because, in some sense, there is nothing to explain. Beyond explaining the notation itself, which was the point of the article, the below is “self-explanatory” in the sense that it is a definition, and whether it is a good definition or “meaningful” depends on whether we can prove the theorems we want about it.</p>
+<p>The meat is the following typing judgement, depending on the judgement defining well-formed types. I’m not really going
+to explain these rules because, in some sense, there is nothing to explain. Beyond explaining the notation itself, which
+was the point of the article, the below is “self-explanatory” in the sense that it is a definition, and whether it is a good
+definition or “meaningful” depends on whether we can prove the theorems we want about it.</p>
 <p>\[\frac{c:\tau \in \Sigma \qquad \Delta \vdash \tau}{\Delta;\Gamma \vdash_\Sigma c : \tau} \mathtt{Const}\]</p>
 <p>\[\frac{x:\tau \in \Gamma \qquad \Delta \vdash \tau}{\Delta;\Gamma \vdash_\Sigma x : \tau} \mathtt{Var}\]</p>
 <p>\[\frac{\Delta;\Gamma \vdash_\Sigma e_1 : \tau_1 \to \tau_2 \qquad \Delta;\Gamma \vdash_\Sigma e_2 : \tau_1}{\Delta;\Gamma \vdash_\Sigma e_1 e_2 : \tau_2} \mathtt{App}\]</p>
 <p>\[\frac{\Delta;\Gamma \vdash_\Sigma e : \forall \alpha. \tau_1 \qquad \Delta \vdash \tau_2}{\Delta;\Gamma \vdash_\Sigma e[\tau_2] : \tau_1[\alpha\mapsto\tau_2]} \mathtt{TyApp}\]</p>
 <p>\[\frac{\Delta;\Gamma, x:\tau_1 \vdash_\Sigma e : \tau_2 \qquad \Delta \vdash \tau_1}{\Delta;\Gamma \vdash_\Sigma (\lambda x:\tau_1.e) : \tau_1 \to \tau_2} \mathtt{Abs}\]</p>
 <p>\[\frac{\Delta, \alpha;\Gamma \vdash_\Sigma e : \tau}{\Delta;\Gamma \vdash_\Sigma (\Lambda \alpha.e) : \forall \alpha. \tau} \mathtt{TyAbs}\]</p>
-<p>Here’s the corresponding Agda code. Note, all Agda is doing for us here is making sure we haven’t written self-contradictory nonsense. In no way is Agda ensuring that this is the “right” definition. For example, it could be the case (but isn’t) that there are no values of this type. Agda would be perfectly content to let us define a type that had no values.</p>
+<p>Here’s the corresponding Agda code. Note, all Agda is doing for us here is making sure we haven’t written self-contradictory nonsense.
+In no way is Agda ensuring that this is the “right” definition. For example, it could be the case (but isn’t) that there are no values
+of this type. Agda would be perfectly content to let us define a type that had no values.</p>
 <div class="sourceCode" id="cb15"><pre class="sourceCode agda"><code class="sourceCode agda"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>tySubst <span class="ot">:</span> TType <span class="ot">-&gt;</span> TType <span class="ot">-&gt;</span> TType</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>tySubst t1 t2 <span class="ot">=</span> tySubst' t1 t2 Z</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">where</span> tySubst' <span class="ot">:</span> TType <span class="ot">-&gt;</span> TType <span class="ot">-&gt;</span> Nat <span class="ot">-&gt;</span> TType</span>
@@ -294,21 +428,30 @@ e ::= v | e e | e[τ] | x</code></pre>
 <span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>           inContext Nil and Z</span>
 <span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>           given Nil<span class="ot">)</span></span>
 <span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>wrongType <span class="ot">(</span>TyAbsJ <span class="ot">())</span></span></code></pre></div>
-<p>Having written all this, we have not defined a type checking algorithm (though Agda’s <code>auto</code> tactic does a pretty good job); we’ve merely specified what evidence that a program is well-typed is. Explicitly, a type checking algorithm would be a function with the following type:</p>
+<p>Having written all this, we have not defined a type checking algorithm (though Agda’s <code>auto</code> tactic does a pretty
+good job); we’ve merely specified what evidence that a program is well-typed is. Explicitly, a type checking algorithm
+would be a function with the following type:</p>
 <div class="sourceCode" id="cb17"><pre class="sourceCode agda"><code class="sourceCode agda"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> Maybe <span class="ot">(</span>A <span class="ot">:</span> <span class="dt">Set</span><span class="ot">)</span> <span class="ot">:</span> <span class="dt">Set</span> <span class="kw">where</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    Nothing <span class="ot">:</span> Maybe A</span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    Just <span class="ot">:</span> A <span class="ot">-&gt;</span> Maybe A</span>
 <span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>typeCheck <span class="ot">:</span> <span class="ot">(</span>e <span class="ot">:</span> TExpr<span class="ot">)</span> <span class="ot">-&gt;</span> <span class="ot">(</span>t <span class="ot">:</span> TType<span class="ot">)</span> <span class="ot">-&gt;</span> <span class="ot">(</span>sig <span class="ot">:</span> Signature<span class="ot">)</span> <span class="ot">-&gt;</span> Maybe <span class="ot">(</span>e hasType t inContext Nil and Z given sig<span class="ot">)</span></span>
 <span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>typeCheck <span class="ot">=</span> ?</span></code></pre></div>
-<p>In fact, we’d want to additionally prove that this function never returns <code class="sourceCode agda">Nothing</code> if there does exist a typing derivation that would give <code>e</code> the type <code>t</code> in signature <code>sig</code>. We could formalize this in Agda by instead giving <code class="sourceCode agda">typeCheck</code> the following type:</p>
+<p>In fact, we’d want to additionally prove that this function never returns <code class="sourceCode agda">Nothing</code> if there does exist
+a typing derivation that would give <code>e</code> the type <code>t</code> in signature <code>sig</code>. We could formalize this in Agda by
+instead giving <code class="sourceCode agda">typeCheck</code> the following type:</p>
 <div class="sourceCode" id="cb18"><pre class="sourceCode agda"><code class="sourceCode agda"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> Decidable <span class="ot">(</span>A <span class="ot">:</span> <span class="dt">Set</span><span class="ot">)</span> <span class="ot">:</span> <span class="dt">Set</span> <span class="kw">where</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    IsTrue <span class="ot">:</span> A <span class="ot">-&gt;</span> Decidable A</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    IsFalse <span class="ot">:</span> Not A <span class="ot">-&gt;</span> Decidable A</span>
 <span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>typeCheckDec <span class="ot">:</span> <span class="ot">(</span>e <span class="ot">:</span> TExpr<span class="ot">)</span> <span class="ot">-&gt;</span> <span class="ot">(</span>t <span class="ot">:</span> TType<span class="ot">)</span> <span class="ot">-&gt;</span> <span class="ot">(</span>sig <span class="ot">:</span> Signature<span class="ot">)</span> <span class="ot">-&gt;</span> Decidable <span class="ot">(</span>e hasType t inContext Nil and Z given sig<span class="ot">)</span></span>
 <span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>typeCheckDec <span class="ot">=</span> ?</span></code></pre></div>
-<p>This type says that either <code class="sourceCode agda">typeCheckDec</code> will return a typing derivation, or it will return a proof that there is no typing derivation. As the name <code class="sourceCode agda">Decidable</code> suggests, this may not always be possible. Which is to say, type checking may not always be decidable. Note, we can <em>always</em> check that a <em>typing derivation</em> is valid — we just need to verify that we applied the rules correctly — what we can’t necessarily do is <em>find</em> such a derivation given only the expression and the type or prove that no such derivation exists. Similar concerns apply to type inference which could have one of the following types:</p>
+<p>This type says that either <code class="sourceCode agda">typeCheckDec</code> will return a typing derivation, or it will return a proof that there is
+no typing derivation. As the name <code class="sourceCode agda">Decidable</code> suggests, this may not always be possible. Which is to say, type
+checking may not always be decidable. Note, we can <em>always</em> check that a <em>typing derivation</em> is valid — we just
+need to verify that we applied the rules correctly — what we can’t necessarily do is <em>find</em> such a derivation
+given only the expression and the type or prove that no such derivation exists. Similar concerns apply to type inference
+which could have one of the following types:</p>
 <div class="sourceCode" id="cb19"><pre class="sourceCode agda"><code class="sourceCode agda"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">record</span> Σ <span class="ot">(</span>T <span class="ot">:</span> <span class="dt">Set</span><span class="ot">)</span> <span class="ot">(</span>F <span class="ot">:</span> T <span class="ot">-&gt;</span> <span class="dt">Set</span><span class="ot">)</span> <span class="ot">:</span> <span class="dt">Set</span> <span class="kw">where</span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">field</span></span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>        fst <span class="ot">:</span> T</span>
@@ -319,21 +462,27 @@ e ::= v | e e | e[τ] | x</code></pre>
 <span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>inferTypeDec <span class="ot">:</span> <span class="ot">(</span>e <span class="ot">:</span> TExpr<span class="ot">)</span> <span class="ot">-&gt;</span> <span class="ot">(</span>sig <span class="ot">:</span> Signature<span class="ot">)</span> <span class="ot">-&gt;</span> Decidable <span class="ot">(</span>Σ TType <span class="ot">(λ</span> t <span class="ot">→</span> e hasType t inContext Nil and Z given sig<span class="ot">))</span></span>
 <span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>inferTypeDec <span class="ot">=</span> ?</span></code></pre></div>
-<p>where Σ indicates a dependent sum, i.e. a pair where the second component (here of type <code class="sourceCode agda">e hasType t inContext Nil and Z given sig</code>) depends on the first component (here of type <code class="sourceCode agda">TType</code>). With type inference we have the additional concern that there may be multiple possible types an expression could have, and we may want to ensure it returns the “most general” type in some sense. There may not always be a good sense of “most general” type and user-input is required to pick out of the possible types.</p>
-<p>Sometimes the rules themselves can be viewed as the defining rules of a logic program and thus directly provide an algorithm. For example, if we eliminate the rules, types, and terms related to polymorphism, we’d get the simply typed lambda calculus. A Prolog program to do type checking can be written in a few lines with a one-to-one correspondence to the type checking rules (and, for simplicitly, also omitting the signature):</p>
+<p>where Σ indicates a dependent sum, i.e. a pair where the second component (here of type <code class="sourceCode agda">e hasType t inContext Nil and Z given sig</code>)
+depends on the first component (here of type <code class="sourceCode agda">TType</code>). With type inference we have the additional concern that there may
+be multiple possible types an expression could have, and we may want to ensure it returns the “most general” type in some sense.
+There may not always be a good sense of “most general” type and user-input is required to pick out of the possible types.</p>
+<p>Sometimes the rules themselves can be viewed as the defining rules of a logic program and thus directly provide an algorithm.
+For example, if we eliminate the rules, types, and terms related to polymorphism, we’d get the simply typed lambda calculus.
+A Prolog program to do type checking can be written in a few lines with a one-to-one correspondence to the type checking
+rules (and, for simplicitly, also omitting the signature):</p>
 <div class="sourceCode" id="cb20"><pre class="sourceCode prolog"><code class="sourceCode prolog"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>lookup(z<span class="kw">,</span> [<span class="dt">T</span><span class="fu">|</span><span class="dt">_</span>]<span class="kw">,</span> <span class="dt">T</span>)<span class="kw">.</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>lookup(s(<span class="dt">N</span>)<span class="kw">,</span> [<span class="dt">_</span><span class="fu">|</span><span class="dt">Ctx</span>]<span class="kw">,</span><span class="dt">T</span>) <span class="kw">:-</span> lookup(<span class="dt">N</span><span class="kw">,</span> <span class="dt">Ctx</span><span class="kw">,</span> <span class="dt">T</span>)<span class="kw">.</span></span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>typeCheck(<span class="dt">var</span>(<span class="dt">N</span>)<span class="kw">,</span> <span class="dt">Ctx</span><span class="kw">,</span> <span class="dt">T</span>) <span class="kw">:-</span> lookup(<span class="dt">N</span><span class="kw">,</span> <span class="dt">Ctx</span><span class="kw">,</span> <span class="dt">T</span>)<span class="kw">.</span></span>
 <span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>typeCheck(app(<span class="dt">F</span><span class="kw">,</span><span class="dt">X</span>)<span class="kw">,</span> <span class="dt">Ctx</span><span class="kw">,</span> <span class="dt">T2</span>) <span class="kw">:-</span> typeCheck(<span class="dt">F</span><span class="kw">,</span> <span class="dt">Ctx</span><span class="kw">,</span> tarr(<span class="dt">T1</span><span class="kw">,</span> <span class="dt">T2</span>))<span class="kw">,</span> typeCheck(<span class="dt">X</span><span class="kw">,</span> <span class="dt">Ctx</span><span class="kw">,</span> <span class="dt">T1</span>)<span class="kw">.</span></span>
 <span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>typeCheck(lam(<span class="dt">B</span>)<span class="kw">,</span> <span class="dt">Ctx</span><span class="kw">,</span> tarr(<span class="dt">T1</span><span class="kw">,</span> <span class="dt">T2</span>)) <span class="kw">:-</span> typeCheck(<span class="dt">B</span><span class="kw">,</span> [<span class="dt">T1</span><span class="fu">|</span><span class="dt">Ctx</span>]<span class="kw">,</span> <span class="dt">T2</span>)<span class="kw">.</span></span></code></pre></div>
-<section class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr />
 <ol>
-<li id="fn1" role="doc-endnote"><p><a href="../posts/raw/UnderstandingTypingJudgments.agda">This Agda file</a> contains all the code from this article.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2" role="doc-endnote"><p>Most dependently typed languages, such as Coq or Epigram would also be adequate.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3" role="doc-endnote"><p><a href="https://en.wikipedia.org/wiki/Epigram_%28programming_language%29#Examples">Epigram</a> is most notable by actually using this 2D syntax.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn4" role="doc-endnote"><p>See <a href="http://cs.stackexchange.com/questions/54508/what-does-%E2%8A%A2-mean-in-operational-semantics/54514#54514">this StackExchange answer</a> for more discussion of this.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn1"><p><a href="../posts/raw/UnderstandingTypingJudgments.agda">This Agda file</a> contains all the code from this article.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Most dependently typed languages, such as Coq or Epigram would also be adequate.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p><a href="https://en.wikipedia.org/wiki/Epigram_%28programming_language%29#Examples">Epigram</a> is most notable by actually using this 2D syntax.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>See <a href="http://cs.stackexchange.com/questions/54508/what-does-%E2%8A%A2-mean-in-operational-semantics/54514#54514">this StackExchange answer</a> for more discussion of this.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 

@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">Internal Language of Indexed Monoidal Categories</h2>
     <p class="blog-post-meta">July  6, 2020 02:00 UTC 
         
-        (Last updated on January  6, 2022 12:04 UTC)
+        (Last updated on April 13, 2023 10:11 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -58,31 +58,113 @@ extraMacros = {
 };
 </script>
 <h2 id="introduction">Introduction</h2>
-<p>This is part 2 in a series. See <a href="../posts/internal-language-of-a-monoidal-category.html">the previous part about internal languages for (non-indexed) monoidal categories</a>. The main application I have in mind – enriching in indexed monoidal categories – is covered in the <a href="../posts/enriched-indexed-categories-syntactically.html">next post</a>.</p>
-<p>As Jean Bénabou pointed out in <a href="http://dx.doi.org/10.2307/2273784">Fibered Categories and the Foundations of Naive Category Theory</a> (<a href="https://pdfs.semanticscholar.org/a7ba/3c5b0431adf514595d53ea393910c9230745.pdf">PDF</a>) notions of “families of objects/arrows” are ubiquitous and fundamental in category theory. One of the more noticeable places early on is in the definition of a natural transformation as a family of arrows. However, even in the definition of category, identities and compositions are families of functions, or, in the enriched case, arrows of |\mathbf V|. From a foundational perspective, one place where this gets really in-your-face is when trying to formalize the notion of (co)completeness. It is straightforward to make a first-order theory of a finitely complete category, e.g. <a href="https://ncatlab.org/nlab/show/fully+formal+ETCS#the_theory_of_finitely_complete_categories">this one</a>. For arbitrary products and thus limits, we need to talk about families of objects. To formalize the usual meaning of this in a first-order theory would require attaching an entire first-order theory of sets, e.g. <strong>ZFC</strong>, to our notion of complete category. If your goals are of a foundational nature like Bénabou’s were, then this is unsatisfactory. Instead, we can abstract out what we need of the notion of “family”. The result turns out to be equivalent to the notion of a <a href="https://ncatlab.org/nlab/show/Grothendieck+fibration">fibration</a>.</p>
-<p>My motivations here are not foundational but leaving the notion of “family” entirely meta-theoretical means not being able to talk about it except in the semantics. Bénabou’s comment suggests that at the semantic level we want not just a monoidal category, but a fibration of monoidal categories<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. At the syntactic level, it suggests that there should be a built-in notion of “family” in our language. We accomplish both of these goals by formulating the internal language of an <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal category</a>.</p>
-<p>As a benefit, we can generalize to other notions of “family” than set-indexed families. We’ll clearly be able to formulate the notion of an <a href="https://ncatlab.org/nlab/show/enriched+category">enriched category</a>. It’s also clear that we’ll be able to formulate the notion of an <a href="https://ncatlab.org/nlab/show/indexed+category">indexed category</a>. Of course, we’ll also be able to formulate the notion of a category that is both enriched and indexed which includes the important special case of an <a href="https://ncatlab.org/nlab/show/internal+category">internal category</a>. We can also consider cases with trivial indexing which, in the unenriched case, will give us monoids, and in the |\mathbf{Ab}|-enriched case will give us rings.</p>
+<p>This is part 2 in a series. See <a href="../posts/internal-language-of-a-monoidal-category.html">the previous part about internal languages for (non-indexed) monoidal categories</a>.
+The main application I have in mind – enriching in indexed monoidal categories – is covered in the <a href="../posts/enriched-indexed-categories-syntactically.html">next post</a>.</p>
+<p>As Jean Bénabou pointed out in <a href="http://dx.doi.org/10.2307/2273784">Fibered Categories and the Foundations of Naive Category Theory</a> (<a href="https://pdfs.semanticscholar.org/a7ba/3c5b0431adf514595d53ea393910c9230745.pdf">PDF</a>)
+notions of “families of objects/arrows” are ubiquitous and fundamental in category theory. One of the more noticeable places early
+on is in the definition of a natural transformation as a family of arrows. However, even in the definition of category, identities and
+compositions are families of functions, or, in the enriched case, arrows of |\mathbf V|. From a foundational perspective, one place
+where this gets really in-your-face is when trying to formalize the notion of (co)completeness. It is straightforward to make a first-order
+theory of a finitely complete category, e.g. <a href="https://ncatlab.org/nlab/show/fully+formal+ETCS#the_theory_of_finitely_complete_categories">this one</a>.
+For arbitrary products and thus limits, we need to talk about families of objects. To formalize the usual meaning of this in a
+first-order theory would require attaching an entire first-order theory of sets, e.g. <strong>ZFC</strong>, to our notion of complete category.
+If your goals are of a foundational nature like Bénabou’s were, then this is unsatisfactory. Instead, we can abstract out what we need
+of the notion of “family”. The result turns out to be equivalent to the notion of a <a href="https://ncatlab.org/nlab/show/Grothendieck+fibration">fibration</a>.</p>
+<p>My motivations here are not foundational but leaving the notion of “family” entirely meta-theoretical means not being able to talk
+about it except in the semantics. Bénabou’s comment suggests that at the semantic level we want not just a monoidal category, but a
+fibration of monoidal categories<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.
+At the syntactic level, it suggests that there should be a built-in notion of “family” in our
+language. We accomplish both of these goals by formulating the internal language of an <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal category</a>.</p>
+<p>As a benefit, we can generalize to other notions of “family” than set-indexed families. We’ll clearly be able to formulate
+the notion of an <a href="https://ncatlab.org/nlab/show/enriched+category">enriched category</a>. It’s also clear that we’ll be able to formulate
+the notion of an <a href="https://ncatlab.org/nlab/show/indexed+category">indexed category</a>. Of course, we’ll also be able to formulate
+the notion of a category that is both enriched and indexed which includes the important special case of an <a href="https://ncatlab.org/nlab/show/internal+category">internal category</a>.
+We can also consider cases with trivial indexing which, in the unenriched case, will give us monoids, and in the |\mathbf{Ab}|-enriched
+case will give us rings.</p>
 <!--more-->
 <h2 id="indexed-monoidal-categories">Indexed Monoidal Categories</h2>
-<p>Following Shulman’s <a href="https://arxiv.org/abs/1212.3914">Enriched indexed categories</a>, let |\mathbf{S}| be a category with a cartesian monoidal structure, i.e. finite products. Then an |\mathbf{S}|-indexed monoidal category is simply a pseudofunctor |\V : \mathbf{S}^{op} \to \mathbf{MonCat}|. A <a href="https://ncatlab.org/nlab/show/pseudofunctor">pseudofunctor</a> is like a functor except that the functor laws only hold up to isomorphism, e.g. |\V(id)\cong id|. |\mathbf{MonCat}| is the |2|-category of monoidal categories, <a href="https://ncatlab.org/nlab/show/monoidal+functor">strong monoidal functors</a><a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>, and <a href="https://ncatlab.org/nlab/show/monoidal+natural+transformation">monoidal natural transformations</a>. We’ll write |\V(X)| as |\V^X| and |\V(f)| as |f^*|. We’ll never have multiple relevant indexed monoidal categories so this notation will never be ambiguous. We’ll call the categories |\V^X| <strong>fiber categories</strong> and the functors |f^*| <strong>reindexing functors</strong>. The cartesian monoidal structure on |\mathbf S| becomes relevant when we want to equip the total category, |\int\V|, (computed via the <a href="https://ncatlab.org/nlab/show/Grothendieck+construction">Grothendieck construction</a> in the usual way) with a monoidal structure. In particular, the tensor product of |A \in \V^X| and |B \in \V^Y| is an object |A\otimes B \in \V^{X\times Y}| calculated as |\pi_1^*(A) \otimes_{X\times Y} \pi_2^*(B)| where |\otimes_{X\times Y}| is the monoidal tensor in |\V^{X\times Y}|. The unit, |I|, is the unit |I_1 \in \V^1|.</p>
-<p>The two main examples are: |\mathcal Fam(\mathbf V)| where |\mathbf V| is a (non-indexed) monoidal category and |\mathcal Self(\mathbf S)| where |\mathbf S| is a category with finite limits. |\mathcal Fam(\mathbf V)| is a |\mathbf{Set}|-indexed monoidal category with |\mathcal Fam(\mathbf V)^X| defined as the set of |X|-indexed families of objects of |\mathbf V|, families of arrows between them, and an index-wise monoidal product. We can identify |\mathcal Fam(\mathbf V)^X| with the functor category |[DX, \mathbf V]| where |D : \mathbf{Set} \to \mathbf{cat}| takes a set |X| to a small discrete category. Enriching in indexed monoidal category |\mathcal Fam(\mathbf V)| will be equivalent to enriching in the non-indexed monoidal category |\mathbf V|, i.e. the usual notion of enrichment in a monoidal category. |\mathcal Self(\mathbf S)| is an |\mathbf S|-indexed monoidal category and |\mathcal Self(\mathbf S)^X| is the slice category |\mathbf S/X| with its cartesian monoidal structure. |f^*| is the pullback functor. |\mathcal Self(\mathbf S)|-enriched categories are categories internal to |\mathbf S|. A third example we’ll find interesting is |\mathcal Const(\mathbf V)| for a (non-indexed) monoidal category, |\mathbf V|, which is a |\mathbf 1|-indexed monoidal category, which corresponds to an object of |\mathbf{MonCat}|, namely |\mathbf V|.</p>
+<p>Following Shulman’s <a href="https://arxiv.org/abs/1212.3914">Enriched indexed categories</a>, let |\mathbf{S}| be a category with a cartesian monoidal structure, i.e. finite products. Then an |\mathbf{S}|-indexed monoidal
+category is simply a pseudofunctor |\V : \mathbf{S}^{op} \to \mathbf{MonCat}|. A <a href="https://ncatlab.org/nlab/show/pseudofunctor">pseudofunctor</a>
+is like a functor except that the functor laws only hold up to isomorphism, e.g. |\V(id)\cong id|. |\mathbf{MonCat}| is the |2|-category
+of monoidal categories, <a href="https://ncatlab.org/nlab/show/monoidal+functor">strong monoidal functors</a><a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>, and <a href="https://ncatlab.org/nlab/show/monoidal+natural+transformation">monoidal natural transformations</a>.
+We’ll write |\V(X)| as |\V^X| and |\V(f)| as |f^*|. We’ll never have multiple relevant indexed monoidal categories so
+this notation will never be ambiguous. We’ll call the categories |\V^X| <strong>fiber categories</strong> and the functors |f^*| <strong>reindexing
+functors</strong>. The cartesian monoidal structure on |\mathbf S| becomes relevant when we want to equip the total category, |\int\V|,
+(computed via the <a href="https://ncatlab.org/nlab/show/Grothendieck+construction">Grothendieck construction</a> in the usual way) with a monoidal structure.
+In particular, the tensor product of |A \in \V^X| and |B \in \V^Y| is an object |A\otimes B \in \V^{X\times Y}|
+calculated as |\pi_1^*(A) \otimes_{X\times Y} \pi_2^*(B)| where |\otimes_{X\times Y}| is the monoidal tensor in |\V^{X\times Y}|.
+The unit, |I|, is the unit |I_1 \in \V^1|.</p>
+<p>The two main examples are: |\mathcal Fam(\mathbf V)| where |\mathbf V| is a (non-indexed) monoidal category and |\mathcal Self(\mathbf S)|
+where |\mathbf S| is a category with finite limits. |\mathcal Fam(\mathbf V)| is a |\mathbf{Set}|-indexed monoidal category
+with |\mathcal Fam(\mathbf V)^X| defined as the category of |X|-indexed families of objects of |\mathbf V|, families of arrows between them, and
+an index-wise monoidal product. We can identify |\mathcal Fam(\mathbf V)^X| with the functor category |[DX, \mathbf V]| where |D : \mathbf{Set} \to \mathbf{cat}| takes
+a set |X| to a small discrete category. Enriching in indexed monoidal category |\mathcal Fam(\mathbf V)| will be equivalent to enriching
+in the non-indexed monoidal category |\mathbf V|, i.e. the usual notion of enrichment in a monoidal category. |\mathcal Self(\mathbf S)| is
+an |\mathbf S|-indexed monoidal category and |\mathcal Self(\mathbf S)^X| is the slice category |\mathbf S/X| with its cartesian monoidal
+structure. |f^*| is the pullback functor. |\mathcal Self(\mathbf S)|-enriched categories are categories internal to |\mathbf S|.
+A third example we’ll find interesting is |\mathcal Const(\mathbf V)| for a (non-indexed) monoidal category, |\mathbf V|, which is a |\mathbf 1|-indexed
+monoidal category, which corresponds to an object of |\mathbf{MonCat}|, namely |\mathbf V|.</p>
 <h2 id="the-internal-language-of-indexed-monoidal-categories">The Internal Language of Indexed Monoidal Categories</h2>
-<p>This builds on the internal language of a monoidal category described in the previous post. We’ll again have <strong>linear types</strong> and <strong>linear terms</strong> which will be interpreted into objects and arrows in the fiber categories. To indicate the dependence on the indexing, we’ll use two contexts: |\Gamma| will be an <strong>index context</strong> containing <strong>index types</strong> and <strong>index variables</strong>, which will be interpreted into objects and arrows of |\mathbf S|, while |\Delta|, the <strong>linear context</strong>, will contain linear types and linear variables as before except now linear types will be able to depend on <strong>index terms</strong>. So we’ll have judgements that look like: <span class="math display">$$\begin{gather}
+<p>This builds on the internal language of a monoidal category described in the previous post. We’ll again have <strong>linear types</strong> and <strong>linear
+terms</strong> which will be interpreted into objects and arrows in the fiber categories. To indicate the dependence on the indexing,
+we’ll use two contexts: |\Gamma| will be an <strong>index context</strong> containing <strong>index types</strong> and <strong>index variables</strong>, which will be interpreted
+into objects and arrows of |\mathbf S|, while |\Delta|, the <strong>linear context</strong>, will contain linear types and linear variables as before
+except now linear types will be able to depend on <strong>index terms</strong>. So we’ll have judgements that look like:
+<span class="math display">$$\begin{gather}
 \Gamma \vdash A \quad \text{and} \quad \Gamma; \Delta \vdash E : B
-\end{gather}$$</span> The former indicates that |A| is a linear type indexed by the index variables of |\Gamma|. The latter states that |E| is a linear term of linear type |B| in the linear context |\Delta| indexed by the index variables of |\Gamma|. We’ll also have judgements for index types and index terms: <span class="math display">$$\begin{gather}
+\end{gather}$$</span>
+The former indicates that |A| is a linear type indexed by the index variables of |\Gamma|. The latter states that |E| is a linear
+term of linear type |B| in the linear context |\Delta| indexed by the index variables of |\Gamma|. We’ll also have judgements
+for index types and index terms:
+<span class="math display">$$\begin{gather}
 \vdash X : \square \quad \text{and} \quad \Gamma \vdash E : Y
-\end{gather}$$</span> The former asserts that |X| is an index type. The latter asserts that |E| is an index term of index type |Y| in the index context |\Gamma|.</p>
-<p>Since each fiber category is monoidal, we’ll have all the rules from before just with an extra |\Gamma| hanging around. Since our indexing category, |\mathbf S|, is also monoidal, we’ll also have copies of these rules at the level of indexes. However, since |\mathbf S| is <em>cartesian</em> monoidal, we’ll also have the structural rules of weakening, exchange, and contraction for index terms and types. To emphasize the cartesian monoidal structure of indexes, I’ll use the more traditional Cartesian product and tuple notation: |\times| and |(E_1, \dots, E_n)|. This notation allows a bit more uniformity as the |n=0| case can be notated by |()|.</p>
-<p>The only really new rule is the rule that allows us to move linear types and terms from one index context to another, i.e. the rule that would correspond to applying a reindexing functor. I call this rule Reindex and, like Cut, it will be witnessed by substitution. Like Cut, it will also be a rule which we can eliminate. At the semantic level, this elimination corresponds to the fact that to understand the interpretation of any particular (linear) term, we can first reindex <em>everything</em>, i.e. all the interpretations of all subterms, into the same fiber category and then we can work entirely within that one fiber category. The Reindex rule is: <span class="math display">$$\begin{gather}
+\end{gather}$$</span>
+The former asserts that |X| is an index type. The latter asserts that |E| is an index term of index type |Y| in the index
+context |\Gamma|.</p>
+<p>Since each fiber category is monoidal, we’ll have all the rules from before just with an extra |\Gamma| hanging around. Since
+our indexing category, |\mathbf S|, is also monoidal, we’ll also have copies of these rules at the level of indexes. However,
+since |\mathbf S| is <em>cartesian</em> monoidal, we’ll also have the structural rules of weakening, exchange, and contraction for
+index terms and types. To emphasize the cartesian monoidal structure of indexes, I’ll use the more traditional Cartesian
+product and tuple notation: |\times| and |(E_1, \dots, E_n)|. This notation allows a bit more uniformity as the |n=0| case
+can be notated by |()|.</p>
+<p>The only really new rule is the rule that allows us to move linear types and terms from one index context to another, i.e. the rule that
+would correspond to applying a reindexing functor. I call this rule Reindex and, like Cut, it will be witnessed by
+substitution. Like Cut, it will also be a rule which we can eliminate. At the semantic level, this elimination corresponds
+to the fact that to understand the interpretation of any particular (linear) term, we can first reindex <em>everything</em>, i.e. all
+the interpretations of all subterms, into the same fiber category and then we can work entirely within that one fiber category.
+The Reindex rule is:
+<span class="math display">$$\begin{gather}
 \dfrac{\Gamma \vdash E : X \quad \Gamma', x : X; a_1 : A_1, \dots, a_n : A_n \vdash E' : B}{\Gamma',\Gamma; a_1 : A_1[E/x], \dots, a_n : A_n[E/x] \vdash E'[E/x] : B[E/x]}\text{Reindex}
 \end{gather}$$</span></p>
-<p>By representing reindexing by syntactic substitution, we’re requiring the semantics of (linear) type and term formation operations to be respected by reindexing functors. This is exactly the right thing to do as the appropriate notion of, say, indexed coproducts, which would correspond to sum types, is coproducts in each fiber category which are preserved by reindexing functors.</p>
+<p>By representing reindexing by syntactic substitution, we’re requiring the semantics of (linear) type and term formation operations to be
+respected by reindexing functors. This is exactly the right thing to do as the appropriate notion of, say, indexed coproducts, which would
+correspond to sum types, is coproducts in each fiber category which are preserved by reindexing functors.</p>
 <p><a href="#rules-for-an-indexed-monoidal-category">Below</a> I provide a listing of rules and equations.</p>
 <h2 id="relation-to-parameterized-and-dependent-types">Relation to Parameterized and Dependent Types</h2>
 <p><small>None of this section is necessary for anything else.</small></p>
-<p>This notion of (linear) types and terms being indexed by other types and terms is reminiscent of parametric types or dependent types. The machinery of indexed/fibered categories is also commonly used in the categorical semantics of parameterized and dependent types. However, there are important differences between those cases and our case.</p>
-<p>In the case of parameterized types, we have types and terms that depend on other types. In this case, we have kinds, which are “types of types”, which classify types which in turn classify terms. If we try to set up an analogy to our situation, index types would correspond to kinds and index terms would correspond to types. The most natural thing to continue would be to have linear terms correspond to terms, but we start to see the problem. Linear terms are classified by linear types, but linear types are <em>not</em> index terms. They don’t even induce index terms. In the categorical semantics of parameterized types, this identification of types with (certain) expressions classified by kinds is handled by the notion of a generic object. A generic object corresponds to the kind |\mathsf{Type}| (what Haskell calls <code>*</code>). The assumption of a generic object is a rather strong assumption and one that none of our example indexed monoidal categories support in general.</p>
-<p>A similar issue occurs when we try to make an analogy to dependent types. The defining feature of a dependent type system is that types can depend on terms. The problem with such a potential analogy is that linear types and terms do not induce index types and terms. A nice way to model the semantics of dependent types is the notion of a <a href="https://ncatlab.org/nlab/show/categorical+model+of+dependent+types#comprehension_categories">comprehension category</a>. This, however, is additional structure beyond what we are given by an indexed monoidal category. However, comprehension categories will implicitly come up later when we talk about adding |\mathbf S|-indexed (co)products. These comprehension categories will share the same index category as our indexed monoidal categories, namely |\mathbf S|, but will have different total categories. Essentially, a comprehension category shows how objects (and arrows) of a total category can be represented in the index category. We can then talk about having (co)products in a different total category with same index category with respect to those objects picked out by the comprehension category. We get dependent types in the case where the total categories are the same. (More precisely, the fibrations are the same.) Sure enough, we will see that when |\mathcal Self(\mathbf S)| has |\mathbf S|-indexed products, then |\mathbf S| is, indeed, a model of a dependent type theory. In particular, it is <a href="https://ncatlab.org/nlab/show/locally+cartesian+closed+category">locally cartesian closed</a>.</p>
+<p>This notion of (linear) types and terms being indexed by other types and terms is reminiscent of parametric types or dependent types.
+The machinery of indexed/fibered categories is also commonly used in the categorical semantics of parameterized and dependent types.
+However, there are important differences between those cases and our case.</p>
+<p>In the case of parameterized types, we have types and terms that depend on other types. In this case, we have kinds, which are “types
+of types”, which classify types which in turn classify terms. If we try to set up an analogy to our situation, index types would
+correspond to kinds and index terms would correspond to types. The most natural thing to continue would be to have linear terms
+correspond to terms, but we start to see the problem. Linear terms are classified by linear types, but linear types are <em>not</em>
+index terms. They don’t even induce index terms. In the categorical semantics of parameterized types, this identification of
+types with (certain) expressions classified by kinds is handled by the notion of a generic object. A generic object corresponds
+to the kind |\mathsf{Type}| (what Haskell calls <code>*</code>). The assumption of a generic object is a rather strong assumption and one
+that none of our example indexed monoidal categories support in general.</p>
+<p>A similar issue occurs when we try to make an analogy to dependent types. The defining feature of a dependent type system
+is that types can depend on terms. The problem with such a potential analogy is that linear types and terms do not induce
+index types and terms. A nice way to model the semantics of dependent types is the notion of a <a href="https://ncatlab.org/nlab/show/categorical+model+of+dependent+types#comprehension_categories">comprehension category</a>.
+This, however, is additional structure beyond what we are given by an indexed monoidal category. However, comprehension
+categories will implicitly come up later when we talk about adding |\mathbf S|-indexed (co)products. These comprehension
+categories will share the same index category as our indexed monoidal categories, namely |\mathbf S|, but will have different
+total categories. Essentially, a comprehension category shows how objects (and arrows) of a total category can be represented
+in the index category. We can then talk about having (co)products in a different total category with same index category
+with respect to those objects picked out by the comprehension category. We get dependent types in the case where the total
+categories are the same. (More precisely, the fibrations are the same.) Sure enough, we will see that when |\mathcal Self(\mathbf S)|
+has |\mathbf S|-indexed products, then |\mathbf S| is, indeed, a model of a dependent type theory. In particular, it is
+<a href="https://ncatlab.org/nlab/show/locally+cartesian+closed+category">locally cartesian closed</a>.</p>
 <h2 id="rules-for-an-indexed-monoidal-category">Rules for an Indexed Monoidal Category</h2>
 <p><span class="math display">$$\begin{gather}
 \dfrac{\vdash X : \square}{x : X \vdash x : X}\text{IxAx} \qquad
@@ -138,12 +220,18 @@ extraMacros = {
  \\ \\
 \dfrac{\Gamma; \Delta \vdash E_1 : A_1 \otimes \cdots \otimes A_n \qquad \Gamma; \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E_2 : B \qquad \Gamma; b : B \vdash E_3 : C}{\Gamma; \Delta_l, \Delta, \Delta_r \vdash (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E_3[E_2/b]) = E_3[(\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \dots \otimes a_n\ \mathsf{in}\ E_2)/b] : C}{\otimes_n}\text{CC}
 \end{gather}$$</span></p>
-<p>|\mathsf X : \mathsf{IxType}| means |\mathsf X| is a primitive index type in the signature. |\mathsf A : (X_1, \dots, X_n) \to \mathsf{Type}| means that |\mathsf A| is a primitive linear type in the signature. |\mathsf F : (X_1, \dots, X_n) \to Y| and |\mathsf f : (x_1 : X_1, \dots, x_n : X_n; A_1, \dots, A_m) \to B| mean that |\mathsf F| and |\mathsf f| are assigned these types in the signature. In the latter case, it is assumed that |x_1 : X_1, \dots, x_n : X_n \vdash A_i| for |i = 1, \dots, m| and |x_1 : X_1, \dots, x_n : X_n \vdash B|. Alternatively, these assumptions could be added as additional hypotheses to the PrimTerm rule. Generally, every |x_i| will be used in some |A_j| or in |B|, though this isn’t technically required.</p>
+<p>|\mathsf X : \mathsf{IxType}| means |\mathsf X| is a primitive index type in the signature. |\mathsf A : (X_1, \dots, X_n) \to \mathsf{Type}|
+means that |\mathsf A| is a primitive linear type in the signature. |\mathsf F : (X_1, \dots, X_n) \to Y|
+and |\mathsf f : (x_1 : X_1, \dots, x_n : X_n; A_1, \dots, A_m) \to B| mean that |\mathsf F| and |\mathsf f| are assigned
+these types in the signature. In the latter case, it is assumed that |x_1 : X_1, \dots, x_n : X_n \vdash A_i| for |i = 1, \dots, m|
+and |x_1 : X_1, \dots, x_n : X_n \vdash B|. Alternatively, these assumptions could be added as additional hypotheses to the PrimTerm
+rule. Generally, every |x_i| will be used in some |A_j| or in |B|, though this isn’t technically required.</p>
 <p>As before, I did not write the usual laws for equality (reflexivity and indiscernability of identicals) but they also should be included.</p>
 <p>See the discussion in <a href="../posts/internal-language-of-a-monoidal-category.html">the previous part</a> about the commuting conversion (|\text{CC}|) rules.</p>
 <p>A theory in this language is free to introduce additional index types, operations on indexes, linear types, and linear operations.</p>
 <h2 id="interpretation-into-an-mathbf-s-indexed-monoidal-category">Interpretation into an |\mathbf S|-indexed monoidal category</h2>
-<p>Fix an |\mathbf S|-indexed monoidal category |\V|. Write |\den{-}| for the (overloaded) interpretation function. Its value on primitive operations is left as a parameter.</p>
+<p>Fix an |\mathbf S|-indexed monoidal category |\V|. Write |\den{-}| for the (overloaded)
+interpretation function. Its value on primitive operations is left as a parameter.</p>
 <p>Associators for the semantic |\times| and |\otimes| will be omitted below.</p>
 <h3 id="interpretation-of-index-types">Interpretation of Index Types</h3>
 <p><span class="math display">$$\begin{align}
@@ -162,7 +250,9 @@ extraMacros = {
     &amp; \quad \text{ where }\mathsf F\text{ is an appropriately typed index operation}
 \end{align}$$</span></p>
 <h3 id="witnesses-of-index-derivations">Witnesses of Index Derivations</h3>
-<p>IxAx is witnessed by identity, and IxCut by composition in |\mathbf S|. Weakening is witnessed by projection. Exchange and Contraction are witnessed by expressions that can be built from projections and tupling. This is very standard.</p>
+<p>IxAx is witnessed by identity, and IxCut by composition in |\mathbf S|. Weakening is witnessed by projection.
+Exchange and Contraction are witnessed by expressions that can be built from projections and tupling. This is
+very standard.</p>
 <h3 id="interpretation-of-linear-types">Interpretation of Linear Types</h3>
 <p><span class="math display">$$\begin{align}
 \Gamma \vdash A \implies &amp; \den{A} \in \mathsf{Ob}(\V^{\den{\Gamma}}) \\ \\
@@ -191,8 +281,17 @@ extraMacros = {
 <h3 id="witnesses-of-linear-derivations">Witnesses of Linear Derivations</h3>
 <p>As with the index derivations, Ax is witnessed by the identity, in this case in |\V^{\den{\Gamma}}|.</p>
 <p>|\den{E[E_1/a_1,,E_n/a_n]} = \den{E} \circ (\den{E_1}\otimes\cdots\otimes\den{E_n})| witnesses Cut.</p>
-<p>Roughly speaking, Reindex is witnessed by |\den{E}^*(\den{E’})|. If we were content to restrict ourselves to semantics in |\mathbf S|-indexed monoidal categories witnessed by functors, as opposed to pseudofunctors, into <em>strict</em> monoidal categories, then this would suffice. For an arbitrary |\mathbf S|-indexed monoidal category, we can’t be sure that the naive interpretation of |A[E/x][E’/y]|, i.e. |\den{E’}^*(\den{E}^*(\den{A}))|, which we’d get from two applications of the Reindex rule, is the same as the interpretation of |A[E[E’/y]/x]|, i.e. |\den{E \circ E’}^*(\den{A})|, which we’d get from IxCut followed by Reindex. On the other hand, |A[E/x][E’/y] = A[E[E’/y]/x]| is simply true syntactically by the definition of substitution (which I have not provided but is the obvious, usual thing). There are similar issues for (meta-)equations like |I[E/x] = I| and |(A_1 \otimes A_2)[E/x] = A_1[E/x] \otimes A_2[E/x]|.</p>
-<p>The solution is that we essentially use a normal form where we eliminate the uses of Reindex. These normal form derivations will be reached by rewrites such as: <span class="math display">$$\begin{gather}
+<p>Roughly speaking, Reindex is witnessed by |\den{E}^*(\den{E’})|. If we were content to restrict ourselves to
+semantics in |\mathbf S|-indexed monoidal categories witnessed by functors, as opposed to pseudofunctors, into <em>strict</em>
+monoidal categories, then this would suffice. For an arbitrary |\mathbf S|-indexed monoidal category, we can’t be sure
+that the naive interpretation of |A[E/x][E’/y]|, i.e. |\den{E’}^*(\den{E}^*(\den{A}))|, which we’d get from two
+applications of the Reindex rule, is the same as the interpretation of |A[E[E’/y]/x]|, i.e. |\den{E \circ E’}^*(\den{A})|,
+which we’d get from IxCut followed by Reindex. On the other hand, |A[E/x][E’/y] = A[E[E’/y]/x]| is simply true syntactically
+by the definition of substitution (which I have not provided but is the obvious, usual thing). There are similar issues for
+(meta-)equations like |I[E/x] = I| and |(A_1 \otimes A_2)[E/x] = A_1[E/x] \otimes A_2[E/x]|.</p>
+<p>The solution is that we essentially use a normal form where we eliminate the uses of Reindex. These normal form derivations
+will be reached by rewrites such as:
+<span class="math display">$$\begin{gather}
 \dfrac{\dfrac{\mathcal D}{\Gamma' \vdash E : X} \qquad \dfrac{\dfrac{\mathcal D_1}{\Gamma, x : X; \Delta_1 \vdash E_1 : A_1} \quad
                                         \cdots \quad \dfrac{\mathcal D_n}{\Gamma, x : X; \Delta_n \vdash E_n : A_n}}
     {\Gamma, x : X; \Delta_1, \dots, \Delta_n \vdash E_1 \otimes \cdots \otimes E_n : A_1 \otimes \cdots \otimes A_n}}
@@ -205,12 +304,24 @@ extraMacros = {
                 {\Gamma, \Gamma'; \Delta_n[E/x] \vdash E_n[E/x] : A_n[E/x]}}
     {\Gamma, \Gamma'; \Delta_1[E/x], \dots, \Delta_n[E/x] \vdash E_1[E/x] \otimes \cdots \otimes E_n[E/x] : A_1[E/x] \otimes \cdots \otimes A_n[E/x]}
 \end{gather}$$</span></p>
-<p>Semantically, this is witnessed by the strong monoidal structure, i.e. |\den{E}^*(\den{E_1} \otimes \cdots \otimes \den{E_n}) \cong \den{E}^*(\den{E_1}) \otimes \cdots \otimes \den{E}^*(\den{E_n})|. We need such rewrites for all (linear) rules that can immediately precede Reindex in a derivation. For |I\text{I}|, |I\text{E}|, |\otimes_n\text{E}|, and, as we’ve just seen, |\otimes_n\text{I}|, these rewrites are witnessed by |\den{E}^*| being a strong monoidal functor. The rewrites for |\text{Ax}| and |\text{Cut}| are witnessed by functorality of |\den{E}^*| and also strong monoidality for Cut. Finally, two adjacent uses of Reindex become an IxCut and a Reindex and are witnessed by the pseudofunctoriality of |(\_)^*|. (While we’re normalizing, we may as well eliminate Cut and IxCut as well.)</p>
-<section class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<p>Semantically, this is witnessed by the strong monoidal structure,
+i.e. |\den{E}^*(\den{E_1} \otimes \cdots \otimes \den{E_n}) \cong \den{E}^*(\den{E_1}) \otimes \cdots \otimes \den{E}^*(\den{E_n})|.
+We need such rewrites for all (linear) rules that can immediately precede Reindex in a derivation. For |I\text{I}|, |I\text{E}|,
+|\otimes_n\text{E}|, and, as we’ve just seen, |\otimes_n\text{I}|, these rewrites are witnessed by |\den{E}^*| being a strong
+monoidal functor. The rewrites for |\text{Ax}| and |\text{Cut}| are witnessed by functorality of |\den{E}^*| and also
+strong monoidality for Cut. Finally, two adjacent uses of Reindex become an IxCut and a Reindex and are witnessed by the
+pseudofunctoriality of |(\_)^*|. (While we’re normalizing, we may as well eliminate Cut and IxCut as well.)</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr />
 <ol>
-<li id="fn1" role="doc-endnote"><p>As the previous post alludes, monoidal structure is more than we need. If we pursue the generalizations described there in this indexed context, we eventually end up at <a href="https://ncatlab.org/nlab/show/augmented+virtual+double+category">augmented virtual double categories</a> or <a href="https://ncatlab.org/nlab/show/virtual+equipment">virtual equipment</a>.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2" role="doc-endnote"><p>The terminology here is a mess. Leinster calls strong monoidal functors “weak”. “Strong” also refers to <a href="https://ncatlab.org/nlab/show/tensorial+strength">tensorial strength</a>, and it’s quite possible to have a “strong lax monoidal functor”. (In fact, this is what applicative functors are usually described as, though a <a href="https://ncatlab.org/nlab/show/closed+functor">strong lax closed functor</a> would be a more direct connection.) Or the functors we’re talking about which are not-strong strong monoidal functors…<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn1"><p>As the previous post alludes, monoidal structure is more than we need. If we pursue the generalizations
+described there in this indexed context, we eventually end up at <a href="https://ncatlab.org/nlab/show/augmented+virtual+double+category">augmented virtual double categories</a>
+or <a href="https://ncatlab.org/nlab/show/virtual+equipment">virtual equipment</a>.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>The terminology here is a mess.
+Leinster calls strong monoidal functors “weak”. “Strong” also refers to <a href="https://ncatlab.org/nlab/show/tensorial+strength">tensorial strength</a>,
+and it’s quite possible to have a “strong lax monoidal functor”. (In fact, this is what applicative functors are usually described as, though
+a <a href="https://ncatlab.org/nlab/show/closed+functor">strong lax closed functor</a> would be a more direct connection.) Or the functors we’re talking about
+which are not-strong strong monoidal functors…<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 
