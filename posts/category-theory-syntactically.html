@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">Category Theory, Syntactically</h2>
     <p class="blog-post-meta">November 25, 2016 06:23 UTC 
         
-        (Last updated on November 25, 2021 16:23 UTC)
+        (Last updated on December 26, 2023 22:13 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -534,12 +534,12 @@ just a conversion to right nested pairs, |[A_0,\dots,A_n] \mapsto A_0 \times ({\
 The compilation of a term |t|, which we’ll write as |\mathcal{C}[t]|, is defined as follows:</p>
 <blockquote>
 <ul>
-<li>|\mathcal{C}[\mathbf{x}_i^{[A_0, A_1, \dots, A_n]}] = \mathtt{snd}^i(\mathtt{fst}(\mathbf{x}_{A_i \times(\dots)}))| where |\mathtt{snd}^i| means the |i|-fold application of |\mathtt{snd}|</li>
+<li>|\mathcal{C}[\mathbf{x}_i^{[A_0, A_1, \dots, A_n]}] = \mathtt{fst}(\mathtt{snd}^i(\mathbf{x}_{A_0 \times(\dots)}))| where |\mathtt{snd}^i| means the |i|-fold application of |\mathtt{snd}|</li>
 <li>|\mathcal{C}[\langle\rangle^A] = {!_A}|</li>
 <li>|\mathcal{C}[\langle t_1, t_2 \rangle] = \langle \mathcal{C}[t_1], \mathcal{C}[t_2] \rangle|</li>
 <li>|\mathcal{C}[\mathtt{fst}(t)] = \mathtt{fst}(\mathcal{C}[t])|</li>
 <li>|\mathcal{C}[\mathtt{snd}(t)] = \mathtt{snd}(\mathcal{C}[t])|</li>
-<li>|\mathcal{C}[\mathtt{f}(t_1, \dots, t_n)] = \mathtt{f}(\langle \mathcal{C}[t_1], \langle \dots , \langle \mathcal{C}[t_n], ! \rangle \dots \rangle \rangle)|</li>
+<li>|\mathcal{C}[\mathtt{f}(t_1, \dots, t_n)] = \mathtt{f}(\langle \mathcal{C}[t_1], \langle \dots , \langle \mathcal{C}[t_n], !_{\mathbf{1}} \rangle \dots \rangle \rangle)|</li>
 </ul>
 </blockquote>
 <p>As you may have noticed, the generated theory will have an infinite number of sorts, an
@@ -567,8 +567,8 @@ that respects finite products.</p>
 interpretation (into a finite product theory) that additionally satisfies:</p>
 <blockquote>
 <ul>
-<li>|[\! [\mathbf{1}]\!]^\mathcal{I} \approx \mathbf{1}|</li>
-<li>|[\! [A \times B]\!]^\mathcal{I} \approx [\! [A]\!]^\mathcal{I} \times [\! [B]\!]^\mathcal{I}|</li>
+<li>|[\! [\mathbf{1}]\!]^\mathcal{I} \cong \mathbf{1}|</li>
+<li>|[\! [A \times B]\!]^\mathcal{I} \cong [\! [A]\!]^\mathcal{I} \times [\! [B]\!]^\mathcal{I}|</li>
 </ul>
 </blockquote>
 <blockquote>
