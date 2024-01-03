@@ -7,8 +7,379 @@
         <description><![CDATA[Mostly math, physics, and CS]]></description>
         <atom:link href="https://derekelkins.github.io/rss.xml" rel="self"
                    type="application/rss+xml" />
-        <lastBuildDate>Fri, 22 Dec 2023 02:47:57 UT</lastBuildDate>
+        <lastBuildDate>Wed, 03 Jan 2024 06:00:41 UT</lastBuildDate>
         <item>
+    <title>Universal Quantification and Infinite Conjunction</title>
+    <link>https://derekelkins.github.io/posts/universal-quantification-and-infinite-conjunction.html</link>
+    <description><![CDATA[<script>
+extraMacros = {
+  den: ["{[\\\![#1]\\\!]}", 1],
+  bigden: ["{\\left[\\\!\\\!\\left[#1\\right]\\\!\\\!\\right]}", 1]
+};
+</script>
+<h3 id="introduction">Introduction</h3>
+<p>It is not uncommon for universal quantification to be described as
+(potentially) infinite conjunction<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.
+Quoting Wikipedia’s <a href="https://en.wikipedia.org/w/index.php?title=Quantifier_(logic)&amp;oldid=1060503100#Relations_to_logical_conjunction_and_disjunction">Quantifier_(logic)</a>
+page (my emphasis):</p>
+<blockquote>
+<p>For a finite domain of discourse |D = \{a_1,\dots,a_n\}|, the universal quantifier is equivalent to a logical conjunction of propositions with singular terms |a_i| (having the form |Pa_i| for monadic predicates).</p>
+<p>The existential quantifier is equivalent to a logical disjunction of propositions having the same structure as before. <strong>For infinite domains of discourse, the equivalences are similar.</strong></p>
+</blockquote>
+<p>While there’s a small grain of truth
+to this, I think it is wrong and/or misleading far more often than
+it’s useful or correct. Indeed, it takes a bit of effort to even
+get a statement that makes sense at all. There’s a bit of conflation
+between syntax and semantics that’s required to have it naively
+make sense, unless you’re working (quite unusually) in an infinitary
+logic where it is typically outright false.</p>
+<p>What harm does this confusion do? The most obvious harm is that
+this view does not generalize to non-classical logics. I’ll focus
+on constructive logics, in particular. Besides causing problems in
+these contexts, which maybe you think you don’t care about, it betrays
+a significant gap in understanding of what universal quantification
+actually is. Even in purely classical contexts, this confusion often
+manifests, e.g., in <a href="https://math.stackexchange.com/questions/110635/how-it-is-posible-that-omega-inconsistency-does-not-lead-to-inconsistency">confusion about |\omega|-inconsistency</a>.</p>
+<p>So what is the difference between universal quantification and
+infinite conjunction? Well, the most obvious difference is that
+infinite conjunction is indexed by some (meta-theoretic) set that
+doesn’t have anything to do with the domain the universal quantifier
+quantifies over. However, even if these sets happened to coincide<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> there are
+still differences between universal quantification and infinite
+conjunction. The key is that universal quantification
+requires the predicate being quantified over to hold <em>uniformly</em>,
+while infinite conjunction does not. It just so happens that for
+the standard set-theoretic semantics of classical first-order logic
+this “uniformity” constraint is degenerate. However, even for
+classical first-order logic, this notion of uniformity will be
+relevant.</p>
+<!--more-->
+<h3 id="classical-semantic-view">Classical Semantic View</h3>
+<p>I want to start in the context where this identification is closest
+to being true, so I can show where the idea comes from. The summary
+of this section is that the standard, classical, set-theoretic
+semantics of universal quantification is equivalent to an infinitary
+generalization of the semantics of conjunction. The issue is
+“infinitary generalization of the semantics of conjunction” isn’t
+the same as “semantics of infinitary conjunction”.</p>
+<p>The standard set-theoretic semantics of classical first-order logic
+interprets each formula, |\varphi|, as a subset of |D^{\mathsf{fv}(\varphi)}|
+where |D| is a given domain set and |\mathsf{fv}| computes the (necessarily finite)
+set of free variables of |\varphi|. Traditionally, |D^{\mathsf{fv}(\varphi)}|
+would be identified with |D^n| where |n| is the cardinality of |\mathsf{fv}(\varphi)|.
+This involves an arbitrary mapping of the free variables of |\varphi|
+to the numbers |1| to |n|. The semantics of a formula then becomes an |n|-ary
+set-theoretic relation.</p>
+<p>The interpretation of binary conjunction is straightforward:</p>
+<p>\[\den{\varphi \land \psi} = \den{\varphi} \cap \den{\psi}\]</p>
+<p>where |\den{\varphi}| stands for the interpretation of the
+formula |\varphi|. To be even
+more explicit, I should index this notation by a structure which specifies
+the domain, |D|, as well as the interpretations of any predicate or function
+symbols, but we’ll just consider this fixed but unspecified.</p>
+<p>The interpretation of universal quantification is more complicated
+but still fairly straightforward:</p>
+<p>\[\den{\forall x.\varphi} = \bigcap_{d \in D}\left\{\bar y|_{\mathsf{fv}(\varphi) \setminus \{x\}} \mid \bar y \in \den{\varphi} \land \bar y(x) = d\right\}\]</p>
+<p>Set-theoretically, we have:</p>
+<p>\[\begin{align}
+\bar z \in \bigcap_{d \in D}\left\{\bar y|_{\mathsf{fv}(\varphi) \setminus \{x\}} \mid \bar y \in \den{\varphi} \land \bar y(x) = d\right\}
+\iff &amp; \forall d \in D. \bar z \in \left\{\bar y|_{\mathsf{fv}(\varphi) \setminus \{x\}} \mid \bar y \in \den{\varphi} \land \bar y(x) = d\right\} \\
+\iff &amp; \forall d \in D. \exists \bar y \in \den{\varphi}. \bar z = \bar y|_{\mathsf{fv}(\varphi) \setminus \{x\}} \land \bar y(x) = d \\
+\iff &amp; \forall d \in D. \bar z[x \mapsto d] \in \den{\varphi}
+\end{align}\]</p>
+<p>where |f[x \mapsto c]| extends a function |f \in D^{S}| to a function in |D^{S \cup \{x\}}|
+via |f[x \mapsto c](v) = \begin{cases}c, &amp;\textrm{ if }v = x \\ f(v), &amp;\textrm{ if }v \neq x\end{cases}|.
+The final |\iff| arises because |\bar z[x \mapsto d]| is the <em>unique</em> function which
+extends |\bar z| to the desired domain such that |x| is mapped to |d|. Altogether, this
+illustrates our desired semantics of the interpretation of |\forall x.\varphi| being the
+interpretations of |\varphi| which hold when |x| is interpreted as any element of the domain.</p>
+<p>This demonstrates the summary that the semantics of quantification is an infinitary
+version of the semantics of conjunction, as |\bigcap| is an infinitary version of |\cap|.
+But even here there are substantial cracks in this perspective.</p>
+<h3 id="infinitary-logic">Infinitary Logic</h3>
+<p>The first problem is that we don’t have an infinitary conjunction so saying
+universal quantification is essentially infinitary conjunction doesn’t make sense.
+However, it’s easy enough to formulate the syntax and semantics of infinitary
+conjunction (assuming we have a meta-theoretic notion of sets).</p>
+<p>Syntactically, for a (meta-theoretic) set |I| and an |I|-indexed family of formulas
+|\{\varphi_i\}_{i \in I}|, we have the infinitary conjunction |\bigwedge_{i \in I} \varphi_i|.</p>
+<p>The set-theoretic semantics of this connective <em>is</em> a direct generalization of the
+binary conjunction case:</p>
+<p>\[\bigden{\bigwedge_{i \in I}\varphi_i} = \bigcap_{i \in I}\den{\varphi_i}\]</p>
+<p>If |I = \{1,2\}|, we recover exactly the binary conjunction case.</p>
+<p>Equipped with a semantics of <em>actual</em> infinite conjunction, we can compare
+to the semantics of universal quantification case and see where things go wrong.</p>
+<p>The first problem is that it makes no sense to choose |I| to be |D|. The formula
+|\bigwedge_{i \in I} \varphi_i| can be interpreted with respect to many
+different domains. So any particular choice of |D| would be wrong for most semantics.
+This is assuming that our syntax’s meta-theoretic sets were the same as our
+semantics’ meta-theoretic sets, which need not be the case at all<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>.</p>
+<p>An even bigger problem is that infinitary conjunction expects a family of formulas
+while with universal quantification has just one. This is one facet of the uniformity
+I mentioned. Universal quantification has one formula that is interpreted a single
+way (with respect to the given structure). The infinitary intersection expression
+is computing a set out of this singular interpretation. Infinitary conjunction, on
+the other hand, has a family of formulas which need have no relation to each other.
+Each of these formulas is independently interpreted and then all those separate
+interpretations are combined with an infinitary intersection. The problem we have
+is that there’s generally no way to take a formula |\varphi| with free variable |x|
+and an element |d \in D| and make a formula |\varphi_d| with |x| not free such that
+|\bar y[x \mapsto d] \in \den{\varphi} \iff \bar y \in \den{\varphi_d}|. A simple
+cardinality argument shows that: there are only countably many (finitary) formulas,
+but there are plenty of uncountable domains. This is why |\omega|-inconsistency is
+possible. We can easily have elements in the domain which cannot be captured by any
+formula.</p>
+<h3 id="syntactic-view">Syntactic View</h3>
+<p>Instead of taking a semantic view, let’s take a syntactic view of universal
+quantification and infinitary conjunction, i.e. let’s compare the rules that
+characterize them. As before, the first problem we have is that traditional
+first-order logic does not have infinitary conjunction, but we can easily
+formulate what the rules would be.</p>
+<p>The elimination rules are superficially similar but have subtle but important
+distinctions:</p>
+<p>\[\frac{\Gamma \vdash \forall x.\varphi}{\Gamma \vdash \varphi[x \mapsto t]}\forall E,t
+\qquad \frac{\Gamma \vdash \bigwedge_{i \in I} \varphi_i}{\Gamma \vdash \varphi_j}{\wedge}E,j\]
+where |t| is a term, |j| is an element of |I|, and |\varphi[x \mapsto t]| corresponds
+to syntactically substituting |t| for |x| in |\varphi| in a capture-avoiding way. A first,
+not-so-subtle distinction is if |I| is an infinite set, then |\bigwedge_{i \in I}\varphi_i|
+is an infinitely large formula. Another pretty obvious issue is universal quantification is
+restricted to instantiating terms while |I| stands for either an <em>arbitrary</em> (meta-theoretic)
+set or it may stand for some particular (meta-theoretic) set, e.g. |\mathbb N|. Either
+way, it is typically not the set of terms of the logic.</p>
+<p>Arguably, this isn’t an issue since the claim isn’t that every infinite conjunction
+corresponds to a universal quantification, but only that universal quantification
+corresponds to some infinite conjunction. The set of terms is a possible choice for
+|I|, so that shouldn’t be a problem. Well, whether it’s a problem or not depends on
+how you set up the syntax of the language. In my preferred way of handling the syntax
+of logical formulas, I index each formula by the set of free variables that may occur
+in that formula. This means the set of terms varies with the set of possible free
+variables. Writing |\vdash_V \varphi| to mean |\varphi| is well-formed and provable
+in a context with free variables |V|, then we would want the following rule:</p>
+<p>\[\frac{\vdash_V \varphi}{\vdash_U \varphi}\] where |V \subseteq U|. This
+simply states that if a formula is provable, it should remain provable even if we
+add more (unused) free variables. This causes a problem with having an infinitary
+conjunction indexed by terms. Writing |\mathsf{Term}(V)| for the set of terms
+with (potential) free variables in |V|, then while |\vdash_V \bigwedge_{t \in \mathsf{Term}(V)}\varphi_t|
+might be okay, this would also lead to |\vdash_U \bigwedge_{t \in \mathsf{Term}(V)}\varphi_t| which
+would also hold but would no longer correspond to universal quantification in
+a context with free variables in |U|. This really makes a difference. For example,
+for many theories, such as the usual presentation of <strong>ZFC</strong>, |\mathsf{Term}(\varnothing) = \varnothing|,
+i.e. there are no closed terms. As such, |\vdash_\varnothing \forall x.\bot|
+is neither provable (which we wouldn’t expect it to be) <em>nor refutable</em> without additional axioms. On the
+other hand, |\bigwedge_{i \in \varnothing}\bot| is |\top| and thus trivially
+provable. If we consider |\vdash_{\{y\}} \forall x.\bot| next, it becomes
+refutable. This doesn’t contradict our earlier rule about adding free variables
+because |\vdash_\varnothing \forall x.\bot| wasn’t provable and so the rule
+says nothing. On the other hand, that rule does require |\vdash_{\{y\}} \bigwedge_{i \in \varnothing}\bot|
+to be provable, and it is. Of course, it no longer corresponds to |\forall x.\bot|
+with this set of free variables. The putative corresponding formula would be
+|\bigwedge_{i \in \{y\}}\bot| which is indeed refutable.</p>
+<p>With the setup above, we can’t get the elimination rule for |\bigwedge| to
+correspond to the elimination rule for |\forall|, because there isn’t a
+singular set of terms. However, a more common if less clean approach is to allow
+all free variables all the time, i.e. to fix a single countably infinite
+set of variables once and for all. This would “resolve” this problem.</p>
+<p>The differences in the introduction rules are more stark. The rules are:</p>
+<p>\[\frac{\Gamma \vdash \varphi \quad x\textrm{ not free in }\Gamma}{\Gamma \vdash \forall x.\varphi}\forall I
+\qquad \frac{\left\{\Gamma \vdash \varphi_i \right\}_{i \in I}}{\Gamma \vdash \bigwedge_{i \in I}\varphi_i}{\wedge}I\]</p>
+<p>Again, the most blatant difference is that (when |I| is infinite) |{\wedge}I|
+corresponds to an infinitely large derivation. Again, the uniformity aspects
+show through. |\forall I| requires a single derivation that will handle all
+terms, whereas |{\wedge}I| allows a different derivation for each |i \in I|.</p>
+<p>We don’t run into the same issue as in the semantic view with needing to turn
+elements of the domain into terms/formulas. Given a formula |\varphi| with
+free variable |x|, we can easily make a formula |\varphi_t| for every
+term |t|, namely |\varphi_t = \varphi[x \mapsto t]|. We won’t have the
+issue that leads to |\omega|-inconsistency because |\forall x.\varphi|
+is derivable from |\bigwedge_{t \in \mathsf{Term}(V)}\varphi[x \mapsto t]|.
+Of course, the reason this is true is because one of the terms in |\mathsf{Term}(V)|
+will be a variable not occurring in |\Gamma| allowing us to derive the
+premise of |\forall I|. On the other hand, if we choose |I = \mathsf{Term}(\varnothing)|,
+i.e. only consider closed terms, which is what <a href="https://en.wikipedia.org/wiki/%CE%A9-consistent_theory#%CF%89-logic">the |\omega| rule in arithmetic</a>
+is doing, then we definitely can get |\omega|-inconsistency-like situations.
+Most notably, in the case of theories, like <strong>ZFC</strong>, which have <em>no</em> closed
+terms.</p>
+<h3 id="constructive-view">Constructive View</h3>
+<p>A constructive perspective allows us to accentuate the contrast between
+universal quantification and infinitary conjunction even more as well
+as bring more clarity to the notion of uniformity.</p>
+<p>We’ll start with the <a href="https://en.wikipedia.org/wiki/Brouwer%E2%80%93Heyting%E2%80%93Kolmogorov_interpretation">BHK interpretation</a>
+of Intuitionistic logic and specifically a <a href="https://en.wikipedia.org/wiki/Realizability">realizabilty</a>
+interpretation. For this, we’ll allow infinitary conjunction only for |I = \mathbb N|.</p>
+<p>I’ll write |n\textbf{ realizes }\varphi| for the statement that the natural number |n|
+realizes the formula |\varphi|. As in the linked articles, we’ll need a computable <a href="https://en.wikipedia.org/wiki/Pairing_function">pairing function</a>
+which computably encodes a pair of natural numbers as a natural number. I’ll just write
+this using normal pairing notation, i.e. |(n,m)|. We’ll also need Gödel numbering
+to computably map a natural number |n| to a computable function |f_n|.</p>
+<p>\[\begin{align}
+(n_0, n_1)\textbf{ realizes }\varphi_1 \land \varphi_2
+\quad &amp; \textrm{if and only if} \quad n_0\textbf{ realizes }\varphi_0\textrm{ and }
+n_1\textbf{ realizes }\varphi_1 \\
+n\textbf{ realizes }\forall x.\varphi
+\quad &amp; \textrm{if and only if}\quad \textrm{for all }m, f_n(m)\textbf{ realizes }\varphi[x \mapsto m] \\
+(k, n_k)\textbf{ realizes }\varphi_1 \lor \varphi_2
+\quad &amp; \textrm{if and only if} \quad k \in \{0, 1\}\textrm{ and }n_k\textbf{ realizes }\varphi_k \\
+n\textbf{ realizes }\neg\varphi
+\quad &amp; \textrm{if and only if} \quad\textrm{there is no }m\textrm{ such that }m\textbf{ realizes }\varphi
+\end{align}\]</p>
+<p>I included disjunction and negation in the above so I could talk about the Law of the Excluded Middle.
+Via the above interpretation, given any formula |\varphi| with free variable |x|,
+the meaning of |\forall x.\varphi\lor\neg\varphi| would be a computable function
+which for each natural number |m| produces a bit indicating whether or not
+|\varphi[x \mapsto m]| holds. The Law of Excluded Middle holding would thus mean
+every such formula is computationally decidable which we know isn’t the case. For example,
+choose |\varphi| as the formula which asserts that the |x|-th Turing machine halts.</p>
+<p>This example illustrates the uniformity constraint. Assuming a traditional, classical
+meta-language, e.g. <strong>ZFC</strong>, then it is the case that |(\varphi\lor\neg\varphi)[x \mapsto m]| is
+realized for each |m| in the case where |\varphi| is asserting the halting of the |x|-th
+Turing machine<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>. But this interpretation of universal quantification
+requires not only that the quantified formula holds for all naturals, but also that
+we can computably find this out.</p>
+<p>It’s clear that trying to formulate a notion of infinitary conjunction with regards
+to realizability would require using something other than natural numbers as realizers
+if we just directly generalize the finite conjunction case. For example, we might
+use potentially infinite sequences of natural numbers as realizers. Regardless,
+the discussion of the previous example makes it clear an interpretation of infinitary
+conjunction can’t be done in standard computability<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>,
+while, obviously, universal quantification can.</p>
+<h3 id="categorical-view">Categorical View</h3>
+<p>The categorical semantics of universal quantification and conjunction are quite different
+which also suggests that they are not related, at least not in some straightforward way.</p>
+<p>One way to get to categorical semantics is to restate traditional, set-theoretic semantics
+in categorical terms. Traditionally, the semantics of a formula is a subset
+of some product of the domain set, one for each free variable. Categorically, that
+suggests we want finite products and the categorical semantics of a formula should
+be a subobject of a product of some object representing the domain.</p>
+<p>Conjunction is traditionally represented via intersection of subsets, and categorically
+we form the intersection of subobjects via pulling back. So to support finite conjunctions,
+we need our category to additionally have finite pullbacks of monomorphisms. Infinitary
+conjunctions simply require infinitely wide pullbacks of monomorphisms. However, we
+can start to see some cracks here. What does it mean for a pullback to be infinitely wide?
+It means the obvious thing; namely, that we have an infinite set of monomorphisms sharing
+a codomain, and we’ll take the limit of this diagram. The key here, though, is “<em>set</em>”.
+Regardless of whatever the objects of our semantic category are, the infinitary conjunctions
+are indexed by a set.</p>
+<p>To talk about the categorical semantics of universal quantification, we need to bring to
+the foreground some structure that we have been leaving – and traditionally accounts do leave
+– in the background. Before, I said the semantics of a formula, |\varphi|, depends on the
+free variables in that formula, e.g. if |D| is our domain object, then the semantics of
+a formula with three free variables would be a subobject of |\prod_{v \in \mathsf{fv}(\varphi)}D \cong D\times D \times D|
+which I’ll continue to write as |D^{\mathsf{fv}(\varphi)}| though now it will be
+interpreted as a product rather than a function space. For |\mathbf{Set}|,
+this makes no difference.
+It would be more accurate to say that a formula can be given semantics in any product
+of the domain object indexed by any <em>superset</em> of the free variables. This is just
+to say that a formula doesn’t need to use every free variable that is available. Nevertheless,
+even if it is induced by the same formula, a subobject of |D^{\mathsf{fv}(\varphi)}| is
+a different subobject than a subobject of |D^{\mathsf{fv}(\varphi) \cup \{u\}}|
+where |u| is a variable not free in |\varphi|, so we need a way of relating the semantics
+of formulas considered with respect to different sets of free variables.</p>
+<p>To do this, we will formulate a category of contexts and index our semantics by it.
+Fix a category |\mathcal C| and an object |D| of |\mathcal C|. Our category
+of contexts, |\mathsf{Ctx}|, will be the full subcategory of |\mathcal C| with
+objects of the form |D^S| where |S| is a finite subset of |V|, a fixed set of
+variables. We’ll assume these products exist, though typically we’ll just assume
+that |\mathcal C| has <em>all</em> finite products. From here, we use the |\mathsf{Sub}| functor.
+|\mathsf{Sub} : \mathsf{Ctx}^{op} \to \mathbf{Pos}| maps an object
+of |\mathsf{Ctx}| to the poset of its subobjects as objects of |\mathcal C|<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>.
+Now an arrow |f : D^{\{x,y,z,w\}} \to D^{\{x,y,z\}}| would induce a monotonic function
+|\mathsf{Sub}(f) : \mathsf{Sub}(D^{\{x,y,z\}}) \to \mathsf{Sub}(D^{\{x,y,z,w\}})|.
+This is defined for each subobject by pulling back a representative monomorphism of that subobject along |f|.
+Arrows of |\mathsf{Ctx}| are the semantic analogues of substitutions, and |\mathsf{Sub}(f)|
+applies these “substitutions” to the semantics of formulas.</p>
+<p>Universal quantification is then characterized as the (indexed) right adjoint (Galois
+connection in this context) of |\mathsf{Sub}(\pi^x)| where |\pi^x : D^S \to D^{S \setminus \{x\}}|
+is just projection. The indexed nature of this adjoint leads to <a href="/posts/beck-chevalley.html">Beck-Chevalley conditions</a>
+reflecting the fact universal quantification should respect substitution.
+|\mathsf{Sub}(\pi^x)| corresponds to adding |x| as a new, unused free variable to a formula.
+Let |U| be a subobject of |D^{S \setminus \{x\}}| and |V| a subobject of |D^S|. Furthermore, write
+|U \sqsubseteq U’| to indicate that |U| is a subobject of the subobject |U’|, i.e.
+that the monos that represent |U| factor through the monos that represent |U’|. The
+adjunction then states: \[\mathsf{Sub}(\pi^x)(U) \sqsubseteq V\quad \textrm{if and only if}\quad U \sqsubseteq \forall_x(V)\]
+The |\implies| direction is a fairly direct semantic analogue of the |\forall I| rule:
+\[\frac{\Gamma \vdash \varphi\quad x\textrm{ not free in }\Gamma}{\Gamma \vdash \forall x.\varphi}\]
+Indeed, it is easy to show that the converse of this rule is derivable with |\forall E|
+validating the semantic “if and only if”. To be clear, the full adjunction is natural in
+|U| and |V| and indexed, effectively, in |S|.</p>
+<p>Incidentally, we’d also want the semantics of infinite conjunctions to respect substitution,
+so they too have a Beck-Chevalley condition they satisfy and give rise to an indexed right adjoint.</p>
+<p>It’s hard to even compare the categorical semantics of infinitary conjunction and universal
+quantification, let alone conflate them, <em>even when |\mathcal C = \mathbf{Set}|</em>. This isn’t
+too surprising as these semantics work just fine for constructive logics where, as illustrated
+earlier, these can be semantically distinct. As mentioned, both of these constructs can be
+described by indexed right adjoints. However, they are adjoints between very different indexed
+categories. If |\mathcal M| is our indexed category (above it was |\mathsf{Sub}|), then we’ll
+have |I|-indexed products if |\Delta_{\mathcal M} : \mathcal M \to [DI, -] \circ \mathcal M|
+has an indexed right adjoint where |D : \mathbf{Set} \to \mathbf{cat}| is the discrete (small)
+category functor. For |\mathcal M| to have universal quantification, we need an indexed right
+adjoint to an indexed functor |\mathcal M \circ \mathsf{cod} \circ \iota \to \mathcal M \circ \mathsf{dom} \circ \iota|
+where |\iota : s(\mathsf{Ctx}) \hookrightarrow \mathsf{Ctx}^{\to}| is the full subcategory
+of the arrow category |\mathsf{Ctx}^{\to}| consisting of just the projections.</p>
+<h3 id="conclusion">Conclusion</h3>
+<p>My hope is that the preceding makes it abundantly clear that viewing universal quantification
+as some kind of special “infinite conjunction” is not sensible even approximately. To do so is
+to seriously misunderstand universal quantification. Most discussions “equating” them involve
+significant conflations of syntax and semantics where a specific choice of domain is fixed and elements
+of that specific domain are used as terms.</p>
+<p>A secondary goal was to illustrate an aspect of logic from a variety of perspectives and illustrate
+some of the concerns in meta-logical reasoning. For example, quantifiers and connectives are
+syntactical concepts and thus can’t depend on the details of the semantic domain. As another
+example, better perspectives on quantifiers and connectives are more robust to weakening the
+logic. I’d say this is especially true when going from classical to constructive logic.
+Structural proof theory and categorical semantics are good at formulating logical concepts
+modularly so that they still make sense in very weak logics.</p>
+<p>Unfortunately, the traditional trend towards minimalism strongly pushes in the
+other direction leading to the exploiting of every symmetry and coincidence a
+stronger logic (namely classical logic) provides producing definitions that
+don’t survive even mild weakening of the logic<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a>. The attempt to identify
+universal quantification with infinite conjunction here takes that impulse too
+far and doesn’t even work in classical logic as demonstrated. While there’s
+certainly value in recognizing redundancy, I personally find minimizing logical
+assumptions far more important and valuable than minimizing (primitive) logical
+connectives.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>
+“Universal statements are true if they are true for every individual in the world. They can be thought of as an infinite conjunction,” from <a href="https://www.massey.ac.nz/~mjjohnso/notes/59302/l07.html">some random AI lecture notes</a>. You can find many others.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>The domain
+doesn’t even need to be a set.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>For example,
+we may formulate our syntax in a second-order arithmetic identifying our syntax’s
+meta-theoretic sets with unary predicates, while our semantics is in <strong>ZFC</strong>. Just
+from cardinality concerns, we know that there’s no way of injectively mapping
+every <strong>ZFC</strong> set to a set of natural numbers.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>It’s probably worth pointing out that not only will this classical meta-language
+not tell us whether it’s |\varphi[x \mapsto m]| or |\neg\varphi[x \mapsto m]| that
+holds for every specific |m|, but it’s easy to show (assuming consistency of <strong>ZFC</strong>)
+that |\varphi[x \mapsto m]| is independent of <strong>ZFC</strong> for specific values of |m|.
+For example, it’s easy to make a Turing machine that halts if and only if it finds
+a contradiction in the theory of <strong>ZFC</strong>.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>Interestingly, for some models
+of computation, e.g. ones based on Turing machines, infinitary disjunction, or, specifically,
+|\mathbb N|-ary disjunction is <em>not</em> problematic. Given an infinite sequence of halting
+Turing machines, we can interleave their execution such that every Turing machine in the
+sequence will halt at some finite time. Accordingly, extending the definition of
+disjunction in realizability to the |\mathbb N|-ary case does not run into any
+of the issues that |\mathbb N|-ary conjunction has and is completely unproblematic.
+We just let |k| be an arbitrary natural instead of just |\{0, 1\}|.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>This is a place we could generalize the
+categorical semantics further. There’s no reason we need to consider this particular functor.
+We could consider other functors from |\mathsf{Ctx}^{op} \to \mathbf{Pos}|, i.e. other
+<a href="https://ncatlab.org/nlab/show/indexed+category">indexed</a> <a href="https://ncatlab.org/nlab/show/%280%2C1%29-category+theory">|(0,1)|-categories</a>.
+This setup is called a <a href="https://ncatlab.org/nlab/show/hyperdoctrine">hyperdoctrine</a><a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p>The most obvious example of
+this is defining quantifiers and connectives in terms of other connectives
+particularly when negation is involved. A less obvious example is the overwhelming
+focus on |\mathbf 2|-valued semantics when classical logic naturally allows
+arbitrary Boolean-algebra-valued semantics.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>]]></description>
+    <pubDate>2024-01-02 22:00:41-08:00</pubDate>
+    <guid>https://derekelkins.github.io/posts/universal-quantification-and-infinite-conjunction.html</guid>
+    <dc:creator>Derek Elkins</dc:creator>
+</item>
+<item>
     <title>What is the coproduct of two groups?</title>
     <link>https://derekelkins.github.io/posts/what-is-the-coproduct-of-two-groups.html</link>
     <description><![CDATA[<h2 id="introduction">Introduction</h2>
@@ -2603,179 +2974,6 @@ defunctionalized continuations.<a href="#fnref2" class="footnote-back" role="doc
 </section>]]></description>
     <pubDate>2020-04-29 23:06:52-07:00</pubDate>
     <guid>https://derekelkins.github.io/posts/recursive-helping.html</guid>
-    <dc:creator>Derek Elkins</dc:creator>
-</item>
-<item>
-    <title>Beck-Chevalley</title>
-    <link>https://derekelkins.github.io/posts/beck-chevalley.html</link>
-    <description><![CDATA[<p>This is a fairly technical article. This article will most likely not have any significance for you if you
-haven’t heard of the Beck-Chevalley condition before.</p>
-<h2 id="introduction">Introduction</h2>
-<p>When one talks about “indexed (co)products” in an indexed category, it is often described as follows:</p>
-<p>Let |\mathcal C| be an <a href="https://ncatlab.org/nlab/show/indexed+category"><strong>|\mathbf S|-indexed category</strong></a>,
-i.e. a <a href="https://ncatlab.org/nlab/show/pseudofunctor">pseudofunctor</a> |\mathbf S^{op} \to \mathbf{Cat}|
-where |\mathbf S| is an ordinary category.
-Write |\mathcal C^I| for |\mathcal C(I)| and |f^* : \mathcal C^J \to \mathcal C^I| for |\mathcal C(f)|
-where |f : I \to J|. The functors |f^*| will be called <strong>reindexing functors</strong>. |\mathcal C| has <strong>|\mathbf S|-indexed
-coproducts</strong> whenever</p>
-<ol type="1">
-<li>each reindexing functor |f^*| has a left adjoint |\Sigma^f|, and</li>
-<li>the Beck-Chevalley condition holds, i.e. whenever <span class="math display">$$\require{amscd}\begin{CD}
-   I @&gt;h&gt;&gt; J \\
-   @VkVV @VVfV \\
-   K @&gt;&gt;g&gt; L
-\end{CD}$$</span> is a pullback square in |\mathbf S|, then the canonical
-morphism |\Sigma^k \circ h^* \to g^* \circ \Sigma^f| is an isomorphism.</li>
-</ol>
-<p>The first condition is reasonable, especially motivated with some examples, but the second condition is more
-mysterious. It’s clear that you’d need <em>something</em> more than simply a family of adjunctions, but it’s not
-clear how you could calculate the particular condition quoted. That’s the goal of this article. I will not
-cover what the Beck-Chevalley condition is intuitively saying. I cover that in <a href="https://math.stackexchange.com/a/2203383">this Stack Exchange answer</a>
-from a logical perspective, though there are definitely other possible perspectives as well.</p>
-<p>Some questions are:</p>
-<ol type="1">
-<li>Where does the Beck-Chevalley condition come from?</li>
-<li>What is this “canonical morphism”?</li>
-<li>Why do we care about pullback squares in particular?</li>
-</ol>
-<!--more-->
-<h2 id="indexed-functors-and-indexed-natural-transformations">Indexed Functors and Indexed Natural Transformations</h2>
-<p>The concepts we’re interested in will typically be characterized by universal properties, so we’ll want an indexed
-notion of adjunction. We can get that by instantiating the general definition of an adjunction in any bicategory if
-we can make a bicategory of indexed categories. This is pretty easy since indexed categories are already described
-as pseudofunctors which immediately suggests a natural notion of indexed functor would be a pseudonatural transformation.</p>
-<p>Explicitly, given indexed categories |\mathcal C, \mathcal D : \mathbf S^{op} \to \mathbf{Cat}|, an <strong>indexed
-functor</strong> |F : \mathcal C \to \mathcal D| consists of a functor |F^I : \mathcal C^I \to \mathcal D^I| for
-each object |I| of |\mathbf S| and a natural isomorphism |F^f : \mathcal D(f) \circ F^J \cong F^I \circ \mathcal C(f)|
-for each |f : I \to J| in |\mathbf S|.</p>
-<p>An indexed natural transformation corresponds to a <a href="https://ncatlab.org/nlab/show/modification">modification</a>
-which is the name for the 3-cells between the 2-cells in the 3-category of 2-categories. For us, this works out
-to be the following: for each object |I| of |\mathbf S|, we have a natural transformation |\alpha^I : F^I \to G^I|
-such that for each |f : I \to J| the following diagram commutes <span class="math display">$$\begin{CD}
-\mathcal D(f) \circ F^J @&gt;\!\!\!\!\!\!\!id_{\mathcal D(f)}*\alpha^J&gt;&gt; \mathcal D(f) \circ G^J \\
-@V\cong VV @VV\cong V \\
-F^I \circ \mathcal C(f) @&gt;&gt;\!\!\!\!\!\!\!\alpha^I*id_{\mathcal C(f)}&gt; G^I \circ \mathcal C(f)
-\end{CD}$$</span> where the isomorphisms are the isomorphisms from the pseudonaturality of |F| and |G|.</p>
-<h2 id="indexed-adjunctions-and-beck-chevalley">Indexed Adjunctions and Beck-Chevalley</h2>
-<p>Indexed adjunctions can now be defined via the <a href="https://ncatlab.org/nlab/show/adjunction#direct_definition">unit and counit definition</a>
-which works in any bicategory. In particular, since indexed functors consist of families of functors and indexed natural
-transformations consist of families of natural transformations, both indexed by the objects of |\mathbf S|, part of the
-data of an indexed adjunction is a family of adjunctions.</p>
-<p>Let’s work out what the additional data is. First, to establish notation, we have indexed functors |F : \mathcal D\to \mathcal C|
-and |U : \mathcal C \to \mathcal D| such that |F \dashv U| in an indexed sense. That means we have |\eta : Id \to U \circ F|
-and |\varepsilon : F \circ U \to Id| as indexed natural transformations. The first pieces of additional
-data, then, are the fact that |F| and |U| are indexed functors, so we have natural
-isomorphisms |F^f : \mathcal C(f)\circ F^J \to F^I\circ \mathcal D(f)|
-and |U^f : \mathcal C(f) \circ U^J \to U^I \circ \mathcal D(f)| for each |f : I \to J| in |\mathbf S|.
-The next pieces of additional data, or rather constraints, are the coherence conditions on |\eta| and |\varepsilon|.
-These work out to <span class="math display">$$\begin{gather}
-U^I(F^f)^{-1} \circ \eta_{\mathcal D(f)}^I = U_{F^J}^f \circ \mathcal D(f)\eta^J \qquad\text{and}\qquad
-\varepsilon_{\mathcal C(f)}^I \circ F^I U^f = \mathcal C(f)\varepsilon^J \circ (F_{U^J}^f)^{-1}
-\end{gather}$$</span></p>
-<p>This doesn’t look too much like the example in the introduction, but maybe some of this additional data is redundant.
-If we didn’t already know where we end up, one hint would be that |(F^f)^{-1} : F^I \circ \mathcal C(f) \to \mathcal D(f) \circ F^J|
-and |U^f : \mathcal D(f) \circ U^J \to U^I \circ \mathcal C(f)| look like <a href="https://ncatlab.org/nlab/show/mate">mates</a>.
-Indeed, it would be quite nice if they were as mates uniquely determine each other and this would make the reindexing
-give rise to a morphism of adjunctions. Unsurprisingly, this is the case.</p>
-<p>To recall, generally, given adjunctions |F \dashv U : \mathcal C \to \mathcal D| and |F’ \dashv U’ : \mathcal C’ \to \mathcal D’|, a
-<strong>morphism of adjunctions</strong> from the former to the latter is a pair of functors |K : \mathcal C \to \mathcal C’|
-and |L : \mathcal D \to \mathcal D’|, and a natural transformation |\lambda : F’ \circ L \to K \circ F| or,
-equivalently, a natural transformation |\mu : L \circ U \to U’ \circ K|. You can show that there is a
-bijection |[\mathcal D,\mathcal C’](F’\circ L, K \circ F) \cong [\mathcal C, \mathcal D’](L \circ U, U’ \circ K)|.
-Concretely, |\mu = U’K\varepsilon \circ U’\lambda_U \circ \eta’_{LU}| provides the mapping in one direction.
-The mapping in the other direction is similar, and we can prove it is a bijection using the triangle equalities.
-|\lambda| and |\mu| are referred to as <strong>mates</strong> of each other.</p>
-<p>In our case, |K| and |L| will be reindexing functors |\mathcal C(f)| and |\mathcal D(f)| respectively for
-some |f : I \to J|. We need to show that the family of adjunctions and the coherence conditions on |\eta| and |\varepsilon|
-force |(F^f)^{-1}| and |U^f| to be mates. The proof is as follows:
-<span class="math display">$$\begin{align}
-&amp; U^I \mathcal C(f) \varepsilon^J \circ U^I(F_{U^J}^f)^{-1} \circ \eta_{\mathcal D(f)U^J}^I &amp; \qquad \{\text{coherence of }\eta \} \\
-= \quad &amp; U^I \mathcal C(f) \varepsilon^J \circ U_{F^JU^J}^f \circ \mathcal D(f)\eta_{U^J}^J &amp; \qquad \{\text{naturality of }U^f \} \\
-= \quad &amp; U^f \circ \mathcal D(f)U^J\varepsilon^J \circ \mathcal D(f)\eta_{U^J}^J &amp; \qquad \{\text{functoriality of }\mathcal D(f) \} \\
-= \quad &amp; U^f \circ \mathcal D(f)(U^J\varepsilon^J \circ \eta_{U^J}^J) &amp; \qquad \{\text{triangle equality} \} \\
-= \quad &amp; U^f &amp;
-\end{align}$$</span></p>
-<p>The next natural question is: if we know |(F^f)^{-1}| and |U^f| are mates, do we still need the coherence conditions on |\eta|
-and |\varepsilon|? The answer is “no”. <span class="math display">$$\begin{align}
-&amp; U_{F^J}^f \circ \mathcal D(f)\eta^J &amp; \qquad \{\text{mate of }U^f \} \\
-= \quad &amp; U^I \mathcal C(f) \varepsilon_{F^J}^J \circ U^I(F_{F^J}^f)^{-1} \circ \eta^I_{\mathcal D(f)U^I} \circ \mathcal D(f)\eta^J &amp; \{\text{naturality of }\eta^I \} \\
-= \quad &amp; U^I \mathcal C(f) \varepsilon_{F^J}^J \circ U^I(F_{F^J}^f)^{-1} \circ U^I F^I D(f)\eta^J \circ \eta_{\mathcal D(f)}^I &amp; \{\text{naturality of }U^I(F^f)^{-1} \} \\
-= \quad &amp; U^I \mathcal C(f) \varepsilon_{F^J}^J \circ U^I\mathcal C(f)F^J\eta^J \circ U^I (F^f)^{-1} \circ \eta_{\mathcal D(f)}^I &amp; \{\text{functoriality of }U^I\mathcal C(f) \} \\
-= \quad &amp; U^I \mathcal C(f)(\varepsilon_{F^J}^J \circ F^J\eta^J) \circ U^I(F^f)^{-1} \circ \eta_{\mathcal D(f)}^I &amp; \{\text{triangle equality} \} \\
-= \quad &amp; U^I (F^f)^{-1} \circ \eta_{\mathcal D(f)}^I &amp;
-\end{align}$$</span> Similarly for the other coherence condition.</p>
-<p>We’ve shown that if |U| is an indexed functor it has a left adjoint exactly when each |U^I| has a left adjoint, |F^I|, <strong><em>and</em></strong>
-for each |f : I \to J|, the mate of |U^f| with respect to those adjoints, which will be |(F^f)^{-1}|, is invertible. This latter
-condition is the Beck-Chevalley condition. As you can quickly verify, an invertible natural transformation doesn’t imply that its
-mate is invertible. Indeed, if |F| and |F’| are left adjoints and |\lambda : F’\circ L \to K \circ F| is invertible,
-then |\lambda^{-1} : K \circ F \to F’ \circ L| is not of the right form to have a mate (unless |F| and |F’| are also right
-adjoints and, particularly, an adjoint equivalence if we want to get an inverse to the mate of |\lambda|).</p>
-<h2 id="comprehension-categories">Comprehension Categories</h2>
-<p>We’ve answered questions 1 and 2 from above, but 3 is still open, and we’ve generated a new question: what is the <em>indexed</em>
-functor whose left adjoint we’re finding? The family of reindexing functors isn’t indexed by objects of |\mathbf S|
-but, most obviously, by <em>arrows</em> of |\mathbf S|. To answer these questions, we’ll consider a more general notion of
-indexed (co)products.</p>
-<p>A <a href="https://ncatlab.org/nlab/show/categorical+model+of+dependent+types#comprehension_categories"><strong>comprehension category</strong></a>
-is a functor |\mathcal P : \mathcal E \to \mathbf S^{\to}| (where
-|\mathbf S^{\to}| is the <a href="https://ncatlab.org/nlab/show/arrow+category">arrow category</a>)
-such that |p = \mathsf{cod} \circ \mathcal P| is a <a href="https://ncatlab.org/nlab/show/Grothendieck+fibration">(Grothendieck) fibration</a>
-and |\mathcal P| takes (|p|-)cartesian arrows of |\mathcal E| to pullback
-squares in |\mathbf S^{\to}|. It won’t be necessary to know what a
-fibration is, as we’ll need only a few simple examples, but fibrations
-provide a different, and in many ways better, perspective<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>
-on indexed categories and being able to move between the perspectives is valuable.</p>
-<p>A comprehension category can also be presented as a natural transformation |\mathcal P : \{{-}\} \to p| where |\{{-}\}| is
-just another name for |\mathsf{dom} \circ \mathcal P|. This natural transformation induces an indexed
-functor |\langle\mathcal P\rangle : \mathcal C \circ p \to \mathcal C \circ \{{-}\}|<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>
-where |\mathcal C| is an |\mathbf S|-indexed category. We have <strong>|\mathcal P|-(co)products</strong>
-when there is an indexed (left) right adjoint to this indexed functor.</p>
-<p>One of the most important fibrations is the codomain fibration |\mathsf{cod} : \mathbf S^{\to} \to \mathbf S| which
-corresponds to |Id| as a comprehension category. However, |\mathsf{cod}| is only a fibration when |\mathbf S| has
-all pullbacks. In particular, the cartesian morphisms of |\mathbf S^{\to}| are the pullback squares. However, we
-can define the notion of <a href="https://ncatlab.org/nlab/show/Cartesian+morphism">cartesian morphism</a> with respect to any
-functor; we only need |\mathbf S| to have pullbacks for |\mathsf{cod}| to be a fibration because a fibration requires
-you to have <em>enough</em> cartesian morphisms. However, given <em>any</em> functor |p : \mathcal E \to \mathbf S|, we
-have a subcategory |\mathsf{Cart}(p) \hookrightarrow \mathcal E| which consists of just the cartesian morphisms of |\mathcal E|.
-The composition |\mathsf{Cart}(p)\hookrightarrow \mathcal E \to \mathbf S| is always a fibration.</p>
-<h2 id="conclusion">Conclusion</h2>
-<p>Thus, if we consider the category |\mathsf{Cart}(\mathsf{cod})|, this will consist of whatever pullback squares
-exist in |\mathbf S|. The inclusion |\mathsf{Cart}(\mathsf{cod}) \hookrightarrow \mathbf S^{\to}| gives us
-a comprehension category. Write |\vert\mathsf{cod}\vert| for that comprehension category. The definition in the
-introduction is now seen to be equivalent to having |\vert\mathsf{cod}\vert|-coproducts. That is, the indexed
-functor |\langle\vert\mathsf{cod}\vert\rangle| having an indexed left adjoint. The Beck-Chevalley condition
-is what is necessary to show that a family of left (or right) adjoints to (the components of) an indexed functor
-combine together into an <em>indexed</em> functor.</p>
-<p>Specifically, the pullback square |f \circ h = g \circ k| is a morphism |(h, g) : k \to f|
-of |\mathsf{Cart}(\mathsf{cod})|. This makes |\langle\vert\mathsf{cod}\vert\rangle|
-an indexed functor with components |\langle\vert\mathsf{cod}\vert\rangle^k = k^* : \mathcal C^K \to \mathcal C^I|.
-The morphism |(h, g) : k \to f| induces the isomorphism
-|\langle\vert\mathsf{cod}\vert\rangle^{(h, g)} : h^* \circ f^* \cong k^* \circ g^*|.
-If |\Sigma^k \dashv k^* = \langle\vert\mathsf{cod}\vert\rangle^k| and similarly for |f|, then
-the “canonical morphism” is the mate of |\langle\vert\mathsf{cod}\vert\rangle^{(h, g)}|,
-namely |\Sigma^k \circ h^* \to g^* \circ \Sigma^f|. If this is invertible for every
-arrow of |\mathsf{Cart}(\mathsf{cod})|, then we can make the collection of left adjoints
-|\{\Sigma^f\}_{f \in \mathsf{Ob}(\mathsf{Cart}(\mathsf{cod}))}| into an indexed functor
-by defining |\Sigma^{(h,g)} : g^* \circ \Sigma^f \cong \Sigma^k \circ h^*| as the inverse
-of the mate of |\langle\vert\mathsf{cod}\vert\rangle^{(h, g)}|.</p>
-<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
-<hr />
-<ol>
-<li id="fn1"><p>Indexed categories
-are, in some sense, a <em>presentation</em> of fibrations which are the more
-intrinsic notion. This means it is better to work out concepts with respect
-to fibrations and then see what this means for indexed categories rather than
-the other way around or even using the “natural” suggestions. This is why
-indexed categories are pseudofunctors rather than either strict or lax
-functors. For our purposes, we have an equivalence of 2-categories between
-the 2-category of |\mathbf S|-indexed categories and the 2-category of
-fibrations over |\mathbf S|. See Exercise 9.3.8 of Bart Jacobs’ <em>Categorical Logic and Type Theory</em>
-and for a formulation of |\mathcal P|-(co)products as a <em>fibered</em> adjunction.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>This
-is just whiskering, |\mathcal C_{\mathcal P^{op}}|, but |\mathcal P^{op} : p^{op} \to \{{-}\}^{op}|.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-</ol>
-</section>]]></description>
-    <pubDate>2020-02-22 23:59:28-08:00</pubDate>
-    <guid>https://derekelkins.github.io/posts/beck-chevalley.html</guid>
     <dc:creator>Derek Elkins</dc:creator>
 </item>
 

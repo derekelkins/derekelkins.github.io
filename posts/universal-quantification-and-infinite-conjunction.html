@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="A blog mostly on math, physics, and computer science.">
+    <meta name="author" content="Derek Elkins">
+    <!--<link rel="icon" href="/images/favicon.ico">-->
+
+    <title>Universal Quantification and Infinite Conjunction</title>
+    <!-- Bootstrap core CSS -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="../css/blog.css" rel="stylesheet">
+    <link href="../css/syntax.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="blog-masthead">
+      <div class="container">
+        <nav class="blog-nav">
+          <a class="blog-nav-item " href="../">Home</a>
+          <a class="blog-nav-item " href="../about.html">About</a>
+          <a class="blog-nav-item " href="../contact.html">Contact</a>
+          <a class="blog-nav-item " href="../readinglist.html">Reading List</a>
+          <a class="blog-nav-item " href="../archive.html">Archive</a>
+          <a class="blog-nav-item pull-right" href="../rss.xml">RSS</a>
+          <a class="blog-nav-item pull-right" href="../atom.xml">Atom</a>
+        </nav>
+      </div>
+    </div>
+
+    <div class="container">
+      
+      
+      <div class="row">
+        
+        <div class="col-sm-12 blog-main">
+        
+          <div class="blog-post">
+    <h2 class="blog-post-title" style="margin-top: 30px;">Universal Quantification and Infinite Conjunction</h2>
+    <p class="blog-post-meta">January  3, 2024 06:00 UTC 
+        
+        (Last updated on January  3, 2024 06:00 UTC)
+    </p>
+    <h6 class="blog-post-meta">
+        
+        Tags: <a title="All pages tagged 'math'." href="../tags/math.html">math</a>, <a title="All pages tagged 'logic'." href="../tags/logic.html">logic</a>
+        
+    </h6>
+
+    <script>
+extraMacros = {
+  den: ["{[\\\![#1]\\\!]}", 1],
+  bigden: ["{\\left[\\\!\\\!\\left[#1\\right]\\\!\\\!\\right]}", 1]
+};
+</script>
+<h3 id="introduction">Introduction</h3>
+<p>It is not uncommon for universal quantification to be described as
+(potentially) infinite conjunction<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.
+Quoting Wikipedia’s <a href="https://en.wikipedia.org/w/index.php?title=Quantifier_(logic)&amp;oldid=1060503100#Relations_to_logical_conjunction_and_disjunction">Quantifier_(logic)</a>
+page (my emphasis):</p>
+<blockquote>
+<p>For a finite domain of discourse |D = \{a_1,\dots,a_n\}|, the universal quantifier is equivalent to a logical conjunction of propositions with singular terms |a_i| (having the form |Pa_i| for monadic predicates).</p>
+<p>The existential quantifier is equivalent to a logical disjunction of propositions having the same structure as before. <strong>For infinite domains of discourse, the equivalences are similar.</strong></p>
+</blockquote>
+<p>While there’s a small grain of truth
+to this, I think it is wrong and/or misleading far more often than
+it’s useful or correct. Indeed, it takes a bit of effort to even
+get a statement that makes sense at all. There’s a bit of conflation
+between syntax and semantics that’s required to have it naively
+make sense, unless you’re working (quite unusually) in an infinitary
+logic where it is typically outright false.</p>
+<p>What harm does this confusion do? The most obvious harm is that
+this view does not generalize to non-classical logics. I’ll focus
+on constructive logics, in particular. Besides causing problems in
+these contexts, which maybe you think you don’t care about, it betrays
+a significant gap in understanding of what universal quantification
+actually is. Even in purely classical contexts, this confusion often
+manifests, e.g., in <a href="https://math.stackexchange.com/questions/110635/how-it-is-posible-that-omega-inconsistency-does-not-lead-to-inconsistency">confusion about |\omega|-inconsistency</a>.</p>
+<p>So what is the difference between universal quantification and
+infinite conjunction? Well, the most obvious difference is that
+infinite conjunction is indexed by some (meta-theoretic) set that
+doesn’t have anything to do with the domain the universal quantifier
+quantifies over. However, even if these sets happened to coincide<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> there are
+still differences between universal quantification and infinite
+conjunction. The key is that universal quantification
+requires the predicate being quantified over to hold <em>uniformly</em>,
+while infinite conjunction does not. It just so happens that for
+the standard set-theoretic semantics of classical first-order logic
+this “uniformity” constraint is degenerate. However, even for
+classical first-order logic, this notion of uniformity will be
+relevant.</p>
+<!--more-->
+<h3 id="classical-semantic-view">Classical Semantic View</h3>
+<p>I want to start in the context where this identification is closest
+to being true, so I can show where the idea comes from. The summary
+of this section is that the standard, classical, set-theoretic
+semantics of universal quantification is equivalent to an infinitary
+generalization of the semantics of conjunction. The issue is
+“infinitary generalization of the semantics of conjunction” isn’t
+the same as “semantics of infinitary conjunction”.</p>
+<p>The standard set-theoretic semantics of classical first-order logic
+interprets each formula, |\varphi|, as a subset of |D^{\mathsf{fv}(\varphi)}|
+where |D| is a given domain set and |\mathsf{fv}| computes the (necessarily finite)
+set of free variables of |\varphi|. Traditionally, |D^{\mathsf{fv}(\varphi)}|
+would be identified with |D^n| where |n| is the cardinality of |\mathsf{fv}(\varphi)|.
+This involves an arbitrary mapping of the free variables of |\varphi|
+to the numbers |1| to |n|. The semantics of a formula then becomes an |n|-ary
+set-theoretic relation.</p>
+<p>The interpretation of binary conjunction is straightforward:</p>
+<p>\[\den{\varphi \land \psi} = \den{\varphi} \cap \den{\psi}\]</p>
+<p>where |\den{\varphi}| stands for the interpretation of the
+formula |\varphi|. To be even
+more explicit, I should index this notation by a structure which specifies
+the domain, |D|, as well as the interpretations of any predicate or function
+symbols, but we’ll just consider this fixed but unspecified.</p>
+<p>The interpretation of universal quantification is more complicated
+but still fairly straightforward:</p>
+<p>\[\den{\forall x.\varphi} = \bigcap_{d \in D}\left\{\bar y|_{\mathsf{fv}(\varphi) \setminus \{x\}} \mid \bar y \in \den{\varphi} \land \bar y(x) = d\right\}\]</p>
+<p>Set-theoretically, we have:</p>
+<p>\[\begin{align}
+\bar z \in \bigcap_{d \in D}\left\{\bar y|_{\mathsf{fv}(\varphi) \setminus \{x\}} \mid \bar y \in \den{\varphi} \land \bar y(x) = d\right\}
+\iff &amp; \forall d \in D. \bar z \in \left\{\bar y|_{\mathsf{fv}(\varphi) \setminus \{x\}} \mid \bar y \in \den{\varphi} \land \bar y(x) = d\right\} \\
+\iff &amp; \forall d \in D. \exists \bar y \in \den{\varphi}. \bar z = \bar y|_{\mathsf{fv}(\varphi) \setminus \{x\}} \land \bar y(x) = d \\
+\iff &amp; \forall d \in D. \bar z[x \mapsto d] \in \den{\varphi}
+\end{align}\]</p>
+<p>where |f[x \mapsto c]| extends a function |f \in D^{S}| to a function in |D^{S \cup \{x\}}|
+via |f[x \mapsto c](v) = \begin{cases}c, &amp;\textrm{ if }v = x \\ f(v), &amp;\textrm{ if }v \neq x\end{cases}|.
+The final |\iff| arises because |\bar z[x \mapsto d]| is the <em>unique</em> function which
+extends |\bar z| to the desired domain such that |x| is mapped to |d|. Altogether, this
+illustrates our desired semantics of the interpretation of |\forall x.\varphi| being the
+interpretations of |\varphi| which hold when |x| is interpreted as any element of the domain.</p>
+<p>This demonstrates the summary that the semantics of quantification is an infinitary
+version of the semantics of conjunction, as |\bigcap| is an infinitary version of |\cap|.
+But even here there are substantial cracks in this perspective.</p>
+<h3 id="infinitary-logic">Infinitary Logic</h3>
+<p>The first problem is that we don’t have an infinitary conjunction so saying
+universal quantification is essentially infinitary conjunction doesn’t make sense.
+However, it’s easy enough to formulate the syntax and semantics of infinitary
+conjunction (assuming we have a meta-theoretic notion of sets).</p>
+<p>Syntactically, for a (meta-theoretic) set |I| and an |I|-indexed family of formulas
+|\{\varphi_i\}_{i \in I}|, we have the infinitary conjunction |\bigwedge_{i \in I} \varphi_i|.</p>
+<p>The set-theoretic semantics of this connective <em>is</em> a direct generalization of the
+binary conjunction case:</p>
+<p>\[\bigden{\bigwedge_{i \in I}\varphi_i} = \bigcap_{i \in I}\den{\varphi_i}\]</p>
+<p>If |I = \{1,2\}|, we recover exactly the binary conjunction case.</p>
+<p>Equipped with a semantics of <em>actual</em> infinite conjunction, we can compare
+to the semantics of universal quantification case and see where things go wrong.</p>
+<p>The first problem is that it makes no sense to choose |I| to be |D|. The formula
+|\bigwedge_{i \in I} \varphi_i| can be interpreted with respect to many
+different domains. So any particular choice of |D| would be wrong for most semantics.
+This is assuming that our syntax’s meta-theoretic sets were the same as our
+semantics’ meta-theoretic sets, which need not be the case at all<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>.</p>
+<p>An even bigger problem is that infinitary conjunction expects a family of formulas
+while with universal quantification has just one. This is one facet of the uniformity
+I mentioned. Universal quantification has one formula that is interpreted a single
+way (with respect to the given structure). The infinitary intersection expression
+is computing a set out of this singular interpretation. Infinitary conjunction, on
+the other hand, has a family of formulas which need have no relation to each other.
+Each of these formulas is independently interpreted and then all those separate
+interpretations are combined with an infinitary intersection. The problem we have
+is that there’s generally no way to take a formula |\varphi| with free variable |x|
+and an element |d \in D| and make a formula |\varphi_d| with |x| not free such that
+|\bar y[x \mapsto d] \in \den{\varphi} \iff \bar y \in \den{\varphi_d}|. A simple
+cardinality argument shows that: there are only countably many (finitary) formulas,
+but there are plenty of uncountable domains. This is why |\omega|-inconsistency is
+possible. We can easily have elements in the domain which cannot be captured by any
+formula.</p>
+<h3 id="syntactic-view">Syntactic View</h3>
+<p>Instead of taking a semantic view, let’s take a syntactic view of universal
+quantification and infinitary conjunction, i.e. let’s compare the rules that
+characterize them. As before, the first problem we have is that traditional
+first-order logic does not have infinitary conjunction, but we can easily
+formulate what the rules would be.</p>
+<p>The elimination rules are superficially similar but have subtle but important
+distinctions:</p>
+<p>\[\frac{\Gamma \vdash \forall x.\varphi}{\Gamma \vdash \varphi[x \mapsto t]}\forall E,t
+\qquad \frac{\Gamma \vdash \bigwedge_{i \in I} \varphi_i}{\Gamma \vdash \varphi_j}{\wedge}E,j\]
+where |t| is a term, |j| is an element of |I|, and |\varphi[x \mapsto t]| corresponds
+to syntactically substituting |t| for |x| in |\varphi| in a capture-avoiding way. A first,
+not-so-subtle distinction is if |I| is an infinite set, then |\bigwedge_{i \in I}\varphi_i|
+is an infinitely large formula. Another pretty obvious issue is universal quantification is
+restricted to instantiating terms while |I| stands for either an <em>arbitrary</em> (meta-theoretic)
+set or it may stand for some particular (meta-theoretic) set, e.g. |\mathbb N|. Either
+way, it is typically not the set of terms of the logic.</p>
+<p>Arguably, this isn’t an issue since the claim isn’t that every infinite conjunction
+corresponds to a universal quantification, but only that universal quantification
+corresponds to some infinite conjunction. The set of terms is a possible choice for
+|I|, so that shouldn’t be a problem. Well, whether it’s a problem or not depends on
+how you set up the syntax of the language. In my preferred way of handling the syntax
+of logical formulas, I index each formula by the set of free variables that may occur
+in that formula. This means the set of terms varies with the set of possible free
+variables. Writing |\vdash_V \varphi| to mean |\varphi| is well-formed and provable
+in a context with free variables |V|, then we would want the following rule:</p>
+<p>\[\frac{\vdash_V \varphi}{\vdash_U \varphi}\] where |V \subseteq U|. This
+simply states that if a formula is provable, it should remain provable even if we
+add more (unused) free variables. This causes a problem with having an infinitary
+conjunction indexed by terms. Writing |\mathsf{Term}(V)| for the set of terms
+with (potential) free variables in |V|, then while |\vdash_V \bigwedge_{t \in \mathsf{Term}(V)}\varphi_t|
+might be okay, this would also lead to |\vdash_U \bigwedge_{t \in \mathsf{Term}(V)}\varphi_t| which
+would also hold but would no longer correspond to universal quantification in
+a context with free variables in |U|. This really makes a difference. For example,
+for many theories, such as the usual presentation of <strong>ZFC</strong>, |\mathsf{Term}(\varnothing) = \varnothing|,
+i.e. there are no closed terms. As such, |\vdash_\varnothing \forall x.\bot|
+is neither provable (which we wouldn’t expect it to be) <em>nor refutable</em> without additional axioms. On the
+other hand, |\bigwedge_{i \in \varnothing}\bot| is |\top| and thus trivially
+provable. If we consider |\vdash_{\{y\}} \forall x.\bot| next, it becomes
+refutable. This doesn’t contradict our earlier rule about adding free variables
+because |\vdash_\varnothing \forall x.\bot| wasn’t provable and so the rule
+says nothing. On the other hand, that rule does require |\vdash_{\{y\}} \bigwedge_{i \in \varnothing}\bot|
+to be provable, and it is. Of course, it no longer corresponds to |\forall x.\bot|
+with this set of free variables. The putative corresponding formula would be
+|\bigwedge_{i \in \{y\}}\bot| which is indeed refutable.</p>
+<p>With the setup above, we can’t get the elimination rule for |\bigwedge| to
+correspond to the elimination rule for |\forall|, because there isn’t a
+singular set of terms. However, a more common if less clean approach is to allow
+all free variables all the time, i.e. to fix a single countably infinite
+set of variables once and for all. This would “resolve” this problem.</p>
+<p>The differences in the introduction rules are more stark. The rules are:</p>
+<p>\[\frac{\Gamma \vdash \varphi \quad x\textrm{ not free in }\Gamma}{\Gamma \vdash \forall x.\varphi}\forall I
+\qquad \frac{\left\{\Gamma \vdash \varphi_i \right\}_{i \in I}}{\Gamma \vdash \bigwedge_{i \in I}\varphi_i}{\wedge}I\]</p>
+<p>Again, the most blatant difference is that (when |I| is infinite) |{\wedge}I|
+corresponds to an infinitely large derivation. Again, the uniformity aspects
+show through. |\forall I| requires a single derivation that will handle all
+terms, whereas |{\wedge}I| allows a different derivation for each |i \in I|.</p>
+<p>We don’t run into the same issue as in the semantic view with needing to turn
+elements of the domain into terms/formulas. Given a formula |\varphi| with
+free variable |x|, we can easily make a formula |\varphi_t| for every
+term |t|, namely |\varphi_t = \varphi[x \mapsto t]|. We won’t have the
+issue that leads to |\omega|-inconsistency because |\forall x.\varphi|
+is derivable from |\bigwedge_{t \in \mathsf{Term}(V)}\varphi[x \mapsto t]|.
+Of course, the reason this is true is because one of the terms in |\mathsf{Term}(V)|
+will be a variable not occurring in |\Gamma| allowing us to derive the
+premise of |\forall I|. On the other hand, if we choose |I = \mathsf{Term}(\varnothing)|,
+i.e. only consider closed terms, which is what <a href="https://en.wikipedia.org/wiki/%CE%A9-consistent_theory#%CF%89-logic">the |\omega| rule in arithmetic</a>
+is doing, then we definitely can get |\omega|-inconsistency-like situations.
+Most notably, in the case of theories, like <strong>ZFC</strong>, which have <em>no</em> closed
+terms.</p>
+<h3 id="constructive-view">Constructive View</h3>
+<p>A constructive perspective allows us to accentuate the contrast between
+universal quantification and infinitary conjunction even more as well
+as bring more clarity to the notion of uniformity.</p>
+<p>We’ll start with the <a href="https://en.wikipedia.org/wiki/Brouwer%E2%80%93Heyting%E2%80%93Kolmogorov_interpretation">BHK interpretation</a>
+of Intuitionistic logic and specifically a <a href="https://en.wikipedia.org/wiki/Realizability">realizabilty</a>
+interpretation. For this, we’ll allow infinitary conjunction only for |I = \mathbb N|.</p>
+<p>I’ll write |n\textbf{ realizes }\varphi| for the statement that the natural number |n|
+realizes the formula |\varphi|. As in the linked articles, we’ll need a computable <a href="https://en.wikipedia.org/wiki/Pairing_function">pairing function</a>
+which computably encodes a pair of natural numbers as a natural number. I’ll just write
+this using normal pairing notation, i.e. |(n,m)|. We’ll also need Gödel numbering
+to computably map a natural number |n| to a computable function |f_n|.</p>
+<p>\[\begin{align}
+(n_0, n_1)\textbf{ realizes }\varphi_1 \land \varphi_2
+\quad &amp; \textrm{if and only if} \quad n_0\textbf{ realizes }\varphi_0\textrm{ and }
+n_1\textbf{ realizes }\varphi_1 \\
+n\textbf{ realizes }\forall x.\varphi
+\quad &amp; \textrm{if and only if}\quad \textrm{for all }m, f_n(m)\textbf{ realizes }\varphi[x \mapsto m] \\
+(k, n_k)\textbf{ realizes }\varphi_1 \lor \varphi_2
+\quad &amp; \textrm{if and only if} \quad k \in \{0, 1\}\textrm{ and }n_k\textbf{ realizes }\varphi_k \\
+n\textbf{ realizes }\neg\varphi
+\quad &amp; \textrm{if and only if} \quad\textrm{there is no }m\textrm{ such that }m\textbf{ realizes }\varphi
+\end{align}\]</p>
+<p>I included disjunction and negation in the above so I could talk about the Law of the Excluded Middle.
+Via the above interpretation, given any formula |\varphi| with free variable |x|,
+the meaning of |\forall x.\varphi\lor\neg\varphi| would be a computable function
+which for each natural number |m| produces a bit indicating whether or not
+|\varphi[x \mapsto m]| holds. The Law of Excluded Middle holding would thus mean
+every such formula is computationally decidable which we know isn’t the case. For example,
+choose |\varphi| as the formula which asserts that the |x|-th Turing machine halts.</p>
+<p>This example illustrates the uniformity constraint. Assuming a traditional, classical
+meta-language, e.g. <strong>ZFC</strong>, then it is the case that |(\varphi\lor\neg\varphi)[x \mapsto m]| is
+realized for each |m| in the case where |\varphi| is asserting the halting of the |x|-th
+Turing machine<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>. But this interpretation of universal quantification
+requires not only that the quantified formula holds for all naturals, but also that
+we can computably find this out.</p>
+<p>It’s clear that trying to formulate a notion of infinitary conjunction with regards
+to realizability would require using something other than natural numbers as realizers
+if we just directly generalize the finite conjunction case. For example, we might
+use potentially infinite sequences of natural numbers as realizers. Regardless,
+the discussion of the previous example makes it clear an interpretation of infinitary
+conjunction can’t be done in standard computability<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>,
+while, obviously, universal quantification can.</p>
+<h3 id="categorical-view">Categorical View</h3>
+<p>The categorical semantics of universal quantification and conjunction are quite different
+which also suggests that they are not related, at least not in some straightforward way.</p>
+<p>One way to get to categorical semantics is to restate traditional, set-theoretic semantics
+in categorical terms. Traditionally, the semantics of a formula is a subset
+of some product of the domain set, one for each free variable. Categorically, that
+suggests we want finite products and the categorical semantics of a formula should
+be a subobject of a product of some object representing the domain.</p>
+<p>Conjunction is traditionally represented via intersection of subsets, and categorically
+we form the intersection of subobjects via pulling back. So to support finite conjunctions,
+we need our category to additionally have finite pullbacks of monomorphisms. Infinitary
+conjunctions simply require infinitely wide pullbacks of monomorphisms. However, we
+can start to see some cracks here. What does it mean for a pullback to be infinitely wide?
+It means the obvious thing; namely, that we have an infinite set of monomorphisms sharing
+a codomain, and we’ll take the limit of this diagram. The key here, though, is “<em>set</em>”.
+Regardless of whatever the objects of our semantic category are, the infinitary conjunctions
+are indexed by a set.</p>
+<p>To talk about the categorical semantics of universal quantification, we need to bring to
+the foreground some structure that we have been leaving – and traditionally accounts do leave
+– in the background. Before, I said the semantics of a formula, |\varphi|, depends on the
+free variables in that formula, e.g. if |D| is our domain object, then the semantics of
+a formula with three free variables would be a subobject of |\prod_{v \in \mathsf{fv}(\varphi)}D \cong D\times D \times D|
+which I’ll continue to write as |D^{\mathsf{fv}(\varphi)}| though now it will be
+interpreted as a product rather than a function space. For |\mathbf{Set}|,
+this makes no difference.
+It would be more accurate to say that a formula can be given semantics in any product
+of the domain object indexed by any <em>superset</em> of the free variables. This is just
+to say that a formula doesn’t need to use every free variable that is available. Nevertheless,
+even if it is induced by the same formula, a subobject of |D^{\mathsf{fv}(\varphi)}| is
+a different subobject than a subobject of |D^{\mathsf{fv}(\varphi) \cup \{u\}}|
+where |u| is a variable not free in |\varphi|, so we need a way of relating the semantics
+of formulas considered with respect to different sets of free variables.</p>
+<p>To do this, we will formulate a category of contexts and index our semantics by it.
+Fix a category |\mathcal C| and an object |D| of |\mathcal C|. Our category
+of contexts, |\mathsf{Ctx}|, will be the full subcategory of |\mathcal C| with
+objects of the form |D^S| where |S| is a finite subset of |V|, a fixed set of
+variables. We’ll assume these products exist, though typically we’ll just assume
+that |\mathcal C| has <em>all</em> finite products. From here, we use the |\mathsf{Sub}| functor.
+|\mathsf{Sub} : \mathsf{Ctx}^{op} \to \mathbf{Pos}| maps an object
+of |\mathsf{Ctx}| to the poset of its subobjects as objects of |\mathcal C|<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>.
+Now an arrow |f : D^{\{x,y,z,w\}} \to D^{\{x,y,z\}}| would induce a monotonic function
+|\mathsf{Sub}(f) : \mathsf{Sub}(D^{\{x,y,z\}}) \to \mathsf{Sub}(D^{\{x,y,z,w\}})|.
+This is defined for each subobject by pulling back a representative monomorphism of that subobject along |f|.
+Arrows of |\mathsf{Ctx}| are the semantic analogues of substitutions, and |\mathsf{Sub}(f)|
+applies these “substitutions” to the semantics of formulas.</p>
+<p>Universal quantification is then characterized as the (indexed) right adjoint (Galois
+connection in this context) of |\mathsf{Sub}(\pi^x)| where |\pi^x : D^S \to D^{S \setminus \{x\}}|
+is just projection. The indexed nature of this adjoint leads to <a href="../posts/beck-chevalley.html">Beck-Chevalley conditions</a>
+reflecting the fact universal quantification should respect substitution.
+|\mathsf{Sub}(\pi^x)| corresponds to adding |x| as a new, unused free variable to a formula.
+Let |U| be a subobject of |D^{S \setminus \{x\}}| and |V| a subobject of |D^S|. Furthermore, write
+|U \sqsubseteq U’| to indicate that |U| is a subobject of the subobject |U’|, i.e.
+that the monos that represent |U| factor through the monos that represent |U’|. The
+adjunction then states: \[\mathsf{Sub}(\pi^x)(U) \sqsubseteq V\quad \textrm{if and only if}\quad U \sqsubseteq \forall_x(V)\]
+The |\implies| direction is a fairly direct semantic analogue of the |\forall I| rule:
+\[\frac{\Gamma \vdash \varphi\quad x\textrm{ not free in }\Gamma}{\Gamma \vdash \forall x.\varphi}\]
+Indeed, it is easy to show that the converse of this rule is derivable with |\forall E|
+validating the semantic “if and only if”. To be clear, the full adjunction is natural in
+|U| and |V| and indexed, effectively, in |S|.</p>
+<p>Incidentally, we’d also want the semantics of infinite conjunctions to respect substitution,
+so they too have a Beck-Chevalley condition they satisfy and give rise to an indexed right adjoint.</p>
+<p>It’s hard to even compare the categorical semantics of infinitary conjunction and universal
+quantification, let alone conflate them, <em>even when |\mathcal C = \mathbf{Set}|</em>. This isn’t
+too surprising as these semantics work just fine for constructive logics where, as illustrated
+earlier, these can be semantically distinct. As mentioned, both of these constructs can be
+described by indexed right adjoints. However, they are adjoints between very different indexed
+categories. If |\mathcal M| is our indexed category (above it was |\mathsf{Sub}|), then we’ll
+have |I|-indexed products if |\Delta_{\mathcal M} : \mathcal M \to [DI, -] \circ \mathcal M|
+has an indexed right adjoint where |D : \mathbf{Set} \to \mathbf{cat}| is the discrete (small)
+category functor. For |\mathcal M| to have universal quantification, we need an indexed right
+adjoint to an indexed functor |\mathcal M \circ \mathsf{cod} \circ \iota \to \mathcal M \circ \mathsf{dom} \circ \iota|
+where |\iota : s(\mathsf{Ctx}) \hookrightarrow \mathsf{Ctx}^{\to}| is the full subcategory
+of the arrow category |\mathsf{Ctx}^{\to}| consisting of just the projections.</p>
+<h3 id="conclusion">Conclusion</h3>
+<p>My hope is that the preceding makes it abundantly clear that viewing universal quantification
+as some kind of special “infinite conjunction” is not sensible even approximately. To do so is
+to seriously misunderstand universal quantification. Most discussions “equating” them involve
+significant conflations of syntax and semantics where a specific choice of domain is fixed and elements
+of that specific domain are used as terms.</p>
+<p>A secondary goal was to illustrate an aspect of logic from a variety of perspectives and illustrate
+some of the concerns in meta-logical reasoning. For example, quantifiers and connectives are
+syntactical concepts and thus can’t depend on the details of the semantic domain. As another
+example, better perspectives on quantifiers and connectives are more robust to weakening the
+logic. I’d say this is especially true when going from classical to constructive logic.
+Structural proof theory and categorical semantics are good at formulating logical concepts
+modularly so that they still make sense in very weak logics.</p>
+<p>Unfortunately, the traditional trend towards minimalism strongly pushes in the
+other direction leading to the exploiting of every symmetry and coincidence a
+stronger logic (namely classical logic) provides producing definitions that
+don’t survive even mild weakening of the logic<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a>. The attempt to identify
+universal quantification with infinite conjunction here takes that impulse too
+far and doesn’t even work in classical logic as demonstrated. While there’s
+certainly value in recognizing redundancy, I personally find minimizing logical
+assumptions far more important and valuable than minimizing (primitive) logical
+connectives.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>
+“Universal statements are true if they are true for every individual in the world. They can be thought of as an infinite conjunction,” from <a href="https://www.massey.ac.nz/~mjjohnso/notes/59302/l07.html">some random AI lecture notes</a>. You can find many others.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>The domain
+doesn’t even need to be a set.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>For example,
+we may formulate our syntax in a second-order arithmetic identifying our syntax’s
+meta-theoretic sets with unary predicates, while our semantics is in <strong>ZFC</strong>. Just
+from cardinality concerns, we know that there’s no way of injectively mapping
+every <strong>ZFC</strong> set to a set of natural numbers.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>It’s probably worth pointing out that not only will this classical meta-language
+not tell us whether it’s |\varphi[x \mapsto m]| or |\neg\varphi[x \mapsto m]| that
+holds for every specific |m|, but it’s easy to show (assuming consistency of <strong>ZFC</strong>)
+that |\varphi[x \mapsto m]| is independent of <strong>ZFC</strong> for specific values of |m|.
+For example, it’s easy to make a Turing machine that halts if and only if it finds
+a contradiction in the theory of <strong>ZFC</strong>.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>Interestingly, for some models
+of computation, e.g. ones based on Turing machines, infinitary disjunction, or, specifically,
+|\mathbb N|-ary disjunction is <em>not</em> problematic. Given an infinite sequence of halting
+Turing machines, we can interleave their execution such that every Turing machine in the
+sequence will halt at some finite time. Accordingly, extending the definition of
+disjunction in realizability to the |\mathbb N|-ary case does not run into any
+of the issues that |\mathbb N|-ary conjunction has and is completely unproblematic.
+We just let |k| be an arbitrary natural instead of just |\{0, 1\}|.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>This is a place we could generalize the
+categorical semantics further. There’s no reason we need to consider this particular functor.
+We could consider other functors from |\mathsf{Ctx}^{op} \to \mathbf{Pos}|, i.e. other
+<a href="https://ncatlab.org/nlab/show/indexed+category">indexed</a> <a href="https://ncatlab.org/nlab/show/%280%2C1%29-category+theory">|(0,1)|-categories</a>.
+This setup is called a <a href="https://ncatlab.org/nlab/show/hyperdoctrine">hyperdoctrine</a><a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p>The most obvious example of
+this is defining quantifiers and connectives in terms of other connectives
+particularly when negation is involved. A less obvious example is the overwhelming
+focus on |\mathbf 2|-valued semantics when classical logic naturally allows
+arbitrary Boolean-algebra-valued semantics.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_shortname = 'hedonisticlearning';
+        var disqus_identifier = '627f2fde-9bbc-482e-9273-0dcf930ae935';
+        var disqus_title = 'Universal Quantification and Infinite Conjunction';
+        
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript> 
+</div>
+
+        </div><!-- /.blog-main -->
+        
+        
+      </div><!-- /.row -->
+    </div><!-- /.container -->
+
+    <footer class="blog-footer">
+      <p>Site generated by <a href="http://jaspervdj.be/hakyll">Hakyll</a></p>
+      <p>
+        <a href="#">Back to top</a>
+      </p>
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js" integrity="sha384-6ePHh72Rl3hKio4HiJ841psfsRJveeS+aLoaEf3BWfS+gTF0XdAqku2ka8VddikM" crossorigin="anonymous"></script> -->
+    <script type="text/javascript" src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!--<script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>-->
+    <script type="text/javascript">
+        var disqus_shortname = 'hedonisticlearning';
+        (function () {
+            var s = document.createElement('script'); s.async = true;
+            s.type = 'text/javascript';
+            s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
+            (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+        }());
+    </script>
+    <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_HTMLorMML.js" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script> -->
+    <!--<script type="text/javascript" src="/js/MathJax-2.7.7/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>-->
+    <script>
+        MathJax = {
+            loader: {
+                load: ['ui/lazy', '[custom]/xypic.js'],
+                paths: { custom: '/js' }
+            },
+            tex: {
+                packages: { '[+]': ['xypic'] },
+                inlineMath: [['|','|']],
+                macros: window.extraMacros || {}
+            }
+        };
+    </script>
+    <script type="text/javascript" src="../js/MathJax-3/es5/tex-mml-chtml.js"></script>
+  </body>
+</html>

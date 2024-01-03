@@ -46,6 +46,77 @@
           
     <div class="blog-post teaser panel panel-default">
     <div class="panel-heading">
+        <h2 class="blog-post-title"><a href="./posts/universal-quantification-and-infinite-conjunction.html">Universal Quantification and Infinite Conjunction</a></h2>
+        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="627f2fde-9bbc-482e-9273-0dcf930ae935" href="./posts/universal-quantification-and-infinite-conjunction.html#disqus_thread"></a></h6>
+    </div>
+
+    <div class="panel-body">
+        
+            <script>
+extraMacros = {
+  den: ["{[\\\![#1]\\\!]}", 1],
+  bigden: ["{\\left[\\\!\\\!\\left[#1\\right]\\\!\\\!\\right]}", 1]
+};
+</script>
+<h3 id="introduction">Introduction</h3>
+<p>It is not uncommon for universal quantification to be described as
+(potentially) infinite conjunction<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.
+Quoting Wikipedia’s <a href="https://en.wikipedia.org/w/index.php?title=Quantifier_(logic)&amp;oldid=1060503100#Relations_to_logical_conjunction_and_disjunction">Quantifier_(logic)</a>
+page (my emphasis):</p>
+<blockquote>
+<p>For a finite domain of discourse |D = \{a_1,\dots,a_n\}|, the universal quantifier is equivalent to a logical conjunction of propositions with singular terms |a_i| (having the form |Pa_i| for monadic predicates).</p>
+<p>The existential quantifier is equivalent to a logical disjunction of propositions having the same structure as before. <strong>For infinite domains of discourse, the equivalences are similar.</strong></p>
+</blockquote>
+<p>While there’s a small grain of truth
+to this, I think it is wrong and/or misleading far more often than
+it’s useful or correct. Indeed, it takes a bit of effort to even
+get a statement that makes sense at all. There’s a bit of conflation
+between syntax and semantics that’s required to have it naively
+make sense, unless you’re working (quite unusually) in an infinitary
+logic where it is typically outright false.</p>
+<p>What harm does this confusion do? The most obvious harm is that
+this view does not generalize to non-classical logics. I’ll focus
+on constructive logics, in particular. Besides causing problems in
+these contexts, which maybe you think you don’t care about, it betrays
+a significant gap in understanding of what universal quantification
+actually is. Even in purely classical contexts, this confusion often
+manifests, e.g., in <a href="https://math.stackexchange.com/questions/110635/how-it-is-posible-that-omega-inconsistency-does-not-lead-to-inconsistency">confusion about |\omega|-inconsistency</a>.</p>
+<p>So what is the difference between universal quantification and
+infinite conjunction? Well, the most obvious difference is that
+infinite conjunction is indexed by some (meta-theoretic) set that
+doesn’t have anything to do with the domain the universal quantifier
+quantifies over. However, even if these sets happened to coincide<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> there are
+still differences between universal quantification and infinite
+conjunction. The key is that universal quantification
+requires the predicate being quantified over to hold <em>uniformly</em>,
+while infinite conjunction does not. It just so happens that for
+the standard set-theoretic semantics of classical first-order logic
+this “uniformity” constraint is degenerate. However, even for
+classical first-order logic, this notion of uniformity will be
+relevant.</p>
+
+            <h6><a href="./posts/universal-quantification-and-infinite-conjunction.html">Read more...</a></h6>
+        
+    </div>
+
+    <div class="panel-footer">
+        <h6 class="blog-post-meta">
+            January  3, 2024 06:00 UTC
+            
+            (Last updated on January  3, 2024 06:00 UTC)
+
+            
+                Tags: <a title="All pages tagged 'math'." href="./tags/math.html">math</a>, <a title="All pages tagged 'logic'." href="./tags/logic.html">logic</a>
+            
+        </h6>
+    </div>
+
+</div><!-- /.blog-post -->
+
+
+
+    <div class="blog-post teaser panel panel-default">
+    <div class="panel-heading">
         <h2 class="blog-post-title"><a href="./posts/what-is-the-coproduct-of-two-groups.html">What is the coproduct of two groups?</a></h2>
         <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="cdbde61f-6727-4861-9dad-8b03af99031c" href="./posts/what-is-the-coproduct-of-two-groups.html#disqus_thread"></a></h6>
     </div>
@@ -839,65 +910,6 @@ to contribute to the initial implementations of STM in Haskell, though his thesi
 
 
 
-    <div class="blog-post teaser panel panel-default">
-    <div class="panel-heading">
-        <h2 class="blog-post-title"><a href="./posts/beck-chevalley.html">Beck-Chevalley</a></h2>
-        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="a9d4a228-c165-4744-9421-1dca09ac596d" href="./posts/beck-chevalley.html#disqus_thread"></a></h6>
-    </div>
-
-    <div class="panel-body">
-        
-            <p>This is a fairly technical article. This article will most likely not have any significance for you if you
-haven’t heard of the Beck-Chevalley condition before.</p>
-<h2 id="introduction">Introduction</h2>
-<p>When one talks about “indexed (co)products” in an indexed category, it is often described as follows:</p>
-<p>Let |\mathcal C| be an <a href="https://ncatlab.org/nlab/show/indexed+category"><strong>|\mathbf S|-indexed category</strong></a>,
-i.e. a <a href="https://ncatlab.org/nlab/show/pseudofunctor">pseudofunctor</a> |\mathbf S^{op} \to \mathbf{Cat}|
-where |\mathbf S| is an ordinary category.
-Write |\mathcal C^I| for |\mathcal C(I)| and |f^* : \mathcal C^J \to \mathcal C^I| for |\mathcal C(f)|
-where |f : I \to J|. The functors |f^*| will be called <strong>reindexing functors</strong>. |\mathcal C| has <strong>|\mathbf S|-indexed
-coproducts</strong> whenever</p>
-<ol type="1">
-<li>each reindexing functor |f^*| has a left adjoint |\Sigma^f|, and</li>
-<li>the Beck-Chevalley condition holds, i.e. whenever <span class="math display">$$\require{amscd}\begin{CD}
-   I @&gt;h&gt;&gt; J \\
-   @VkVV @VVfV \\
-   K @&gt;&gt;g&gt; L
-\end{CD}$$</span> is a pullback square in |\mathbf S|, then the canonical
-morphism |\Sigma^k \circ h^* \to g^* \circ \Sigma^f| is an isomorphism.</li>
-</ol>
-<p>The first condition is reasonable, especially motivated with some examples, but the second condition is more
-mysterious. It’s clear that you’d need <em>something</em> more than simply a family of adjunctions, but it’s not
-clear how you could calculate the particular condition quoted. That’s the goal of this article. I will not
-cover what the Beck-Chevalley condition is intuitively saying. I cover that in <a href="https://math.stackexchange.com/a/2203383">this Stack Exchange answer</a>
-from a logical perspective, though there are definitely other possible perspectives as well.</p>
-<p>Some questions are:</p>
-<ol type="1">
-<li>Where does the Beck-Chevalley condition come from?</li>
-<li>What is this “canonical morphism”?</li>
-<li>Why do we care about pullback squares in particular?</li>
-</ol>
-
-            <h6><a href="./posts/beck-chevalley.html">Read more...</a></h6>
-        
-    </div>
-
-    <div class="panel-footer">
-        <h6 class="blog-post-meta">
-            February 23, 2020 07:59 UTC
-            
-            (Last updated on December 30, 2021 02:43 UTC)
-
-            
-                Tags: <a title="All pages tagged 'math'." href="./tags/math.html">math</a>, <a title="All pages tagged 'category theory'." href="./tags/category%20theory.html">category theory</a>
-            
-        </h6>
-    </div>
-
-</div><!-- /.blog-post -->
-
-
-
 
         </div><!-- /.blog-main -->
         
@@ -907,6 +919,8 @@ from a logical perspective, though there are definitely other possible perspecti
                 <div class="panel-heading"><h4>Recent</h4></div>
                 <div class="panel-body">
                     <ol class="list-unstyled">
+                        
+                          <li><div class="blog-post-link">2024-01-03 - <a href="./posts/universal-quantification-and-infinite-conjunction.html">Universal Quantification and Infinite Conjunction</a></div></li>
                         
                           <li><div class="blog-post-link">2023-12-22 - <a href="./posts/what-is-the-coproduct-of-two-groups.html">What is the coproduct of two groups?</a></div></li>
                         
@@ -926,8 +940,6 @@ from a logical perspective, though there are definitely other possible perspecti
                         
                           <li><div class="blog-post-link">2020-04-30 - <a href="./posts/recursive-helping.html">Recursive Helping</a></div></li>
                         
-                          <li><div class="blog-post-link">2020-02-23 - <a href="./posts/beck-chevalley.html">Beck-Chevalley</a></div></li>
-                        
                     </ol>
                 </div>
               </div>
@@ -941,8 +953,8 @@ from a logical perspective, though there are definitely other possible perspecti
 <li><a href="./tags/concurrency.html">concurrency (1)</a></li>
 <li><a href="./tags/geometric%20algebra.html">geometric algebra (1)</a></li>
 <li><a href="./tags/javascript.html">javascript (1)</a></li>
-<li><a href="./tags/logic.html">logic (3)</a></li>
-<li><a href="./tags/math.html">math (19)</a></li>
+<li><a href="./tags/logic.html">logic (4)</a></li>
+<li><a href="./tags/math.html">math (20)</a></li>
 <li><a href="./tags/programming.html">programming (4)</a></li>
 <li><a href="./tags/type%20theory.html">type theory (2)</a></li>
                     </ol>

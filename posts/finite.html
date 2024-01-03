@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">Finite</h2>
     <p class="blog-post-meta">March 26, 2018 07:57 UTC 
         
-        (Last updated on November 25, 2021 10:16 UTC)
+        (Last updated on December 27, 2023 00:39 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -113,7 +113,7 @@ if |n \in S| then |n+1 \in S|. The <em>internal</em> form of induction, like all
 axiom 3 but with |\forall| instead of |\forall^{\mathsf{St}}|. Using internal induction, we can immediately prove that |\forall n \in \mathbb N.n \in S|,
 but this means |\forall n \in \mathbb N.\mathsf{St}(n)| which directly contradicts axiom 4, thus there is no such |S|. |\square|</p>
 <p>This negative result is actually quite productive. For example, we can’t have a set |N| of nonstandard natural numbers otherwise we could
-define |S| as |\mathbb N \ N|. This means that if we can prove some <em>internal</em> property holds for all nonstandard naturals, then there must
+define |S| as |\mathbb N \setminus N|. This means that if we can prove some <em>internal</em> property holds for all nonstandard naturals, then there must
 exist a standard natural number for which it holds as well. Properties like this are called <strong>overspill</strong> because an internal property that holds
 for the standard natural numbers spills over into the nonstandard natural numbers. Here’s a small example. First, a real number |x| is <strong>infinitesimal</strong>
 if and only if there exists a nonstandard natural |\nu| such that |\vert x\vert \leq 1/\nu|. (Note, we can prove that every nonstandard natural is larger than every
@@ -122,7 +122,7 @@ function |f : \mathbb R \to \mathbb R| is <strong>(nearly) continuous at |x|</st
 if |f| is continuous at |x|, then for every standard natural |n| and |y \in \mathbb R|, |\vert x - y\vert \leq \delta \Rightarrow \vert f(x) - f(y)\vert \leq 1/n| holds
 for all infinitesimal |\delta| by continuity. Thus by overspill it holds for some non-infinitesimal |\delta|, i.e. for some |\delta &gt; 1/m| for some
 standard |m|. |\square|</p>
-<p>In Radically Elementary Probability Theory, Nelson reformulates much of probability theory and stochastic process theory by restricting
+<p>In <em>Radically Elementary Probability Theory</em>, Nelson reformulates much of probability theory and stochastic process theory by restricting
 to the finite case. Traditionally, probability theory for finite sample spaces is (relatively) trivial. But remember, “finite” means
 bijective with |\{k \in \mathbb N \mid k &lt; n\}| for some |n \in \mathbb N| and that |n| can be nonstandard in <strong>minIST</strong>. The notion of “continuous”
 defined before translates to the usual notion when the <strong>minIST</strong> formula is translated to <strong>ZFC</strong>. Similarly, subsets of infinitesimal
