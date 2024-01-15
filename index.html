@@ -46,6 +46,89 @@
           
     <div class="blog-post teaser panel panel-default">
     <div class="panel-heading">
+        <h2 class="blog-post-title"><a href="./posts/the-pullback-lemma-in-gory-detail-redux.html">The Pullback Lemma in Gory Detail (Redux)</a></h2>
+        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="87a1a741-3ec6-4df2-9b7e-fd7f2ce0545f" href="./posts/the-pullback-lemma-in-gory-detail-redux.html#disqus_thread"></a></h6>
+    </div>
+
+    <div class="panel-body">
+        
+            <h2 id="introduction">Introduction</h2>
+<p>Andrej Bauer has a paper titled <a href="http://math.andrej.com/wp-content/uploads/2012/05/pullback.pdf">The pullback lemma in gory detail</a>
+that goes over the proof of the <a href="https://ncatlab.org/nlab/show/pasting+law+for+pullbacks">pullback lemma</a>
+in full detail. This is a basic result of category theory and most introductions leave it as an exercise.
+It is a good exercise, and you should prove it yourself before reading this article or Andrej Bauer’s.</p>
+<p>Andrej Bauer’s proof is what most introductions are expecting you to produce.
+I very much like the <a href="styles-of-category-theory.html">representability perspective</a> on category theory
+and like to see what proofs look like using this perspective.</p>
+<p>So this is a proof of the pullback lemma from the perspective of representability.</p>
+<h2 id="preliminaries">Preliminaries</h2>
+<p>The key thing we need here is a characterization of pullbacks in terms of representability. To
+just jump to the end, we have for |f : A \to C| and |g : B \to C|, |A \times_{f,g} B| is <strong>the
+pullback of |f| and |g|</strong> if and only if it represents the functor
+\[\{(h, k) \in \mathrm{Hom}({-}, A) \times \mathrm{Hom}({-}, B) \mid f \circ h = g \circ k \}\]</p>
+<p>That is to say we have the natural isomorphism \[
+\mathrm{Hom}({-}, A \times_{f,g} B) \cong
+\{(h, k) \in \mathrm{Hom}({-}, A) \times \mathrm{Hom}({-}, B) \mid f \circ h = g \circ k \}
+\]</p>
+<p>We’ll write the left to right direction of the isomorphism as |\langle u,v\rangle : U \to A \times_{f,g} B|
+where |u : U \to A| and |v : U \to B| and they satisfy |f \circ u = g \circ v|. Applying
+the isomorphism right to left on the identity arrow gives us two arrows |p_1 : A \times_{f,g} B \to A|
+and |p_2 : A \times_{f,g} B \to B| satisfying |p_1 \circ \langle u, v\rangle = u| and
+|p_2 \circ \langle u,v \rangle = v|. (Exercise: Show that this follows from being a <em>natural</em> isomorphism.)</p>
+<p>One nice thing about representability is that it reduces categorical reasoning to set-theoretic
+reasoning that you are probably already used to, as we’ll see. You can connect this definition
+to a typical universal property based definition used in Andrej Bauer’s article. Here we’re taking
+it as the definition of the pullback.</p>
+<h2 id="proof">Proof</h2>
+<p>The claim to be proven is if the right square in the below diagram is a pullback square, then the left
+square is a pullback square if and only if the whole rectangle is a pullback square.
+\[
+\xymatrix {
+A \ar[d]_{q_1} \ar[r]^{q_2} &amp; B \ar[d]_{p_1} \ar[r]^{p_2} &amp; C \ar[d]^{h} \\
+X \ar[r]_{f} &amp; Y \ar[r]_{g} &amp; Z
+}\]</p>
+<p>Rewriting the diagram as equations, we have:</p>
+<p><strong>Theorem</strong>: If |f \circ q_1 = p_1 \circ q_2|, |g \circ p_1 = h \circ p_2|, and |(B, p_1, p_2)| is a
+pullback of |g| and |h|, then |(A, q_1, q_2)| is a pullback of |f| and |p_1| if and only if
+|(A, q_1, p_2 \circ q_2)| is a pullback of |g \circ f| and |h|.</p>
+<p><strong>Proof</strong>: If |(A, q_1, q_2)| was a pullback of |f| and |p_1| then we’d have the following.</p>
+<p>\[\begin{align}
+\mathrm{Hom}({-}, A)
+&amp; \cong \{(u_1, u_2) \in \mathrm{Hom}({-}, X)\times\mathrm{Hom}({-}, B) \mid f \circ u_1 = p_1 \circ u_2 \} \\
+&amp; \cong \{(u_1, (v_1, v_2)) \in \mathrm{Hom}({-}, X)\times\mathrm{Hom}({-}, Y)\times\mathrm{Hom}({-}, C) \mid f \circ u_1 = p_1 \circ \langle v_1, v_2\rangle \land g \circ v_1 = h \circ v_2 \} \\
+&amp; = \{(u_1, (v_1, v_2)) \in \mathrm{Hom}({-}, X)\times\mathrm{Hom}({-}, Y)\times\mathrm{Hom}({-}, C) \mid f \circ u_1 = v_1 \land g \circ v_1 = h \circ v_2 \} \\
+&amp; = \{(u_1, v_2) \in \mathrm{Hom}({-}, X)\times\mathrm{Hom}({-}, C) \mid g \circ f \circ u_1 = h \circ v_2 \}
+\end{align}\]</p>
+<p>The second isomorphism is |B| being a pullback and |u_2| is an arrow into |B| so it’s necessarily
+of the form |\langle v_1, v_2\rangle|. The first equality is just |p_1 \circ \langle v_1, v_2\rangle = v_1|
+mentioned earlier. The second equality merely eliminates the use of |v_1| using the equation |f \circ u_1 = v_1|.</p>
+<p>This overall natural isomorphism, however, is exactly what it means for |A| to be a pullback
+of |g \circ f| and |h|. We verify the projections are what we expect by pushing |id_A| through
+the isomorphism. By assumption, |u_1| and |u_2| will be |q_1| and |q_2| respectively in the first isomorphism.
+We see that |v_2 = p_2 \circ \langle v_1, v_2\rangle = p_2 \circ q_2|.</p>
+<p>We simply run the isomorphism backwards to get the other direction of the if and only if. |\square|</p>
+<p>The simplicity and compactness of this proof demonstrates why I like representability.</p>
+        
+    </div>
+
+    <div class="panel-footer">
+        <h6 class="blog-post-meta">
+            January 15, 2024 01:33 UTC
+            
+            (Last updated on January 15, 2024 01:33 UTC)
+
+            
+                Tags: <a title="All pages tagged 'math'." href="./tags/math.html">math</a>, <a title="All pages tagged 'category theory'." href="./tags/category%20theory.html">category theory</a>
+            
+        </h6>
+    </div>
+
+</div><!-- /.blog-post -->
+
+
+
+    <div class="blog-post teaser panel panel-default">
+    <div class="panel-heading">
         <h2 class="blog-post-title"><a href="./posts/universal-quantification-and-infinite-conjunction.html">Universal Quantification and Infinite Conjunction</a></h2>
         <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="627f2fde-9bbc-482e-9273-0dcf930ae935" href="./posts/universal-quantification-and-infinite-conjunction.html#disqus_thread"></a></h6>
     </div>
@@ -873,43 +956,6 @@ of |B^A|, namely |\mathcal E(- \times A, B) \cong \mathcal E(-,B^A)|.</p>
 
 
 
-    <div class="blog-post teaser panel panel-default">
-    <div class="panel-heading">
-        <h2 class="blog-post-title"><a href="./posts/recursive-helping.html">Recursive Helping</a></h2>
-        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="45e34423-669d-4d74-9744-2532cb1aaca0" href="./posts/recursive-helping.html#disqus_thread"></a></h6>
-    </div>
-
-    <div class="panel-body">
-        
-            <h2 id="introduction">Introduction</h2>
-<p>Recursive helping is a technique for implementing lock-free concurrent data structures and algorithms.
-I’m going to illustrate this in the case of implementing a multi-variable compare-and-swap (MCAS)
-in terms of a single variable compare-and-swap. Basically everything I’m going to talk about
-comes from Keir Fraser’s PhD Thesis, <a href="https://www.cl.cam.ac.uk/techreports/UCAM-CL-TR-579.html">Practical Lock-Freedom</a> (2004)
-which I <strong>strongly</strong> recommend. Fraser’s thesis goes much further than this, e.g. fine-grained lock-free implementations
-of software transactional memory (STM)<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. Fraser went on
-to contribute to the initial implementations of STM in Haskell, though his thesis uses C++.</p>
-
-            <h6><a href="./posts/recursive-helping.html">Read more...</a></h6>
-        
-    </div>
-
-    <div class="panel-footer">
-        <h6 class="blog-post-meta">
-            April 30, 2020 06:06 UTC
-            
-            (Last updated on April 30, 2020 06:07 UTC)
-
-            
-                Tags: <a title="All pages tagged 'programming'." href="./tags/programming.html">programming</a>, <a title="All pages tagged 'concurrency'." href="./tags/concurrency.html">concurrency</a>
-            
-        </h6>
-    </div>
-
-</div><!-- /.blog-post -->
-
-
-
 
         </div><!-- /.blog-main -->
         
@@ -919,6 +965,8 @@ to contribute to the initial implementations of STM in Haskell, though his thesi
                 <div class="panel-heading"><h4>Recent</h4></div>
                 <div class="panel-body">
                     <ol class="list-unstyled">
+                        
+                          <li><div class="blog-post-link">2024-01-15 - <a href="./posts/the-pullback-lemma-in-gory-detail-redux.html">The Pullback Lemma in Gory Detail (Redux)</a></div></li>
                         
                           <li><div class="blog-post-link">2024-01-03 - <a href="./posts/universal-quantification-and-infinite-conjunction.html">Universal Quantification and Infinite Conjunction</a></div></li>
                         
@@ -938,8 +986,6 @@ to contribute to the initial implementations of STM in Haskell, though his thesi
                         
                           <li><div class="blog-post-link">2020-05-04 - <a href="./posts/example-representability-argument.html">Example Representability Argument</a></div></li>
                         
-                          <li><div class="blog-post-link">2020-04-30 - <a href="./posts/recursive-helping.html">Recursive Helping</a></div></li>
-                        
                     </ol>
                 </div>
               </div>
@@ -949,12 +995,12 @@ to contribute to the initial implementations of STM in Haskell, though his thesi
                     <ol class="list-unstyled">
                       <li><a href="./tags/Agda.html">Agda (1)</a></li>
 <li><a href="./tags/CS.html">CS (3)</a></li>
-<li><a href="./tags/category%20theory.html">category theory (12)</a></li>
+<li><a href="./tags/category%20theory.html">category theory (13)</a></li>
 <li><a href="./tags/concurrency.html">concurrency (1)</a></li>
 <li><a href="./tags/geometric%20algebra.html">geometric algebra (1)</a></li>
 <li><a href="./tags/javascript.html">javascript (1)</a></li>
 <li><a href="./tags/logic.html">logic (4)</a></li>
-<li><a href="./tags/math.html">math (20)</a></li>
+<li><a href="./tags/math.html">math (21)</a></li>
 <li><a href="./tags/programming.html">programming (4)</a></li>
 <li><a href="./tags/type%20theory.html">type theory (2)</a></li>
                     </ol>

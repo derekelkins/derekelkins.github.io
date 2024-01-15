@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="A blog mostly on math, physics, and computer science.">
+    <meta name="author" content="Derek Elkins">
+    <!--<link rel="icon" href="/images/favicon.ico">-->
+
+    <title>The Pullback Lemma in Gory Detail (Redux)</title>
+    <!-- Bootstrap core CSS -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="../css/blog.css" rel="stylesheet">
+    <link href="../css/syntax.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="blog-masthead">
+      <div class="container">
+        <nav class="blog-nav">
+          <a class="blog-nav-item " href="../">Home</a>
+          <a class="blog-nav-item " href="../about.html">About</a>
+          <a class="blog-nav-item " href="../contact.html">Contact</a>
+          <a class="blog-nav-item " href="../readinglist.html">Reading List</a>
+          <a class="blog-nav-item " href="../archive.html">Archive</a>
+          <a class="blog-nav-item pull-right" href="../rss.xml">RSS</a>
+          <a class="blog-nav-item pull-right" href="../atom.xml">Atom</a>
+        </nav>
+      </div>
+    </div>
+
+    <div class="container">
+      
+      
+      <div class="row">
+        
+        <div class="col-sm-12 blog-main">
+        
+          <div class="blog-post">
+    <h2 class="blog-post-title" style="margin-top: 30px;">The Pullback Lemma in Gory Detail (Redux)</h2>
+    <p class="blog-post-meta">January 15, 2024 01:33 UTC 
+        
+        (Last updated on January 15, 2024 01:33 UTC)
+    </p>
+    <h6 class="blog-post-meta">
+        
+        Tags: <a title="All pages tagged 'math'." href="../tags/math.html">math</a>, <a title="All pages tagged 'category theory'." href="../tags/category%20theory.html">category theory</a>
+        
+    </h6>
+
+    <h2 id="introduction">Introduction</h2>
+<p>Andrej Bauer has a paper titled <a href="http://math.andrej.com/wp-content/uploads/2012/05/pullback.pdf">The pullback lemma in gory detail</a>
+that goes over the proof of the <a href="https://ncatlab.org/nlab/show/pasting+law+for+pullbacks">pullback lemma</a>
+in full detail. This is a basic result of category theory and most introductions leave it as an exercise.
+It is a good exercise, and you should prove it yourself before reading this article or Andrej Bauer’s.</p>
+<p>Andrej Bauer’s proof is what most introductions are expecting you to produce.
+I very much like the <a href="styles-of-category-theory.html">representability perspective</a> on category theory
+and like to see what proofs look like using this perspective.</p>
+<p>So this is a proof of the pullback lemma from the perspective of representability.</p>
+<h2 id="preliminaries">Preliminaries</h2>
+<p>The key thing we need here is a characterization of pullbacks in terms of representability. To
+just jump to the end, we have for |f : A \to C| and |g : B \to C|, |A \times_{f,g} B| is <strong>the
+pullback of |f| and |g|</strong> if and only if it represents the functor
+\[\{(h, k) \in \mathrm{Hom}({-}, A) \times \mathrm{Hom}({-}, B) \mid f \circ h = g \circ k \}\]</p>
+<p>That is to say we have the natural isomorphism \[
+\mathrm{Hom}({-}, A \times_{f,g} B) \cong
+\{(h, k) \in \mathrm{Hom}({-}, A) \times \mathrm{Hom}({-}, B) \mid f \circ h = g \circ k \}
+\]</p>
+<p>We’ll write the left to right direction of the isomorphism as |\langle u,v\rangle : U \to A \times_{f,g} B|
+where |u : U \to A| and |v : U \to B| and they satisfy |f \circ u = g \circ v|. Applying
+the isomorphism right to left on the identity arrow gives us two arrows |p_1 : A \times_{f,g} B \to A|
+and |p_2 : A \times_{f,g} B \to B| satisfying |p_1 \circ \langle u, v\rangle = u| and
+|p_2 \circ \langle u,v \rangle = v|. (Exercise: Show that this follows from being a <em>natural</em> isomorphism.)</p>
+<p>One nice thing about representability is that it reduces categorical reasoning to set-theoretic
+reasoning that you are probably already used to, as we’ll see. You can connect this definition
+to a typical universal property based definition used in Andrej Bauer’s article. Here we’re taking
+it as the definition of the pullback.</p>
+<h2 id="proof">Proof</h2>
+<p>The claim to be proven is if the right square in the below diagram is a pullback square, then the left
+square is a pullback square if and only if the whole rectangle is a pullback square.
+\[
+\xymatrix {
+A \ar[d]_{q_1} \ar[r]^{q_2} &amp; B \ar[d]_{p_1} \ar[r]^{p_2} &amp; C \ar[d]^{h} \\
+X \ar[r]_{f} &amp; Y \ar[r]_{g} &amp; Z
+}\]</p>
+<p>Rewriting the diagram as equations, we have:</p>
+<p><strong>Theorem</strong>: If |f \circ q_1 = p_1 \circ q_2|, |g \circ p_1 = h \circ p_2|, and |(B, p_1, p_2)| is a
+pullback of |g| and |h|, then |(A, q_1, q_2)| is a pullback of |f| and |p_1| if and only if
+|(A, q_1, p_2 \circ q_2)| is a pullback of |g \circ f| and |h|.</p>
+<p><strong>Proof</strong>: If |(A, q_1, q_2)| was a pullback of |f| and |p_1| then we’d have the following.</p>
+<p>\[\begin{align}
+\mathrm{Hom}({-}, A)
+&amp; \cong \{(u_1, u_2) \in \mathrm{Hom}({-}, X)\times\mathrm{Hom}({-}, B) \mid f \circ u_1 = p_1 \circ u_2 \} \\
+&amp; \cong \{(u_1, (v_1, v_2)) \in \mathrm{Hom}({-}, X)\times\mathrm{Hom}({-}, Y)\times\mathrm{Hom}({-}, C) \mid f \circ u_1 = p_1 \circ \langle v_1, v_2\rangle \land g \circ v_1 = h \circ v_2 \} \\
+&amp; = \{(u_1, (v_1, v_2)) \in \mathrm{Hom}({-}, X)\times\mathrm{Hom}({-}, Y)\times\mathrm{Hom}({-}, C) \mid f \circ u_1 = v_1 \land g \circ v_1 = h \circ v_2 \} \\
+&amp; = \{(u_1, v_2) \in \mathrm{Hom}({-}, X)\times\mathrm{Hom}({-}, C) \mid g \circ f \circ u_1 = h \circ v_2 \}
+\end{align}\]</p>
+<p>The second isomorphism is |B| being a pullback and |u_2| is an arrow into |B| so it’s necessarily
+of the form |\langle v_1, v_2\rangle|. The first equality is just |p_1 \circ \langle v_1, v_2\rangle = v_1|
+mentioned earlier. The second equality merely eliminates the use of |v_1| using the equation |f \circ u_1 = v_1|.</p>
+<p>This overall natural isomorphism, however, is exactly what it means for |A| to be a pullback
+of |g \circ f| and |h|. We verify the projections are what we expect by pushing |id_A| through
+the isomorphism. By assumption, |u_1| and |u_2| will be |q_1| and |q_2| respectively in the first isomorphism.
+We see that |v_2 = p_2 \circ \langle v_1, v_2\rangle = p_2 \circ q_2|.</p>
+<p>We simply run the isomorphism backwards to get the other direction of the if and only if. |\square|</p>
+<p>The simplicity and compactness of this proof demonstrates why I like representability.</p>
+
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_shortname = 'hedonisticlearning';
+        var disqus_identifier = '87a1a741-3ec6-4df2-9b7e-fd7f2ce0545f';
+        var disqus_title = 'The Pullback Lemma in Gory Detail (Redux)';
+        
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript> 
+</div>
+
+        </div><!-- /.blog-main -->
+        
+        
+      </div><!-- /.row -->
+    </div><!-- /.container -->
+
+    <footer class="blog-footer">
+      <p>Site generated by <a href="http://jaspervdj.be/hakyll">Hakyll</a></p>
+      <p>
+        <a href="#">Back to top</a>
+      </p>
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js" integrity="sha384-6ePHh72Rl3hKio4HiJ841psfsRJveeS+aLoaEf3BWfS+gTF0XdAqku2ka8VddikM" crossorigin="anonymous"></script> -->
+    <script type="text/javascript" src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!--<script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>-->
+    <script type="text/javascript">
+        var disqus_shortname = 'hedonisticlearning';
+        (function () {
+            var s = document.createElement('script'); s.async = true;
+            s.type = 'text/javascript';
+            s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
+            (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+        }());
+    </script>
+    <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_HTMLorMML.js" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script> -->
+    <!--<script type="text/javascript" src="/js/MathJax-2.7.7/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>-->
+    <script>
+        MathJax = {
+            loader: {
+                load: ['ui/lazy', '[custom]/xypic.js'],
+                paths: { custom: '/js' }
+            },
+            tex: {
+                packages: { '[+]': ['xypic'] },
+                inlineMath: [['|','|']],
+                macros: window.extraMacros || {}
+            }
+        };
+    </script>
+    <script type="text/javascript" src="../js/MathJax-3/es5/tex-mml-chtml.js"></script>
+  </body>
+</html>
