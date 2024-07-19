@@ -390,15 +390,22 @@ defunctionalized continuations.<a href="#fnref2" class="footnote-back" role="doc
 
     <div id="disqus_thread"></div>
     <script type="text/javascript">
-        var disqus_shortname = 'hedonisticlearning';
-        var disqus_identifier = '45e34423-669d-4d74-9744-2532cb1aaca0';
-        var disqus_title = 'Recursive Helping';
-        
+        function loadDisqus() {
+        const disqus_shortname = 'hedonisticlearning';
+        const disqus_identifier = '45e34423-669d-4d74-9744-2532cb1aaca0';
+        const disqus_title = 'Recursive Helping';
+
         (function() {
-            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            const dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
             dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
         })();
+        }
+        const commentsBtn = document.createElement("button");
+        commentsBtn.textContent = "Click to show comments";
+        commentsBtn.addEventListener("click", () => loadDisqus());
+        const disqusDiv = document.getElementById("disqus_thread");
+        disqusDiv.append(commentsBtn);
     </script>
     <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript> 
 </div>
@@ -419,22 +426,12 @@ defunctionalized continuations.<a href="#fnref2" class="footnote-back" role="doc
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js" integrity="sha384-6ePHh72Rl3hKio4HiJ841psfsRJveeS+aLoaEf3BWfS+gTF0XdAqku2ka8VddikM" crossorigin="anonymous"></script> -->
     <script type="text/javascript" src="../js/jquery.min.js"></script>
     <script type="text/javascript" src="../js/bootstrap.min.js"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <!--<script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>-->
-    <script type="text/javascript">
-        var disqus_shortname = 'hedonisticlearning';
-        (function () {
-            var s = document.createElement('script'); s.async = true;
-            s.type = 'text/javascript';
-            s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
-            (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
-        }());
-    </script>
-    <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_HTMLorMML.js" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script> -->
-    <!--<script type="text/javascript" src="/js/MathJax-2.7.7/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>-->
+    
+    
     <script>
         MathJax = {
             loader: {

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="A blog mostly on math, physics, and computer science.">
+    <meta name="author" content="Derek Elkins">
+    <!--<link rel="icon" href="/images/favicon.ico">-->
+
+    <title>Morleyization</title>
+    <!-- Bootstrap core CSS -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="../css/blog.css" rel="stylesheet">
+    <link href="../css/syntax.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="blog-masthead">
+      <div class="container">
+        <nav class="blog-nav">
+          <a class="blog-nav-item " href="../">Home</a>
+          <a class="blog-nav-item " href="../about.html">About</a>
+          <a class="blog-nav-item " href="../contact.html">Contact</a>
+          <a class="blog-nav-item " href="../readinglist.html">Reading List</a>
+          <a class="blog-nav-item " href="../archive.html">Archive</a>
+          <a class="blog-nav-item pull-right" href="../rss.xml">RSS</a>
+          <a class="blog-nav-item pull-right" href="../atom.xml">Atom</a>
+        </nav>
+      </div>
+    </div>
+
+    <div class="container">
+      
+      
+      <div class="row">
+        
+        <div class="col-sm-12 blog-main">
+        
+          <div class="blog-post">
+    <h2 class="blog-post-title" style="margin-top: 30px;">Morleyization</h2>
+    <p class="blog-post-meta">July 19, 2024 02:35 UTC 
+        
+        (Last updated on July 19, 2024 02:35 UTC)
+    </p>
+    <h6 class="blog-post-meta">
+        
+        Tags: <a title="All pages tagged 'math'." href="../tags/math.html">math</a>, <a title="All pages tagged 'category theory'." href="../tags/category%20theory.html">category theory</a>, <a title="All pages tagged 'logic'." href="../tags/logic.html">logic</a>
+        
+    </h6>
+
+    <h2 id="introduction">Introduction</h2>
+<p>Morleyization is a fairly important operation in categorical logic for which it is hard to find readily
+accessible references to a statement and proof. Most refer to D1.5.13 of “Sketches of an Elephant” which is
+not an accessible text. 3.2.8 of “Accessible Categories” by Makkai and Paré is another reference, and
+“Accessible Categories” is more accessible but still a big ask for just a single theorem.</p>
+<p>Here I reproduce the statement and proof from “Accessible Categories” albeit with some notational and
+conceptual adaptations as well as some commentary. This assumes some basic familiarity with the ideas
+and notions of traditional model theory, e.g. what structures, models, and |\vDash| are.</p>
+<!--more-->
+<h2 id="preliminaries">Preliminaries</h2>
+<p>The context of the theorem is <a href="https://en.wikipedia.org/wiki/Infinitary_logic">infinitary, classical (multi-sorted) first-order logic</a>.
+|L| will stand for a <strong>language</strong> aka a <strong>signature</strong>, i.e. sorts, function symbols, predicate symbols as usual,
+except if we’re allowing infinitary quantification we may have function or predicate symbols of infinite
+arity. We write |L_{\kappa,\lambda}| for the corresponding classical first-order logic where we
+allow conjunctions and disjunctions indexed by sets of cardinality less than the regular (infinite) cardinal
+|\kappa| while allowing quantification over sets of variables of (infinite) cardinality less than
+|\lambda \leq \kappa|. |\lambda=\varnothing| is also allowed to indicate a propositional logic.
+If |\kappa| or |\lambda| are |\infty|, that means conjunctions/disjunctions or quantifications over
+arbitrary sets. |L_{\omega,\omega}| would be normal finitary, classical first-order logic. Geometric
+logic would be a fragment of |L_{\infty,\omega}|. The theorem will focus on |L_{\infty,\infty}|,
+but inspection of the proof shows that theorem would hold for any reasonable choice for |\kappa|
+and |\lambda|.</p>
+<p>As a note, infinitary logics can easily have a <em>proper class</em> of formulas. Thus, it will make sense
+to talk about <em>small</em> subclasses of formulas, i.e. ones which are sets.</p>
+<p>Instead of considering logics with different sets of connectives Makkai and Paré, introduces the
+fairly standard notion of a <strong>positive existential</strong> formula which is a formula that uses only
+atomic formulas, conjunctions, disjunctions, and existential quantification. That is, no implication,
+negation, or universal quantification. They then define a <strong>basic sentence</strong> as “a conjunction of
+a set of sentences, i.e. closed formulas, each of which is of the form |\forall\vec x(\phi\to\psi)|
+where |\phi| and |\psi| are [positive existential] formulas”.</p>
+<p>It’s clear the component formulas of a basic sentences correspond to sequents of the form
+|\phi\vdash\psi| for open positive existential formulas. A basic sentence corresponds to what
+is often called a theory, i.e. a set of sequents. Infinitary logic lets us smash a theory down
+to a single formula, but I think the theory concept is clearer though I’m sure there are benefits
+to having a single formula. Instead of talking about basic sentences, we can talk about a theory
+in the positive existential fragment of the relevant logic. This has the benefit that we don’t
+need to introduce connectives or infinitary versions of connectives just for structural reasons.
+I’ll call a theory that corresponds to a basic sentence a <strong>positive existential theory</strong> for
+conciseness.</p>
+<p>Makkai and Paré also define |L_{\kappa,\lambda}^*| “for the class of formulas |L_{\kappa,\lambda}|
+which are conjunctions of formulas in each of which the only conjunctions occurring are
+of cardinality |&lt; \lambda|”. For us, the main significance of this is that geometric theories
+correspond to basic sentences in |L_{\infty,\omega}| as this limits the conjunctions to the
+finitary case. Indeed, Makkai and Paré include the somewhat awkward sentence: “Thus, a <em>geometric
+theory</em> is the same as a basic sentence in |L_{\infty,\omega}^*|, and a <em>coherent theory</em> is
+a conjunction of basic sentences in |L_{\omega,\omega}|.” Presumably, the ambiguous meaning of
+“conjunction” leads to the differences in how these are stated, i.e. a basic sentence is already
+a “conjunction” of formulas.</p>
+<p>The standard notion of an |L|-structure and model are used, and I won’t give a precise definition
+here. An <strong>|L|-structure</strong> assigns meaning (sets, functions, and relations) to all the sorts and
+symbols of |L|, and a model of a formula (or theory) is an |L|-structure which satisfies the
+formula (or all the formulas of the theory). We’ll write |Str(L)| for the category of |L|-structures
+and homomorphisms. In categorical logic, an |L|-structure would usually
+be some kind of structure preserving (fibred) functor usually into |\mathbf{Set}|, and a homomorphism
+is a natural transformation. A formula would be mapped to a subobject, and a model would require
+these subobjects to satisfy certain factoring properties specified by the theory. A sequent
+|\varphi \vdash \psi| in the theory would require a model to have the interpretation of
+|\varphi| factor through the interpretation of |\psi|, i.e. for the former to be a subset
+of the latter when interpreting into |\mathbf{Set}|.</p>
+<h2 id="theorem-statement">Theorem Statement</h2>
+<p>|\mathcal F \subseteq L_{\infty,\infty}| is called a <strong>fragment of |L_{\infty,\infty}|</strong> if:</p>
+<ol type="i">
+<li>it contains all atomic formulas of |L|,</li>
+<li>it is closed under substitution,</li>
+<li>if a formula is in |\mathcal F| then so are all its subformulas,</li>
+<li>if |\forall\vec x\varphi \in \mathcal F|, then so is |\neg\exists\vec x\neg\varphi|, and</li>
+<li>if |\varphi\to\psi \in \mathcal F|, then so is |\neg\varphi\lor\psi|.</li>
+</ol>
+<p>Basically, and the motivation for this will become clear shortly, formulas in |\mathcal F| are
+like “compound atomic formulas” with the caveat that we must include the classically equivalent
+versions of |\forall| and |\to| in terms of |\neg| and |\exists| or |\lor| respectively.</p>
+<p>Given |\mathcal F|, we define an <strong>|\mathcal F|-basic sentence</strong> exactly like a basic sentence
+except that we allow formulas from |\mathcal F| instead of just atomic formulas as the base
+case. In theory language, an |\mathcal F|-basic sentence is a theory, i.e. set of sequents,
+using only the connectives |\bigwedge|, |\bigvee|, and |\exists|, except within subformulas
+contained in |\mathcal F| which may use any (first-order) connective. We’ll call such a
+theory a <strong>positive existential |\mathcal F|-theory</strong>. Much of the following will be double-barrelled
+as I try to capture the proof as stated in “Accessible Categories” and my slight reformulation
+using positive existential theories.</p>
+<p>|\mathrm{Mod}^{(\mathcal F)}(\mathbb T)| for a theory |\mathbb T| (or
+|\mathrm{Mod}^{(\mathcal F)}(\sigma)| for a basic sentence |\sigma|) is the category
+whose objects are |L|-structures that are models of |\mathbb T| (or |\sigma|), and whose arrows are the
+|\mathcal F|-elementary mappings. An <strong>|\mathcal F|-elementary mapping</strong> |h : M \to N|,
+for <em>any</em> subset of formulas of |L_{\infty,\infty}|, |\mathcal F|, is a mapping of |L|-structures
+which preserves the meaning of all formulas in |\mathcal F|.
+That is, |M \vDash \varphi(\vec a)| implies |N \vDash \varphi(h(\vec a))| for all
+formulas, |\varphi \in \mathcal F| and appropriate sequences |\vec a|. We can define
+the <strong>elementary mappings for a language |L’|</strong> as the |\mathcal F’|-elementary mappings
+where |\mathcal F’| consists of (only) the atomic formulas of |L’|. |\mathrm{Mod}^{(L’)}(\mathbb T’)|
+(or |\mathrm{Mod}^{(L’)}(\sigma’)|) can be defined by |\mathrm{Mod}^{(\mathcal F’)}(\mathbb T’)|
+(or |\mathrm{Mod}^{(L’)}(\sigma’)|) for the |\mathcal F’| determined this way.</p>
+<p>Here’s the theorem as stated in “Accessible Categories”.</p>
+<blockquote>
+<p><strong>Theorem</strong> (Proposition 3.2.8): Given any small fragment |\mathcal F| and an |\mathcal F|-basic
+sentence |\sigma|, the category of |\mathrm{Mod}^{(\mathcal F)}(\sigma)| is equivalent to
+|\mathrm{Mod}^{(L’)}(\sigma’)| for some other language |L’| and basic sentence |\sigma’| over
+|L’|, hence by 3.2.1, to the category of models of a small sketch as well.</p>
+</blockquote>
+<p>We’ll replace the |\mathcal F|-basic sentences |\sigma| and |\sigma’| with positive existential
+|\mathcal F|-theories |\mathbb T| and |\mathbb T’|.</p>
+<p>Implied is that |\mathcal F \subseteq L_{\infty,\infty}|, i.e. that |L| and |L’| may be distinct
+and usually will be. As the proof will show, they agree on sorts and function symbols, but we have
+different predicate symbols in |L’|.</p>
+<p>I’ll be ignoring the final comment referencing Theorem 3.2.1. Theorem 3.2.1 is the main theorem of
+the section and states that every small sketch gives rise to a language |L| and theory |\mathbb T|
+(or basic sentence |\sigma|) and vice versa such that the category of models of the sketch are
+equivalent to models of |\mathbb T| (or |\sigma|). Thus, the final comment is an immediate corollary.</p>
+<p>For us, the interesting part of 3.2.8 is that it takes a classical first-order theory, |\mathbb T|,
+and produces a positive existential theory, as represented by |\mathbb T’|, that has
+an equivalent, in fact isomorphic, category of models. This positive existential theory is called
+the <strong>Morleyization</strong> of the first-order theory.</p>
+<p>In particular, if we have a <em>finitary</em> classical first-order theory, then we get a coherent theory
+with the same models. This means to study models of classical first-order theories, it’s enough
+to study models of coherent theories via the Morleyization of the classical first-order theories.
+This allows many techniques for geometric and coherent theories to be applied, e.g. (pre)topos theory
+and classifying toposes. As stated before, the theorem statement doesn’t actually make it clear that
+the result holds for a restricted degree of “infinitariness”, but this is obvious from the proof.</p>
+<h2 id="proof">Proof</h2>
+<p>I’ll quote the first few sentences of the proof to which I have nothing to add.</p>
+<blockquote>
+<p>The idea is to replace each formula in |\mathcal F| by a new predicate. Let the
+sorts of the language |L’| be the same as those of |L|, and similarly for the [function]
+symbols.</p>
+</blockquote>
+<p>The description of the predicate symbols is complicated by their (potential) infinitary nature.
+I’ll quote the proof here as well as I have nothing to add and am not as interested in this case.
+The finitary quantifiers case would be similar, just slightly less technical. It would be even
+simpler if we defined formulas in a given (ordered) variable context as is typical in categorical
+logic.</p>
+<blockquote>
+<p>With any formula |\phi(\vec x)| in |\mathcal F|, with |\vec x| the repetition free sequence
+|\langle x_\beta\rangle_{\beta&lt;\alpha}| of exactly the free variables of |\phi| in a
+once and for all fixed order of variables, let us associate the new [predicate] symbol |P_\phi|
+of arity |a : \alpha \to \mathrm{Sorts}| such that |a(\beta) = x_\beta|. The [predicate]
+symbols of |L’| are the |P_\phi| for all |\phi\in\mathcal F|.</p>
+</blockquote>
+<p>The motivation of |\mathcal F|-basic sentences / positive existential |\mathcal F|-theories should
+now be totally clear. The |\mathcal F|-basic sentences / positive existential |\mathcal F|-theories
+are literally basic sentences / positive existential theories in the language of |L’| if we
+replace all occurrences of subformulas in |\mathcal F| with their corresponding predicate symbol in |L’|.</p>
+<p>We can extend any |L|-structure |M| to an |L’|-structure |M^\sharp| such that they agree on all the sorts
+and function symbols of |L|, and |M^\sharp| satisfies |M^\sharp \vDash P_\varphi(\vec a)| if and only if
+|M \vDash \varphi(\vec a)|. Which is to say, we <em>define</em> the interpretation of |P_\varphi| to
+be the subset of the interpretation of its domain specified by |M \vDash \varphi(\vec a)| for all
+|\vec a| in the domain. In more categorical language, we define the subobject that |P_\varphi|
+gets sent to to be the subobject |\varphi|.</p>
+<p>We can define an |L|-structure, |N^\flat|, for |N| an |L’|-structure by, again, requiring it to do the
+same thing to sorts and function symbols as |N|, and defining the interpretation of the predicate
+symbols as |N^\flat \vDash R(\vec a)| if and only if |N \vDash P_{R(\vec x)}(\vec a)|.</p>
+<p>We immediately have |(M^\sharp)^\flat = M|.</p>
+<p>We can extend this to |L’|-formulas. Let |\psi| be an |L’|-formula, then |\psi^\flat| is defined
+by a connective-preserving operation for which we only need to specify the action on predicate
+symbols. We define that by declaring |P_\varphi(\vec t)^\flat| gets mapped to |\varphi(\vec t)|.
+We extend |\flat| to theories via |\mathbb T’^\flat \equiv \{ \varphi^\flat \vdash \psi^\flat \mid (\varphi\vdash\psi) \in \mathbb T’\}|.
+A similar induction allows us to prove \[M\vDash\psi^\flat(\vec a)\iff M^\sharp\vDash\psi(\vec a)\]
+for all |L|-structures |M| and appropriate |\vec a|.</p>
+<p>We have |\mathbb T = \mathbb T’^\flat| for a positive existential theory |\mathbb T’| over |L’|
+(or |\sigma = \rho^\flat| for a basic |L’|-sentence |\rho|)
+and thus |\varphi^\flat \vDash_M \psi^\flat \iff \varphi \vDash_{M^\sharp}\psi|
+for all |\varphi\vdash\psi \in \mathbb T’| (or |M \vDash\sigma \iff M^\sharp\vDash\rho|).
+We want to make it so that any |L’|-structure |N| interpreting |\mathbb T’| (or |\rho|) as |\mathbb T|
+(or |\sigma|) is of the form |N = M^\sharp| for some |M|. Right now that doesn’t happen because, while
+the definition of |M^\sharp| forces it to respect the logical connectives in the formula |\varphi|
+associated to the |L’| predicate symbol |P_\varphi|, this isn’t required for an arbitrary model |N|.
+For example, nothing requires |N \vDash P_\top| to hold.</p>
+<p>The solution is straightforward. In addition to |\mathbb T’| (or |\rho|) representing
+the theory |\mathbb T| (or |\sigma|), we add in an additional set of axioms |\Phi|
+that capture the behavior of the (encoded) logical connectives of the formulas associated to the
+predicate symbols.</p>
+<p>These axioms are largely structural with a few exceptions that I’ll address separately. I’ll present
+this as a collection of sequents for a theory, but we can replace |\vdash| and |\dashv \vdash| with
+|\to| and |\leftrightarrow| for the basic sentence version. |\varphi \dashv\vdash \psi| stands
+for two sequents going opposite directions.</p>
+<p>\[\begin{align}
+\varphi(\vec x) &amp; \dashv\vdash P_\varphi(\vec x) \tag{for atomic $\varphi$} \\
+P_{R(\vec x)}(\vec t) &amp; \dashv\vdash P_{R(\vec t)}(\vec y) \tag{for terms $\vec t$ with free variables $\vec y$} \\
+P_{\bigwedge\Sigma}(\vec x) &amp; \dashv\vdash \bigwedge_{\varphi \in \Sigma} P_\varphi(\vec x_\varphi) \tag{$\vec x_\varphi$ are the free variables of $\varphi$} \\
+P_{\bigvee\Sigma}(\vec x) &amp; \dashv\vdash \bigvee_{\varphi \in \Sigma} P_\varphi(\vec x_\varphi) \tag{$\vec x_\varphi$ are the free variables of $\varphi$} \\
+P_{\exists\vec y.\varphi(\vec x,\vec y)}(\vec x) &amp; \dashv\vdash \exists\vec y.P_{\varphi(\vec x,\vec y)}(\vec x,\vec y)
+\end{align}\]</p>
+<p>We then have two axiom schemas that eliminate the |\forall| and |\to| by leveraging the defining
+property of |\mathcal F| being a fragment.</p>
+<p>\[\begin{align}
+P_{\forall\vec y.\varphi(\vec x,\vec y)}(\vec x) &amp; \dashv\vdash P_{\neg\exists\vec y.\neg\varphi(\vec x,\vec y)}(\vec x) \\
+P_{\varphi\to\psi}(\vec x) &amp; \dashv\vdash P_{\neg\varphi}(\vec x) \lor P_\psi(\vec x)
+\end{align}\]</p>
+<p>We avoid needing negation by axiomatizing that |P_{\neg\varphi}| is the complement to |P_\varphi|. <strong>This
+is arguably the key idea.</strong> Once we can simulate the behavior of negation without actually needing it, then
+it is clear that we can embed all the other non-positive-existential connectives.</p>
+<p>\[\begin{align}
+&amp; \vdash P_{\neg\varphi}(\vec x) \lor P_\varphi(\vec x) \\
+P_{\neg\varphi}(\vec x) \land P_\varphi(\vec x) &amp; \vdash \bot
+\end{align}\]</p>
+<p>|\Phi| is the set of all these sequents. (For the basic sentence version, |\Phi| is the set of universal
+closures of all these formulas for all |\varphi,\psi \in \mathcal F|.)</p>
+<p>Another straightforward structural induction over the subformulas of |\varphi\in\mathcal F| shows that
+\[N^\flat \vDash \varphi(\vec a) \iff N \vDash P_\varphi(\vec a)\] for any |L’|-structure |N|
+which is a model of |\Phi|. The only interesting case is the negation case. Here, the induction hypothesis
+states that |N^\flat\vDash\varphi(\vec a)| agrees with |N\vDash P_\varphi(\vec a)| and the axioms
+state that |N\vDash P_{\neg\varphi}(\vec a)| is the complement of the latter which thus agrees with the
+complement of the former which is |N^\flat\vDash\neg\varphi(\vec a)|.</p>
+<p>From this, it follows that |N = M^\sharp| for |M = N^\flat| or, equivalently, |N = (N^\flat)^\sharp|.</p>
+<p>|({-})^\sharp| and |({-})^\flat| thus establish a bijection between the objects of
+|\mathrm{Mod}^{(\mathcal F)}(\mathbb T)| (or |\mathrm{Mod}^{(\mathcal F)}(\sigma)|) and
+|\mathrm{Mod}^{(L’)}(\mathbb T’\cup\Phi))| (or |\mathrm{Mod}^{(L’)}(\bigwedge(\{\rho\}\cup\Phi))|).
+The morphisms of these two categories would each be subclasses of the morphisms of |Str(L_0)| where |L_0| is
+the language consisting of only the sorts and function symbols of |L| and thus |L’|. We can show that they
+are identical subclasses which basically comes down to showing that an elementary mapping of
+|\mathrm{Mod}^{(L’)}(\mathbb T’\cup\Phi))| (or |\mathrm{Mod}^{(L’)}(\bigwedge(\{\rho\}\cup\Phi))|)
+is an |\mathcal F|-elementary mapping.</p>
+<p>The idea is that such a morphism is a map |h : N \to N’| in |Str(L_0)| which must satisfy
+\[N \vDash P_\varphi(\vec a) \implies N’ \vDash P_\varphi(h(\vec a))\] for
+all |\varphi \in \mathcal F| and appropriate |\vec a|. However, since |N = (N^\flat)^\sharp|
+and |P_\varphi(\vec a)^\flat = \varphi(\vec a)|, we have |N^\flat \vDash \varphi(\vec a) \iff N \vDash P_\varphi(\vec a)|
+and similarly for |N’|. Thus
+\[N^\flat \vDash \varphi(\vec a) \implies N’^\flat \vDash \varphi(h(\vec a))\] for all
+|\varphi \in \mathcal F|, and every such |h| corresponds to an |\mathcal F|-elementary mapping.
+Choosing |N = M^\sharp| allows us to show the converse for any |\mathcal F|-elementary
+mapping |g : M \to M’|. |\square|</p>
+<h3 id="commentary">Commentary</h3>
+<p>The proof doesn’t particularly care that we’re interpreting the models into |\mathbf{Set}| and would
+work just as well if we interpreted into some other category with the necessary structure. The amount
+of structure required would vary with how much “infinitariness” we actually used, though it would need
+to be a Boolean category. In particular, the proof works as stated (in its theory form) without
+any infinitary connectives being implied for mapping finitary classical first-order logic to coherent logic.</p>
+<p>We could simplify the statement and the proof by first eliminating |\forall| and |\to| and then
+considering the proof over classical first-order logic with the connectives
+|\{\bigwedge,\bigvee,\exists,\neg\}|. This would simplify the definition of fragment and
+remove some cases in the proof.</p>
+<p>To reiterate, <strong>the key is how we handle negation</strong>.</p>
+<h2 id="defunctionalization">Defunctionalization</h2>
+<p>Morleyization is related to <a href="https://en.wikipedia.org/wiki/Defunctionalization">defunctionalization</a><a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.
+For simplicity, I’ll only consider the finitary, propositional case, i.e. |L_{\omega,\varnothing}|.</p>
+<p>In this case, we can consider each |P_\varphi| to be a new data type. In most cases, it would be
+a <code>newtype</code> to use Haskell terminology. The only non-trivial case is |P_{\neg\varphi}|. Now, the
+computational interpretation of classical propositional logic would use control operators to handle
+negation. Propositional coherent logic, however, has a straightforward (first-order) functional
+interpretation. Here, a negated formula, |\neg\varphi|, is represented by an primitive type
+|P_{\neg\varphi}|.</p>
+<p>The |P_{\neg\varphi} \land P_\varphi \vdash \bot| sequent is the <code>apply</code>
+function for the defunctionalized continuation (of type |\varphi|). Even more clearly, this
+is interderivable with |P_{\neg\varphi} \land \varphi’ \vdash \bot| where |\varphi’| is
+the same as |\varphi| except the most shallow negated subformulas are replaced with the corresponding
+predicate symbols. In particular, if |\varphi| contains no negated subformulas, then |\varphi’=\varphi|.
+We have no way of creating new values of |P_{\neg\varphi}| other than via whatever sequents have been given.
+We can, potentially, get a value of |P_{\neg\varphi}| by case analyzing on |\vdash \mathsf{lem}_\varphi : P_{\neg\varphi}\lor P_\varphi|.</p>
+<p>What this corresponds to is a first-order functional language with a primitive type for each negated formula.
+Any semantics/implementation for this, will need to decide if the primitive type |P_{\neg\varphi}| is
+empty or not, and then implement |\mathsf{lem}_\varphi| appropriately (or allow inconsistency). A
+programmer writing a program in this signature, however, cannot assume either way whether |P_{\neg\varphi}|
+is empty unless they can create a program with that type.</p>
+<p>As a very slightly non-trivial example, let’s consider implementing |A \to P_{\neg\neg A}|
+corresponding to double negating. Using Haskell-like syntax, the program looks like:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ot">proof ::</span> <span class="dt">A</span> <span class="ot">-&gt;</span> <span class="dt">NotNotA</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>proof a <span class="ot">=</span> <span class="kw">case</span> lem_NotA <span class="kw">of</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>            <span class="dt">Left</span> notNotA <span class="ot">-&gt;</span> notNotA</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>            <span class="dt">Right</span> notA <span class="ot">-&gt;</span> absurd (apply_NotA (notA, a))</span></code></pre></div>
+<p>where <code>lem_NotA :: Either NotNotA NotA</code>, <code>apply_NotA :: (NotA, A) -&gt; Void</code>, and <code>absurd :: Void -&gt; a</code>
+is the eliminator for |\bot| where |\bot| is represented by <code>Void</code>.</p>
+<p>Normally in defunctionalization we’d also be adding constructors to our new types for all the
+occurrences of lambdas (or maybe |\mu|s would be better in this case). However, since the only
+thing we can do (in general) with <code>NotA</code> is use <code>apply_A</code> on it, no information can be extracted
+from it. Either it’s inhabited and behaves like <code>()</code>, i.e. |\top|, or it’s not inhabited and
+behaves like <code>Void</code>, i.e. |\bot|. We can even test for this by case analyzing on <code>lem_A</code> which
+makes sense because in the classical logic this formula was decidable.</p>
+<h2 id="bonus-grothendieck-toposes-as-categories-of-models-of-sketches">Bonus: Grothendieck toposes as categories of models of sketches</h2>
+<p>The main point of this section of “Accessible Categories” is to show that we can equivalently
+view categories of models of <a href="https://ncatlab.org/nlab/show/sketch">sketches</a>
+as categories of models of theories. In particular, models of <strong>geometric sketches</strong>, those whose
+cone diagrams are finite but cocone diagrams are arbitrary, correspond to models of <a href="https://ncatlab.org/nlab/show/geometric+theory">geometric theories</a>.</p>
+<p>We can view a <a href="https://ncatlab.org/nlab/show/site">site</a>, |(\mathcal C, J)|, for a Grothendieck topos as the
+data of a geometric sketch. In particular, |\mathcal C| becomes the underlying category of the sketch, we
+add cones to capture all finite limits, and the coverage, |J|, specifies the cocones. These cocones
+have a particular form as the <a href="https://ncatlab.org/nlab/show/%CE%BA-ary+exact+category#sinks_and_relations">quotient of the kernel of a sink</a>
+as specified by the sieves in |J|. (We need to use the apex of the cones representing pullbacks instead
+of actual pullbacks.)</p>
+<p>Lemma 3.2.2 shows the sketch-to-theory implication. The main thing I want to note about its proof is that
+it illustrates how infinitely large cones would require infinitary (universal) quantification (in addition
+to the unsurprising need for infinitary conjunction), but infinitely large cocones <em>do not</em> (but they do
+require infinitary disjunction). I’ll not reproduce it here, but it comes down to writing out the normal
+set-theoretic constructions of limits and colimits (in |\mathbf{Set}|), but instead of using some first-order
+theory of sets, like <strong>ZFC</strong>, uses of sets would be replaced with (infinitary) logical operations. The
+“infinite tuples” of an infinite limit become universal quantification over an infinitely large number of
+free variables. For the colimits, though, the most complex use of quantifiers is an infinite disjunction of
+increasingly deeply nested quantifiers to represent the transitive closure of a relation, but no single
+disjunct is infinitary. Figuring out the infinitary formulas is a good exercise.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>An
+even more direct connection to defunctionalization is the fact that geometric logic is the internal logic
+of Grothendieck toposes, but Grothendieck toposes are elementary toposes and so have the structure to model
+implication and universal quantification. It’s just that those connectives aren’t preserved by geometric
+morphisms. For implication, the idea is that |A \to B| is represented by
+|\bigvee\{\bigwedge\Gamma\mid \Gamma,A\vdash B\}| where |\Gamma| is finite. We can even see how
+a homomorphism that preserved geometric logic structure will fail to preserve this definition of |\to|.
+Specifically, there could be additional contexts not in the image of the homomorphism that <em>should</em> be
+included in the image of the disjunction for it to lead to |\to| in the target but won’t be.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        function loadDisqus() {
+        const disqus_shortname = 'hedonisticlearning';
+        const disqus_identifier = '99955925-f718-4b7d-93ed-ee44a99d8085';
+        const disqus_title = 'Morleyization';
+
+        (function() {
+            const dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+        }
+        const commentsBtn = document.createElement("button");
+        commentsBtn.textContent = "Click to show comments";
+        commentsBtn.addEventListener("click", () => loadDisqus());
+        const disqusDiv = document.getElementById("disqus_thread");
+        disqusDiv.append(commentsBtn);
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript> 
+</div>
+
+        </div><!-- /.blog-main -->
+        
+        
+      </div><!-- /.row -->
+    </div><!-- /.container -->
+
+    <footer class="blog-footer">
+      <p>Site generated by <a href="http://jaspervdj.be/hakyll">Hakyll</a></p>
+      <p>
+        <a href="#">Back to top</a>
+      </p>
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/javascript" src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!--<script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>-->
+    
+    
+    <script>
+        MathJax = {
+            loader: {
+                load: ['ui/lazy', '[custom]/xypic.js'],
+                paths: { custom: '/js' }
+            },
+            tex: {
+                packages: { '[+]': ['xypic'] },
+                inlineMath: [['|','|']],
+                macros: window.extraMacros || {}
+            }
+        };
+    </script>
+    <script type="text/javascript" src="../js/MathJax-3/es5/tex-mml-chtml.js"></script>
+  </body>
+</html>
