@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="A blog mostly on math, physics, and computer science.">
+    <meta name="author" content="Derek Elkins">
+    <!--<link rel="icon" href="/images/favicon.ico">-->
+
+    <title>Global Rebuilding, Coroutines, and Defunctionalization</title>
+    <!-- Bootstrap core CSS -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="../css/blog.css" rel="stylesheet">
+    <link href="../css/syntax.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="blog-masthead">
+      <div class="container">
+        <nav class="blog-nav">
+          <a class="blog-nav-item " href="../">Home</a>
+          <a class="blog-nav-item " href="../about.html">About</a>
+          <a class="blog-nav-item " href="../contact.html">Contact</a>
+          <a class="blog-nav-item " href="../readinglist.html">Reading List</a>
+          <a class="blog-nav-item " href="../archive.html">Archive</a>
+          <a class="blog-nav-item pull-right" href="../rss.xml">RSS</a>
+          <a class="blog-nav-item pull-right" href="../atom.xml">Atom</a>
+        </nav>
+      </div>
+    </div>
+
+    <div class="container">
+      
+      
+      <div class="row">
+        
+        <div class="col-sm-12 blog-main">
+        
+          <div class="blog-post">
+    <h2 class="blog-post-title" style="margin-top: 30px;">Global Rebuilding, Coroutines, and Defunctionalization</h2>
+    <p class="blog-post-meta">October  4, 2024 08:24 UTC 
+        
+        (Last updated on October  4, 2024 08:24 UTC)
+    </p>
+    <h6 class="blog-post-meta">
+        
+        Tags: <a title="All pages tagged 'CS'." href="../tags/CS.html">CS</a>, <a title="All pages tagged 'programming'." href="../tags/programming.html">programming</a>
+        
+    </h6>
+
+    <h2 id="introduction">Introduction</h2>
+<p>In 1983, Mark Overmars described global rebuilding in <em>The Design of Dynamic Data Structures</em>.
+The problem it was aimed at solving was turning the amortized time complexity bounds of
+batched rebuilding into worst-case bounds. In <strong>batched rebuilding</strong> we perform a series of
+updates to a data structure which may cause the performance of operations to degrade, but
+occasionally we expensively rebuild the data structure back into an optimal arrangement.
+If the updates don’t degrade performance too much before we rebuild, then we can achieve
+our target time complexity bounds in an amortized sense. An update that doesn’t degrade
+performance too much is called a <strong>weak update</strong>.</p>
+<p>Taking an example from Okasaki’s <em>Purely Functional Data Structures</em>, we can consider a
+binary search tree where deletions occur by simply marking the deleted nodes as deleted.
+Then, once about half the tree is marked as deleted, we rebuild the tree into a balanced
+binary search tree and clean out the nodes marked as deleted at that time. In this case,
+the deletions count as weak updates because leaving the deleted nodes in the tree even
+when it corresponds to up to half the tree can only mildly impact the time complexity of
+other operations. Specifically, assuming the tree was balanced at the start, then deleting
+half the nodes could only reduce the tree’s depth by about 1. On the other hand, naive inserts
+are <em>not</em> weak updates as they can quickly increase the tree’s depth.</p>
+<p>The idea of global rebuilding is relatively straightforward, though how you would actually
+realize it in any particular example is not. The overall idea is simply that instead of
+waiting until the last moment and then rebuilding the data structure all at once, we’ll start
+the rebuild sooner and work at it incrementally as we perform other operations. If we
+update the new version faster than we update the original version, we’ll finish it by the
+time we would have wanted to perform a batch rebuild, and we can just switch to this new version.</p>
+<p>More concretely, though still quite vaguely, <strong>global rebuilding</strong> involves, when a
+threshold is reached, rebuilding by creating a new “empty” version of the data
+structure called the <em>shadow copy</em>. The original version is the <em>working copy</em>. Work on
+rebuilding happens incrementally as operations are performed on the data structure. During
+this period, we service queries from the working copy and continue to update it as usual.
+Each update needs to make more progress on building the shadow copy than it worsens the
+working copy. For example, an insert should insert more nodes into the shadow copy than
+the working copy. Once the shadow copy is built, we may still have more work to do to
+incorporate changes that occurred after we started the rebuild. To this end, we can
+maintain a queue of update operations performed on the working copy since the start of
+a rebuild, and then apply these updates, also incrementally, to the shadow copy. Again,
+we need to apply the updates from the queue at a fast enough rate so that we will
+eventually catch up. Of course, all of this needs to happen fast enough so that 1)
+the working copy doesn’t get too degraded before the shadow copy is ready, and 2)
+we don’t end up needing to rebuild the shadow copy before it’s ready to do any work.</p>
+<!--more-->
+<h2 id="coroutines">Coroutines</h2>
+<p>Okasaki passingly mentions that global rebuilding “can be usefully viewed as running
+the rebuilding transformation as a coroutine”. Also, the situation described above is
+quite reminiscent of garbage collection. There the classic half-space stop-the-world
+copying collector is naturally the batched rebuilding version. More incremental versions
+often have read or write barriers and break the garbage collection into incremental
+steps. Garbage collection is also often viewed as two processes coroutining.</p>
+<p>The goal of this article is to derive global rebuilding-based data structures from
+an expression of them as two coroutining processes. Ideally, we should be able to
+take a data structure implemented via batched rebuilding and simply run the batch
+rebuilding step as a coroutine. Modifying the data structure’s operations and the
+rebuilding step should, in theory, just be a matter of inserting appropriate <code>yield</code>
+statements. Of course, it’s won’t be that easy since the batched version of rebuilding
+doesn’t need to worry about concurrent updates to the original data structure.</p>
+<p>In theory, such a representation would be a perfectly effective way of articulating
+the global rebuilding version of the data structure. That said, I will be using the
+standard power move of CPS transforming and defunctionalizing to get a more data
+structure-like result.</p>
+<p>I’ll implement coroutines as a very simplified case of modeling cooperative concurrency with
+continuations. In that context, a “process” written in continuation-passing style
+“yields” to the scheduler by passing its continuation to a scheduling function.
+Normally, the scheduler would place that continuation at the end of a work queue
+and then pick up a continuation from the front of the work queue and invoke it
+resuming the previously suspended “process”. In our case, we only have two
+“processes” so our “work queue” can just be a single mutable cell. When one
+“process” yields, it just swaps its continuation into the cell and the other
+“process’” out and invokes the continuation it read.</p>
+<p>Since the rebuilding process is always driven by the main process, the pattern
+is a bit more like generators. This has the benefit that only the rebuilding
+process needs to be written in continuation-passing style. The following is
+a very quick and dirty set of functions for this.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> <span class="dt">Coroutine</span> ( <span class="dt">YieldFn</span>, spawn ) <span class="kw">where</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Control.Monad</span> ( join )</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.IORef</span> ( <span class="dt">IORef</span>, newIORef, readIORef, writeIORef )</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">YieldFn</span> <span class="ot">=</span> <span class="dt">IO</span> () <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ot">yield ::</span> <span class="dt">IORef</span> (<span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> () <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>yield <span class="ot">=</span> writeIORef</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="ot">resume ::</span> <span class="dt">IORef</span> (<span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>resume <span class="ot">=</span> join <span class="op">.</span> readIORef</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="ot">terminate ::</span> <span class="dt">IORef</span> (<span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>terminate yieldRef <span class="ot">=</span> writeIORef yieldRef (<span class="fu">ioError</span> <span class="op">$</span> <span class="fu">userError</span> <span class="st">&quot;Subprocess completed&quot;</span>)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="ot">spawn ::</span> (<span class="dt">YieldFn</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> () <span class="ot">-&gt;</span> <span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">IO</span> ())</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>spawn process <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    yieldRef <span class="ot">&lt;-</span> newIORef <span class="fu">undefined</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    writeIORef yieldRef <span class="op">$</span> process (yield yieldRef) (terminate yieldRef)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span> (resume yieldRef)</span></code></pre></div>
+<p>A simple example of usage is:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ot">process ::</span> <span class="dt">YieldFn</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> () <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>process     _ <span class="dv">0</span> k <span class="ot">=</span> k</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>process yield i k <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">putStrLn</span> <span class="op">$</span> <span class="st">&quot;Subprocess: &quot;</span> <span class="op">++</span> <span class="fu">show</span> i</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    yield <span class="op">$</span> process yield (i<span class="op">-</span><span class="dv">1</span>) k</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="ot">example ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>example <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    resume <span class="ot">&lt;-</span> spawn <span class="op">$</span> \yield <span class="ot">-&gt;</span> process yield <span class="dv">10</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    forM_ [(<span class="dv">1</span><span class="ot"> ::</span> <span class="dt">Int</span>) <span class="op">..</span> <span class="dv">10</span>] <span class="op">$</span> \i <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>        <span class="fu">putStrLn</span> <span class="op">$</span> <span class="st">&quot;Main process: &quot;</span> <span class="op">++</span> <span class="fu">show</span> i</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>        resume</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">putStrLn</span> <span class="st">&quot;Main process done&quot;</span></span></code></pre></div>
+<p>with output:</p>
+<pre><code>Main process: 1
+Subprocess: 10
+Main process: 2
+Subprocess: 9
+Main process: 3
+Subprocess: 8
+Main process: 4
+Subprocess: 7
+Main process: 5
+Subprocess: 6
+Main process: 6
+Subprocess: 5
+Main process: 7
+Subprocess: 4
+Main process: 8
+Subprocess: 3
+Main process: 9
+Subprocess: 2
+Main process: 10
+Subprocess: 1
+Main process done</code></pre>
+<h2 id="queues">Queues</h2>
+<p>I’ll use queues since they are very simple and <em>Purely Functional Data Structures</em>
+describes Hood-Melville Real-Time Queues in Figure 8.1 as an example of global
+rebuilding. We’ll end up with something quite similar which could be made more similar
+by changing the rebuilding code. Indeed, the differences are just an artifact of
+specific, easily changed details of the rebuilding coroutine, as we’ll see.</p>
+<p>The examples I’ll present are mostly imperative, <em>not</em> purely functional. There
+are two reasons for this. First, I’m not focused on purely functional data structures
+and the technique works fine for imperative data structures. Second, it is arguably
+more natural to talk about coroutines in an imperative context. In this case,
+it’s easy to adapt the code to a purely functional version since it’s not much
+more than a purely functional data structure stuck in an <code>IORef</code>.</p>
+<p>For a more imperative structure with mutable linked structure and/or in-place
+array updates, it would be more challenging to produce a purely functional
+version. The techniques here could still be used, though there are more
+“concurrency” concerns. While I don’t include the code here, I did a similar
+exercise for a random-access stack (a fancy way of saying a growable array).
+There the “concurrency” concern is that the elements you are copying to the
+new array may be popped and potentially overwritten before you switch to the
+new array. In this case, it’s easy to solve, since if the head pointer of
+the live version reaches the source offset for copy, you can just switch to
+the new array immediately.</p>
+<p>Nevertheless, I can easily imagine scenarios where it may be beneficial, if
+not necessary, for the coroutines to communicate more and/or for there to be
+multiple “rebuild” processes. The approach used here could be easily adapted
+to that. It’s also worth mentioning that even in simpler cases, non-constant-time
+operations will either need to invoke <code>resume</code> multiple times or need more
+coordination with the “rebuild” process to know when it can do more than a
+constant amount of work. This could be accomplished by “rebuild” process
+simply recognizing this from the data structure state, or some state could
+be explicitly set to indicate this, or the techniques described earlier
+could be used, e.g. a different process for non-constant-time operations.</p>
+<p>The code below uses the extensions <code>BangPatterns</code>, <code>RecordWildCards</code>, and <code>GADTs</code>.</p>
+<h3 id="batched-rebuilding-implementation">Batched Rebuilding Implementation</h3>
+<p>We start with the straightforward, amortized constant-time queues where
+we push to a stack representing the back of the queue and pop from a stack
+representing the front. When the front stack is empty, we need to expensively
+reverse the back stack to make a new front stack.</p>
+<p>I intentionally separate out the reverse step as an explicit <code>rebuild</code> function.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> <span class="dt">BatchedRebuildingQueue</span> ( <span class="dt">Queue</span>, new, enqueue, dequeue ) <span class="kw">where</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.IORef</span> ( <span class="dt">IORef</span>, newIORef, readIORef, writeIORef, modifyIORef )</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Queue</span> a <span class="ot">=</span> <span class="dt">Queue</span> {</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="ot">    queueRef ::</span> <span class="dt">IORef</span> ([a], [a])</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="ot">new ::</span> <span class="dt">IO</span> (<span class="dt">Queue</span> a)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>new <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    queueRef <span class="ot">&lt;-</span> newIORef ([], [])</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span> <span class="dt">Queue</span> { <span class="op">..</span> }</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="ot">dequeue ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Maybe</span> a)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>dequeue q<span class="op">@</span>(<span class="dt">Queue</span> { <span class="op">..</span> }) <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    (front, back) <span class="ot">&lt;-</span> readIORef queueRef</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">case</span> front <span class="kw">of</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        (x<span class="op">:</span>front') <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>            writeIORef queueRef (front', back)</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>            <span class="fu">return</span> (<span class="dt">Just</span> x)</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>        [] <span class="ot">-&gt;</span> <span class="kw">case</span> back <span class="kw">of</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>                [] <span class="ot">-&gt;</span> <span class="fu">return</span> <span class="dt">Nothing</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>                _ <span class="ot">-&gt;</span> rebuild q <span class="op">&gt;&gt;</span> dequeue q</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="ot">enqueue ::</span> a <span class="ot">-&gt;</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>enqueue x (<span class="dt">Queue</span> { <span class="op">..</span> }) <span class="ot">=</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    modifyIORef queueRef (\(front, back) <span class="ot">-&gt;</span> (front, x<span class="op">:</span>back))</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="ot">rebuild ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>rebuild (<span class="dt">Queue</span> { <span class="op">..</span> }) <span class="ot">=</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    modifyIORef queueRef (\([], back) <span class="ot">-&gt;</span> (<span class="fu">reverse</span> back, []))</span></code></pre></div>
+<h3 id="global-rebuilding-implementation">Global Rebuilding Implementation</h3>
+<p>This step is where a modicum of thought is needed. We need to make the
+<code>rebuild</code> step from the batched version incremental. This is straightforward,
+if tedious, given the coroutine infrastructure. In this case, we incrementalize
+the <code>reverse</code> by reimplementing <code>reverse</code> in CPS with some <code>yield</code> calls
+inserted. Then we need to incrementalize append. Since we’re not waiting
+until <code>front</code> is empty, we’re actually computing <code>front ++ reverse back</code>.
+Incrementalizing append is hard, so we actually reverse <code>front</code> and then
+use an incremental <code>reverseAppend</code> (which is basically what the incremental
+reverse does anyway<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>).</p>
+<p>One of first thing to note about this code is that the actual operations are
+largely unchanged other than inserting calls to <code>resume</code>. In fact, <code>dequeue</code>
+is even simpler than in the batched version as we can just assume that <code>front</code>
+is always populated when the queue is not empty. <code>dequeue</code> is freed from the
+responsibility of deciding when to trigger a rebuild. Most of the bulk of
+this code is from reimplementing a <code>reverseAppend</code> function (twice).</p>
+<p>The parts of this code that require some deeper though are 1) knowing when
+a rebuild should begin, 2) knowing how “fast” the incremental operations
+should go<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>
+(e.g. <code>incrementalReverse</code> does two steps at a time and the
+Hood-Melville implementation has an explicit <code>exec2</code> that does two steps
+at a time), and 3) dealing with “concurrent” changes.</p>
+<p>For the last, Overmars describes a queue of deferred operations to perform
+on the shadow copy once it finishes rebuilding. This kind of suggests a
+situation where the “rebuild” process can reference some “snapshot” of
+the data structure. In our case, that is the situation we’re in, since
+our data structures are essentially immutable data structures in an <code>IORef</code>.
+However, it can easily not be the case, e.g. the random-access stack.
+Also, this operation queue approach can easily be inefficient and inelegant.
+None of the implementations below will have this queue of deferred operations.
+It is easier, more efficient, and more elegant to just not copy over parts of
+the queue that have been dequeued, rather than have an extra phase of the
+rebuilding that just pops off the elements of the <code>front</code> stack that we just
+pushed. A similar situation happens for the random-access stack.</p>
+<p>The use of <code>drop</code> could probably be easily eliminated. (I’m not even sure it’s
+still necessary.) It is mostly an artifact of (not) dealing with off-by-one issues.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> <span class="dt">GlobalRebuildingQueue</span> ( <span class="dt">Queue</span>, new, dequeue, enqueue ) <span class="kw">where</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.IORef</span> ( <span class="dt">IORef</span>, newIORef, readIORef, writeIORef, modifyIORef, modifyIORef' )</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Coroutine</span> ( <span class="dt">YieldFn</span>, spawn )</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Queue</span> a <span class="ot">=</span> <span class="dt">Queue</span> {</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="ot">    resume ::</span> <span class="dt">IO</span> (),</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="ot">    frontRef ::</span> <span class="dt">IORef</span> [a],</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="ot">    backRef ::</span> <span class="dt">IORef</span> [a],</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="ot">    frontCountRef ::</span> <span class="dt">IORef</span> <span class="dt">Int</span>,</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="ot">    backCountRef ::</span> <span class="dt">IORef</span> <span class="dt">Int</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="ot">new ::</span> <span class="dt">IO</span> (<span class="dt">Queue</span> a)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>new <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    frontRef <span class="ot">&lt;-</span> newIORef []</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    backRef <span class="ot">&lt;-</span> newIORef []</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    frontCountRef <span class="ot">&lt;-</span> newIORef <span class="dv">0</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    backCountRef <span class="ot">&lt;-</span> newIORef <span class="dv">0</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    resume <span class="ot">&lt;-</span> spawn <span class="op">$</span> <span class="fu">const</span> <span class="op">.</span> rebuild frontRef backRef frontCountRef backCountRef</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span> <span class="dt">Queue</span> { <span class="op">..</span> }</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="ot">dequeue ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Maybe</span> a)</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>dequeue q <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    resume q</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    front <span class="ot">&lt;-</span> readIORef (frontRef q)</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>    <span class="kw">case</span> front <span class="kw">of</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>        [] <span class="ot">-&gt;</span> <span class="fu">return</span> <span class="dt">Nothing</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>        (x<span class="op">:</span>front') <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>            modifyIORef' (frontCountRef q) <span class="fu">pred</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>            writeIORef (frontRef q) front'</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>            <span class="fu">return</span> (<span class="dt">Just</span> x)</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a><span class="ot">enqueue ::</span> a <span class="ot">-&gt;</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>enqueue x q <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>    modifyIORef (backRef q) (x<span class="op">:</span>)</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>    modifyIORef' (backCountRef q) <span class="fu">succ</span></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>    resume q</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a><span class="ot">rebuild ::</span> <span class="dt">IORef</span> [a] <span class="ot">-&gt;</span> <span class="dt">IORef</span> [a] <span class="ot">-&gt;</span> <span class="dt">IORef</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">IORef</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">YieldFn</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>rebuild frontRef backRef frontCountRef backCountRef yield <span class="ot">=</span> <span class="kw">let</span> k <span class="ot">=</span> go k <span class="kw">in</span> go k <span class="kw">where</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>  go k <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>    frontCount <span class="ot">&lt;-</span> readIORef frontCountRef</span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>    backCount <span class="ot">&lt;-</span> readIORef backCountRef</span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> backCount <span class="op">&gt;</span> frontCount <span class="kw">then</span> <span class="kw">do</span></span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>        back <span class="ot">&lt;-</span> readIORef backRef</span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>        front <span class="ot">&lt;-</span> readIORef frontRef</span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>        writeIORef backRef []</span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a>        writeIORef backCountRef <span class="dv">0</span></span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>        incrementalReverse back [] <span class="op">$</span> \rback <span class="ot">-&gt;</span></span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>            incrementalReverse front [] <span class="op">$</span> \rfront <span class="ot">-&gt;</span></span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>                incrementalRevAppend rfront rback <span class="dv">0</span> backCount k</span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>      <span class="kw">else</span> <span class="kw">do</span></span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>        yield k</span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>  incrementalReverse [] acc k <span class="ot">=</span> k acc</span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a>  incrementalReverse [x] acc k <span class="ot">=</span> k (x<span class="op">:</span>acc)</span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a>  incrementalReverse (x<span class="op">:</span>y<span class="op">:</span>xs) acc k <span class="ot">=</span> yield <span class="op">$</span> incrementalReverse xs (y<span class="op">:</span>x<span class="op">:</span>acc) k</span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>  incrementalRevAppend [] front <span class="op">!</span>movedCount backCount' k <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a>    writeIORef frontRef front</span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a>    writeIORef frontCountRef <span class="op">$!</span> movedCount <span class="op">+</span> backCount'</span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a>    yield k</span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>  incrementalRevAppend (x<span class="op">:</span>rfront) acc <span class="op">!</span>movedCount backCount' k <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a>    currentFrontCount <span class="ot">&lt;-</span> readIORef frontCountRef</span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> currentFrontCount <span class="op">&lt;=</span> movedCount <span class="kw">then</span> <span class="kw">do</span></span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a>        <span class="co">-- This drop count should be bounded by a constant.</span></span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a>        writeIORef frontRef <span class="op">$!</span> <span class="fu">drop</span> (movedCount <span class="op">-</span> currentFrontCount) acc</span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a>        writeIORef frontCountRef <span class="op">$!</span> currentFrontCount <span class="op">+</span> backCount'</span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a>        yield k</span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a>      <span class="kw">else</span> <span class="kw">if</span> <span class="fu">null</span> rfront <span class="kw">then</span></span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a>        incrementalRevAppend [] (x<span class="op">:</span>acc) (movedCount <span class="op">+</span> <span class="dv">1</span>) backCount' k</span>
+<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a>      <span class="kw">else</span></span>
+<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a>        yield <span class="op">$!</span> incrementalRevAppend rfront (x<span class="op">:</span>acc) (movedCount <span class="op">+</span> <span class="dv">1</span>) backCount' k</span></code></pre></div>
+<h3 id="defunctionalized-global-rebuilding-implementation">Defunctionalized Global Rebuilding Implementation</h3>
+<p>This step is completely mechanical.</p>
+<p>There’s arguably no reason to defunctionalize. It produces a result that
+is more data-structure-like, but, unless you need the code to work in a
+first-order language, there’s nothing really gained by doing this. It does
+lead to a result that is more directly comparable to other implementations.</p>
+<p>For some data structures, having the continuation be analyzable would
+provide a simple means for the coroutines to communicate. The main process
+could directly look at the continuation to determine its state, e.g. if
+a rebuild is in-progress at all. The main process could also directly
+manipulate the stored continutation to change the “rebuild” process’
+behavior. That said, doing this would mean that we’re not <em>deriving</em>
+the implementation. Still, the opportunity for additional optimizations
+and simplifications is nice.</p>
+<p>As a minor aside, while it is, of course, obvious from looking at the
+previous version of the code, it’s neat how the <code>Kont</code> data type
+implies that the call stack is bounded and that most calls are tail calls.
+<code>REVERSE_STEP</code> is the only constructor that contains a <code>Kont</code> argument,
+but its type means that that argument can’t itself be a <code>REVERSE_STEP</code>.
+Again, I just find it neat how defunctionalization makes this concrete
+and explicit.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> <span class="dt">DefunctionalizedQueue</span> ( <span class="dt">Queue</span>, new, dequeue, enqueue ) <span class="kw">where</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.IORef</span> ( <span class="dt">IORef</span>, newIORef, readIORef, writeIORef, modifyIORef, modifyIORef' )</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Kont</span> a r <span class="kw">where</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">IDLE</span><span class="ot"> ::</span> <span class="dt">Kont</span> a ()</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">REVERSE_STEP</span><span class="ot"> ::</span> [a] <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">Kont</span> a [a] <span class="ot">-&gt;</span> <span class="dt">Kont</span> a ()</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">REVERSE_FRONT</span><span class="ot"> ::</span> [a] <span class="ot">-&gt;</span> <span class="op">!</span><span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Kont</span> a [a]</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">REV_APPEND_START</span><span class="ot"> ::</span> [a] <span class="ot">-&gt;</span> <span class="op">!</span><span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Kont</span> a [a]</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">REV_APPEND_STEP</span><span class="ot"> ::</span> [a] <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="op">!</span><span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="op">!</span><span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Kont</span> a ()</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="ot">applyKont ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">Kont</span> a r <span class="ot">-&gt;</span> r <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>applyKont q <span class="dt">IDLE</span> _ <span class="ot">=</span> rebuildLoop q</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>applyKont q (<span class="dt">REVERSE_STEP</span> xs acc k) _ <span class="ot">=</span> incrementalReverse q xs acc k</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>applyKont q (<span class="dt">REVERSE_FRONT</span> front backCount) rback <span class="ot">=</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    incrementalReverse q front [] <span class="op">$</span> <span class="dt">REV_APPEND_START</span> rback backCount</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>applyKont q (<span class="dt">REV_APPEND_START</span> rback backCount) rfront <span class="ot">=</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    incrementalRevAppend q rfront rback <span class="dv">0</span> backCount</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>applyKont q (<span class="dt">REV_APPEND_STEP</span> rfront acc movedCount backCount) _ <span class="ot">=</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    incrementalRevAppend q rfront acc movedCount backCount</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="ot">rebuildLoop ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>rebuildLoop q<span class="op">@</span>(<span class="dt">Queue</span> { <span class="op">..</span> }) <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>    frontCount <span class="ot">&lt;-</span> readIORef frontCountRef</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    backCount <span class="ot">&lt;-</span> readIORef backCountRef</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> backCount <span class="op">&gt;</span> frontCount <span class="kw">then</span> <span class="kw">do</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>        back <span class="ot">&lt;-</span> readIORef backRef</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>        front <span class="ot">&lt;-</span> readIORef frontRef</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>        writeIORef backRef []</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>        writeIORef backCountRef <span class="dv">0</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>        incrementalReverse q back [] <span class="op">$</span> <span class="dt">REVERSE_FRONT</span> front backCount</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>      <span class="kw">else</span> <span class="kw">do</span></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>        writeIORef resumeRef <span class="dt">IDLE</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a><span class="ot">incrementalReverse ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">Kont</span> a [a] <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>incrementalReverse q [] acc k <span class="ot">=</span> applyKont q k acc</span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>incrementalReverse q [x] acc k <span class="ot">=</span> applyKont q k (x<span class="op">:</span>acc)</span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>incrementalReverse q (x<span class="op">:</span>y<span class="op">:</span>xs) acc k <span class="ot">=</span> writeIORef (resumeRef q) <span class="op">$</span> <span class="dt">REVERSE_STEP</span> xs (y<span class="op">:</span>x<span class="op">:</span>acc) k</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a><span class="ot">incrementalRevAppend ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>incrementalRevAppend (<span class="dt">Queue</span> { <span class="op">..</span> }) [] front <span class="op">!</span>movedCount backCount' <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>    writeIORef frontRef front</span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>    writeIORef frontCountRef <span class="op">$!</span> movedCount <span class="op">+</span> backCount'</span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>    writeIORef resumeRef <span class="dt">IDLE</span></span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>incrementalRevAppend q<span class="op">@</span>(<span class="dt">Queue</span> { <span class="op">..</span> }) (x<span class="op">:</span>rfront) acc <span class="op">!</span>movedCount backCount' <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>    currentFrontCount <span class="ot">&lt;-</span> readIORef frontCountRef</span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> currentFrontCount <span class="op">&lt;=</span> movedCount <span class="kw">then</span> <span class="kw">do</span></span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>        <span class="co">-- This drop count should be bounded by a constant.</span></span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a>        writeIORef frontRef <span class="op">$!</span> <span class="fu">drop</span> (movedCount <span class="op">-</span> currentFrontCount) acc</span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a>        writeIORef frontCountRef <span class="op">$!</span> currentFrontCount <span class="op">+</span> backCount'</span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>        writeIORef resumeRef <span class="dt">IDLE</span></span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>      <span class="kw">else</span> <span class="kw">if</span> <span class="fu">null</span> rfront <span class="kw">then</span></span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>        incrementalRevAppend q [] (x<span class="op">:</span>acc) (movedCount <span class="op">+</span> <span class="dv">1</span>) backCount'</span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>      <span class="kw">else</span></span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>        writeIORef resumeRef <span class="op">$!</span> <span class="dt">REV_APPEND_STEP</span> rfront (x<span class="op">:</span>acc) (movedCount <span class="op">+</span> <span class="dv">1</span>) backCount'</span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a><span class="ot">resume ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a>resume q <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>    kont <span class="ot">&lt;-</span> readIORef (resumeRef q)</span>
+<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a>    applyKont q kont ()</span>
+<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Queue</span> a <span class="ot">=</span> <span class="dt">Queue</span> {</span>
+<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a><span class="ot">    resumeRef ::</span> <span class="dt">IORef</span> (<span class="dt">Kont</span> a ()),</span>
+<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a><span class="ot">    frontRef ::</span> <span class="dt">IORef</span> [a],</span>
+<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a><span class="ot">    backRef ::</span> <span class="dt">IORef</span> [a],</span>
+<span id="cb6-65"><a href="#cb6-65" aria-hidden="true" tabindex="-1"></a><span class="ot">    frontCountRef ::</span> <span class="dt">IORef</span> <span class="dt">Int</span>,</span>
+<span id="cb6-66"><a href="#cb6-66" aria-hidden="true" tabindex="-1"></a><span class="ot">    backCountRef ::</span> <span class="dt">IORef</span> <span class="dt">Int</span></span>
+<span id="cb6-67"><a href="#cb6-67" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-68"><a href="#cb6-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-69"><a href="#cb6-69" aria-hidden="true" tabindex="-1"></a><span class="ot">new ::</span> <span class="dt">IO</span> (<span class="dt">Queue</span> a)</span>
+<span id="cb6-70"><a href="#cb6-70" aria-hidden="true" tabindex="-1"></a>new <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb6-71"><a href="#cb6-71" aria-hidden="true" tabindex="-1"></a>    frontRef <span class="ot">&lt;-</span> newIORef []</span>
+<span id="cb6-72"><a href="#cb6-72" aria-hidden="true" tabindex="-1"></a>    backRef <span class="ot">&lt;-</span> newIORef []</span>
+<span id="cb6-73"><a href="#cb6-73" aria-hidden="true" tabindex="-1"></a>    frontCountRef <span class="ot">&lt;-</span> newIORef <span class="dv">0</span></span>
+<span id="cb6-74"><a href="#cb6-74" aria-hidden="true" tabindex="-1"></a>    backCountRef <span class="ot">&lt;-</span> newIORef <span class="dv">0</span></span>
+<span id="cb6-75"><a href="#cb6-75" aria-hidden="true" tabindex="-1"></a>    resumeRef <span class="ot">&lt;-</span> newIORef <span class="dt">IDLE</span></span>
+<span id="cb6-76"><a href="#cb6-76" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span> <span class="dt">Queue</span> { <span class="op">..</span> }</span>
+<span id="cb6-77"><a href="#cb6-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-78"><a href="#cb6-78" aria-hidden="true" tabindex="-1"></a><span class="ot">dequeue ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Maybe</span> a)</span>
+<span id="cb6-79"><a href="#cb6-79" aria-hidden="true" tabindex="-1"></a>dequeue q  <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb6-80"><a href="#cb6-80" aria-hidden="true" tabindex="-1"></a>    resume q</span>
+<span id="cb6-81"><a href="#cb6-81" aria-hidden="true" tabindex="-1"></a>    front <span class="ot">&lt;-</span> readIORef (frontRef q)</span>
+<span id="cb6-82"><a href="#cb6-82" aria-hidden="true" tabindex="-1"></a>    <span class="kw">case</span> front <span class="kw">of</span></span>
+<span id="cb6-83"><a href="#cb6-83" aria-hidden="true" tabindex="-1"></a>        [] <span class="ot">-&gt;</span> <span class="fu">return</span> <span class="dt">Nothing</span></span>
+<span id="cb6-84"><a href="#cb6-84" aria-hidden="true" tabindex="-1"></a>        (x<span class="op">:</span>front') <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb6-85"><a href="#cb6-85" aria-hidden="true" tabindex="-1"></a>            modifyIORef' (frontCountRef q) <span class="fu">pred</span></span>
+<span id="cb6-86"><a href="#cb6-86" aria-hidden="true" tabindex="-1"></a>            writeIORef (frontRef q) front'</span>
+<span id="cb6-87"><a href="#cb6-87" aria-hidden="true" tabindex="-1"></a>            <span class="fu">return</span> (<span class="dt">Just</span> x)</span>
+<span id="cb6-88"><a href="#cb6-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-89"><a href="#cb6-89" aria-hidden="true" tabindex="-1"></a><span class="ot">enqueue ::</span> a <span class="ot">-&gt;</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb6-90"><a href="#cb6-90" aria-hidden="true" tabindex="-1"></a>enqueue x q <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb6-91"><a href="#cb6-91" aria-hidden="true" tabindex="-1"></a>    modifyIORef (backRef q) (x<span class="op">:</span>)</span>
+<span id="cb6-92"><a href="#cb6-92" aria-hidden="true" tabindex="-1"></a>    modifyIORef' (backCountRef q) <span class="fu">succ</span></span>
+<span id="cb6-93"><a href="#cb6-93" aria-hidden="true" tabindex="-1"></a>    resume q</span></code></pre></div>
+<h3 id="functional-defunctionalized-global-rebuilding-implementation">Functional Defunctionalized Global Rebuilding Implementation</h3>
+<p>This is just a straightforward reorganization of the previous code into purely
+functional code. This produces a persistent queue with worst-case constant
+time operations.</p>
+<p>It is, of course, far uglier and more ad-hoc than Okasaki’s
+extremely elegant real-time queues, but the methodology to derive it was
+simple-minded. The result is also quite similar to the <a href="#hood-melville-implementation">Hood-Melville Queues</a>
+even though I did not set out to achieve that. That said, I’m pretty
+confident you could derive pretty much <em>exactly</em> the Hood-Melville queues
+with just minor modifications to <a href="#global-rebuilding-implementation">Global Rebuilding Implementation</a>.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> <span class="dt">FunctionalQueue</span> ( <span class="dt">Queue</span>, empty, dequeue, enqueue ) <span class="kw">where</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Kont</span> a r <span class="kw">where</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">IDLE</span><span class="ot"> ::</span> <span class="dt">Kont</span> a ()</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">REVERSE_STEP</span><span class="ot"> ::</span> [a] <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">Kont</span> a [a] <span class="ot">-&gt;</span> <span class="dt">Kont</span> a ()</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">REVERSE_FRONT</span><span class="ot"> ::</span> [a] <span class="ot">-&gt;</span> <span class="op">!</span><span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Kont</span> a [a]</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">REV_APPEND_START</span><span class="ot"> ::</span> [a] <span class="ot">-&gt;</span> <span class="op">!</span><span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Kont</span> a [a]</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">REV_APPEND_STEP</span><span class="ot"> ::</span> [a] <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="op">!</span><span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="op">!</span><span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Kont</span> a ()</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="ot">applyKont ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">Kont</span> a r <span class="ot">-&gt;</span> r <span class="ot">-&gt;</span> <span class="dt">Queue</span> a</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>applyKont q <span class="dt">IDLE</span> _ <span class="ot">=</span> rebuildLoop q</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>applyKont q (<span class="dt">REVERSE_STEP</span> xs acc k) _ <span class="ot">=</span> incrementalReverse q xs acc k</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>applyKont q (<span class="dt">REVERSE_FRONT</span> front backCount) rback <span class="ot">=</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    incrementalReverse q front [] <span class="op">$</span> <span class="dt">REV_APPEND_START</span> rback backCount</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>applyKont q (<span class="dt">REV_APPEND_START</span> rback backCount) rfront <span class="ot">=</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    incrementalRevAppend q rfront rback <span class="dv">0</span> backCount</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>applyKont q (<span class="dt">REV_APPEND_STEP</span> rfront acc movedCount backCount) _ <span class="ot">=</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    incrementalRevAppend q rfront acc movedCount backCount</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="ot">rebuildLoop ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">Queue</span> a</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>rebuildLoop q<span class="op">@</span>(<span class="dt">Queue</span> { <span class="op">..</span> }) <span class="ot">=</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> backCount <span class="op">&gt;</span> frontCount <span class="kw">then</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> q' <span class="ot">=</span> q { back <span class="ot">=</span> [], backCount <span class="ot">=</span> <span class="dv">0</span> } <span class="kw">in</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>        incrementalReverse q' back [] <span class="op">$</span> <span class="dt">REVERSE_FRONT</span> front backCount</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>      <span class="kw">else</span></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>        q { resumeKont <span class="ot">=</span> <span class="dt">IDLE</span> }</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="ot">incrementalReverse ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">Kont</span> a [a] <span class="ot">-&gt;</span> <span class="dt">Queue</span> a</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>incrementalReverse q [] acc k <span class="ot">=</span> applyKont q k acc</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>incrementalReverse q [x] acc k <span class="ot">=</span> applyKont q k (x<span class="op">:</span>acc)</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>incrementalReverse q (x<span class="op">:</span>y<span class="op">:</span>xs) acc k <span class="ot">=</span> q { resumeKont <span class="ot">=</span> <span class="dt">REVERSE_STEP</span> xs (y<span class="op">:</span>x<span class="op">:</span>acc) k }</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="ot">incrementalRevAppend ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Queue</span> a</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>incrementalRevAppend q [] front' <span class="op">!</span>movedCount backCount' <span class="ot">=</span></span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>    q { front <span class="ot">=</span> front', frontCount <span class="ot">=</span> movedCount <span class="op">+</span> backCount', resumeKont <span class="ot">=</span> <span class="dt">IDLE</span> }</span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>incrementalRevAppend q (x<span class="op">:</span>rfront) acc <span class="op">!</span>movedCount backCount' <span class="ot">=</span></span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> frontCount q <span class="op">&lt;=</span> movedCount <span class="kw">then</span></span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>        <span class="co">-- This drop count should be bounded by a constant.</span></span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> <span class="op">!</span>front <span class="ot">=</span> <span class="fu">drop</span> (movedCount <span class="op">-</span> frontCount q) acc <span class="kw">in</span></span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>        q { front <span class="ot">=</span> front, frontCount <span class="ot">=</span> frontCount q <span class="op">+</span> backCount', resumeKont <span class="ot">=</span> <span class="dt">IDLE</span> }</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>      <span class="kw">else</span> <span class="kw">if</span> <span class="fu">null</span> rfront <span class="kw">then</span></span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>        incrementalRevAppend q [] (x<span class="op">:</span>acc) (movedCount <span class="op">+</span> <span class="dv">1</span>) backCount'</span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>      <span class="kw">else</span></span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>        q { resumeKont <span class="ot">=</span> <span class="dt">REV_APPEND_STEP</span> rfront (x<span class="op">:</span>acc) (movedCount <span class="op">+</span> <span class="dv">1</span>) backCount' }</span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a><span class="ot">resume ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">Queue</span> a</span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>resume q <span class="ot">=</span> applyKont q (resumeKont q) ()</span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Queue</span> a <span class="ot">=</span> <span class="dt">Queue</span> {</span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a><span class="ot">    resumeKont ::</span> <span class="op">!</span>(<span class="dt">Kont</span> a ()),</span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a><span class="ot">    front ::</span> [a],</span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a><span class="ot">    back ::</span> [a],</span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a><span class="ot">    frontCount ::</span> <span class="op">!</span><span class="dt">Int</span>,</span>
+<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a><span class="ot">    backCount ::</span> <span class="op">!</span><span class="dt">Int</span></span>
+<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a><span class="ot">empty ::</span> <span class="dt">Queue</span> a</span>
+<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a>empty <span class="ot">=</span> <span class="dt">Queue</span> { resumeKont <span class="ot">=</span> <span class="dt">IDLE</span>, front <span class="ot">=</span> [], back <span class="ot">=</span> [], frontCount <span class="ot">=</span> <span class="dv">0</span>, backCount <span class="ot">=</span> <span class="dv">0</span> }</span>
+<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a><span class="ot">dequeue ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> (<span class="dt">Maybe</span> a, <span class="dt">Queue</span> a)</span>
+<span id="cb7-61"><a href="#cb7-61" aria-hidden="true" tabindex="-1"></a>dequeue q <span class="ot">=</span></span>
+<span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a>    <span class="kw">case</span> front <span class="kw">of</span></span>
+<span id="cb7-63"><a href="#cb7-63" aria-hidden="true" tabindex="-1"></a>        [] <span class="ot">-&gt;</span> (<span class="dt">Nothing</span>, q)</span>
+<span id="cb7-64"><a href="#cb7-64" aria-hidden="true" tabindex="-1"></a>        (x<span class="op">:</span>front') <span class="ot">-&gt;</span></span>
+<span id="cb7-65"><a href="#cb7-65" aria-hidden="true" tabindex="-1"></a>            (<span class="dt">Just</span> x, q' { front <span class="ot">=</span> front', frontCount <span class="ot">=</span> frontCount <span class="op">-</span> <span class="dv">1</span> })</span>
+<span id="cb7-66"><a href="#cb7-66" aria-hidden="true" tabindex="-1"></a>  <span class="kw">where</span> q'<span class="op">@</span>(<span class="dt">Queue</span> { <span class="op">..</span> }) <span class="ot">=</span> resume q</span>
+<span id="cb7-67"><a href="#cb7-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-68"><a href="#cb7-68" aria-hidden="true" tabindex="-1"></a><span class="ot">enqueue ::</span> a <span class="ot">-&gt;</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">Queue</span> a</span>
+<span id="cb7-69"><a href="#cb7-69" aria-hidden="true" tabindex="-1"></a>enqueue x q<span class="op">@</span>(<span class="dt">Queue</span> { <span class="op">..</span> }) <span class="ot">=</span> resume (q { back <span class="ot">=</span> x<span class="op">:</span>back, backCount <span class="ot">=</span> backCount <span class="op">+</span> <span class="dv">1</span> })</span></code></pre></div>
+<h3 id="hood-melville-implementation">Hood-Melville Implementation</h3>
+<p>This is just the Haskell code from <em>Purely Functional Data Structures</em> adapted
+to the interface of the other examples.</p>
+<p>This code is mostly to compare. The biggest difference, other than some code
+structuring differences, is the front and back lists are reversed in parallel
+while my code does them sequentially. As mentioned before, to get a structure
+like that would simply be a matter of defining a parallel incremental reverse
+back in the <a href="#global-rebuilding-implementation">Global Rebuilding Implementation</a>.</p>
+<p>Again, Okasaki’s real-time queue that can be seen as an application of the
+<em>lazy</em> rebuilding and scheduling techniques, described in his thesis and book,
+is a better implementation than this in pretty much every way.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> <span class="dt">HoodMelvilleQueue</span> (<span class="dt">Queue</span>, empty, dequeue, enqueue) <span class="kw">where</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">RotationState</span> a</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="ot">=</span> <span class="dt">Idle</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="dt">Reversing</span> <span class="op">!</span><span class="dt">Int</span> [a] [a] [a] [a]</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="dt">Appending</span> <span class="op">!</span><span class="dt">Int</span> [a] [a]</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="dt">Done</span> [a]</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Queue</span> a <span class="ot">=</span> <span class="dt">Queue</span> <span class="op">!</span><span class="dt">Int</span> [a] (<span class="dt">RotationState</span> a) <span class="op">!</span><span class="dt">Int</span> [a]</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="ot">exec ::</span> <span class="dt">RotationState</span> a <span class="ot">-&gt;</span> <span class="dt">RotationState</span> a</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>exec (<span class="dt">Reversing</span> ok (x<span class="op">:</span>f) f' (y<span class="op">:</span>r) r') <span class="ot">=</span> <span class="dt">Reversing</span> (ok<span class="op">+</span><span class="dv">1</span>) f (x<span class="op">:</span>f') r (y<span class="op">:</span>r')</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>exec (<span class="dt">Reversing</span> ok [] f' [y] r') <span class="ot">=</span> <span class="dt">Appending</span> ok f' (y<span class="op">:</span>r')</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>exec (<span class="dt">Appending</span> <span class="dv">0</span> f' r') <span class="ot">=</span> <span class="dt">Done</span> r'</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>exec (<span class="dt">Appending</span> ok (x<span class="op">:</span>f') r') <span class="ot">=</span> <span class="dt">Appending</span> (ok<span class="op">-</span><span class="dv">1</span>) f' (x<span class="op">:</span>r')</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>exec state <span class="ot">=</span> state</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="ot">invalidate ::</span> <span class="dt">RotationState</span> a <span class="ot">-&gt;</span> <span class="dt">RotationState</span> a</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>invalidate (<span class="dt">Reversing</span> ok f f' r r') <span class="ot">=</span> <span class="dt">Reversing</span> (ok<span class="op">-</span><span class="dv">1</span>) f f' r r'</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>invalidate (<span class="dt">Appending</span> <span class="dv">0</span> f' (x<span class="op">:</span>r')) <span class="ot">=</span> <span class="dt">Done</span> r'</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>invalidate (<span class="dt">Appending</span> ok f' r') <span class="ot">=</span> <span class="dt">Appending</span> (ok<span class="op">-</span><span class="dv">1</span>) f' r'</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>invalidate state <span class="ot">=</span> state</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="ot">exec2 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">RotationState</span> a <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">Queue</span> a</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>exec2 <span class="op">!</span>lenf f state lenr r <span class="ot">=</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>    <span class="kw">case</span> exec (exec state) <span class="kw">of</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>        <span class="dt">Done</span> newf <span class="ot">-&gt;</span> <span class="dt">Queue</span> lenf newf <span class="dt">Idle</span> lenr r</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>        newstate <span class="ot">-&gt;</span> <span class="dt">Queue</span> lenf f newstate lenr r</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="ot">check ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">RotationState</span> a <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">Queue</span> a</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>check <span class="op">!</span>lenf f state <span class="op">!</span>lenr r <span class="ot">=</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> lenr <span class="op">&lt;=</span> lenf <span class="kw">then</span> exec2 lenf f state lenr r</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>    <span class="kw">else</span> <span class="kw">let</span> newstate <span class="ot">=</span> <span class="dt">Reversing</span> <span class="dv">0</span> f [] r []</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>         <span class="kw">in</span> exec2 (lenf<span class="op">+</span>lenr) f newstate <span class="dv">0</span> []</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a><span class="ot">empty ::</span> <span class="dt">Queue</span> a</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>empty <span class="ot">=</span> <span class="dt">Queue</span> <span class="dv">0</span> [] <span class="dt">Idle</span> <span class="dv">0</span> []</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a><span class="ot">dequeue ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> (<span class="dt">Maybe</span> a, <span class="dt">Queue</span> a)</span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>dequeue q<span class="op">@</span>(<span class="dt">Queue</span> _ [] _ _ _) <span class="ot">=</span> (<span class="dt">Nothing</span>, q)</span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>dequeue (<span class="dt">Queue</span> lenf (x<span class="op">:</span>f') state lenr r) <span class="ot">=</span></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> <span class="op">!</span>q' <span class="ot">=</span> check (lenf<span class="op">-</span><span class="dv">1</span>) f' (invalidate state) lenr r <span class="kw">in</span></span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>    (<span class="dt">Just</span> x, q')</span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a><span class="ot">enqueue ::</span> a <span class="ot">-&gt;</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">Queue</span> a</span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>enqueue x (<span class="dt">Queue</span> lenf f state lenr r) <span class="ot">=</span> check lenf f state (lenr<span class="op">+</span><span class="dv">1</span>) (x<span class="op">:</span>r)</span></code></pre></div>
+<h3 id="empirical-evaluation">Empirical Evaluation</h3>
+<p>I won’t reproduce the evaluation code as it’s not very sophisticated or interesting.
+It randomly generated a sequence of enqueues and dequeues with an 80% chance to produce
+an enqueue over a dequeue so that the queues would grow. It measured the average
+time of an enqueue and a dequeue, as well as the maximum time of any single dequeue.</p>
+<p>The main thing I wanted to see was relatively stable average enqueue and dequeue
+times with only the batched implementation having a growing maximum dequeue time.
+This is indeed what I saw, though it took about 1,000,000 operations (or really
+a queue of a couple hundred thousand elements) for the numbers to stabilize.</p>
+<p>The results were mostly unsurprising. Unsurprisingly, in overall time, the batched
+implementation won. Its <code>enqueue</code> is also, obviously, the fastest. (Indeed, there’s
+a good chance my measurement of its average enqueue time was largely a measurement
+of the timer’s resolution.) The operations’ average times were stable illustrating their
+constant (amortized) time. At large enough sizes, the ratio of the maximum dequeue
+time versus the average stabilized around 7000 to 1, except, of course, for the
+batched version which grew linearly to millions to 1 ratios at queue sizes of tens
+of millions of elements. This illustrates the worst-case time complexity of all the
+other implementations, and the merely amortized time complexity of the batched one.</p>
+<p>While the batched version was best in overall time, the difference wasn’t that great.
+The worst implementations were still less 1.4x slower. All the worst-case optimal
+implementations performed roughly the same, but there were still some clear winners
+and losers. Okasaki’s real-time queue (not listed) is almost on-par with the batched
+implementation in overall time and handily beats the other implementations in average
+enqueue and dequeue times. The main surprise for me was that the loser was the
+Hood-Melville queue. My guess is this is due to <code>invalidate</code> which seems like it
+would do more work and produce more garbage than the approach taken in my functional
+version.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>The point of this article was to illustrate the process of deriving a deamortized
+data structure from an amortized one utilizing batch rebuilding by explicitly
+modeling global rebuilding as a coroutine.</p>
+<p>The point wasn’t to produce the fastest queue implementation, though I am pretty
+happy with the results. While this is an extremely simple example, it was still
+nice that each step was very easy and natural. It’s especially nice that this
+derivation approach produced a better result than the Hood-Melville queue.</p>
+<p>Of course, my advice is to use Okasaki’s real-time queue if you need a purely functional queue.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>This code could definitely be refactored to leverage
+this similarity to reduce code. Alternatively, one could refunctionalize
+the <a href="#hood-melville-implementation">Hood-Melville implementation</a> at the end.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Going “too fast”, so long as it’s still a constant amount of
+work for each step, isn’t really an issue asymptotically, so you can just
+crank the knobs if you don’t want to think too hard about it. That said,
+going faster than you need to will likely give you worse worst-case
+constant factors. In some cases, going faster than necessary could reduce
+constant factors, e.g. by better utilizing caches and disk I/O buffers.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        function loadDisqus() {
+        const disqus_shortname = 'hedonisticlearning';
+        const disqus_identifier = '8cfcff8b-beef-4e06-b534-2da8e05b95bc';
+        const disqus_title = 'Global Rebuilding, Coroutines, and Defunctionalization';
+
+        (function() {
+            const dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+        }
+        const commentsBtn = document.createElement("button");
+        commentsBtn.textContent = "Click to show comments";
+        commentsBtn.addEventListener("click", () => loadDisqus());
+        const disqusDiv = document.getElementById("disqus_thread");
+        disqusDiv.append(commentsBtn);
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript> 
+</div>
+
+        </div><!-- /.blog-main -->
+        
+        
+      </div><!-- /.row -->
+    </div><!-- /.container -->
+
+    <footer class="blog-footer">
+      <p>Site generated by <a href="https://jaspervdj.be/hakyll">Hakyll</a></p>
+      <p>
+        <a href="#">Back to top</a>
+      </p>
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/javascript" src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!--<script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>-->
+    
+    
+    <script>
+        MathJax = {
+            loader: {
+                load: ['ui/lazy', '[custom]/xypic.js'],
+                paths: { custom: '/js' }
+            },
+            tex: {
+                packages: { '[+]': ['xypic'] },
+                inlineMath: [['|','|']],
+                macros: window.extraMacros || {}
+            }
+        };
+    </script>
+    <script type="text/javascript" src="../js/MathJax-3/es5/tex-mml-chtml.js"></script>
+  </body>
+</html>

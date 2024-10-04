@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">Complex-Step Differentiation</h2>
     <p class="blog-post-meta">August  9, 2020 05:28 UTC 
         
-        (Last updated on December 13, 2021 21:27 UTC)
+        (Last updated on September 19, 2024 11:27 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -154,8 +154,8 @@ For example, there is the first-year calculus fact that the sum of the infinite 
 on the interval |x \in (-1,1)|. In fact, the proof of convergence only needs |\|x\| &lt; 1| so we can readily generalize to
 complex |z| with |\|z\| &lt; 1|, i.e. |z| contained in the open unit disk. However, |1/(1-z)| is a meromorphic function that is holomorphic
 everywhere except for |z=1|, therefore there is a <em>unique</em> analytic function defined everywhere except |z=1| that agrees with
-the infinite sum on the unit disk, namely |1/(1-z)| itself. Choosing |z=-1| leads to the common example of “summing a divergent series”
-with “|\sum_{n=0}^\infty (-1)^n = 1/2|” which really means “the value at |-1| of the unique complex analytic function which agrees
+the infinite sum on the unit disk, namely |1/(1-z)| itself. Choosing |z=2| leads to the common example of “summing a divergent series”
+with “|\sum_{n=0}^\infty 2^n = -1|” which really means “the value at |2| of the unique complex analytic function which agrees
 with this infinite series when it converges”.</p>
 <p>Sticking with just evaluation, applying the Cauchy Residue theorem to quadrature, i.e. numerical integration, leads to an interesting
 connection to a rational approximation problem. Say we want to compute |\int_{-1}^1 f(x) \mathrm dx|, we can use the Cauchy
@@ -241,7 +241,7 @@ Central Differences formula along the imaginary axis instead of the real axis.</
 |f(\overline z) = \overline{f(z)}| where |\overline z| is the complex conjugate of |z|, i.e. it maps |a + bi| to |a - bi|
 or |re^{\theta i}| to |re^{-\theta i}|. This leads to
 |f(x_0 + hi) - f(\overline{x_0 + hi}) = f(x_0 + hi) - \overline{f(x_0 + hi)} = 2i\operatorname{Im}(f(x_0 + hi))|. This lets us simplify
-Complex-Step Differentiation to |f’(x_0) \approx \operatorname{Im}(f(x_0 + h))/h|.</p>
+Complex-Step Differentiation to |f’(x_0) \approx \operatorname{Im}(f(x_0 + hi))/h|.</p>
 <p>Here is the earlier interactive example but now using Complex-Step Differentiation. As |h| decreases in magnitude, the error
 steadily decreases until there is no error at all.</p>
 <p><input id="complexInput" type="range" min="2" max="20"><br />

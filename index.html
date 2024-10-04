@@ -46,6 +46,74 @@
           
     <div class="blog-post teaser panel panel-default">
     <div class="panel-heading">
+        <h2 class="blog-post-title"><a href="./posts/global-rebuilding-coroutines-and-defunctionalization.html">Global Rebuilding, Coroutines, and Defunctionalization</a></h2>
+        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="8cfcff8b-beef-4e06-b534-2da8e05b95bc" href="./posts/global-rebuilding-coroutines-and-defunctionalization.html#disqus_thread"></a></h6>
+    </div>
+
+    <div class="panel-body">
+        
+            <h2 id="introduction">Introduction</h2>
+<p>In 1983, Mark Overmars described global rebuilding in <em>The Design of Dynamic Data Structures</em>.
+The problem it was aimed at solving was turning the amortized time complexity bounds of
+batched rebuilding into worst-case bounds. In <strong>batched rebuilding</strong> we perform a series of
+updates to a data structure which may cause the performance of operations to degrade, but
+occasionally we expensively rebuild the data structure back into an optimal arrangement.
+If the updates don’t degrade performance too much before we rebuild, then we can achieve
+our target time complexity bounds in an amortized sense. An update that doesn’t degrade
+performance too much is called a <strong>weak update</strong>.</p>
+<p>Taking an example from Okasaki’s <em>Purely Functional Data Structures</em>, we can consider a
+binary search tree where deletions occur by simply marking the deleted nodes as deleted.
+Then, once about half the tree is marked as deleted, we rebuild the tree into a balanced
+binary search tree and clean out the nodes marked as deleted at that time. In this case,
+the deletions count as weak updates because leaving the deleted nodes in the tree even
+when it corresponds to up to half the tree can only mildly impact the time complexity of
+other operations. Specifically, assuming the tree was balanced at the start, then deleting
+half the nodes could only reduce the tree’s depth by about 1. On the other hand, naive inserts
+are <em>not</em> weak updates as they can quickly increase the tree’s depth.</p>
+<p>The idea of global rebuilding is relatively straightforward, though how you would actually
+realize it in any particular example is not. The overall idea is simply that instead of
+waiting until the last moment and then rebuilding the data structure all at once, we’ll start
+the rebuild sooner and work at it incrementally as we perform other operations. If we
+update the new version faster than we update the original version, we’ll finish it by the
+time we would have wanted to perform a batch rebuild, and we can just switch to this new version.</p>
+<p>More concretely, though still quite vaguely, <strong>global rebuilding</strong> involves, when a
+threshold is reached, rebuilding by creating a new “empty” version of the data
+structure called the <em>shadow copy</em>. The original version is the <em>working copy</em>. Work on
+rebuilding happens incrementally as operations are performed on the data structure. During
+this period, we service queries from the working copy and continue to update it as usual.
+Each update needs to make more progress on building the shadow copy than it worsens the
+working copy. For example, an insert should insert more nodes into the shadow copy than
+the working copy. Once the shadow copy is built, we may still have more work to do to
+incorporate changes that occurred after we started the rebuild. To this end, we can
+maintain a queue of update operations performed on the working copy since the start of
+a rebuild, and then apply these updates, also incrementally, to the shadow copy. Again,
+we need to apply the updates from the queue at a fast enough rate so that we will
+eventually catch up. Of course, all of this needs to happen fast enough so that 1)
+the working copy doesn’t get too degraded before the shadow copy is ready, and 2)
+we don’t end up needing to rebuild the shadow copy before it’s ready to do any work.</p>
+
+            <h6><a href="./posts/global-rebuilding-coroutines-and-defunctionalization.html">Read more...</a></h6>
+        
+    </div>
+
+    <div class="panel-footer">
+        <h6 class="blog-post-meta">
+            October  4, 2024 08:24 UTC
+            
+            (Last updated on October  4, 2024 08:24 UTC)
+
+            
+                Tags: <a title="All pages tagged 'CS'." href="./tags/CS.html">CS</a>, <a title="All pages tagged 'programming'." href="./tags/programming.html">programming</a>
+            
+        </h6>
+    </div>
+
+</div><!-- /.blog-post -->
+
+
+
+    <div class="blog-post teaser panel panel-default">
+    <div class="panel-heading">
         <h2 class="blog-post-title"><a href="./posts/morleyization.html">Morleyization</a></h2>
         <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="99955925-f718-4b7d-93ed-ee44a99d8085" href="./posts/morleyization.html#disqus_thread"></a></h6>
     </div>
@@ -612,7 +680,7 @@ will be more efficient, more accurate, and easier to use.</p>
         <h6 class="blog-post-meta">
             August  9, 2020 05:28 UTC
             
-            (Last updated on December 13, 2021 21:27 UTC)
+            (Last updated on September 19, 2024 11:27 UTC)
 
             
                 Tags: <a title="All pages tagged 'math'." href="./tags/math.html">math</a>, <a title="All pages tagged 'programming'." href="./tags/programming.html">programming</a>
@@ -753,67 +821,6 @@ case will give us rings.</p>
 
 
 
-    <div class="blog-post teaser panel panel-default">
-    <div class="panel-heading">
-        <h2 class="blog-post-title"><a href="./posts/internal-language-of-a-monoidal-category.html">Internal Language of a Monoidal Category</a></h2>
-        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="3f996120-0b87-43ac-b93d-c17395708c46" href="./posts/internal-language-of-a-monoidal-category.html#disqus_thread"></a></h6>
-    </div>
-
-    <div class="panel-body">
-        
-            <script>
-extraMacros = {
-  V: "{\\mathbf V}",
-  den: ["{[\\!\[#1]\\!]}", 1]
-};
-</script>
-<h2 id="introduction">Introduction</h2>
-<p>This is the first post in a series of posts on doing enriched indexed category theory and using the notion of
-an internal language to make this look relatively mundane. The internal language aspects are useful for other
-purposes too, as will be illustrated in this post, for example. This is related to the
-post <a href="./posts/category-theory-syntactically.html">Category Theory, Syntactically</a>. In particular, it can be considered
-half-way between the unary theories and the finite product theories described there.</p>
-<p>First in this series – this post – covers the internal language of a monoidal category. This is fairly
-straightforward, but it already provides some use. For example, the category of endofunctors on a category is a
-strict monoidal category, and so we can take a different perspective on natural transformations. This
-will also motivate the notions of a (virtual) bicategory and an actegory. Throughout this post, I’ll give a
-fairly worked example of turning some categorical content into <a href="./posts/understanding-typing-judgments.html">rules</a> of a type-/proof-theory.</p>
-<p>The <a href="./posts/internal-language-of-indexed-monoidal-categories.html">second post</a> will add indexing to the notion of monoidal category and introduce the very powerful and useful
-notion of an <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal category</a>.</p>
-<p>The <a href="./posts/enriched-indexed-categories-syntactically.html">third post</a> will formulate the notion
-of <a href="https://arxiv.org/abs/1212.3914">categories enriched in an indexed monoidal category</a>
-and give the definitions which don’t require any additional assumptions.</p>
-<p>The fourth post will introduce the notion and internal language for an indexed cosmos. Normally, when we do
-enriched category theory, we want the category into which we’re enriching to not be just a monoidal category
-but a <a href="https://ncatlab.org/nlab/show/cosmos">cosmos</a>. This provides many additional properties. An indexed
-cosmos is just the analogue of that for indexed monoidal categories.</p>
-<p>The fifth post will then formulate categorical concepts for our enriched indexed categories that require
-some or all of these additional properties provided by an indexed cosmos.</p>
-<p>At some point, there will be a post on <a href="https://ncatlab.org/nlab/show/virtual+double+category">virtual double categories</a>
-as they (or, even better, <a href="https://arxiv.org/abs/1910.11189">augmented virtual double categories</a>) are what will
-really be behind the notion of enriched indexed categories we’ll define. Basically, we’ll secretly be spelling out
-a specific instance of the |\mathsf{Mod}| construction.</p>
-
-            <h6><a href="./posts/internal-language-of-a-monoidal-category.html">Read more...</a></h6>
-        
-    </div>
-
-    <div class="panel-footer">
-        <h6 class="blog-post-meta">
-            May 22, 2020 08:46 UTC
-            
-            (Last updated on January  6, 2022 12:10 UTC)
-
-            
-                Tags: <a title="All pages tagged 'math'." href="./tags/math.html">math</a>, <a title="All pages tagged 'category theory'." href="./tags/category%20theory.html">category theory</a>
-            
-        </h6>
-    </div>
-
-</div><!-- /.blog-post -->
-
-
-
 
         </div><!-- /.blog-main -->
         
@@ -823,6 +830,8 @@ a specific instance of the |\mathsf{Mod}| construction.</p>
                 <div class="panel-heading"><h4>Recent</h4></div>
                 <div class="panel-body">
                     <ol class="list-unstyled">
+                        
+                          <li><div class="blog-post-link">2024-10-04 - <a href="./posts/global-rebuilding-coroutines-and-defunctionalization.html">Global Rebuilding, Coroutines, and Defunctionalization</a></div></li>
                         
                           <li><div class="blog-post-link">2024-07-19 - <a href="./posts/morleyization.html">Morleyization</a></div></li>
                         
@@ -842,8 +851,6 @@ a specific instance of the |\mathsf{Mod}| construction.</p>
                         
                           <li><div class="blog-post-link">2020-07-06 - <a href="./posts/internal-language-of-indexed-monoidal-categories.html">Internal Language of Indexed Monoidal Categories</a></div></li>
                         
-                          <li><div class="blog-post-link">2020-05-22 - <a href="./posts/internal-language-of-a-monoidal-category.html">Internal Language of a Monoidal Category</a></div></li>
-                        
                     </ol>
                 </div>
               </div>
@@ -852,14 +859,14 @@ a specific instance of the |\mathsf{Mod}| construction.</p>
                 <div class="panel-body">
                     <ol class="list-unstyled">
                       <li><a href="./tags/Agda.html">Agda (1)</a></li>
-<li><a href="./tags/CS.html">CS (3)</a></li>
+<li><a href="./tags/CS.html">CS (4)</a></li>
 <li><a href="./tags/category%20theory.html">category theory (14)</a></li>
 <li><a href="./tags/concurrency.html">concurrency (1)</a></li>
 <li><a href="./tags/geometric%20algebra.html">geometric algebra (1)</a></li>
 <li><a href="./tags/javascript.html">javascript (1)</a></li>
 <li><a href="./tags/logic.html">logic (5)</a></li>
 <li><a href="./tags/math.html">math (22)</a></li>
-<li><a href="./tags/programming.html">programming (4)</a></li>
+<li><a href="./tags/programming.html">programming (5)</a></li>
 <li><a href="./tags/type%20theory.html">type theory (2)</a></li>
                     </ol>
                 </div>

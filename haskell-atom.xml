@@ -8,8 +8,620 @@
         <name>Derek Elkins</name>
         <email>derek.a.elkins+blog@gmail.com</email>
     </author>
-    <updated>2024-07-19T02:35:18Z</updated>
+    <updated>2024-10-04T08:24:57Z</updated>
     <entry>
+    <title>Global Rebuilding, Coroutines, and Defunctionalization</title>
+    <link href="https://derekelkins.github.io/posts/global-rebuilding-coroutines-and-defunctionalization.html" />
+    <id>https://derekelkins.github.io/posts/global-rebuilding-coroutines-and-defunctionalization.html</id>
+    <published>2024-10-04 01:24:57-07:00</published>
+    <updated>2024-10-04T08:24:57Z</updated>
+    <summary type="html"><![CDATA[<h2 id="introduction">Introduction</h2>
+<p>In 1983, Mark Overmars described global rebuilding in <em>The Design of Dynamic Data Structures</em>.
+The problem it was aimed at solving was turning the amortized time complexity bounds of
+batched rebuilding into worst-case bounds. In <strong>batched rebuilding</strong> we perform a series of
+updates to a data structure which may cause the performance of operations to degrade, but
+occasionally we expensively rebuild the data structure back into an optimal arrangement.
+If the updates don’t degrade performance too much before we rebuild, then we can achieve
+our target time complexity bounds in an amortized sense. An update that doesn’t degrade
+performance too much is called a <strong>weak update</strong>.</p>
+<p>Taking an example from Okasaki’s <em>Purely Functional Data Structures</em>, we can consider a
+binary search tree where deletions occur by simply marking the deleted nodes as deleted.
+Then, once about half the tree is marked as deleted, we rebuild the tree into a balanced
+binary search tree and clean out the nodes marked as deleted at that time. In this case,
+the deletions count as weak updates because leaving the deleted nodes in the tree even
+when it corresponds to up to half the tree can only mildly impact the time complexity of
+other operations. Specifically, assuming the tree was balanced at the start, then deleting
+half the nodes could only reduce the tree’s depth by about 1. On the other hand, naive inserts
+are <em>not</em> weak updates as they can quickly increase the tree’s depth.</p>
+<p>The idea of global rebuilding is relatively straightforward, though how you would actually
+realize it in any particular example is not. The overall idea is simply that instead of
+waiting until the last moment and then rebuilding the data structure all at once, we’ll start
+the rebuild sooner and work at it incrementally as we perform other operations. If we
+update the new version faster than we update the original version, we’ll finish it by the
+time we would have wanted to perform a batch rebuild, and we can just switch to this new version.</p>
+<p>More concretely, though still quite vaguely, <strong>global rebuilding</strong> involves, when a
+threshold is reached, rebuilding by creating a new “empty” version of the data
+structure called the <em>shadow copy</em>. The original version is the <em>working copy</em>. Work on
+rebuilding happens incrementally as operations are performed on the data structure. During
+this period, we service queries from the working copy and continue to update it as usual.
+Each update needs to make more progress on building the shadow copy than it worsens the
+working copy. For example, an insert should insert more nodes into the shadow copy than
+the working copy. Once the shadow copy is built, we may still have more work to do to
+incorporate changes that occurred after we started the rebuild. To this end, we can
+maintain a queue of update operations performed on the working copy since the start of
+a rebuild, and then apply these updates, also incrementally, to the shadow copy. Again,
+we need to apply the updates from the queue at a fast enough rate so that we will
+eventually catch up. Of course, all of this needs to happen fast enough so that 1)
+the working copy doesn’t get too degraded before the shadow copy is ready, and 2)
+we don’t end up needing to rebuild the shadow copy before it’s ready to do any work.</p>
+<!--more-->
+<h2 id="coroutines">Coroutines</h2>
+<p>Okasaki passingly mentions that global rebuilding “can be usefully viewed as running
+the rebuilding transformation as a coroutine”. Also, the situation described above is
+quite reminiscent of garbage collection. There the classic half-space stop-the-world
+copying collector is naturally the batched rebuilding version. More incremental versions
+often have read or write barriers and break the garbage collection into incremental
+steps. Garbage collection is also often viewed as two processes coroutining.</p>
+<p>The goal of this article is to derive global rebuilding-based data structures from
+an expression of them as two coroutining processes. Ideally, we should be able to
+take a data structure implemented via batched rebuilding and simply run the batch
+rebuilding step as a coroutine. Modifying the data structure’s operations and the
+rebuilding step should, in theory, just be a matter of inserting appropriate <code>yield</code>
+statements. Of course, it’s won’t be that easy since the batched version of rebuilding
+doesn’t need to worry about concurrent updates to the original data structure.</p>
+<p>In theory, such a representation would be a perfectly effective way of articulating
+the global rebuilding version of the data structure. That said, I will be using the
+standard power move of CPS transforming and defunctionalizing to get a more data
+structure-like result.</p>
+<p>I’ll implement coroutines as a very simplified case of modeling cooperative concurrency with
+continuations. In that context, a “process” written in continuation-passing style
+“yields” to the scheduler by passing its continuation to a scheduling function.
+Normally, the scheduler would place that continuation at the end of a work queue
+and then pick up a continuation from the front of the work queue and invoke it
+resuming the previously suspended “process”. In our case, we only have two
+“processes” so our “work queue” can just be a single mutable cell. When one
+“process” yields, it just swaps its continuation into the cell and the other
+“process’” out and invokes the continuation it read.</p>
+<p>Since the rebuilding process is always driven by the main process, the pattern
+is a bit more like generators. This has the benefit that only the rebuilding
+process needs to be written in continuation-passing style. The following is
+a very quick and dirty set of functions for this.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> <span class="dt">Coroutine</span> ( <span class="dt">YieldFn</span>, spawn ) <span class="kw">where</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Control.Monad</span> ( join )</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.IORef</span> ( <span class="dt">IORef</span>, newIORef, readIORef, writeIORef )</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">YieldFn</span> <span class="ot">=</span> <span class="dt">IO</span> () <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ot">yield ::</span> <span class="dt">IORef</span> (<span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> () <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>yield <span class="ot">=</span> writeIORef</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="ot">resume ::</span> <span class="dt">IORef</span> (<span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>resume <span class="ot">=</span> join <span class="op">.</span> readIORef</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="ot">terminate ::</span> <span class="dt">IORef</span> (<span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>terminate yieldRef <span class="ot">=</span> writeIORef yieldRef (<span class="fu">ioError</span> <span class="op">$</span> <span class="fu">userError</span> <span class="st">&quot;Subprocess completed&quot;</span>)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="ot">spawn ::</span> (<span class="dt">YieldFn</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> () <span class="ot">-&gt;</span> <span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">IO</span> ())</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>spawn process <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    yieldRef <span class="ot">&lt;-</span> newIORef <span class="fu">undefined</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    writeIORef yieldRef <span class="op">$</span> process (yield yieldRef) (terminate yieldRef)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span> (resume yieldRef)</span></code></pre></div>
+<p>A simple example of usage is:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ot">process ::</span> <span class="dt">YieldFn</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> () <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>process     _ <span class="dv">0</span> k <span class="ot">=</span> k</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>process yield i k <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">putStrLn</span> <span class="op">$</span> <span class="st">&quot;Subprocess: &quot;</span> <span class="op">++</span> <span class="fu">show</span> i</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    yield <span class="op">$</span> process yield (i<span class="op">-</span><span class="dv">1</span>) k</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="ot">example ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>example <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    resume <span class="ot">&lt;-</span> spawn <span class="op">$</span> \yield <span class="ot">-&gt;</span> process yield <span class="dv">10</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    forM_ [(<span class="dv">1</span><span class="ot"> ::</span> <span class="dt">Int</span>) <span class="op">..</span> <span class="dv">10</span>] <span class="op">$</span> \i <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>        <span class="fu">putStrLn</span> <span class="op">$</span> <span class="st">&quot;Main process: &quot;</span> <span class="op">++</span> <span class="fu">show</span> i</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>        resume</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">putStrLn</span> <span class="st">&quot;Main process done&quot;</span></span></code></pre></div>
+<p>with output:</p>
+<pre><code>Main process: 1
+Subprocess: 10
+Main process: 2
+Subprocess: 9
+Main process: 3
+Subprocess: 8
+Main process: 4
+Subprocess: 7
+Main process: 5
+Subprocess: 6
+Main process: 6
+Subprocess: 5
+Main process: 7
+Subprocess: 4
+Main process: 8
+Subprocess: 3
+Main process: 9
+Subprocess: 2
+Main process: 10
+Subprocess: 1
+Main process done</code></pre>
+<h2 id="queues">Queues</h2>
+<p>I’ll use queues since they are very simple and <em>Purely Functional Data Structures</em>
+describes Hood-Melville Real-Time Queues in Figure 8.1 as an example of global
+rebuilding. We’ll end up with something quite similar which could be made more similar
+by changing the rebuilding code. Indeed, the differences are just an artifact of
+specific, easily changed details of the rebuilding coroutine, as we’ll see.</p>
+<p>The examples I’ll present are mostly imperative, <em>not</em> purely functional. There
+are two reasons for this. First, I’m not focused on purely functional data structures
+and the technique works fine for imperative data structures. Second, it is arguably
+more natural to talk about coroutines in an imperative context. In this case,
+it’s easy to adapt the code to a purely functional version since it’s not much
+more than a purely functional data structure stuck in an <code>IORef</code>.</p>
+<p>For a more imperative structure with mutable linked structure and/or in-place
+array updates, it would be more challenging to produce a purely functional
+version. The techniques here could still be used, though there are more
+“concurrency” concerns. While I don’t include the code here, I did a similar
+exercise for a random-access stack (a fancy way of saying a growable array).
+There the “concurrency” concern is that the elements you are copying to the
+new array may be popped and potentially overwritten before you switch to the
+new array. In this case, it’s easy to solve, since if the head pointer of
+the live version reaches the source offset for copy, you can just switch to
+the new array immediately.</p>
+<p>Nevertheless, I can easily imagine scenarios where it may be beneficial, if
+not necessary, for the coroutines to communicate more and/or for there to be
+multiple “rebuild” processes. The approach used here could be easily adapted
+to that. It’s also worth mentioning that even in simpler cases, non-constant-time
+operations will either need to invoke <code>resume</code> multiple times or need more
+coordination with the “rebuild” process to know when it can do more than a
+constant amount of work. This could be accomplished by “rebuild” process
+simply recognizing this from the data structure state, or some state could
+be explicitly set to indicate this, or the techniques described earlier
+could be used, e.g. a different process for non-constant-time operations.</p>
+<p>The code below uses the extensions <code>BangPatterns</code>, <code>RecordWildCards</code>, and <code>GADTs</code>.</p>
+<h3 id="batched-rebuilding-implementation">Batched Rebuilding Implementation</h3>
+<p>We start with the straightforward, amortized constant-time queues where
+we push to a stack representing the back of the queue and pop from a stack
+representing the front. When the front stack is empty, we need to expensively
+reverse the back stack to make a new front stack.</p>
+<p>I intentionally separate out the reverse step as an explicit <code>rebuild</code> function.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> <span class="dt">BatchedRebuildingQueue</span> ( <span class="dt">Queue</span>, new, enqueue, dequeue ) <span class="kw">where</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.IORef</span> ( <span class="dt">IORef</span>, newIORef, readIORef, writeIORef, modifyIORef )</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Queue</span> a <span class="ot">=</span> <span class="dt">Queue</span> {</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="ot">    queueRef ::</span> <span class="dt">IORef</span> ([a], [a])</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="ot">new ::</span> <span class="dt">IO</span> (<span class="dt">Queue</span> a)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>new <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    queueRef <span class="ot">&lt;-</span> newIORef ([], [])</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span> <span class="dt">Queue</span> { <span class="op">..</span> }</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="ot">dequeue ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Maybe</span> a)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>dequeue q<span class="op">@</span>(<span class="dt">Queue</span> { <span class="op">..</span> }) <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    (front, back) <span class="ot">&lt;-</span> readIORef queueRef</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">case</span> front <span class="kw">of</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        (x<span class="op">:</span>front&#39;) <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>            writeIORef queueRef (front&#39;, back)</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>            <span class="fu">return</span> (<span class="dt">Just</span> x)</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>        [] <span class="ot">-&gt;</span> <span class="kw">case</span> back <span class="kw">of</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>                [] <span class="ot">-&gt;</span> <span class="fu">return</span> <span class="dt">Nothing</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>                _ <span class="ot">-&gt;</span> rebuild q <span class="op">&gt;&gt;</span> dequeue q</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="ot">enqueue ::</span> a <span class="ot">-&gt;</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>enqueue x (<span class="dt">Queue</span> { <span class="op">..</span> }) <span class="ot">=</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    modifyIORef queueRef (\(front, back) <span class="ot">-&gt;</span> (front, x<span class="op">:</span>back))</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="ot">rebuild ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>rebuild (<span class="dt">Queue</span> { <span class="op">..</span> }) <span class="ot">=</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    modifyIORef queueRef (\([], back) <span class="ot">-&gt;</span> (<span class="fu">reverse</span> back, []))</span></code></pre></div>
+<h3 id="global-rebuilding-implementation">Global Rebuilding Implementation</h3>
+<p>This step is where a modicum of thought is needed. We need to make the
+<code>rebuild</code> step from the batched version incremental. This is straightforward,
+if tedious, given the coroutine infrastructure. In this case, we incrementalize
+the <code>reverse</code> by reimplementing <code>reverse</code> in CPS with some <code>yield</code> calls
+inserted. Then we need to incrementalize append. Since we’re not waiting
+until <code>front</code> is empty, we’re actually computing <code>front ++ reverse back</code>.
+Incrementalizing append is hard, so we actually reverse <code>front</code> and then
+use an incremental <code>reverseAppend</code> (which is basically what the incremental
+reverse does anyway<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>).</p>
+<p>One of first thing to note about this code is that the actual operations are
+largely unchanged other than inserting calls to <code>resume</code>. In fact, <code>dequeue</code>
+is even simpler than in the batched version as we can just assume that <code>front</code>
+is always populated when the queue is not empty. <code>dequeue</code> is freed from the
+responsibility of deciding when to trigger a rebuild. Most of the bulk of
+this code is from reimplementing a <code>reverseAppend</code> function (twice).</p>
+<p>The parts of this code that require some deeper though are 1) knowing when
+a rebuild should begin, 2) knowing how “fast” the incremental operations
+should go<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>
+(e.g. <code>incrementalReverse</code> does two steps at a time and the
+Hood-Melville implementation has an explicit <code>exec2</code> that does two steps
+at a time), and 3) dealing with “concurrent” changes.</p>
+<p>For the last, Overmars describes a queue of deferred operations to perform
+on the shadow copy once it finishes rebuilding. This kind of suggests a
+situation where the “rebuild” process can reference some “snapshot” of
+the data structure. In our case, that is the situation we’re in, since
+our data structures are essentially immutable data structures in an <code>IORef</code>.
+However, it can easily not be the case, e.g. the random-access stack.
+Also, this operation queue approach can easily be inefficient and inelegant.
+None of the implementations below will have this queue of deferred operations.
+It is easier, more efficient, and more elegant to just not copy over parts of
+the queue that have been dequeued, rather than have an extra phase of the
+rebuilding that just pops off the elements of the <code>front</code> stack that we just
+pushed. A similar situation happens for the random-access stack.</p>
+<p>The use of <code>drop</code> could probably be easily eliminated. (I’m not even sure it’s
+still necessary.) It is mostly an artifact of (not) dealing with off-by-one issues.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> <span class="dt">GlobalRebuildingQueue</span> ( <span class="dt">Queue</span>, new, dequeue, enqueue ) <span class="kw">where</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.IORef</span> ( <span class="dt">IORef</span>, newIORef, readIORef, writeIORef, modifyIORef, modifyIORef&#39; )</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Coroutine</span> ( <span class="dt">YieldFn</span>, spawn )</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Queue</span> a <span class="ot">=</span> <span class="dt">Queue</span> {</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="ot">    resume ::</span> <span class="dt">IO</span> (),</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="ot">    frontRef ::</span> <span class="dt">IORef</span> [a],</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="ot">    backRef ::</span> <span class="dt">IORef</span> [a],</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="ot">    frontCountRef ::</span> <span class="dt">IORef</span> <span class="dt">Int</span>,</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="ot">    backCountRef ::</span> <span class="dt">IORef</span> <span class="dt">Int</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="ot">new ::</span> <span class="dt">IO</span> (<span class="dt">Queue</span> a)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>new <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    frontRef <span class="ot">&lt;-</span> newIORef []</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    backRef <span class="ot">&lt;-</span> newIORef []</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    frontCountRef <span class="ot">&lt;-</span> newIORef <span class="dv">0</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    backCountRef <span class="ot">&lt;-</span> newIORef <span class="dv">0</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    resume <span class="ot">&lt;-</span> spawn <span class="op">$</span> <span class="fu">const</span> <span class="op">.</span> rebuild frontRef backRef frontCountRef backCountRef</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span> <span class="dt">Queue</span> { <span class="op">..</span> }</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="ot">dequeue ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Maybe</span> a)</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>dequeue q <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    resume q</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    front <span class="ot">&lt;-</span> readIORef (frontRef q)</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>    <span class="kw">case</span> front <span class="kw">of</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>        [] <span class="ot">-&gt;</span> <span class="fu">return</span> <span class="dt">Nothing</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>        (x<span class="op">:</span>front&#39;) <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>            modifyIORef&#39; (frontCountRef q) <span class="fu">pred</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>            writeIORef (frontRef q) front&#39;</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>            <span class="fu">return</span> (<span class="dt">Just</span> x)</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a><span class="ot">enqueue ::</span> a <span class="ot">-&gt;</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>enqueue x q <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>    modifyIORef (backRef q) (x<span class="op">:</span>)</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>    modifyIORef&#39; (backCountRef q) <span class="fu">succ</span></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>    resume q</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a><span class="ot">rebuild ::</span> <span class="dt">IORef</span> [a] <span class="ot">-&gt;</span> <span class="dt">IORef</span> [a] <span class="ot">-&gt;</span> <span class="dt">IORef</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">IORef</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">YieldFn</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>rebuild frontRef backRef frontCountRef backCountRef yield <span class="ot">=</span> <span class="kw">let</span> k <span class="ot">=</span> go k <span class="kw">in</span> go k <span class="kw">where</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>  go k <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>    frontCount <span class="ot">&lt;-</span> readIORef frontCountRef</span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>    backCount <span class="ot">&lt;-</span> readIORef backCountRef</span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> backCount <span class="op">&gt;</span> frontCount <span class="kw">then</span> <span class="kw">do</span></span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>        back <span class="ot">&lt;-</span> readIORef backRef</span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>        front <span class="ot">&lt;-</span> readIORef frontRef</span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>        writeIORef backRef []</span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a>        writeIORef backCountRef <span class="dv">0</span></span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>        incrementalReverse back [] <span class="op">$</span> \rback <span class="ot">-&gt;</span></span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>            incrementalReverse front [] <span class="op">$</span> \rfront <span class="ot">-&gt;</span></span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>                incrementalRevAppend rfront rback <span class="dv">0</span> backCount k</span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>      <span class="kw">else</span> <span class="kw">do</span></span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>        yield k</span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>  incrementalReverse [] acc k <span class="ot">=</span> k acc</span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a>  incrementalReverse [x] acc k <span class="ot">=</span> k (x<span class="op">:</span>acc)</span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a>  incrementalReverse (x<span class="op">:</span>y<span class="op">:</span>xs) acc k <span class="ot">=</span> yield <span class="op">$</span> incrementalReverse xs (y<span class="op">:</span>x<span class="op">:</span>acc) k</span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>  incrementalRevAppend [] front <span class="op">!</span>movedCount backCount&#39; k <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a>    writeIORef frontRef front</span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a>    writeIORef frontCountRef <span class="op">$!</span> movedCount <span class="op">+</span> backCount&#39;</span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a>    yield k</span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>  incrementalRevAppend (x<span class="op">:</span>rfront) acc <span class="op">!</span>movedCount backCount&#39; k <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a>    currentFrontCount <span class="ot">&lt;-</span> readIORef frontCountRef</span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> currentFrontCount <span class="op">&lt;=</span> movedCount <span class="kw">then</span> <span class="kw">do</span></span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a>        <span class="co">-- This drop count should be bounded by a constant.</span></span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a>        writeIORef frontRef <span class="op">$!</span> <span class="fu">drop</span> (movedCount <span class="op">-</span> currentFrontCount) acc</span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a>        writeIORef frontCountRef <span class="op">$!</span> currentFrontCount <span class="op">+</span> backCount&#39;</span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a>        yield k</span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a>      <span class="kw">else</span> <span class="kw">if</span> <span class="fu">null</span> rfront <span class="kw">then</span></span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a>        incrementalRevAppend [] (x<span class="op">:</span>acc) (movedCount <span class="op">+</span> <span class="dv">1</span>) backCount&#39; k</span>
+<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a>      <span class="kw">else</span></span>
+<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a>        yield <span class="op">$!</span> incrementalRevAppend rfront (x<span class="op">:</span>acc) (movedCount <span class="op">+</span> <span class="dv">1</span>) backCount&#39; k</span></code></pre></div>
+<h3 id="defunctionalized-global-rebuilding-implementation">Defunctionalized Global Rebuilding Implementation</h3>
+<p>This step is completely mechanical.</p>
+<p>There’s arguably no reason to defunctionalize. It produces a result that
+is more data-structure-like, but, unless you need the code to work in a
+first-order language, there’s nothing really gained by doing this. It does
+lead to a result that is more directly comparable to other implementations.</p>
+<p>For some data structures, having the continuation be analyzable would
+provide a simple means for the coroutines to communicate. The main process
+could directly look at the continuation to determine its state, e.g. if
+a rebuild is in-progress at all. The main process could also directly
+manipulate the stored continutation to change the “rebuild” process’
+behavior. That said, doing this would mean that we’re not <em>deriving</em>
+the implementation. Still, the opportunity for additional optimizations
+and simplifications is nice.</p>
+<p>As a minor aside, while it is, of course, obvious from looking at the
+previous version of the code, it’s neat how the <code>Kont</code> data type
+implies that the call stack is bounded and that most calls are tail calls.
+<code>REVERSE_STEP</code> is the only constructor that contains a <code>Kont</code> argument,
+but its type means that that argument can’t itself be a <code>REVERSE_STEP</code>.
+Again, I just find it neat how defunctionalization makes this concrete
+and explicit.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> <span class="dt">DefunctionalizedQueue</span> ( <span class="dt">Queue</span>, new, dequeue, enqueue ) <span class="kw">where</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.IORef</span> ( <span class="dt">IORef</span>, newIORef, readIORef, writeIORef, modifyIORef, modifyIORef&#39; )</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Kont</span> a r <span class="kw">where</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">IDLE</span><span class="ot"> ::</span> <span class="dt">Kont</span> a ()</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">REVERSE_STEP</span><span class="ot"> ::</span> [a] <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">Kont</span> a [a] <span class="ot">-&gt;</span> <span class="dt">Kont</span> a ()</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">REVERSE_FRONT</span><span class="ot"> ::</span> [a] <span class="ot">-&gt;</span> <span class="op">!</span><span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Kont</span> a [a]</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">REV_APPEND_START</span><span class="ot"> ::</span> [a] <span class="ot">-&gt;</span> <span class="op">!</span><span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Kont</span> a [a]</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">REV_APPEND_STEP</span><span class="ot"> ::</span> [a] <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="op">!</span><span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="op">!</span><span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Kont</span> a ()</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="ot">applyKont ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">Kont</span> a r <span class="ot">-&gt;</span> r <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>applyKont q <span class="dt">IDLE</span> _ <span class="ot">=</span> rebuildLoop q</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>applyKont q (<span class="dt">REVERSE_STEP</span> xs acc k) _ <span class="ot">=</span> incrementalReverse q xs acc k</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>applyKont q (<span class="dt">REVERSE_FRONT</span> front backCount) rback <span class="ot">=</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    incrementalReverse q front [] <span class="op">$</span> <span class="dt">REV_APPEND_START</span> rback backCount</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>applyKont q (<span class="dt">REV_APPEND_START</span> rback backCount) rfront <span class="ot">=</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    incrementalRevAppend q rfront rback <span class="dv">0</span> backCount</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>applyKont q (<span class="dt">REV_APPEND_STEP</span> rfront acc movedCount backCount) _ <span class="ot">=</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    incrementalRevAppend q rfront acc movedCount backCount</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="ot">rebuildLoop ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>rebuildLoop q<span class="op">@</span>(<span class="dt">Queue</span> { <span class="op">..</span> }) <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>    frontCount <span class="ot">&lt;-</span> readIORef frontCountRef</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    backCount <span class="ot">&lt;-</span> readIORef backCountRef</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> backCount <span class="op">&gt;</span> frontCount <span class="kw">then</span> <span class="kw">do</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>        back <span class="ot">&lt;-</span> readIORef backRef</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>        front <span class="ot">&lt;-</span> readIORef frontRef</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>        writeIORef backRef []</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>        writeIORef backCountRef <span class="dv">0</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>        incrementalReverse q back [] <span class="op">$</span> <span class="dt">REVERSE_FRONT</span> front backCount</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>      <span class="kw">else</span> <span class="kw">do</span></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>        writeIORef resumeRef <span class="dt">IDLE</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a><span class="ot">incrementalReverse ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">Kont</span> a [a] <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>incrementalReverse q [] acc k <span class="ot">=</span> applyKont q k acc</span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>incrementalReverse q [x] acc k <span class="ot">=</span> applyKont q k (x<span class="op">:</span>acc)</span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>incrementalReverse q (x<span class="op">:</span>y<span class="op">:</span>xs) acc k <span class="ot">=</span> writeIORef (resumeRef q) <span class="op">$</span> <span class="dt">REVERSE_STEP</span> xs (y<span class="op">:</span>x<span class="op">:</span>acc) k</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a><span class="ot">incrementalRevAppend ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>incrementalRevAppend (<span class="dt">Queue</span> { <span class="op">..</span> }) [] front <span class="op">!</span>movedCount backCount&#39; <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>    writeIORef frontRef front</span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>    writeIORef frontCountRef <span class="op">$!</span> movedCount <span class="op">+</span> backCount&#39;</span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>    writeIORef resumeRef <span class="dt">IDLE</span></span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>incrementalRevAppend q<span class="op">@</span>(<span class="dt">Queue</span> { <span class="op">..</span> }) (x<span class="op">:</span>rfront) acc <span class="op">!</span>movedCount backCount&#39; <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>    currentFrontCount <span class="ot">&lt;-</span> readIORef frontCountRef</span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> currentFrontCount <span class="op">&lt;=</span> movedCount <span class="kw">then</span> <span class="kw">do</span></span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>        <span class="co">-- This drop count should be bounded by a constant.</span></span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a>        writeIORef frontRef <span class="op">$!</span> <span class="fu">drop</span> (movedCount <span class="op">-</span> currentFrontCount) acc</span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a>        writeIORef frontCountRef <span class="op">$!</span> currentFrontCount <span class="op">+</span> backCount&#39;</span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>        writeIORef resumeRef <span class="dt">IDLE</span></span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>      <span class="kw">else</span> <span class="kw">if</span> <span class="fu">null</span> rfront <span class="kw">then</span></span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>        incrementalRevAppend q [] (x<span class="op">:</span>acc) (movedCount <span class="op">+</span> <span class="dv">1</span>) backCount&#39;</span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>      <span class="kw">else</span></span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>        writeIORef resumeRef <span class="op">$!</span> <span class="dt">REV_APPEND_STEP</span> rfront (x<span class="op">:</span>acc) (movedCount <span class="op">+</span> <span class="dv">1</span>) backCount&#39;</span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a><span class="ot">resume ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a>resume q <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>    kont <span class="ot">&lt;-</span> readIORef (resumeRef q)</span>
+<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a>    applyKont q kont ()</span>
+<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Queue</span> a <span class="ot">=</span> <span class="dt">Queue</span> {</span>
+<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a><span class="ot">    resumeRef ::</span> <span class="dt">IORef</span> (<span class="dt">Kont</span> a ()),</span>
+<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a><span class="ot">    frontRef ::</span> <span class="dt">IORef</span> [a],</span>
+<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a><span class="ot">    backRef ::</span> <span class="dt">IORef</span> [a],</span>
+<span id="cb6-65"><a href="#cb6-65" aria-hidden="true" tabindex="-1"></a><span class="ot">    frontCountRef ::</span> <span class="dt">IORef</span> <span class="dt">Int</span>,</span>
+<span id="cb6-66"><a href="#cb6-66" aria-hidden="true" tabindex="-1"></a><span class="ot">    backCountRef ::</span> <span class="dt">IORef</span> <span class="dt">Int</span></span>
+<span id="cb6-67"><a href="#cb6-67" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-68"><a href="#cb6-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-69"><a href="#cb6-69" aria-hidden="true" tabindex="-1"></a><span class="ot">new ::</span> <span class="dt">IO</span> (<span class="dt">Queue</span> a)</span>
+<span id="cb6-70"><a href="#cb6-70" aria-hidden="true" tabindex="-1"></a>new <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb6-71"><a href="#cb6-71" aria-hidden="true" tabindex="-1"></a>    frontRef <span class="ot">&lt;-</span> newIORef []</span>
+<span id="cb6-72"><a href="#cb6-72" aria-hidden="true" tabindex="-1"></a>    backRef <span class="ot">&lt;-</span> newIORef []</span>
+<span id="cb6-73"><a href="#cb6-73" aria-hidden="true" tabindex="-1"></a>    frontCountRef <span class="ot">&lt;-</span> newIORef <span class="dv">0</span></span>
+<span id="cb6-74"><a href="#cb6-74" aria-hidden="true" tabindex="-1"></a>    backCountRef <span class="ot">&lt;-</span> newIORef <span class="dv">0</span></span>
+<span id="cb6-75"><a href="#cb6-75" aria-hidden="true" tabindex="-1"></a>    resumeRef <span class="ot">&lt;-</span> newIORef <span class="dt">IDLE</span></span>
+<span id="cb6-76"><a href="#cb6-76" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span> <span class="dt">Queue</span> { <span class="op">..</span> }</span>
+<span id="cb6-77"><a href="#cb6-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-78"><a href="#cb6-78" aria-hidden="true" tabindex="-1"></a><span class="ot">dequeue ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Maybe</span> a)</span>
+<span id="cb6-79"><a href="#cb6-79" aria-hidden="true" tabindex="-1"></a>dequeue q  <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb6-80"><a href="#cb6-80" aria-hidden="true" tabindex="-1"></a>    resume q</span>
+<span id="cb6-81"><a href="#cb6-81" aria-hidden="true" tabindex="-1"></a>    front <span class="ot">&lt;-</span> readIORef (frontRef q)</span>
+<span id="cb6-82"><a href="#cb6-82" aria-hidden="true" tabindex="-1"></a>    <span class="kw">case</span> front <span class="kw">of</span></span>
+<span id="cb6-83"><a href="#cb6-83" aria-hidden="true" tabindex="-1"></a>        [] <span class="ot">-&gt;</span> <span class="fu">return</span> <span class="dt">Nothing</span></span>
+<span id="cb6-84"><a href="#cb6-84" aria-hidden="true" tabindex="-1"></a>        (x<span class="op">:</span>front&#39;) <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb6-85"><a href="#cb6-85" aria-hidden="true" tabindex="-1"></a>            modifyIORef&#39; (frontCountRef q) <span class="fu">pred</span></span>
+<span id="cb6-86"><a href="#cb6-86" aria-hidden="true" tabindex="-1"></a>            writeIORef (frontRef q) front&#39;</span>
+<span id="cb6-87"><a href="#cb6-87" aria-hidden="true" tabindex="-1"></a>            <span class="fu">return</span> (<span class="dt">Just</span> x)</span>
+<span id="cb6-88"><a href="#cb6-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-89"><a href="#cb6-89" aria-hidden="true" tabindex="-1"></a><span class="ot">enqueue ::</span> a <span class="ot">-&gt;</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb6-90"><a href="#cb6-90" aria-hidden="true" tabindex="-1"></a>enqueue x q <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb6-91"><a href="#cb6-91" aria-hidden="true" tabindex="-1"></a>    modifyIORef (backRef q) (x<span class="op">:</span>)</span>
+<span id="cb6-92"><a href="#cb6-92" aria-hidden="true" tabindex="-1"></a>    modifyIORef&#39; (backCountRef q) <span class="fu">succ</span></span>
+<span id="cb6-93"><a href="#cb6-93" aria-hidden="true" tabindex="-1"></a>    resume q</span></code></pre></div>
+<h3 id="functional-defunctionalized-global-rebuilding-implementation">Functional Defunctionalized Global Rebuilding Implementation</h3>
+<p>This is just a straightforward reorganization of the previous code into purely
+functional code. This produces a persistent queue with worst-case constant
+time operations.</p>
+<p>It is, of course, far uglier and more ad-hoc than Okasaki’s
+extremely elegant real-time queues, but the methodology to derive it was
+simple-minded. The result is also quite similar to the <a href="#hood-melville-implementation">Hood-Melville Queues</a>
+even though I did not set out to achieve that. That said, I’m pretty
+confident you could derive pretty much <em>exactly</em> the Hood-Melville queues
+with just minor modifications to <a href="#global-rebuilding-implementation">Global Rebuilding Implementation</a>.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> <span class="dt">FunctionalQueue</span> ( <span class="dt">Queue</span>, empty, dequeue, enqueue ) <span class="kw">where</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Kont</span> a r <span class="kw">where</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">IDLE</span><span class="ot"> ::</span> <span class="dt">Kont</span> a ()</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">REVERSE_STEP</span><span class="ot"> ::</span> [a] <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">Kont</span> a [a] <span class="ot">-&gt;</span> <span class="dt">Kont</span> a ()</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">REVERSE_FRONT</span><span class="ot"> ::</span> [a] <span class="ot">-&gt;</span> <span class="op">!</span><span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Kont</span> a [a]</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">REV_APPEND_START</span><span class="ot"> ::</span> [a] <span class="ot">-&gt;</span> <span class="op">!</span><span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Kont</span> a [a]</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">REV_APPEND_STEP</span><span class="ot"> ::</span> [a] <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="op">!</span><span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="op">!</span><span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Kont</span> a ()</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="ot">applyKont ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">Kont</span> a r <span class="ot">-&gt;</span> r <span class="ot">-&gt;</span> <span class="dt">Queue</span> a</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>applyKont q <span class="dt">IDLE</span> _ <span class="ot">=</span> rebuildLoop q</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>applyKont q (<span class="dt">REVERSE_STEP</span> xs acc k) _ <span class="ot">=</span> incrementalReverse q xs acc k</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>applyKont q (<span class="dt">REVERSE_FRONT</span> front backCount) rback <span class="ot">=</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    incrementalReverse q front [] <span class="op">$</span> <span class="dt">REV_APPEND_START</span> rback backCount</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>applyKont q (<span class="dt">REV_APPEND_START</span> rback backCount) rfront <span class="ot">=</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    incrementalRevAppend q rfront rback <span class="dv">0</span> backCount</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>applyKont q (<span class="dt">REV_APPEND_STEP</span> rfront acc movedCount backCount) _ <span class="ot">=</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    incrementalRevAppend q rfront acc movedCount backCount</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="ot">rebuildLoop ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">Queue</span> a</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>rebuildLoop q<span class="op">@</span>(<span class="dt">Queue</span> { <span class="op">..</span> }) <span class="ot">=</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> backCount <span class="op">&gt;</span> frontCount <span class="kw">then</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> q&#39; <span class="ot">=</span> q { back <span class="ot">=</span> [], backCount <span class="ot">=</span> <span class="dv">0</span> } <span class="kw">in</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>        incrementalReverse q&#39; back [] <span class="op">$</span> <span class="dt">REVERSE_FRONT</span> front backCount</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>      <span class="kw">else</span></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>        q { resumeKont <span class="ot">=</span> <span class="dt">IDLE</span> }</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="ot">incrementalReverse ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">Kont</span> a [a] <span class="ot">-&gt;</span> <span class="dt">Queue</span> a</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>incrementalReverse q [] acc k <span class="ot">=</span> applyKont q k acc</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>incrementalReverse q [x] acc k <span class="ot">=</span> applyKont q k (x<span class="op">:</span>acc)</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>incrementalReverse q (x<span class="op">:</span>y<span class="op">:</span>xs) acc k <span class="ot">=</span> q { resumeKont <span class="ot">=</span> <span class="dt">REVERSE_STEP</span> xs (y<span class="op">:</span>x<span class="op">:</span>acc) k }</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="ot">incrementalRevAppend ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Queue</span> a</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>incrementalRevAppend q [] front&#39; <span class="op">!</span>movedCount backCount&#39; <span class="ot">=</span></span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>    q { front <span class="ot">=</span> front&#39;, frontCount <span class="ot">=</span> movedCount <span class="op">+</span> backCount&#39;, resumeKont <span class="ot">=</span> <span class="dt">IDLE</span> }</span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>incrementalRevAppend q (x<span class="op">:</span>rfront) acc <span class="op">!</span>movedCount backCount&#39; <span class="ot">=</span></span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> frontCount q <span class="op">&lt;=</span> movedCount <span class="kw">then</span></span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>        <span class="co">-- This drop count should be bounded by a constant.</span></span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> <span class="op">!</span>front <span class="ot">=</span> <span class="fu">drop</span> (movedCount <span class="op">-</span> frontCount q) acc <span class="kw">in</span></span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>        q { front <span class="ot">=</span> front, frontCount <span class="ot">=</span> frontCount q <span class="op">+</span> backCount&#39;, resumeKont <span class="ot">=</span> <span class="dt">IDLE</span> }</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>      <span class="kw">else</span> <span class="kw">if</span> <span class="fu">null</span> rfront <span class="kw">then</span></span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>        incrementalRevAppend q [] (x<span class="op">:</span>acc) (movedCount <span class="op">+</span> <span class="dv">1</span>) backCount&#39;</span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>      <span class="kw">else</span></span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>        q { resumeKont <span class="ot">=</span> <span class="dt">REV_APPEND_STEP</span> rfront (x<span class="op">:</span>acc) (movedCount <span class="op">+</span> <span class="dv">1</span>) backCount&#39; }</span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a><span class="ot">resume ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">Queue</span> a</span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>resume q <span class="ot">=</span> applyKont q (resumeKont q) ()</span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Queue</span> a <span class="ot">=</span> <span class="dt">Queue</span> {</span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a><span class="ot">    resumeKont ::</span> <span class="op">!</span>(<span class="dt">Kont</span> a ()),</span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a><span class="ot">    front ::</span> [a],</span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a><span class="ot">    back ::</span> [a],</span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a><span class="ot">    frontCount ::</span> <span class="op">!</span><span class="dt">Int</span>,</span>
+<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a><span class="ot">    backCount ::</span> <span class="op">!</span><span class="dt">Int</span></span>
+<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a><span class="ot">empty ::</span> <span class="dt">Queue</span> a</span>
+<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a>empty <span class="ot">=</span> <span class="dt">Queue</span> { resumeKont <span class="ot">=</span> <span class="dt">IDLE</span>, front <span class="ot">=</span> [], back <span class="ot">=</span> [], frontCount <span class="ot">=</span> <span class="dv">0</span>, backCount <span class="ot">=</span> <span class="dv">0</span> }</span>
+<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a><span class="ot">dequeue ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> (<span class="dt">Maybe</span> a, <span class="dt">Queue</span> a)</span>
+<span id="cb7-61"><a href="#cb7-61" aria-hidden="true" tabindex="-1"></a>dequeue q <span class="ot">=</span></span>
+<span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a>    <span class="kw">case</span> front <span class="kw">of</span></span>
+<span id="cb7-63"><a href="#cb7-63" aria-hidden="true" tabindex="-1"></a>        [] <span class="ot">-&gt;</span> (<span class="dt">Nothing</span>, q)</span>
+<span id="cb7-64"><a href="#cb7-64" aria-hidden="true" tabindex="-1"></a>        (x<span class="op">:</span>front&#39;) <span class="ot">-&gt;</span></span>
+<span id="cb7-65"><a href="#cb7-65" aria-hidden="true" tabindex="-1"></a>            (<span class="dt">Just</span> x, q&#39; { front <span class="ot">=</span> front&#39;, frontCount <span class="ot">=</span> frontCount <span class="op">-</span> <span class="dv">1</span> })</span>
+<span id="cb7-66"><a href="#cb7-66" aria-hidden="true" tabindex="-1"></a>  <span class="kw">where</span> q&#39;<span class="op">@</span>(<span class="dt">Queue</span> { <span class="op">..</span> }) <span class="ot">=</span> resume q</span>
+<span id="cb7-67"><a href="#cb7-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-68"><a href="#cb7-68" aria-hidden="true" tabindex="-1"></a><span class="ot">enqueue ::</span> a <span class="ot">-&gt;</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">Queue</span> a</span>
+<span id="cb7-69"><a href="#cb7-69" aria-hidden="true" tabindex="-1"></a>enqueue x q<span class="op">@</span>(<span class="dt">Queue</span> { <span class="op">..</span> }) <span class="ot">=</span> resume (q { back <span class="ot">=</span> x<span class="op">:</span>back, backCount <span class="ot">=</span> backCount <span class="op">+</span> <span class="dv">1</span> })</span></code></pre></div>
+<h3 id="hood-melville-implementation">Hood-Melville Implementation</h3>
+<p>This is just the Haskell code from <em>Purely Functional Data Structures</em> adapted
+to the interface of the other examples.</p>
+<p>This code is mostly to compare. The biggest difference, other than some code
+structuring differences, is the front and back lists are reversed in parallel
+while my code does them sequentially. As mentioned before, to get a structure
+like that would simply be a matter of defining a parallel incremental reverse
+back in the <a href="#global-rebuilding-implementation">Global Rebuilding Implementation</a>.</p>
+<p>Again, Okasaki’s real-time queue that can be seen as an application of the
+<em>lazy</em> rebuilding and scheduling techniques, described in his thesis and book,
+is a better implementation than this in pretty much every way.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> <span class="dt">HoodMelvilleQueue</span> (<span class="dt">Queue</span>, empty, dequeue, enqueue) <span class="kw">where</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">RotationState</span> a</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="ot">=</span> <span class="dt">Idle</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="dt">Reversing</span> <span class="op">!</span><span class="dt">Int</span> [a] [a] [a] [a]</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="dt">Appending</span> <span class="op">!</span><span class="dt">Int</span> [a] [a]</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="dt">Done</span> [a]</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Queue</span> a <span class="ot">=</span> <span class="dt">Queue</span> <span class="op">!</span><span class="dt">Int</span> [a] (<span class="dt">RotationState</span> a) <span class="op">!</span><span class="dt">Int</span> [a]</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="ot">exec ::</span> <span class="dt">RotationState</span> a <span class="ot">-&gt;</span> <span class="dt">RotationState</span> a</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>exec (<span class="dt">Reversing</span> ok (x<span class="op">:</span>f) f&#39; (y<span class="op">:</span>r) r&#39;) <span class="ot">=</span> <span class="dt">Reversing</span> (ok<span class="op">+</span><span class="dv">1</span>) f (x<span class="op">:</span>f&#39;) r (y<span class="op">:</span>r&#39;)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>exec (<span class="dt">Reversing</span> ok [] f&#39; [y] r&#39;) <span class="ot">=</span> <span class="dt">Appending</span> ok f&#39; (y<span class="op">:</span>r&#39;)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>exec (<span class="dt">Appending</span> <span class="dv">0</span> f&#39; r&#39;) <span class="ot">=</span> <span class="dt">Done</span> r&#39;</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>exec (<span class="dt">Appending</span> ok (x<span class="op">:</span>f&#39;) r&#39;) <span class="ot">=</span> <span class="dt">Appending</span> (ok<span class="op">-</span><span class="dv">1</span>) f&#39; (x<span class="op">:</span>r&#39;)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>exec state <span class="ot">=</span> state</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="ot">invalidate ::</span> <span class="dt">RotationState</span> a <span class="ot">-&gt;</span> <span class="dt">RotationState</span> a</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>invalidate (<span class="dt">Reversing</span> ok f f&#39; r r&#39;) <span class="ot">=</span> <span class="dt">Reversing</span> (ok<span class="op">-</span><span class="dv">1</span>) f f&#39; r r&#39;</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>invalidate (<span class="dt">Appending</span> <span class="dv">0</span> f&#39; (x<span class="op">:</span>r&#39;)) <span class="ot">=</span> <span class="dt">Done</span> r&#39;</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>invalidate (<span class="dt">Appending</span> ok f&#39; r&#39;) <span class="ot">=</span> <span class="dt">Appending</span> (ok<span class="op">-</span><span class="dv">1</span>) f&#39; r&#39;</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>invalidate state <span class="ot">=</span> state</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="ot">exec2 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">RotationState</span> a <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">Queue</span> a</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>exec2 <span class="op">!</span>lenf f state lenr r <span class="ot">=</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>    <span class="kw">case</span> exec (exec state) <span class="kw">of</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>        <span class="dt">Done</span> newf <span class="ot">-&gt;</span> <span class="dt">Queue</span> lenf newf <span class="dt">Idle</span> lenr r</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>        newstate <span class="ot">-&gt;</span> <span class="dt">Queue</span> lenf f newstate lenr r</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="ot">check ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">RotationState</span> a <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">Queue</span> a</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>check <span class="op">!</span>lenf f state <span class="op">!</span>lenr r <span class="ot">=</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> lenr <span class="op">&lt;=</span> lenf <span class="kw">then</span> exec2 lenf f state lenr r</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>    <span class="kw">else</span> <span class="kw">let</span> newstate <span class="ot">=</span> <span class="dt">Reversing</span> <span class="dv">0</span> f [] r []</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>         <span class="kw">in</span> exec2 (lenf<span class="op">+</span>lenr) f newstate <span class="dv">0</span> []</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a><span class="ot">empty ::</span> <span class="dt">Queue</span> a</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>empty <span class="ot">=</span> <span class="dt">Queue</span> <span class="dv">0</span> [] <span class="dt">Idle</span> <span class="dv">0</span> []</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a><span class="ot">dequeue ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> (<span class="dt">Maybe</span> a, <span class="dt">Queue</span> a)</span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>dequeue q<span class="op">@</span>(<span class="dt">Queue</span> _ [] _ _ _) <span class="ot">=</span> (<span class="dt">Nothing</span>, q)</span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>dequeue (<span class="dt">Queue</span> lenf (x<span class="op">:</span>f&#39;) state lenr r) <span class="ot">=</span></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> <span class="op">!</span>q&#39; <span class="ot">=</span> check (lenf<span class="op">-</span><span class="dv">1</span>) f&#39; (invalidate state) lenr r <span class="kw">in</span></span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>    (<span class="dt">Just</span> x, q&#39;)</span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a><span class="ot">enqueue ::</span> a <span class="ot">-&gt;</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">Queue</span> a</span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>enqueue x (<span class="dt">Queue</span> lenf f state lenr r) <span class="ot">=</span> check lenf f state (lenr<span class="op">+</span><span class="dv">1</span>) (x<span class="op">:</span>r)</span></code></pre></div>
+<h3 id="empirical-evaluation">Empirical Evaluation</h3>
+<p>I won’t reproduce the evaluation code as it’s not very sophisticated or interesting.
+It randomly generated a sequence of enqueues and dequeues with an 80% chance to produce
+an enqueue over a dequeue so that the queues would grow. It measured the average
+time of an enqueue and a dequeue, as well as the maximum time of any single dequeue.</p>
+<p>The main thing I wanted to see was relatively stable average enqueue and dequeue
+times with only the batched implementation having a growing maximum dequeue time.
+This is indeed what I saw, though it took about 1,000,000 operations (or really
+a queue of a couple hundred thousand elements) for the numbers to stabilize.</p>
+<p>The results were mostly unsurprising. Unsurprisingly, in overall time, the batched
+implementation won. Its <code>enqueue</code> is also, obviously, the fastest. (Indeed, there’s
+a good chance my measurement of its average enqueue time was largely a measurement
+of the timer’s resolution.) The operations’ average times were stable illustrating their
+constant (amortized) time. At large enough sizes, the ratio of the maximum dequeue
+time versus the average stabilized around 7000 to 1, except, of course, for the
+batched version which grew linearly to millions to 1 ratios at queue sizes of tens
+of millions of elements. This illustrates the worst-case time complexity of all the
+other implementations, and the merely amortized time complexity of the batched one.</p>
+<p>While the batched version was best in overall time, the difference wasn’t that great.
+The worst implementations were still less 1.4x slower. All the worst-case optimal
+implementations performed roughly the same, but there were still some clear winners
+and losers. Okasaki’s real-time queue (not listed) is almost on-par with the batched
+implementation in overall time and handily beats the other implementations in average
+enqueue and dequeue times. The main surprise for me was that the loser was the
+Hood-Melville queue. My guess is this is due to <code>invalidate</code> which seems like it
+would do more work and produce more garbage than the approach taken in my functional
+version.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>The point of this article was to illustrate the process of deriving a deamortized
+data structure from an amortized one utilizing batch rebuilding by explicitly
+modeling global rebuilding as a coroutine.</p>
+<p>The point wasn’t to produce the fastest queue implementation, though I am pretty
+happy with the results. While this is an extremely simple example, it was still
+nice that each step was very easy and natural. It’s especially nice that this
+derivation approach produced a better result than the Hood-Melville queue.</p>
+<p>Of course, my advice is to use Okasaki’s real-time queue if you need a purely functional queue.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>This code could definitely be refactored to leverage
+this similarity to reduce code. Alternatively, one could refunctionalize
+the <a href="#hood-melville-implementation">Hood-Melville implementation</a> at the end.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Going “too fast”, so long as it’s still a constant amount of
+work for each step, isn’t really an issue asymptotically, so you can just
+crank the knobs if you don’t want to think too hard about it. That said,
+going faster than you need to will likely give you worse worst-case
+constant factors. In some cases, going faster than necessary could reduce
+constant factors, e.g. by better utilizing caches and disk I/O buffers.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>]]></summary>
+</entry>
+<entry>
     <title>Morleyization</title>
     <link href="https://derekelkins.github.io/posts/morleyization.html" />
     <id>https://derekelkins.github.io/posts/morleyization.html</id>
@@ -1454,8 +2066,8 @@ For example, there is the first-year calculus fact that the sum of the infinite 
 on the interval |x \in (-1,1)|. In fact, the proof of convergence only needs |\|x\| &lt; 1| so we can readily generalize to
 complex |z| with |\|z\| &lt; 1|, i.e. |z| contained in the open unit disk. However, |1/(1-z)| is a meromorphic function that is holomorphic
 everywhere except for |z=1|, therefore there is a <em>unique</em> analytic function defined everywhere except |z=1| that agrees with
-the infinite sum on the unit disk, namely |1/(1-z)| itself. Choosing |z=-1| leads to the common example of “summing a divergent series”
-with “|\sum_{n=0}^\infty (-1)^n = 1/2|” which really means “the value at |-1| of the unique complex analytic function which agrees
+the infinite sum on the unit disk, namely |1/(1-z)| itself. Choosing |z=2| leads to the common example of “summing a divergent series”
+with “|\sum_{n=0}^\infty 2^n = -1|” which really means “the value at |2| of the unique complex analytic function which agrees
 with this infinite series when it converges”.</p>
 <p>Sticking with just evaluation, applying the Cauchy Residue theorem to quadrature, i.e. numerical integration, leads to an interesting
 connection to a rational approximation problem. Say we want to compute |\int_{-1}^1 f(x) \mathrm dx|, we can use the Cauchy
@@ -1541,7 +2153,7 @@ Central Differences formula along the imaginary axis instead of the real axis.</
 |f(\overline z) = \overline{f(z)}| where |\overline z| is the complex conjugate of |z|, i.e. it maps |a + bi| to |a - bi|
 or |re^{\theta i}| to |re^{-\theta i}|. This leads to
 |f(x_0 + hi) - f(\overline{x_0 + hi}) = f(x_0 + hi) - \overline{f(x_0 + hi)} = 2i\operatorname{Im}(f(x_0 + hi))|. This lets us simplify
-Complex-Step Differentiation to |f’(x_0) \approx \operatorname{Im}(f(x_0 + h))/h|.</p>
+Complex-Step Differentiation to |f’(x_0) \approx \operatorname{Im}(f(x_0 + hi))/h|.</p>
 <p>Here is the earlier interactive example but now using Complex-Step Differentiation. As |h| decreases in magnitude, the error
 steadily decreases until there is no error at all.</p>
 <p><input id="complexInput" type="range" min="2" max="20"><br />
@@ -2532,316 +3144,6 @@ Leinster calls strong monoidal functors “weak”. “Strong” also refers to 
 and it’s quite possible to have a “strong lax monoidal functor”. (In fact, this is what applicative functors are usually described as, though
 a <a href="https://ncatlab.org/nlab/show/closed+functor">strong lax closed functor</a> would be a more direct connection.) Or the functors we’re talking about
 which are not-strong strong monoidal functors…<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-</ol>
-</section>]]></summary>
-</entry>
-<entry>
-    <title>Internal Language of a Monoidal Category</title>
-    <link href="https://derekelkins.github.io/posts/internal-language-of-a-monoidal-category.html" />
-    <id>https://derekelkins.github.io/posts/internal-language-of-a-monoidal-category.html</id>
-    <published>2020-05-22 01:46:31-07:00</published>
-    <updated>2020-05-22T08:46:31Z</updated>
-    <summary type="html"><![CDATA[<script>
-extraMacros = {
-  V: "{\\mathbf V}",
-  den: ["{[\\!\[#1]\\!]}", 1]
-};
-</script>
-<h2 id="introduction">Introduction</h2>
-<p>This is the first post in a series of posts on doing enriched indexed category theory and using the notion of
-an internal language to make this look relatively mundane. The internal language aspects are useful for other
-purposes too, as will be illustrated in this post, for example. This is related to the
-post <a href="/posts/category-theory-syntactically.html">Category Theory, Syntactically</a>. In particular, it can be considered
-half-way between the unary theories and the finite product theories described there.</p>
-<p>First in this series – this post – covers the internal language of a monoidal category. This is fairly
-straightforward, but it already provides some use. For example, the category of endofunctors on a category is a
-strict monoidal category, and so we can take a different perspective on natural transformations. This
-will also motivate the notions of a (virtual) bicategory and an actegory. Throughout this post, I’ll give a
-fairly worked example of turning some categorical content into <a href="/posts/understanding-typing-judgments.html">rules</a> of a type-/proof-theory.</p>
-<p>The <a href="/posts/internal-language-of-indexed-monoidal-categories.html">second post</a> will add indexing to the notion of monoidal category and introduce the very powerful and useful
-notion of an <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal category</a>.</p>
-<p>The <a href="/posts/enriched-indexed-categories-syntactically.html">third post</a> will formulate the notion
-of <a href="https://arxiv.org/abs/1212.3914">categories enriched in an indexed monoidal category</a>
-and give the definitions which don’t require any additional assumptions.</p>
-<p>The fourth post will introduce the notion and internal language for an indexed cosmos. Normally, when we do
-enriched category theory, we want the category into which we’re enriching to not be just a monoidal category
-but a <a href="https://ncatlab.org/nlab/show/cosmos">cosmos</a>. This provides many additional properties. An indexed
-cosmos is just the analogue of that for indexed monoidal categories.</p>
-<p>The fifth post will then formulate categorical concepts for our enriched indexed categories that require
-some or all of these additional properties provided by an indexed cosmos.</p>
-<p>At some point, there will be a post on <a href="https://ncatlab.org/nlab/show/virtual+double+category">virtual double categories</a>
-as they (or, even better, <a href="https://arxiv.org/abs/1910.11189">augmented virtual double categories</a>) are what will
-really be behind the notion of enriched indexed categories we’ll define. Basically, we’ll secretly be spelling out
-a specific instance of the |\mathsf{Mod}| construction.</p>
-<!--more-->
-<h2 id="the-internal-language-of-monoidal-categories">The Internal Language of Monoidal Categories</h2>
-<p>Fix a <a href="https://ncatlab.org/nlab/show/monoidal+category">monoidal category</a> called |\V|.</p>
-<p>The internal language of a monoidal category is quite simple to describe<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. We’ll write terms in context. The term <span class="math display">$$\begin{align}
-a_1 : A_1, \dots, a_n : A_n \vdash E : B\end{align}$$</span> will represent an arrow |A_1 \otimes \cdots \otimes A_n \to B| in |\V|.
-The |n = 0| case will be represented by omitting the context and will correspond to an arrow from the unit, |I|.
-However, there’s a catch. The term |E| must use all the variables |a_1, \dots, a_n| <em>exactly</em> once and in
-the order that they are listed in the context. (The |\mathsf{match}| construct will make this more complicated. Ultimately, a
-one-dimensional syntax isn’t that well suited to this situation.)
-For example, <span class="math display">$$\begin{align}a_1 : A_1, a_2: A_2 \vdash \mathsf f(a_2, a_1) : B, \quad a : A_1 \vdash \mathsf g(a, a) : B, \quad \text{and} \quad a : A \vdash \mathsf b : B\end{align}$$</span>
-are all <em>in</em>valid. We’ll call the context the <strong>linear context</strong>, consisting of <strong>linear variables</strong>
-with <strong>linear types</strong>, which we’ll usually represent with the metavariable |\Delta|. The naming comes from the
-connections to ordered linear logic.</p>
-<p>Substituting for the linear variables, written |E[E_1/a_1,\dots,E_n/a_n]|, corresponds to the
-composition |E \circ (E_1 \otimes \cdots \otimes E_n)|. You can work out what
-associativity and unit laws of composition would look like. It should be noted, though, that this is a meta-theorem.
-Substitution is defined in the typical, syntactic way, and we’d need to prove that for every term the interpretation of
-the result of substituting into that term is equal to the composition of the interpretations.</p>
-<p>If we replaced arrows |A_1 \otimes \cdots \otimes A_n \to B| in a monoidal category with multiarrows |(A_1, \dots, A_n) \to B| in a
-multicategory<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>, then we’d be done. However, monoidal categories
-correspond to <a href="https://ncatlab.org/nlab/show/representable+multicategory"><em>representable</em> multicategories</a>. If we write,
-|\mathcal C(A_1, \dots, A_n; B)| for the set of multiarrows |(A_1, \dots, A_n) \to B| in the multicatgory |\mathcal C|,
-then |\mathcal C| being representable means we have <span class="math display">$$\begin{align}
-\mathcal C(A_1, \dots, A_m, B_1, \dots, B_n, C_1, \dots, C_p; D)
-    \cong \mathcal C(A_1, \dots, A_m, B_1 \otimes \cdots \otimes B_n, C_1, \dots, C_p; D)
-\end{align}$$</span> natural in |D| and multinatural in the |A_i| and |C_i|. This implies that every |n|-ary arrow is equivalent to a unary arrow.</p>
-<p>Since it’s useful to know, I’ll go into some detail on how we derive natural-deduction-style rules from this
-categorical data. First, we note that the above natural isomorphism (at least when |m=0| and |p=0|) has the form of a universal property using
-representability and, specifically, is a mapping-out property. That is, we are saying that the
-functor |\mathcal C(B_1, \dots, B_n; \_)| is represented by |B_1 \otimes \cdots \otimes B_n|. Let’s call the
-left to right direction of the above natural isomorphism |\varphi|. While this universal property can, of course,
-be represented by the natural isomorphism as above, it can also be equivalently represented by a universal element.
-Namely, one particularly notable choice for |D| is |B_1 \otimes \cdots \otimes B_n| itself, at which point we can
-consider |\eta = \varphi^{-1}(id_{B_1 \otimes \cdots \otimes B_n}) : (B_1, \dots, B_n) \to B_1 \otimes \cdots \otimes B_n|.
-By using naturality of |\varphi^{-1}|, we can easily show that |\varphi^{-1}(f) = f \circ \eta|. To witness the fact
-that |\varphi^{-1}(\varphi(f)) = f|, we need |\varphi(f) \circ \eta = f|. We’ve now shown that a natural
-transformation |\varphi| as above and an element (in this case a multiarrow) |\eta| which satisfy |\varphi(\eta) = id|
-and |\varphi(f) \circ \eta = f| is equivalent to the natural isomorphism above.</p>
-<p>To start translating this to rules, we look at |\eta| first. A direct translation would be to say we have the rule:
-<span class="math display">$$\begin{align}
-\dfrac{}{a_1 : A_1, \dots, a_n : A_n \vdash \eta : A_1 \otimes \cdots \otimes A_n}
-\end{align}$$</span>
-This is unnatural because it treats |\eta| like a primitive open term. This also means that to use |\eta|, we’d
-need to use the Cut rule (which corresponds to substitution/composition) which would stymie Cut elimination. The
-solution is to mix a use of Cut into the rule itself producing the term |\eta[E_1/a_1, \dots, E_n/a_n]| which
-I’ll write more perspicuously as |E_1 \otimes \cdots \otimes E_n|. This gives rise to the rule:
-<span class="math display">$$\begin{align}
-\dfrac{\Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Delta_n \vdash E_n : A_n}{\Delta_1,\dots,\Delta_n \vdash E_1 \otimes \cdots \otimes E_n : A_1 \otimes \cdots \otimes A_n}{\otimes_n}\text{I}
-\end{align}$$</span>
-Of course, we could restrict to just the |n=0| and |n=2| cases if we wanted. I’ll write the |n=0| case
-of |a_1\otimes\cdots\otimes a_n| as |*| in both the term and pattern cases. As the label for the rule, |\otimes_n I|,
-suggests, this is an introduction rule for |\otimes|.</p>
-<p>The rule corresponding to |\varphi| takes less massaging. We’ll do the same trick of incorporating a Cut (Where?), but this
-makes a fairly minor difference in this case. The rule we get is:
-<span class="math display">$$\begin{align}
-\dfrac{\Delta \vdash E : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E' : B}{\Delta_l, \Delta, \Delta_r \vdash \mathsf{match}\ E\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E' : B}{\otimes_n}\text{E},n \geq 1
-\end{align}$$</span>
-Again, as the label suggests, this is an elimination rule for |\otimes|.</p>
-<p>We then need equalities for the two equations and a third equality for naturality of |\varphi|.
-<span class="math display">$$\begin{gather}
-\dfrac{\Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Delta_n \vdash E_n : A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E : B}{\Delta_l, \Delta_1, \dots, \Delta_n, \Delta_r \vdash (\mathsf{match}\ E_1\otimes\cdots\otimes E_n\ \mathsf{as}\ a_1\otimes\cdots\otimes a_n\ \mathsf{in}\ E) = E[E_1/a_1, \dots, E_n/a_n] : B}{\otimes}\beta
-\\ \\
-\dfrac{\Delta \vdash E : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a : A_1 \otimes \cdots \otimes A_n, \Delta_r \vdash E' : B}{\Delta_l, \Delta, \Delta_r \vdash E'[E/a] = (\mathsf{match}\ E\ \mathsf{as}\ a_1\otimes\cdots\otimes a_n\ \mathsf{in}\ E'[(a_1\otimes\cdots\otimes a_n)/a]) : B}{\otimes}\eta
-\end{gather}$$</span>
-The first equation corresponds to an introduction immediately followed by an elimination which is the form of a |\beta|-rule.
-The second is an elimination followed by an introduction and gives rise to an |\eta|-rule.</p>
-<p>Since we are considering a mapping-out property, the naturality equations gives rise to what is called a commuting conversion:
-<span class="math display">$$\begin{align}
-\dfrac{\Delta \vdash E_1 : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E_2 : B \quad b : B \vdash E_3 : C}{\Delta_l, \Delta, \Delta_r \vdash E_3[(\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \dots \otimes a_n\ \mathsf{in}\ E_2)/b] = (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E_3[E_2/b] : C}{\otimes}\text{CC}
-\end{align}$$</span></p>
-<p>This rule is pretty bad from the perspective of structural proof theory. If I give you terms of the forms of the left and right
-hand sides of the equation, it can be quite difficult and potentially ambiguous to figure out what terms |E_2| and |E_3| should
-be. While this particular example can’t happen in our case, imagine if |E_3| did not use the variable |b|.
-This technically isn’t a problem for building a derivation or verifying it as you can just require that when someone
-invokes this rule they must <em>specify</em> what all the meta-variables are. Still, this causes difficulties for proof search and
-normalization and proofs of meta-theorems.</p>
-<p>The solution is straightforward enough. We simply instantiate |E_3| with a concrete term. The not-so-straightforward
-part is knowing which terms we need. In this case, the main rule we need (and only one if we interpret the above as covering
-the |n = 0| case) is the following:
-<span class="math display">$$\begin{align}
-\dfrac{\Delta \vdash E_1 : A_1 \otimes \cdots \otimes A_m \quad \Delta_l, a_1 : A_1, \dots, a_m : A_m, \Delta_r \vdash E_2 : B_1 \otimes \cdots \otimes B_n \quad \Delta_l', b_1 : B_1, \dots, b_n : B_n, \Delta_r' \vdash E_3 : C}{\begin{align}\Delta_l', \Delta_l, \Delta, \Delta_r, \Delta_r' \vdash &amp;\ (\mathsf{match}\ (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_m\ \mathsf{in}\ E_2)\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_n\ \mathsf{in}\ E_3) \\ = &amp;\ (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ \mathsf{match}\ E_2\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) : C\end{align}}{\otimes}{\otimes}\text{CC}
-\end{align}$$</span></p>
-<p>You can see that this rule presents no difficulty in picking out the subterms that should correspond to the meta-variables.
-Fortunately, we don’t need a rule for every possible top-level term the |E_3| from the first rule could be, let alone
-the infinite number of possible instantiations of |E_3|. Unfortunately, we <em>do</em> need one for each elimination rule, and so
-the number of commuting conversions grows roughly quadratically with the number of connectives.</p>
-<p>The motivation for all these rules – the |\beta| and |\eta| rules as well as the commuting conversions –
-is ideally to have a well-defined normal form for terms that we can systematically reach. In particular, we want two terms to
-have the same normal form if and only if they are semantically equivalent. If we fail to have normal forms, we’d still
-at least want two terms to be in the same equivalence class induced by the equations if and only if they are semantically
-equivalent. Often, we only consider normal forms modulo the equivalence induced by commuting conversions and then endeavor
-to ensure that this equivalence is easily decidable.</p>
-<p>If we were to consider a mapping-in property, e.g. |\mathcal C(\_, B) \times \mathcal C(\_, C) \cong \mathcal C(\_, B \times C)| for
-the categorical product, the story would be very similar except with introduction and elimination switched. We’d also find that
-we don’t need a commuting conversion rule, though we would need to expand any existing commuting conversions with the new
-eliminator. You can work through it and try to find where the naturality equation went.</p>
-<p>See the <a href="#appendix">appendix</a> for a full and compact listing of the rules and an explicit formulation of
-what it means to interpret this language into a monoidal category.</p>
-<h2 id="examples">Examples</h2>
-<p>Before we go on to examples of monoidal categories, let’s consider an example of a theory that we can formulate in
-our internal language. The main example is the theory of monoids. We assume a type |\mathsf M| and
-operations |\mathsf e : () \to \mathsf M| and |\mathsf m : (\mathsf M, \mathsf M) \to \mathsf M|. To
-this we add the equations, |\mathsf m(\mathsf e(), a) = a = \mathsf m(a, \mathsf e())|
-and |\mathsf m(\mathsf m(a_1, a_2), a_3) = \mathsf m(a_1, \mathsf m(a_2, a_3))|. As we can readily verify,
-all these equations use the free variables in order and exactly once on each side of the equations. You can
-contrast this to <a href="https://en.wikipedia.org/wiki/Group_(mathematics)#Definition">the axioms of a group</a> and see that those axioms aren’t valid in our internal language.
-A model of the theory of a monoid in a monoidal category is known as a <a href="https://ncatlab.org/nlab/show/monoid+in+a+monoidal+category">monoid object</a>.
-Another theory we could formulate in our internal language is <a href="https://en.wikipedia.org/wiki/Semigroup_action#Formal_definitions">the theory of a monoid action</a>.</p>
-<p>For mathematicians, the archetypal example of a monoidal category is the category of vector spaces over a field |k|, e.g.
-the real numbers. The monoidal product is the tensor product of vector spaces with unit |k|. The multiarrows of the
-associated multicategory are multilinear maps. The tensor product is symmetric which corresponds to adding
-the <a href="https://en.wikipedia.org/wiki/Structural_rule">structural rule</a> of Exchange to our list of rules. In practice,
-this means while we’re still required to use each variable in the context of a term exactly once, we are no longer
-required to use them in order. A model of the theory of monoids in this monoidal category, i.e. a monoid object
-in this monoidal category, is exactly an <a href="https://en.wikipedia.org/wiki/Associative_algebra">associative, unital |k|-algebra</a>.
-Closely related, a ring is exactly a monoid object in the monoidal category of abelian groups.</p>
-<p>Another major class of monoidal categories is cartesian monoidal categories where the monoidal product is the
-categorical product. The category of vector spaces has categorical products so it forms a monoidal category
-with that as well. Therefore part of the data of a monoidal category is a specific choice of monoidal product
-as there can easily be many inequivalent monoidal products. In terms of our internal language, a cartesian
-monoidal product corresponds to adding all the structural rules: Exchange, Weakening, and Contraction. This means
-that we are free to use variables however we like, i.e. we can use them in any order, ignore them, or use them multiple
-times. Usually, categorical products are presented in terms of a mapping-in property as I mentioned in the
-previous section. For a type theory, this leads to having tupling and projections. A good exercise would
-be to look up (or formulate) the rules for product types and show how the rules we’ve provided, in addition
-to the structural rules, allows us to define projections and show that the relevant equations are satisfied.
-A monoid object in |\mathbf{Set}| with respect to its cartesian monoidal product is exactly what we typically
-mean by a monoid.</p>
-<p>A final example is the category of endofunctors on a given category which becomes a strict, non-symmetric monoidal
-category with composition as the monoidal product and the identity functor as the unit. Our internal language
-then provides a rather different perspective on natural transformations. A natural transformation |\tau : F \circ G \to H|
-is now viewed as a binary operation |\tau : (F, G) \to H|. To be clear, this is still <em>interpreted</em> as
-a family of (<em>unary</em>) arrows |\tau_A : F(G(A)) \to H(A)|. The action on arrows (which are natural transformations
-in this case) of the monoidal product is horizontal composition of natural transformations. The famous example
-is, of course, the natural transformations |\mu : T \circ T \to T| and |\eta : Id \to T| become the
-operations |\mu : (T, T) \to T| and |\eta : () \to T| and the monad laws are exactly the monoid laws. That
-is, a monad is a monoid object in the category of endofunctors equipped with this monoidal product.</p>
-<h2 id="generalizations---virtual-bicategories-and-actegories">Generalizations - (Virtual) Bicategories and Actegories</h2>
-<p>The category of endofunctors example is pretty nice, but it is weird to limit to just endofunctors. We
-can consider natural transformations from an arbitrary composable sequence of functors whose composite
-has the same source and target objects as the target functor. The source of this restriction is that
-our objects are (endo-)functors and the monoidal product needs to work on any pair of objects in any order.
-The solution to this is to use the fact that a monoidal category is exactly a one-object <a href="https://ncatlab.org/nlab/show/bicategory">bicategory</a>.</p>
-<p>We can thus readily generalize to the internal language of a bicategory. As before, it was helpful
-to use the notion of a multicategory, at least in passing. The analogue of a multicategory in this
-context is a virtual bicategory. That is, a multicategory is to a monoidal category as a virtual
-bicategory is to a bicategory. Basically, a virtual bicategory is like a multicategory except that
-each object now has a specified source and target and instead of allowing arbitrary sequences as
-sources for multiarrows, we only allow <em>composable</em> sequences. Here, a composable sequence is
-a sequence of objects such that the target of one object in the sequence is the source of the
-next. The analogue of a representable multicategory is the existence of composites in our
-virtual bicategory. We can say a bicategory is a virtual bicategory that has all composites.</p>
-<p>For our internal language, the only real change we need to make is to keep track of and enforce
-the composability constraint. One way of doing this is to modify our type formation judgement
-to |\vdash_S^T A| asserting that |A| is a linear type with source |S| and target |T|. Our
-typing judgement is similarly decorated producing |\Delta \vdash_S^T E : B|. |\Delta|
-is again of the form |a_1 : A_1, \dots, a_n : A_n|, but now there is the constraint that
-the source of |A_n| is |S|, the target of |A_1| is |T|, and the target of |A_i| is the source
-of |A_{i+1}| for |i &lt; n|. This leads to rules like
-<span class="math display">$$\begin{align}
-\dfrac{\Delta_1 \vdash_{T_1}^{T_0} E_1 : A_1 \quad \cdots \quad \Delta_n \vdash_{T_n}^{T_{n-1}} E_n : A_n}{\Delta_1,\dots,\Delta_n \vdash_{T_n}^{T_0} E_1 * \cdots * E_n : A_1 * \cdots * A_n}
-\end{align}$$</span>
-but nothing needs to change at the term level (though I did rename |\otimes| to |*| as that’s less misleading).
-The main (strict) bicategory would be |\mathbf{Cat}| where we’d interpret the linear types as functors and the
-linear terms as natural transformations.</p>
-<p>Another direction for generalization is motivated by <a href="https://ncatlab.org/nlab/show/algebra+over+a+monad#definition">T-algebras</a>
-where |T| is a monad. A |T|-algebra is an arrow |\alpha : TA \to A|. If we think of |\alpha| as a binary
-operation, |\alpha : (T, A) \to A|, similarly to how we viewed |\mu|, the |T|-algebra laws would look like
-|\alpha(\eta(), a) = a| and |\alpha(\mu(x, y), a) = \alpha(x, \alpha(y, a))|. These look exactly like
-the laws of a <a href="https://en.wikipedia.org/wiki/Semigroup_action">monoid action</a>. The problem with this idea is
-that |T| and |A| are different kinds of objects; they live in different categories. One solution to this
-is to consider the internal language of an <a href="https://ncatlab.org/nlab/show/actegory">actegory</a>.</p>
-<p>An actegory is a monoidal category, |\mathcal C|, that acts on another category, |\mathcal D|. The quickest
-way of describing this is to say it is a strong monoidal functor from |\mathcal C \to [\mathcal D, \mathcal D]|
-where the (endo-)functor category |[\mathcal D, \mathcal D]| is equipped with composition as its monoidal
-product. We can uncurry this functor into a bifunctor |({-})\cdot({=}) : \mathcal C \times \mathcal D \to \mathcal D|
-satisfying |I\cdot D \cong D| and |(C \otimes C’)\cdot D \cong C \cdot (C’ \cdot D)|. For our |T|-algebras,
-|\mathcal C| would be |[\mathcal D, \mathcal D]|, and the monoidal functor would just be the identity.</p>
-<p>To make the internal language, we’d start by including all the rules for a monoidal category to handle the structure
-on |\mathcal C|. Next, we’d add a judgement |\Delta / d : D \vdash E : D’| where |\Delta = c_1 : C_1, \dots, c_n : C_n|.
-This would have the same restriction that all variables, |c_1, \dots, c_n| and |d|, would need to be used exactly once
-and in the order they were written. The idea is that this would be interpreted as an arrow in |\mathcal D|
-from |(C_1 \otimes \cdots \otimes C_n)\cdot D \to D’|.</p>
-<p>We’d have the rules (among others):
-<span class="math display">$$\begin{gather}
-\dfrac{}{/ d : D \vdash d : D} \\ \\
-\dfrac{\Delta \vdash E : C \quad \Delta' / d : D \vdash E' : D'}{\Delta, \Delta' / d : D \vdash E \cdot E' : C \cdot D'} \\ \\
-\dfrac{\Delta / d : D \vdash E : C \cdot D' \quad c : C / d' : D' \vdash E' : D''}{\Delta / d : D \vdash \mathsf{match}\ E\ \mathsf{as}\ c \cdot d'\ \mathsf{in}\ E' : D''}
-\end{gather}$$</span></p>
-<p>Presumably, you could formulate a notion of “virtual actegory” where the arrows consist of a list of objects from a
-multicategory |\mathcal C| and a final object from a category |\mathcal D| as their source and an object of |\mathcal D|
-as their target. You could imagine going further (or alternately) for an analogue of a (virtual) bicategory which would,
-again, amount to using composable sequences. (The name “biactegory” is already taken.)</p>
-<p>Regardless, the above framework allows us to have |t : T / a : A \vdash \alpha(t, a) : A|, and we can then express
-our desired equations for a |T|-algebra in the form of the laws of a monoid action. One place where this notation comes
-in handy is in the connections between |T|-algebras and absolute colimits.</p>
-<h2 id="appendix">Appendix</h2>
-<h3 id="rules-for-a-monoidal-category">Rules for a Monoidal Category</h3>
-<p><span class="math display">$$\begin{gather}
-\dfrac{\vdash A}{a : A \vdash a : A}\text{Ax} \qquad
-\dfrac{\Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Delta_n \vdash E_n : A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E: B}{\Delta_l, \Delta_1, \dots, \Delta_n, \Delta_r \vdash E[E_1/a_1,\dots,E_n/a_n] : B}\text{Cut}
- \\ \\
-\dfrac{}{\vdash I}I\text{F} \qquad
-\dfrac{\vdash A_1 \quad \cdots \quad \vdash A_n}{\vdash A_1 \otimes \cdots \otimes A_n}{\otimes_n}\text{F}, n \geq 1 \qquad
-\dfrac{\mathsf A : \mathsf{Type}}{\vdash \mathsf A}\text{PrimType}
- \\ \\
-\dfrac{\Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Delta_n \vdash E_n : A_n \quad \mathsf f : (A_1, \dots, A_n) \to B}{\Delta_1, \dots, \Delta_n \vdash \mathsf f(E_1, \dots, E_n) : B}\text{PrimTerm}
- \\ \\
-\dfrac{}{\vdash * : I}I\text{I} \qquad
-\dfrac{\Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Delta_n \vdash E_n : A_n}{\Delta_1,\dots,\Delta_n \vdash E_1 \otimes \cdots \otimes E_n : A_1 \otimes \cdots \otimes A_n}{\otimes_n}\text{I}
- \\ \\
-\dfrac{\Delta \vdash E : I \quad \Delta_l, \Delta_r \vdash E' : B}{\Delta_l, \Delta, \Delta_r \vdash \mathsf{match}\ E\ \mathsf{as}\ {*}\ \mathsf{in}\ E' : B}I\text{E} \qquad
-\dfrac{\Delta \vdash E : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E' : B}{\Delta_l, \Delta, \Delta_r \vdash \mathsf{match}\ E\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E' : B}{\otimes_n}\text{E},n \geq 1
-\end{gather}$$</span></p>
-<h3 id="equations">Equations</h3>
-<p><span class="math display">$$\begin{gather}
-\dfrac{\Delta \vdash E : B}{\Delta \vdash (\mathsf{match}\ {*}\ \mathsf{as}\ {*}\ \mathsf{in}\ E) = E : B}{*}\beta \qquad
-\dfrac{\Delta \vdash E : I \quad \Delta_l, a : I, \Delta_r \vdash E' : B}{\Delta_l, \Delta, \Delta_r \vdash E'[E/a] = (\mathsf{match}\ E\ \mathsf{as}\ {*}\ \mathsf{in}\ E'[*/a]) : B}{*}\eta
- \\ \\
-\dfrac{\Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Delta_n \vdash E_n : A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E : B}{\Delta_l, \Delta_1, \dots, \Delta_n, \Delta_r \vdash (\mathsf{match}\ E_1\otimes\cdots\otimes E_n\ \mathsf{as}\ a_1\otimes\cdots\otimes a_n\ \mathsf{in}\ E) = E[E_1/a_1, \dots, E_n/a_n] : B}{\otimes_n}\beta
-\\ \\
-\dfrac{\Delta \vdash E : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a : A_1 \otimes \cdots \otimes A_n, \Delta_r \vdash E' : B}{\Delta_l, \Delta, \Delta_r \vdash E'[E/a] = (\mathsf{match}\ E\ \mathsf{as}\ a_1\otimes\cdots\otimes a_n\ \mathsf{in}\ E'[(a_1\otimes\cdots\otimes a_n)/a]) : B}{\otimes_n}\eta
- \\ \\
-\dfrac{\Delta \vdash E_1 : I \quad \Delta_l, \Delta_r \vdash E_2 : I \quad \Delta_l', \Delta_r' \vdash E_3 : C}{\Delta_l', \Delta_l, \Delta, \Delta_r, \Delta_r' \vdash (\mathsf{match}\ (\mathsf{match}\ E_1\ \mathsf{as}\ {*}\ \mathsf{in}\ E_2)\ \mathsf{as}\ {*}\ \mathsf{in}\ E_3) = (\mathsf{match}\ E_1\ \mathsf{as}\ {*}\ \mathsf{in}\ \mathsf{match}\ E_2\ \mathsf{as}\ {*}\ \mathsf{in}\ E_3) : C}{*}{*}\text{CC}
- \\ \\
-\dfrac{\Delta \vdash E_1 : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E_2 : I\quad \Delta_l', \Delta_r' \vdash E_3 : C}{\begin{align}\Delta_l', \Delta_l, \Delta, \Delta_r, \Delta_r' \vdash &amp;\ (\mathsf{match}\ (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E_2)\ \mathsf{as}\ {*}\ \mathsf{in}\ E_3) \\ = &amp;\ (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ \mathsf{match}\ E_2\ \mathsf{as}\ {*}\ \mathsf{in}\ E_3) : C\end{align}}{\otimes_n}{*}\text{CC}
- \\ \\
-\dfrac{\Delta \vdash E_1 : I \quad \Delta_l, \Delta_r \vdash E_2 : B_1 \otimes \cdots \otimes B_m \quad \Delta_l', b_1 : B_1, \dots, b_m : B_m, \Delta_r' \vdash E_3 : C}{\begin{align}\Delta_l', \Delta_l, \Delta, \Delta_r, \Delta_r' \vdash &amp;\ (\mathsf{match}\ (\mathsf{match}\ E_1\ \mathsf{as}\ {*}\ \mathsf{in}\ E_2)\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) \\ = &amp;\ (\mathsf{match}\ E_1\ \mathsf{as}\ {*}\ \mathsf{in}\ \mathsf{match}\ E_2\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) : C\end{align}}{*}{\otimes_m}\text{CC}
- \\ \\
-\dfrac{\Delta \vdash E_1 : A_1 \otimes \cdots \otimes A_n \quad \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E_2 : B_1 \otimes \cdots \otimes B_m \quad \Delta_l', b_1 : B_1, \dots, b_m : B_m, \Delta_r' \vdash E_3 : C}{\begin{align}\Delta_l', \Delta_l, \Delta, \Delta_r, \Delta_r' \vdash &amp;\ (\mathsf{match}\ (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E_2)\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) \\ = &amp;\ (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ \mathsf{match}\ E_2\ \mathsf{as}\ b_1 \otimes \cdots \otimes b_m\ \mathsf{in}\ E_3) : C\end{align}}{\otimes_n}{\otimes_m}\text{CC}
-\end{gather}$$</span></p>
-<p>|\mathsf A : \mathsf{Type}| means that |\mathsf A| is a primitive type in the signature. |\mathsf f : (A_1, \dots, A_n) \to B| means
-that |\mathsf f| is assigned this type in the signature.</p>
-<p>I did not write them, but the usual laws for equality (reflexivity and indiscernability of identicals) should be included.</p>
-<p>A theory in this language is free to introduce additional linear types and linear operations.</p>
-<h3 id="interpretation-into-a-monoidal-category">Interpretation into a monoidal category</h3>
-<p>Write |\den{-}| for the (overloaded) interpretation function. Its
-value on primitive operations is left as a parameter.</p>
-<p>Associators for the semantic |\otimes| will be omitted below. We can arbitrarily assume a particular
-association of monoidal products and then the relevant associators are completely determined by the
-input and output types. There are multiple possible expressions for those associators, but the coherence
-conditions of monoidal categories guarantee that they are equal.</p>
-<h4 id="interpretation-of-linear-types">Interpretation of Linear Types</h4>
-<p><span class="math display">$$\begin{align}
-\vdash A \implies &amp; \den{A} \in \mathsf{Ob}(\V) \\ \\
-\den{\Delta} =\, &amp; \den{A_1}\otimes \cdots \otimes \den{A_n} \text{ where } \Delta = a_1 : A_1, \dots, a_n : A_n \\
-\den{I} =\, &amp; I \\
-\den{A_1 \otimes \cdots \otimes A_n} =\, &amp; \den{A_1}\otimes \cdots \otimes \den{A_n} \\
-\end{align}$$</span></p>
-<h4 id="interpretation-of-linear-terms">Interpretation of Linear Terms</h4>
-<p><span class="math display">$$\begin{align}
-\Delta \vdash E : A \implies &amp; \den{E} \in \V(\den{\Delta}, \den{A}) \\ \\
-\den{a} =\, &amp; id_{\den{A}} \text{ where } a : A \\
-\den{*} =\, &amp; id_I \\
-\den{E_1 \otimes \cdots \otimes E_n} =\, &amp; \den{E_1} \otimes \cdots \otimes \den{E_n} \text{ where }\Delta_i \vdash E_i : A_i \\
-\den{\mathsf{match}\ E\ \mathsf{as}\ {*}\ \mathsf{in}\ E'} =\, &amp;
-    \den{E'} \circ (id_{\den{\Delta_l}} \otimes (\lambda_{\den{\Delta_r}} \circ (\den{E} \otimes id_{\den{\Delta_r}}))) \\
-\den{\mathsf{match}\ E\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E'} =\, &amp;
-    \den{E'} \circ (id_{\den{\Delta_l}} \otimes \den{E} \otimes id_{\den{\Delta_r}}) \\
-\den{\mathsf f(E_1, \dots, E_n)} =\, &amp; \den{\mathsf f} \circ (\den{E_1} \otimes \cdots \otimes \den{E_n})
-    \text{ where }\mathsf f\text{ is an appropriately typed linear operation}
-\end{align}$$</span></p>
-<p>where |\lambda_B : I \otimes B \cong B| is the left unitor.</p>
-<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
-<hr />
-<ol>
-<li id="fn1"><p>It would be even simpler if we talked about the internal language
-of a multicategory…<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>Every monoidal category gives rise to a multicategory in this way.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>]]></summary>
 </entry>
