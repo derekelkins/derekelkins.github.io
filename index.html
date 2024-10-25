@@ -46,6 +46,49 @@
           
     <div class="blog-post teaser panel panel-default">
     <div class="panel-heading">
+        <h2 class="blog-post-title"><a href="./posts/categorical-logic-and-fol.html">Classical First-Order Logic from the Perspective of Categorical Logic</a></h2>
+        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="a8ccba9b-9900-40e1-b2d4-47e0f944d456" href="./posts/categorical-logic-and-fol.html#disqus_thread"></a></h6>
+    </div>
+
+    <div class="panel-body">
+        
+            <h2 id="introduction">Introduction</h2>
+<p>Classical First-Order Logic (Classical FOL) has an absolutely central place in traditional
+logic, model theory, and set theory. It is the foundation upon which <strong>ZF</strong>(<strong>C</strong>), which is itself
+often taken as the foundation of mathematics, is built. When classical FOL was being established
+there was a lot of study and debate around alternative options. There are a variety of philosophical
+and metatheoretic reasons supporting classical FOL as The Right Choice.</p>
+<p>This all happened, however, well before category theory was even a twinkle in Mac Lane’s and Eilenberg’s
+eyes, and when type theory was taking its first stumbling steps.</p>
+<p>My focus in this article is on what classical FOL looks like to a modern categorical logician.
+This can be neatly summarized as “classical FOL is the internal logic of
+a <a href="https://ncatlab.org/nlab/show/first-order+hyperdoctrine">Boolean First-Order Hyperdoctrine</a>.
+Each of the three words in this term,”Boolean”, “First-Order”, and “Hyperdoctrine”, suggest
+a distinct axis in which to vary the (class of categorical models of the) logic. <em>All</em> of them
+have compelling categorical motivations to be varied.</p>
+
+            <h6><a href="./posts/categorical-logic-and-fol.html">Read more...</a></h6>
+        
+    </div>
+
+    <div class="panel-footer">
+        <h6 class="blog-post-meta">
+            October 25, 2024 00:55 UTC
+            
+            (Last updated on October 25, 2024 00:55 UTC)
+
+            
+                Tags: <a title="All pages tagged 'math'." href="./tags/math.html">math</a>, <a title="All pages tagged 'category theory'." href="./tags/category%20theory.html">category theory</a>, <a title="All pages tagged 'logic'." href="./tags/logic.html">logic</a>
+            
+        </h6>
+    </div>
+
+</div><!-- /.blog-post -->
+
+
+
+    <div class="blog-post teaser panel panel-default">
+    <div class="panel-heading">
         <h2 class="blog-post-title"><a href="./posts/global-rebuilding-coroutines-and-defunctionalization.html">Global Rebuilding, Coroutines, and Defunctionalization</a></h2>
         <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="8cfcff8b-beef-4e06-b534-2da8e05b95bc" href="./posts/global-rebuilding-coroutines-and-defunctionalization.html#disqus_thread"></a></h6>
     </div>
@@ -762,65 +805,6 @@ in later parts. In this part, I’ll make no assumptions beyond having an indexe
 
 
 
-    <div class="blog-post teaser panel panel-default">
-    <div class="panel-heading">
-        <h2 class="blog-post-title"><a href="./posts/internal-language-of-indexed-monoidal-categories.html">Internal Language of Indexed Monoidal Categories</a></h2>
-        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="d4ee5279-a5b3-470c-bbf0-542d4e3d773d" href="./posts/internal-language-of-indexed-monoidal-categories.html#disqus_thread"></a></h6>
-    </div>
-
-    <div class="panel-body">
-        
-            <script>
-extraMacros = {
-  V: "{\\mathcal V}",
-  den: ["{[\\!\[#1]\\!]}", 1]
-};
-</script>
-<h2 id="introduction">Introduction</h2>
-<p>This is part 2 in a series. See <a href="./posts/internal-language-of-a-monoidal-category.html">the previous part about internal languages for (non-indexed) monoidal categories</a>.
-The main application I have in mind – enriching in indexed monoidal categories – is covered in the <a href="./posts/enriched-indexed-categories-syntactically.html">next post</a>.</p>
-<p>As Jean Bénabou pointed out in <a href="http://dx.doi.org/10.2307/2273784">Fibered Categories and the Foundations of Naive Category Theory</a> (<a href="https://pdfs.semanticscholar.org/a7ba/3c5b0431adf514595d53ea393910c9230745.pdf">PDF</a>)
-notions of “families of objects/arrows” are ubiquitous and fundamental in category theory. One of the more noticeable places early
-on is in the definition of a natural transformation as a family of arrows. However, even in the definition of category, identities and
-compositions are families of functions, or, in the enriched case, arrows of |\mathbf V|. From a foundational perspective, one place
-where this gets really in-your-face is when trying to formalize the notion of (co)completeness. It is straightforward to make a first-order
-theory of a finitely complete category, e.g. <a href="https://ncatlab.org/nlab/show/fully+formal+ETCS#the_theory_of_finitely_complete_categories">this one</a>.
-For arbitrary products and thus limits, we need to talk about families of objects. To formalize the usual meaning of this in a
-first-order theory would require attaching an entire first-order theory of sets, e.g. <strong>ZFC</strong>, to our notion of complete category.
-If your goals are of a foundational nature like Bénabou’s were, then this is unsatisfactory. Instead, we can abstract out what we need
-of the notion of “family”. The result turns out to be equivalent to the notion of a <a href="https://ncatlab.org/nlab/show/Grothendieck+fibration">fibration</a>.</p>
-<p>My motivations here are not foundational but leaving the notion of “family” entirely meta-theoretical means not being able to talk
-about it except in the semantics. Bénabou’s comment suggests that at the semantic level we want not just a monoidal category, but a
-fibration of monoidal categories<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.
-At the syntactic level, it suggests that there should be a built-in notion of “family” in our
-language. We accomplish both of these goals by formulating the internal language of an <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal category</a>.</p>
-<p>As a benefit, we can generalize to other notions of “family” than set-indexed families. We’ll clearly be able to formulate
-the notion of an <a href="https://ncatlab.org/nlab/show/enriched+category">enriched category</a>. It’s also clear that we’ll be able to formulate
-the notion of an <a href="https://ncatlab.org/nlab/show/indexed+category">indexed category</a>. Of course, we’ll also be able to formulate
-the notion of a category that is both enriched and indexed which includes the important special case of an <a href="https://ncatlab.org/nlab/show/internal+category">internal category</a>.
-We can also consider cases with trivial indexing which, in the unenriched case, will give us monoids, and in the |\mathbf{Ab}|-enriched
-case will give us rings.</p>
-
-            <h6><a href="./posts/internal-language-of-indexed-monoidal-categories.html">Read more...</a></h6>
-        
-    </div>
-
-    <div class="panel-footer">
-        <h6 class="blog-post-meta">
-            July  6, 2020 02:00 UTC
-            
-            (Last updated on April 13, 2023 10:11 UTC)
-
-            
-                Tags: <a title="All pages tagged 'math'." href="./tags/math.html">math</a>, <a title="All pages tagged 'category theory'." href="./tags/category%20theory.html">category theory</a>
-            
-        </h6>
-    </div>
-
-</div><!-- /.blog-post -->
-
-
-
 
         </div><!-- /.blog-main -->
         
@@ -830,6 +814,8 @@ case will give us rings.</p>
                 <div class="panel-heading"><h4>Recent</h4></div>
                 <div class="panel-body">
                     <ol class="list-unstyled">
+                        
+                          <li><div class="blog-post-link">2024-10-25 - <a href="./posts/categorical-logic-and-fol.html">Classical First-Order Logic from the Perspective of Categorical Logic</a></div></li>
                         
                           <li><div class="blog-post-link">2024-10-04 - <a href="./posts/global-rebuilding-coroutines-and-defunctionalization.html">Global Rebuilding, Coroutines, and Defunctionalization</a></div></li>
                         
@@ -849,8 +835,6 @@ case will give us rings.</p>
                         
                           <li><div class="blog-post-link">2020-07-06 - <a href="./posts/enriched-indexed-categories-syntactically.html">Enriched Indexed Categories, Syntactically</a></div></li>
                         
-                          <li><div class="blog-post-link">2020-07-06 - <a href="./posts/internal-language-of-indexed-monoidal-categories.html">Internal Language of Indexed Monoidal Categories</a></div></li>
-                        
                     </ol>
                 </div>
               </div>
@@ -860,12 +844,12 @@ case will give us rings.</p>
                     <ol class="list-unstyled">
                       <li><a href="./tags/Agda.html">Agda (1)</a></li>
 <li><a href="./tags/CS.html">CS (4)</a></li>
-<li><a href="./tags/category%20theory.html">category theory (14)</a></li>
+<li><a href="./tags/category%20theory.html">category theory (15)</a></li>
 <li><a href="./tags/concurrency.html">concurrency (1)</a></li>
 <li><a href="./tags/geometric%20algebra.html">geometric algebra (1)</a></li>
 <li><a href="./tags/javascript.html">javascript (1)</a></li>
-<li><a href="./tags/logic.html">logic (5)</a></li>
-<li><a href="./tags/math.html">math (22)</a></li>
+<li><a href="./tags/logic.html">logic (6)</a></li>
+<li><a href="./tags/math.html">math (23)</a></li>
 <li><a href="./tags/programming.html">programming (5)</a></li>
 <li><a href="./tags/type%20theory.html">type theory (2)</a></li>
                     </ol>

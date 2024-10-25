@@ -7,8 +7,168 @@
         <description><![CDATA[Mostly math, physics, and CS]]></description>
         <atom:link href="https://derekelkins.github.io/haskell-rss.xml" rel="self"
                    type="application/rss+xml" />
-        <lastBuildDate>Fri, 04 Oct 2024 08:24:57 UT</lastBuildDate>
+        <lastBuildDate>Fri, 25 Oct 2024 00:55:55 UT</lastBuildDate>
         <item>
+    <title>Classical First-Order Logic from the Perspective of Categorical Logic</title>
+    <link>https://derekelkins.github.io/posts/categorical-logic-and-fol.html</link>
+    <description><![CDATA[<h2 id="introduction">Introduction</h2>
+<p>Classical First-Order Logic (Classical FOL) has an absolutely central place in traditional
+logic, model theory, and set theory. It is the foundation upon which <strong>ZF</strong>(<strong>C</strong>), which is itself
+often taken as the foundation of mathematics, is built. When classical FOL was being established
+there was a lot of study and debate around alternative options. There are a variety of philosophical
+and metatheoretic reasons supporting classical FOL as The Right Choice.</p>
+<p>This all happened, however, well before category theory was even a twinkle in Mac Lane’s and Eilenberg’s
+eyes, and when type theory was taking its first stumbling steps.</p>
+<p>My focus in this article is on what classical FOL looks like to a modern categorical logician.
+This can be neatly summarized as “classical FOL is the internal logic of
+a <a href="https://ncatlab.org/nlab/show/first-order+hyperdoctrine">Boolean First-Order Hyperdoctrine</a>.
+Each of the three words in this term,”Boolean”, “First-Order”, and “Hyperdoctrine”, suggest
+a distinct axis in which to vary the (class of categorical models of the) logic. <em>All</em> of them
+have compelling categorical motivations to be varied.</p>
+<!--more-->
+<h2 id="boolean">Boolean</h2>
+<p>The first and simplest is the term “Boolean”. This is what differentiates the categorical semantics
+of classical (first-order) logic from constructive (first-order) logic. Considering arbitrary
+first-order hyperdoctrines would give us a form of intuitionistic first-order logic.</p>
+<p>It is fairly rare that the categories categorists are interested in are Boolean. For example, most
+toposes, all of which give rise to first-order hyperdoctrines, are not Boolean. The assumption that they
+are tends to correspond to a kind of “discreteness” that’s often at odds with the purpose of the
+topos. For example, a category of sheaves on a topological space is Boolean if and only if that space is
+a <a href="https://en.wikipedia.org/wiki/Stone_space">Stone space</a>. These are certainly interesting spaces,
+but they are also totally disconnected unlike virtually every non-discrete topological space one
+would typically mention.</p>
+<h2 id="first-order">First-Order</h2>
+<p>The next term is the term “first-order”. As the name suggests, a first-order hyperdoctrine has the
+necessary structure to interpret first-order logic. The question, then, is what kind of categories
+have this structure and only this structure. The answer, as far as I’m aware, is not many.</p>
+<p>Many (classes of) categories have the structure to be first-order hyperdoctrines, but often they have
+additional structure as well that it seems odd to ignore. The most notable and interesting example is
+toposes. All elementary toposes (which includes all Grothendieck toposes) have the structure to give
+rise to a first-order hyperdoctrine. But, famously, they also have the structure to give rise to a
+higher order logic. Even more interesting, while Grothendieck toposes, being elementary toposes, technically
+<em>do</em> support the necessary structure for first-order logic, the natural morphisms of Grothendieck
+toposes, geometric morphisms, <em>do not preserve that structure</em>, unlike the logical functors between
+elementary toposes.</p>
+<p>The natural internal logic for Grothendieck toposes turns out to
+be <a href="https://ncatlab.org/nlab/show/geometric+theory">geometric logic</a>. This is a logic that lacks
+universal quantification and implication (and thus negation) but does have <em>infinitary</em> disjunction.
+This leads to a logic that is, at least superficially, incomparable to first-order logic. Closely
+related logics are regular logic and coherent logic which are sub-logics of both geometric
+logic and first-order logic.</p>
+<p>We see, then, just from the examples of the natural logics of toposes, none of them are first-order
+logic, and we get examples that are more powerful, less powerful, and incomparable to first-order
+logic. Other common classes of categories give other natural logics, such as the cartesian logic
+from left exact categories, and monoidal categories give rise to (ordered) linear logics.
+We get the simply typed lambda calculus from cartesian closed categories which leads
+to the next topic.</p>
+<h2 id="hyperdoctrine">Hyperdoctrine</h2>
+<p>A (posetal) hyperdoctrine essentially takes a category and, for each object in that category, assigns to it
+a poset of “predicates” on that object. In many cases, this takes the form of the <strong>Sub</strong> functor assigning
+to each object its poset of subobjects. Various versions of hyperdoctrines will require additional structure
+on the source category, these posets, and/or the functor itself to interpret various logical connectives.
+For example, a <a href="https://ncatlab.org/nlab/show/regular+hyperdoctrine">regular hyperdoctrine</a> requires the
+source category to have finite limits, the posets to be meet-semilattices, and the functor to give rise
+to monotonic functions with left adjoints satisfying certain properties. This notion of hyperdoctrines is
+suitable for regular logic.</p>
+<p>It’s very easy to recognize that these functors are essentially <a href="https://ncatlab.org/nlab/show/indexed+category">indexed</a>
+<a href="https://ncatlab.org/nlab/show/%280%2C1%29-category+theory">|(0,1)|-categories</a>. This immediately
+suggests that we should consider higher categorical versions or at the very least normal indexed categories.</p>
+<p>What this means for the logic is that we move from proof-irrelevant logic to proof-relevant logic. We now
+have potentially multiple ways a “predicate” could “entail” another “predicate”. We can
+<a href="https://doi.org/10.1017/CBO9780511525902.008">present the simply typed lambda calculus in this indexed category manner</a>.
+This naturally leads/connects to the categorical semantics of type theories.</p>
+<p>Pushing forward to |(\infty, 1)|-categories is also fairly natural, as it’s natural to want to
+talk about an entailment holding for distinct but “equivalent” reasons.</p>
+<h2 id="summary">Summary</h2>
+<p>Moving in all three of these directions simultaneously leads pretty naturally to something like
+Homotopy Type Theory (HoTT). HoTT is a naturally constructive (but not anti-classical) type theory
+aimed at being an internal language for |(\infty, 1)|-toposes.</p>
+<h2 id="why-classical-fol">Why Classical FOL?</h2>
+<p>Okay, so why did people pick classical FOL in the first place? It’s not like the concept of, say, a
+higher-order logic wasn’t considered at the time.</p>
+<p>Classical versus Intuitionistic was debated at the time, but at that time it was primarily a philosophical
+argument, and the defense of Intuitionism was not very compelling (to me and obviously people at the time).
+The focus would probably have been more on (classical) FOL versus second- (or higher-)order logic.</p>
+<p>Oversimplifying, the issue with second-order logic is fairly evident from the semantics. There are two
+main approaches: Henkin-semantics and full (or standard) semantics. Henkin-semantics keeps the nice
+properties of (classical) FOL but fails to get the nice properties, namely categoricity properties,
+of second-order logic. This isn’t surprising as Henkin-semantics can be encoded into first-order logic.
+It’s essentially syntactic sugar. Full semantics, however, states that the interpretation of predicate
+sorts is power sets of (cartesian products of) the domain<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. This leads to massive completeness problems as our metalogical set theory has many, many
+ways of building subsets of the domain. There are <a href="https://en.wikipedia.org/wiki/Second-order_logic#Metalogical_results">metatheoretic results</a>
+that state that there is no computable set of <em>logical</em> axioms that would give us a sound and
+complete theory for second-order logic with respect to full semantics. This aspect is also philosophically
+problematic, because we don’t want to need set theory to understand the very formulation of set theory.
+Thus Quine’s comment that “second-order logic [was] set theory in sheep’s clothing”.</p>
+<p>On the more positive and (meta-)mathematical side, we have results like
+<a href="https://ncatlab.org/nlab/show/Lindstr%C3%B6m%27s+theorem">Lindström’s theorem</a> which states that
+classical FOL is the strongest logic that simultaneously satisfies (downward) Löwenheim-Skolem
+and <a href="https://en.wikipedia.org/wiki/Compactness_theorem">compactness</a>. There’s also a syntactic
+result by Lindström which characterizes first-order logic as the only logic having a recursively
+enumerable set of tautologies and satisfying Löwenheim-Skolem<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.</p>
+<h3 id="the-catch">The Catch</h3>
+<p>There’s one big caveat to the above. All of the above results are formulated in traditional model
+theory which means there are various assumptions built in to their statements. In the language of
+categorical logic, these assumptions can basically be summed up in the statement that the <em>only</em>
+category of semantics that traditional model theory considers is <strong>Set</strong>.</p>
+<p>This is an utterly bizarre thing to do from the standpoint of categorical logic.</p>
+<p>The issues with full semantics follow directly from this choice. If, as categorical logic would
+have us do, we considered <em>every</em> category with sufficient structure as a potential category of
+semantics, then our theory would not be forced to follow every nook and cranny of <strong>Set</strong>’s
+notion of subset to be complete. Valid formulas would need to be true not only in <strong>Set</strong> but
+in wildly different categories, e.g. every (Boolean) topos.</p>
+<p>These traditional results are also often very specific to <em>classical</em> FOL. Dropping this constraint
+of classical logic would lead to an even broader class of models.</p>
+<h3 id="categorical-perspective-on-classical-first-order-logic">Categorical Perspective on Classical First-Order Logic</h3>
+<p>A <a href="https://ncatlab.org/nlab/show/Boolean+category">Boolean category</a> is just a <a href="https://ncatlab.org/nlab/show/coherent+category">coherent category</a>
+where every object has a complement. Since <a href="https://ncatlab.org/nlab/show/coherent+functor">coherent functors</a>
+preserve complements, we have that the category of Boolean categories is a <em>full</em> subcategory of the
+category of coherent categories.</p>
+<p>One nice thing about, specifically, <em>classical</em> first-order logic from the perspective of category
+theory is the following. First, <a href="https://ncatlab.org/nlab/show/coherent+logic">coherent logic</a>
+is a sub-logic of geometric logic restricted to finitary disjunction. Via <a href="posts/morleyization.html">Morleyization</a>, (TODO: Check link)
+we can encode <em>classical</em> first-order logic into coherent logic such that the
+categories of models of each are equivalent. This implies that a classical FOL formula is
+valid if and only if its encoding is. Morleyization allows us to analyze classical FOL using
+the tools of classifying toposes. On the one hand, this once again suggests the importance
+of <em>coherent</em> logic, but it also means that we <em>can</em> use categorical tools with <em>classical</em> FOL.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>There are certain things that I and, I believe, most logicians take as table stakes for a
+(foundational) logic<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>.
+For example, <em>checking</em> a proof should be computably decidable. For these reasons, I am in
+complete accord with early (formal) logicians that classical second-order logic with full semantics
+<em>is</em> an unacceptably worse alternative to classical first-order logic.</p>
+<p>However, when it comes to statements about the specialness of FOL, a lot of them seem to be more
+statements about traditional model theory than FOL itself, and also statements about the philosophical
+predilections of the time. I feel that philosophical attitudes among logicians and mathematicians
+have shifted a decent amount since the beginning of the 20th century. We have different philosophical
+predilections today than then, but they are informed by another hundred years of thought, and they are
+more relevant to what is being done today.</p>
+<p>Martin-Löf type theory (MLTT) and its progeny also present an alternative path with their own philosophical
+and metalogical justifications. I mention this to point out actual cases of foundational frameworks
+that a (<em>very</em>) superficial reading of traditional model theory results would seem to have been “ruled
+out”. Even if one thinks the FOL+<strong>ZFC</strong> (or whatever) is the better foundations, I think it is unreasonable
+to assert that MLTT derivatives are unworkable as a foundations.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>It’s worth mentioning that this is exactly
+what categorical logic would suggest: our syntactic power objects should be mapped to semantic power
+objects.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>While nice, it’s not clear that
+compactness and, especially, Löwenheim-Skolem are sacrosanct properties that we’d be unwilling
+to do without. Lindström’s first theorem is thus a nice abstract characterization theorem for
+classical FOL, but it doesn’t shut the door on considering alternatives even in the context of
+traditional model theory.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>I’m totally fine thinking about logics that lack these properties, but
+I would never put any of them forward as an acceptable foundational logic.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>]]></description>
+    <pubDate>2024-10-24 17:55:55-07:00</pubDate>
+    <guid>https://derekelkins.github.io/posts/categorical-logic-and-fol.html</guid>
+    <dc:creator>Derek Elkins</dc:creator>
+</item>
+<item>
     <title>Global Rebuilding, Coroutines, and Defunctionalization</title>
     <link>https://derekelkins.github.io/posts/global-rebuilding-coroutines-and-defunctionalization.html</link>
     <description><![CDATA[<h2 id="introduction">Introduction</h2>
@@ -2864,286 +3024,6 @@ much of a surprise as the tensor product of modules is exactly the (small) |\mat
 </section>]]></description>
     <pubDate>2020-07-05 22:03:27-07:00</pubDate>
     <guid>https://derekelkins.github.io/posts/enriched-indexed-categories-syntactically.html</guid>
-    <dc:creator>Derek Elkins</dc:creator>
-</item>
-<item>
-    <title>Internal Language of Indexed Monoidal Categories</title>
-    <link>https://derekelkins.github.io/posts/internal-language-of-indexed-monoidal-categories.html</link>
-    <description><![CDATA[<script>
-extraMacros = {
-  V: "{\\mathcal V}",
-  den: ["{[\\!\[#1]\\!]}", 1]
-};
-</script>
-<h2 id="introduction">Introduction</h2>
-<p>This is part 2 in a series. See <a href="/posts/internal-language-of-a-monoidal-category.html">the previous part about internal languages for (non-indexed) monoidal categories</a>.
-The main application I have in mind – enriching in indexed monoidal categories – is covered in the <a href="/posts/enriched-indexed-categories-syntactically.html">next post</a>.</p>
-<p>As Jean Bénabou pointed out in <a href="http://dx.doi.org/10.2307/2273784">Fibered Categories and the Foundations of Naive Category Theory</a> (<a href="https://pdfs.semanticscholar.org/a7ba/3c5b0431adf514595d53ea393910c9230745.pdf">PDF</a>)
-notions of “families of objects/arrows” are ubiquitous and fundamental in category theory. One of the more noticeable places early
-on is in the definition of a natural transformation as a family of arrows. However, even in the definition of category, identities and
-compositions are families of functions, or, in the enriched case, arrows of |\mathbf V|. From a foundational perspective, one place
-where this gets really in-your-face is when trying to formalize the notion of (co)completeness. It is straightforward to make a first-order
-theory of a finitely complete category, e.g. <a href="https://ncatlab.org/nlab/show/fully+formal+ETCS#the_theory_of_finitely_complete_categories">this one</a>.
-For arbitrary products and thus limits, we need to talk about families of objects. To formalize the usual meaning of this in a
-first-order theory would require attaching an entire first-order theory of sets, e.g. <strong>ZFC</strong>, to our notion of complete category.
-If your goals are of a foundational nature like Bénabou’s were, then this is unsatisfactory. Instead, we can abstract out what we need
-of the notion of “family”. The result turns out to be equivalent to the notion of a <a href="https://ncatlab.org/nlab/show/Grothendieck+fibration">fibration</a>.</p>
-<p>My motivations here are not foundational but leaving the notion of “family” entirely meta-theoretical means not being able to talk
-about it except in the semantics. Bénabou’s comment suggests that at the semantic level we want not just a monoidal category, but a
-fibration of monoidal categories<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.
-At the syntactic level, it suggests that there should be a built-in notion of “family” in our
-language. We accomplish both of these goals by formulating the internal language of an <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal category</a>.</p>
-<p>As a benefit, we can generalize to other notions of “family” than set-indexed families. We’ll clearly be able to formulate
-the notion of an <a href="https://ncatlab.org/nlab/show/enriched+category">enriched category</a>. It’s also clear that we’ll be able to formulate
-the notion of an <a href="https://ncatlab.org/nlab/show/indexed+category">indexed category</a>. Of course, we’ll also be able to formulate
-the notion of a category that is both enriched and indexed which includes the important special case of an <a href="https://ncatlab.org/nlab/show/internal+category">internal category</a>.
-We can also consider cases with trivial indexing which, in the unenriched case, will give us monoids, and in the |\mathbf{Ab}|-enriched
-case will give us rings.</p>
-<!--more-->
-<h2 id="indexed-monoidal-categories">Indexed Monoidal Categories</h2>
-<p>Following Shulman’s <a href="https://arxiv.org/abs/1212.3914">Enriched indexed categories</a>, let |\mathbf{S}| be a category with a cartesian monoidal structure, i.e. finite products. Then an |\mathbf{S}|-indexed monoidal
-category is simply a pseudofunctor |\V : \mathbf{S}^{op} \to \mathbf{MonCat}|. A <a href="https://ncatlab.org/nlab/show/pseudofunctor">pseudofunctor</a>
-is like a functor except that the functor laws only hold up to isomorphism, e.g. |\V(id)\cong id|. |\mathbf{MonCat}| is the |2|-category
-of monoidal categories, <a href="https://ncatlab.org/nlab/show/monoidal+functor">strong monoidal functors</a><a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>, and <a href="https://ncatlab.org/nlab/show/monoidal+natural+transformation">monoidal natural transformations</a>.
-We’ll write |\V(X)| as |\V^X| and |\V(f)| as |f^*|. We’ll never have multiple relevant indexed monoidal categories so
-this notation will never be ambiguous. We’ll call the categories |\V^X| <strong>fiber categories</strong> and the functors |f^*| <strong>reindexing
-functors</strong>. The cartesian monoidal structure on |\mathbf S| becomes relevant when we want to equip the total category, |\int\V|,
-(computed via the <a href="https://ncatlab.org/nlab/show/Grothendieck+construction">Grothendieck construction</a> in the usual way) with a monoidal structure.
-In particular, the tensor product of |A \in \V^X| and |B \in \V^Y| is an object |A\otimes B \in \V^{X\times Y}|
-calculated as |\pi_1^*(A) \otimes_{X\times Y} \pi_2^*(B)| where |\otimes_{X\times Y}| is the monoidal tensor in |\V^{X\times Y}|.
-The unit, |I|, is the unit |I_1 \in \V^1|.</p>
-<p>The two main examples are: |\mathcal Fam(\mathbf V)| where |\mathbf V| is a (non-indexed) monoidal category and |\mathcal Self(\mathbf S)|
-where |\mathbf S| is a category with finite limits. |\mathcal Fam(\mathbf V)| is a |\mathbf{Set}|-indexed monoidal category
-with |\mathcal Fam(\mathbf V)^X| defined as the category of |X|-indexed families of objects of |\mathbf V|, families of arrows between them, and
-an index-wise monoidal product. We can identify |\mathcal Fam(\mathbf V)^X| with the functor category |[DX, \mathbf V]| where |D : \mathbf{Set} \to \mathbf{cat}| takes
-a set |X| to a small discrete category. Enriching in indexed monoidal category |\mathcal Fam(\mathbf V)| will be equivalent to enriching
-in the non-indexed monoidal category |\mathbf V|, i.e. the usual notion of enrichment in a monoidal category. |\mathcal Self(\mathbf S)| is
-an |\mathbf S|-indexed monoidal category and |\mathcal Self(\mathbf S)^X| is the slice category |\mathbf S/X| with its cartesian monoidal
-structure. |f^*| is the pullback functor. |\mathcal Self(\mathbf S)|-enriched categories are categories internal to |\mathbf S|.
-A third example we’ll find interesting is |\mathcal Const(\mathbf V)| for a (non-indexed) monoidal category, |\mathbf V|, which is a |\mathbf 1|-indexed
-monoidal category, which corresponds to an object of |\mathbf{MonCat}|, namely |\mathbf V|.</p>
-<h2 id="the-internal-language-of-indexed-monoidal-categories">The Internal Language of Indexed Monoidal Categories</h2>
-<p>This builds on the internal language of a monoidal category described in the previous post. We’ll again have <strong>linear types</strong> and <strong>linear
-terms</strong> which will be interpreted into objects and arrows in the fiber categories. To indicate the dependence on the indexing,
-we’ll use two contexts: |\Gamma| will be an <strong>index context</strong> containing <strong>index types</strong> and <strong>index variables</strong>, which will be interpreted
-into objects and arrows of |\mathbf S|, while |\Delta|, the <strong>linear context</strong>, will contain linear types and linear variables as before
-except now linear types will be able to depend on <strong>index terms</strong>. So we’ll have judgements that look like:
-<span class="math display">$$\begin{gather}
-\Gamma \vdash A \quad \text{and} \quad \Gamma; \Delta \vdash E : B
-\end{gather}$$</span>
-The former indicates that |A| is a linear type indexed by the index variables of |\Gamma|. The latter states that |E| is a linear
-term of linear type |B| in the linear context |\Delta| indexed by the index variables of |\Gamma|. We’ll also have judgements
-for index types and index terms:
-<span class="math display">$$\begin{gather}
-\vdash X : \square \quad \text{and} \quad \Gamma \vdash E : Y
-\end{gather}$$</span>
-The former asserts that |X| is an index type. The latter asserts that |E| is an index term of index type |Y| in the index
-context |\Gamma|.</p>
-<p>Since each fiber category is monoidal, we’ll have all the rules from before just with an extra |\Gamma| hanging around. Since
-our indexing category, |\mathbf S|, is also monoidal, we’ll also have copies of these rules at the level of indexes. However,
-since |\mathbf S| is <em>cartesian</em> monoidal, we’ll also have the structural rules of weakening, exchange, and contraction for
-index terms and types. To emphasize the cartesian monoidal structure of indexes, I’ll use the more traditional Cartesian
-product and tuple notation: |\times| and |(E_1, \dots, E_n)|. This notation allows a bit more uniformity as the |n=0| case
-can be notated by |()|.</p>
-<p>The only really new rule is the rule that allows us to move linear types and terms from one index context to another, i.e. the rule that
-would correspond to applying a reindexing functor. I call this rule Reindex and, like Cut, it will be witnessed by
-substitution. Like Cut, it will also be a rule which we can eliminate. At the semantic level, this elimination corresponds
-to the fact that to understand the interpretation of any particular (linear) term, we can first reindex <em>everything</em>, i.e. all
-the interpretations of all subterms, into the same fiber category and then we can work entirely within that one fiber category.
-The Reindex rule is:
-<span class="math display">$$\begin{gather}
-\dfrac{\Gamma \vdash E : X \quad \Gamma', x : X; a_1 : A_1, \dots, a_n : A_n \vdash E' : B}{\Gamma',\Gamma; a_1 : A_1[E/x], \dots, a_n : A_n[E/x] \vdash E'[E/x] : B[E/x]}\text{Reindex}
-\end{gather}$$</span></p>
-<p>By representing reindexing by syntactic substitution, we’re requiring the semantics of (linear) type and term formation operations to be
-respected by reindexing functors. This is exactly the right thing to do as the appropriate notion of, say, indexed coproducts, which would
-correspond to sum types, is coproducts in each fiber category which are preserved by reindexing functors.</p>
-<p><a href="#rules-for-an-indexed-monoidal-category">Below</a> I provide a listing of rules and equations.</p>
-<h2 id="relation-to-parameterized-and-dependent-types">Relation to Parameterized and Dependent Types</h2>
-<p><small>None of this section is necessary for anything else.</small></p>
-<p>This notion of (linear) types and terms being indexed by other types and terms is reminiscent of parametric types or dependent types.
-The machinery of indexed/fibered categories is also commonly used in the categorical semantics of parameterized and dependent types.
-However, there are important differences between those cases and our case.</p>
-<p>In the case of parameterized types, we have types and terms that depend on other types. In this case, we have kinds, which are “types
-of types”, which classify types which in turn classify terms. If we try to set up an analogy to our situation, index types would
-correspond to kinds and index terms would correspond to types. The most natural thing to continue would be to have linear terms
-correspond to terms, but we start to see the problem. Linear terms are classified by linear types, but linear types are <em>not</em>
-index terms. They don’t even induce index terms. In the categorical semantics of parameterized types, this identification of
-types with (certain) expressions classified by kinds is handled by the notion of a generic object. A generic object corresponds
-to the kind |\mathsf{Type}| (what Haskell calls <code>*</code>). The assumption of a generic object is a rather strong assumption and one
-that none of our example indexed monoidal categories support in general.</p>
-<p>A similar issue occurs when we try to make an analogy to dependent types. The defining feature of a dependent type system
-is that types can depend on terms. The problem with such a potential analogy is that linear types and terms do not induce
-index types and terms. A nice way to model the semantics of dependent types is the notion of a <a href="https://ncatlab.org/nlab/show/categorical+model+of+dependent+types#comprehension_categories">comprehension category</a>.
-This, however, is additional structure beyond what we are given by an indexed monoidal category. However, comprehension
-categories will implicitly come up later when we talk about adding |\mathbf S|-indexed (co)products. These comprehension
-categories will share the same index category as our indexed monoidal categories, namely |\mathbf S|, but will have different
-total categories. Essentially, a comprehension category shows how objects (and arrows) of a total category can be represented
-in the index category. We can then talk about having (co)products in a different total category with same index category
-with respect to those objects picked out by the comprehension category. We get dependent types in the case where the total
-categories are the same. (More precisely, the fibrations are the same.) Sure enough, we will see that when |\mathcal Self(\mathbf S)|
-has |\mathbf S|-indexed products, then |\mathbf S| is, indeed, a model of a dependent type theory. In particular, it is
-<a href="https://ncatlab.org/nlab/show/locally+cartesian+closed+category">locally cartesian closed</a>.</p>
-<h2 id="rules-for-an-indexed-monoidal-category">Rules for an Indexed Monoidal Category</h2>
-<p><span class="math display">$$\begin{gather}
-\dfrac{\vdash X : \square}{x : X \vdash x : X}\text{IxAx} \qquad
-\dfrac{\Gamma\vdash E : X \quad \Gamma', x : X \vdash E': Y}{\Gamma',\Gamma \vdash E'[E/x] : Y}\text{IxCut}
- \\ \\
-\dfrac{\vdash Y : \square \quad \Gamma\vdash E : X}{\Gamma, y : Y \vdash E : X}\text{Weakening},\ y\text{ fresh} \qquad
-\dfrac{\Gamma, x : X, y : Y, \Gamma' \vdash E : Z}{\Gamma, y : Y, x : X, \Gamma' \vdash E : Z}\text{Exchange} \qquad
-\dfrac{\Gamma, x : X, y : Y \vdash E : Z}{\Gamma, x : X \vdash E[x/y] : Z}\text{Contraction}
- \\ \\
-\dfrac{\mathsf X : \mathsf{IxType}}{\vdash \mathsf X : \square}\text{PrimIxType} \qquad
-\dfrac{\vdash X_1 : \square \quad \cdots \quad \vdash X_n : \square}{\vdash (X_1, \dots, X_n) : \square}{\times_n}\text{F}
- \\ \\
-\dfrac{\Gamma \vdash E_1 : X_1 \quad \cdots \quad \Gamma \vdash E_n : X_n \quad \mathsf F : (X_1, \dots, X_n) \to Y}{\Gamma \vdash \mathsf F(E_1, \dots, E_n) : Y}\text{PrimIxTerm}
- \\ \\
-\dfrac{\Gamma_1 \vdash E_1 : X_1 \quad \cdots \quad \Gamma_n \vdash E_n : X_n}{\Gamma_1,\dots,\Gamma_n \vdash (E_1, \dots, E_n) : (X_1, \dots, X_n)}{\times_n}\text{I} \qquad
-\dfrac{\Gamma \vdash E : (X_1, \dots, X_n) \quad x_1 : X_1, \dots, x_n : X_n, \Gamma' \vdash E' : Y}{\Gamma, \Gamma' \vdash \mathsf{match}\ E\ \mathsf{as}\ (x_1, \dots, x_n)\ \mathsf{in}\ E' : Y}{\times_n}\text{E}
- \\ \\
-\dfrac{\Gamma \vdash E_1 : X_1 \quad \cdots \quad \Gamma \vdash E_n : X_n \quad \mathsf A : (X_1, \dots, X_n) \to \mathsf{Type}}{\Gamma \vdash \mathsf A(E_1, \dots, E_n)}\text{PrimType}
- \\ \\
-\dfrac{\Gamma \vdash A}{\Gamma; a : A \vdash a : A}\text{Ax} \qquad
-\dfrac{\Gamma; \Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Gamma; \Delta_n \vdash E_n : A_n \quad \Gamma; \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E: B}{\Gamma; \Delta_l, \Delta_1, \dots, \Delta_n, \Delta_r \vdash E[E_1/a_1, \dots, E_n/a_n] : B}\text{Cut}
- \\ \\
-\dfrac{\Gamma \vdash E : X \quad \Gamma', x : X; a_1 : A_1, \dots, a_n : A_n \vdash E' : B}{\Gamma',\Gamma; a_1 : A_1[E/x], \dots, a_n : A_n[E/x] \vdash E'[E/x] : B[E/x]}\text{Reindex}
- \\ \\
-\dfrac{}{\Gamma\vdash I}I\text{F} \qquad
-\dfrac{\Gamma\vdash A_1 \quad \cdots \quad \Gamma \vdash A_n}{\Gamma \vdash A_1 \otimes \cdots \otimes A_n}{\otimes_n}\text{F}, n \geq 1
- \\ \\
-\dfrac{\Gamma \vdash E_1 : X_1 \quad \cdots \quad \Gamma \vdash E_n : X_n \quad \Gamma; \Delta_1 \vdash E_1' : A_1 \quad \cdots \quad \Gamma; \Delta_m \vdash E_m' : A_m \quad \mathsf f : (x_1 : X_1, \dots, x_n : X_n; A_1, \dots, A_m) \to B}{\Gamma; \Delta_1, \dots, \Delta_m \vdash \mathsf f(E_1, \dots, E_n; E_1', \dots, E_m') : B}\text{PrimTerm}
- \\ \\
-\dfrac{}{\Gamma; \vdash * : I}I\text{I} \qquad
-\dfrac{\Gamma; \Delta \vdash E : I \quad \Gamma; \Delta_l, \Delta_r \vdash E' : B}{\Gamma; \Delta_l, \Delta, \Delta_r \vdash \mathsf{match}\ E\ \mathsf{as}\ *\ \mathsf{in}\ E' : B}I\text{E}
- \\ \\
-\dfrac{\Gamma; \Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Gamma; \Delta_n \vdash E_n : A_n}{\Gamma; \Delta_1,\dots,\Delta_n \vdash E_1 \otimes \cdots \otimes E_n : A_1 \otimes \cdots \otimes A_n}{\otimes_n}\text{I}
- \\ \\
-\dfrac{\Gamma; \Delta \vdash E : A_1 \otimes \cdots \otimes A_n \quad \Gamma; \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E' : B}{\Gamma; \Delta_l, \Delta, \Delta_r \vdash \mathsf{match}\ E\ \mathsf{as}\ (a_1 \otimes \cdots \otimes a_n)\ \mathsf{in}\ E' : B}{\otimes_n}\text{E},n \geq 1
-\end{gather}$$</span></p>
-<h3 id="equations">Equations</h3>
-<p><span class="math display">$$\begin{gather}
-\dfrac{\Gamma_1 \vdash E_1 : X_1 \quad \cdots \quad \Gamma_n \vdash E_n : X_n \qquad x_1 : X_1, \dots, x_n : X_n, \Gamma \vdash E : Y}{\Gamma_1, \dots, \Gamma_n, \Gamma \vdash (\mathsf{match}\ (E_1, \dots, E_n)\ \mathsf{as}\ (x_1, \dots, x_n)\ \mathsf{in}\ E) = E[E_1/x_1, \dots, E_n/x_n] : Y}{\times_n}\beta
- \\ \\
-\dfrac{\Gamma \vdash E : (X_1, \dots, X_n) \qquad \Gamma, x : (X_1, \dots, X_n) \vdash E' : B}{\Gamma \vdash E'[E/x] = \mathsf{match}\ E\ \mathsf{as}\ (x_1, \dots, x_n)\ \mathsf{in}\ E'[(x_1, \dots, x_n)/x] : B}{\times_n}\eta
- \\ \\
-\dfrac{\Gamma \vdash E_1 : (X_1, \dots, X_n) \qquad x_1 : X_1, \dots, x_n : X_n \vdash E_2 : Y \quad y : Y \vdash E_3 : Z}{\Gamma \vdash (\mathsf{match}\ E_1\ \mathsf{as}\ (x_1, \dots, x_n)\ \mathsf{in}\ E_3[E_2/y]) = E_3[(\mathsf{match}\ E_1\ \mathsf{as}\ (x_1, \dots, x_n)\ \mathsf{in}\ E_2)/y] : Z}{\times_n}\text{CC}
- \\ \\
-\dfrac{\Gamma;\vdash E : B}{\Gamma;\vdash (\mathsf{match}\ *\ \mathsf{as}\ *\ \mathsf{in}\ E) = E : B}{*}\beta \qquad
-\dfrac{\Gamma; \Delta \vdash E : I \qquad \Gamma; \Delta_l, a : I, \Delta_r \vdash E' : B}{\Gamma; \Delta_l, \Delta, \Delta_r \vdash E'[E/a] = (\mathsf{match}\ E\ \mathsf{as}\ *\ \mathsf{in}\ E'[{*}/a]) : B}{*}\eta
- \\ \\
-\dfrac{\Gamma; \Delta_1 \vdash E_1 : A_1 \quad \cdots \quad \Gamma; \Delta_n \vdash E_n : A_n \qquad \Gamma; \Delta_l, a_1 : A_1, \dots, a_n, \Delta_r : A_n \vdash E : B}{\Gamma; \Delta_l, \Delta_1, \dots, \Delta_n, \Delta_r \vdash (\mathsf{match}\ E_1\otimes\cdots\otimes E_n\ \mathsf{as}\ a_1\otimes\cdots\otimes a_n\ \mathsf{in}\ E) = E[E_1/a_1, \dots, E_n/a_n] : B}{\otimes_n}\beta
- \\ \\
-\dfrac{\Gamma; \Delta \vdash E : A_1 \otimes \cdots \otimes A_n \qquad \Gamma; \Delta_l, a : A_1 \otimes \cdots \otimes A_n, \Delta_r \vdash E' : B}{\Gamma; \Delta_l, \Delta, \Delta_r \vdash E'[E/a] = \mathsf{match}\ E\ \mathsf{as}\ a_1\otimes\cdots\otimes a_n\ \mathsf{in}\ E'[(a_1\otimes\cdots\otimes a_n)/a] : B}{\otimes_n}\eta
- \\ \\
-\dfrac{\Gamma; \Delta \vdash E_1 : I \qquad \Gamma; \Delta_l, \Delta_r \vdash E_2 : B \qquad \Gamma; b : B \vdash E_3 : C}{\Gamma; \Delta_l, \Delta, \Delta_r \vdash (\mathsf{match}\ E_1\ \mathsf{as}\ *\ \mathsf{in}\ E_3[E_2/b]) = E_3[(\mathsf{match}\ E_1\ \mathsf{as}\ *\ \mathsf{in}\ E_2)/b] : C}{*}\text{CC}
- \\ \\
-\dfrac{\Gamma; \Delta \vdash E_1 : A_1 \otimes \cdots \otimes A_n \qquad \Gamma; \Delta_l, a_1 : A_1, \dots, a_n : A_n, \Delta_r \vdash E_2 : B \qquad \Gamma; b : B \vdash E_3 : C}{\Gamma; \Delta_l, \Delta, \Delta_r \vdash (\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E_3[E_2/b]) = E_3[(\mathsf{match}\ E_1\ \mathsf{as}\ a_1 \otimes \dots \otimes a_n\ \mathsf{in}\ E_2)/b] : C}{\otimes_n}\text{CC}
-\end{gather}$$</span></p>
-<p>|\mathsf X : \mathsf{IxType}| means |\mathsf X| is a primitive index type in the signature. |\mathsf A : (X_1, \dots, X_n) \to \mathsf{Type}|
-means that |\mathsf A| is a primitive linear type in the signature. |\mathsf F : (X_1, \dots, X_n) \to Y|
-and |\mathsf f : (x_1 : X_1, \dots, x_n : X_n; A_1, \dots, A_m) \to B| mean that |\mathsf F| and |\mathsf f| are assigned
-these types in the signature. In the latter case, it is assumed that |x_1 : X_1, \dots, x_n : X_n \vdash A_i| for |i = 1, \dots, m|
-and |x_1 : X_1, \dots, x_n : X_n \vdash B|. Alternatively, these assumptions could be added as additional hypotheses to the PrimTerm
-rule. Generally, every |x_i| will be used in some |A_j| or in |B|, though this isn’t technically required.</p>
-<p>As before, I did not write the usual laws for equality (reflexivity and indiscernability of identicals) but they also should be included.</p>
-<p>See the discussion in <a href="/posts/internal-language-of-a-monoidal-category.html">the previous part</a> about the commuting conversion (|\text{CC}|) rules.</p>
-<p>A theory in this language is free to introduce additional index types, operations on indexes, linear types, and linear operations.</p>
-<h2 id="interpretation-into-an-mathbf-s-indexed-monoidal-category">Interpretation into an |\mathbf S|-indexed monoidal category</h2>
-<p>Fix an |\mathbf S|-indexed monoidal category |\V|. Write |\den{-}| for the (overloaded)
-interpretation function. Its value on primitive operations is left as a parameter.</p>
-<p>Associators for the semantic |\times| and |\otimes| will be omitted below.</p>
-<h3 id="interpretation-of-index-types">Interpretation of Index Types</h3>
-<p><span class="math display">$$\begin{align}
-\vdash X : \square \implies &amp; \den{X} \in \mathsf{Ob}(\mathbf S) \\ \\
-\den{\Gamma} = &amp; \prod_{i=1}^n \den{X_i}\text{ where } \Gamma = x_1 : X_1, \dots, x_n : X_n \\
-\den{(X_1, \dots, X_n)} = &amp; \prod_{i=1}^n \den{X_i}
-\end{align}$$</span></p>
-<h3 id="interpretation-of-index-terms">Interpretation of Index Terms</h3>
-<p><span class="math display">$$\begin{align}
-\Gamma \vdash E : X \implies &amp; \den{E} \in \mathbf{S}(\den{\Gamma}, \den{X}) \\ \\
-\den{x_i} =\, &amp; \pi_i \text{ where } x_1 : X_1, \dots, x_n : X_n \vdash x_i : X_i \\
-\den{(E_1, \dots, E_n)} =\, &amp; \den{E_1} \times \cdots \times \den{E_n} \\
-\den{\mathsf{match}\ E\ \mathsf{as}\ (x_1, \dots, x_n)\ \mathsf{in}\ E'} =\, &amp; \den{E'} \circ (\den{E} \times id_{\den{\Gamma'}}) \text{ where }
-    \Gamma' \vdash E' : Y \\
-\den{\mathsf F(E_1, \dots, E_n)} =\, &amp; \den{\mathsf F} \circ (\den{E_1} \times \cdots \times \den{E_n}) \\
-    &amp; \quad \text{ where }\mathsf F\text{ is an appropriately typed index operation}
-\end{align}$$</span></p>
-<h3 id="witnesses-of-index-derivations">Witnesses of Index Derivations</h3>
-<p>IxAx is witnessed by identity, and IxCut by composition in |\mathbf S|. Weakening is witnessed by projection.
-Exchange and Contraction are witnessed by expressions that can be built from projections and tupling. This is
-very standard.</p>
-<h3 id="interpretation-of-linear-types">Interpretation of Linear Types</h3>
-<p><span class="math display">$$\begin{align}
-\Gamma \vdash A \implies &amp; \den{A} \in \mathsf{Ob}(\V^{\den{\Gamma}}) \\ \\
-\den{\Delta} =\, &amp; \den{A_1}\otimes_{\den{\Gamma}}\cdots\otimes_{\den{\Gamma}}\den{A_n} \text{ where } \Delta = a_1 : A_1, \dots, a_n : A_n \\
-\den{I} =\, &amp; I_{\den{\Gamma}}\text{ where } \Gamma \vdash I \\
-\den{A_1 \otimes \cdots \otimes A_n} =\, &amp; \den{A_1}\otimes_{\den{\Gamma}} \cdots \otimes_{\den{\Gamma}} \den{A_n}\text{ where }
-    \Gamma \vdash A_i \\
-\den{\mathsf A(E_1, \dots, E_n)} =\, &amp; \langle \den{E_1}, \dots, \den{E_n}\rangle^*(\den{\mathsf A}) \\
-    &amp; \quad \text{ where }\mathsf A\text{ is an appropriately typed linear type operation}
-\end{align}$$</span></p>
-<h3 id="interpretation-of-linear-terms">Interpretation of Linear Terms</h3>
-<p><span class="math display">$$\begin{align}
-\Gamma; \Delta \vdash E : A \implies &amp; \den{E} \in \V^{\den{\Gamma}}(\den{\Delta}, \den{A}) \\ \\
-\den{a} =\, &amp; id_{\den{A}} \text{ where } a : A \\
-\den{*} =\, &amp; id_{I_{\den{\Gamma}}} \text{ where } \Gamma;\vdash * : I \\
-\den{E_1 \otimes \cdots \otimes E_n} =\, &amp; \den{E_1} \otimes_{\den{\Gamma}} \cdots \otimes_{\den{\Gamma}} \den{E_n} \text{ where }
-    \Gamma; \Delta_i \vdash E_i : A_i \\
-\den{\mathsf{match}\ E\ \mathsf{as}\ {*}\ \mathsf{in}\ E'} =\, &amp;
-    \den{E'} \circ (id_{\den{\Delta_l}} \otimes_{\den{\Gamma}} (\lambda_{\den{\Delta_r}} \circ (\den{E} \otimes_{\den{\Gamma}} id_{\den{\Delta_r}}))) \\
-\den{\mathsf{match}\ E\ \mathsf{as}\ a_1 \otimes \cdots \otimes a_n\ \mathsf{in}\ E'} =\, &amp;
-    \den{E'} \circ (id_{\den{\Delta_l}} \otimes_{\den{\Gamma}} \den{E} \otimes_{\den{\Gamma}} id_{\den{\Delta_r}}) \\
-\den{\mathsf f(E_1, \dots, E_n; E_1', \dots, E_n')} =\, &amp; \langle \den{E_1}, \dots, \den{E_n}\rangle^*(\den{\mathsf f})
-    \circ (\den{E_1'} \otimes_{\den{\Gamma}} \cdots \otimes_{\den{\Gamma}} \den{E_n'}) \\
-        &amp; \quad \text{ where }\mathsf f\text{ is an appropriately typed linear operation}
-\end{align}$$</span></p>
-<h3 id="witnesses-of-linear-derivations">Witnesses of Linear Derivations</h3>
-<p>As with the index derivations, Ax is witnessed by the identity, in this case in |\V^{\den{\Gamma}}|.</p>
-<p>|\den{E[E_1/a_1,,E_n/a_n]} = \den{E} \circ (\den{E_1}\otimes\cdots\otimes\den{E_n})| witnesses Cut.</p>
-<p>Roughly speaking, Reindex is witnessed by |\den{E}^*(\den{E’})|. If we were content to restrict ourselves to
-semantics in |\mathbf S|-indexed monoidal categories witnessed by functors, as opposed to pseudofunctors, into <em>strict</em>
-monoidal categories, then this would suffice. For an arbitrary |\mathbf S|-indexed monoidal category, we can’t be sure
-that the naive interpretation of |A[E/x][E’/y]|, i.e. |\den{E’}^*(\den{E}^*(\den{A}))|, which we’d get from two
-applications of the Reindex rule, is the same as the interpretation of |A[E[E’/y]/x]|, i.e. |\den{E \circ E’}^*(\den{A})|,
-which we’d get from IxCut followed by Reindex. On the other hand, |A[E/x][E’/y] = A[E[E’/y]/x]| is simply true syntactically
-by the definition of substitution (which I have not provided but is the obvious, usual thing). There are similar issues for
-(meta-)equations like |I[E/x] = I| and |(A_1 \otimes A_2)[E/x] = A_1[E/x] \otimes A_2[E/x]|.</p>
-<p>The solution is that we essentially use a normal form where we eliminate the uses of Reindex. These normal form derivations
-will be reached by rewrites such as:
-<span class="math display">$$\begin{gather}
-\dfrac{\dfrac{\mathcal D}{\Gamma' \vdash E : X} \qquad \dfrac{\dfrac{\mathcal D_1}{\Gamma, x : X; \Delta_1 \vdash E_1 : A_1} \quad
-                                        \cdots \quad \dfrac{\mathcal D_n}{\Gamma, x : X; \Delta_n \vdash E_n : A_n}}
-    {\Gamma, x : X; \Delta_1, \dots, \Delta_n \vdash E_1 \otimes \cdots \otimes E_n : A_1 \otimes \cdots \otimes A_n}}
-    {\Gamma, \Gamma'; \Delta_1[E/x], \dots, \Delta_n[E/x] \vdash E_1[E/x] \otimes \cdots \otimes E_n[E/x] : A_1[E/x] \otimes \cdots \otimes A_n[E/x]} \\
-\Downarrow \\
-\dfrac{\dfrac{\dfrac{\mathcal D}{\Gamma' \vdash E : X} \quad \dfrac{\mathcal D_1}{\Gamma, x : X; \Delta_1 \vdash E_1 : A_1}}
-                {\Gamma, \Gamma'; \Delta_1[E/x] \vdash E_1[E/x] : A_1[E/x]} \quad
-        \cdots \quad
-       \dfrac{\dfrac{\mathcal D}{\Gamma' \vdash E : X} \quad \dfrac{\mathcal D_n}{\Gamma, x : X; \Delta_n \vdash E_n : A_n}}
-                {\Gamma, \Gamma'; \Delta_n[E/x] \vdash E_n[E/x] : A_n[E/x]}}
-    {\Gamma, \Gamma'; \Delta_1[E/x], \dots, \Delta_n[E/x] \vdash E_1[E/x] \otimes \cdots \otimes E_n[E/x] : A_1[E/x] \otimes \cdots \otimes A_n[E/x]}
-\end{gather}$$</span></p>
-<p>Semantically, this is witnessed by the strong monoidal structure,
-i.e. |\den{E}^*(\den{E_1} \otimes \cdots \otimes \den{E_n}) \cong \den{E}^*(\den{E_1}) \otimes \cdots \otimes \den{E}^*(\den{E_n})|.
-We need such rewrites for all (linear) rules that can immediately precede Reindex in a derivation. For |I\text{I}|, |I\text{E}|,
-|\otimes_n\text{E}|, and, as we’ve just seen, |\otimes_n\text{I}|, these rewrites are witnessed by |\den{E}^*| being a strong
-monoidal functor. The rewrites for |\text{Ax}| and |\text{Cut}| are witnessed by functorality of |\den{E}^*| and also
-strong monoidality for Cut. Finally, two adjacent uses of Reindex become an IxCut and a Reindex and are witnessed by the
-pseudofunctoriality of |(\_)^*|. (While we’re normalizing, we may as well eliminate Cut and IxCut as well.)</p>
-<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
-<hr />
-<ol>
-<li id="fn1"><p>As the previous post alludes, monoidal structure is more than we need. If we pursue the generalizations
-described there in this indexed context, we eventually end up at <a href="https://ncatlab.org/nlab/show/augmented+virtual+double+category">augmented virtual double categories</a>
-or <a href="https://ncatlab.org/nlab/show/virtual+equipment">virtual equipment</a>.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>The terminology here is a mess.
-Leinster calls strong monoidal functors “weak”. “Strong” also refers to <a href="https://ncatlab.org/nlab/show/tensorial+strength">tensorial strength</a>,
-and it’s quite possible to have a “strong lax monoidal functor”. (In fact, this is what applicative functors are usually described as, though
-a <a href="https://ncatlab.org/nlab/show/closed+functor">strong lax closed functor</a> would be a more direct connection.) Or the functors we’re talking about
-which are not-strong strong monoidal functors…<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-</ol>
-</section>]]></description>
-    <pubDate>2020-07-05 19:00:56-07:00</pubDate>
-    <guid>https://derekelkins.github.io/posts/internal-language-of-indexed-monoidal-categories.html</guid>
     <dc:creator>Derek Elkins</dc:creator>
 </item>
 

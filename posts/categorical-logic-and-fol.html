@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="A blog mostly on math, physics, and computer science.">
+    <meta name="author" content="Derek Elkins">
+    <!--<link rel="icon" href="/images/favicon.ico">-->
+
+    <title>Classical First-Order Logic from the Perspective of Categorical Logic</title>
+    <!-- Bootstrap core CSS -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="../css/blog.css" rel="stylesheet">
+    <link href="../css/syntax.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="blog-masthead">
+      <div class="container">
+        <nav class="blog-nav">
+          <a class="blog-nav-item " href="../">Home</a>
+          <a class="blog-nav-item " href="../about.html">About</a>
+          <a class="blog-nav-item " href="../contact.html">Contact</a>
+          <a class="blog-nav-item " href="../readinglist.html">Reading List</a>
+          <a class="blog-nav-item " href="../archive.html">Archive</a>
+          <a class="blog-nav-item pull-right" href="../rss.xml">RSS</a>
+          <a class="blog-nav-item pull-right" href="../atom.xml">Atom</a>
+        </nav>
+      </div>
+    </div>
+
+    <div class="container">
+      
+      
+      <div class="row">
+        
+        <div class="col-sm-12 blog-main">
+        
+          <div class="blog-post">
+    <h2 class="blog-post-title" style="margin-top: 30px;">Classical First-Order Logic from the Perspective of Categorical Logic</h2>
+    <p class="blog-post-meta">October 25, 2024 00:55 UTC 
+        
+        (Last updated on October 25, 2024 00:55 UTC)
+    </p>
+    <h6 class="blog-post-meta">
+        
+        Tags: <a title="All pages tagged 'math'." href="../tags/math.html">math</a>, <a title="All pages tagged 'category theory'." href="../tags/category%20theory.html">category theory</a>, <a title="All pages tagged 'logic'." href="../tags/logic.html">logic</a>
+        
+    </h6>
+
+    <h2 id="introduction">Introduction</h2>
+<p>Classical First-Order Logic (Classical FOL) has an absolutely central place in traditional
+logic, model theory, and set theory. It is the foundation upon which <strong>ZF</strong>(<strong>C</strong>), which is itself
+often taken as the foundation of mathematics, is built. When classical FOL was being established
+there was a lot of study and debate around alternative options. There are a variety of philosophical
+and metatheoretic reasons supporting classical FOL as The Right Choice.</p>
+<p>This all happened, however, well before category theory was even a twinkle in Mac Lane’s and Eilenberg’s
+eyes, and when type theory was taking its first stumbling steps.</p>
+<p>My focus in this article is on what classical FOL looks like to a modern categorical logician.
+This can be neatly summarized as “classical FOL is the internal logic of
+a <a href="https://ncatlab.org/nlab/show/first-order+hyperdoctrine">Boolean First-Order Hyperdoctrine</a>.
+Each of the three words in this term,”Boolean”, “First-Order”, and “Hyperdoctrine”, suggest
+a distinct axis in which to vary the (class of categorical models of the) logic. <em>All</em> of them
+have compelling categorical motivations to be varied.</p>
+<!--more-->
+<h2 id="boolean">Boolean</h2>
+<p>The first and simplest is the term “Boolean”. This is what differentiates the categorical semantics
+of classical (first-order) logic from constructive (first-order) logic. Considering arbitrary
+first-order hyperdoctrines would give us a form of intuitionistic first-order logic.</p>
+<p>It is fairly rare that the categories categorists are interested in are Boolean. For example, most
+toposes, all of which give rise to first-order hyperdoctrines, are not Boolean. The assumption that they
+are tends to correspond to a kind of “discreteness” that’s often at odds with the purpose of the
+topos. For example, a category of sheaves on a topological space is Boolean if and only if that space is
+a <a href="https://en.wikipedia.org/wiki/Stone_space">Stone space</a>. These are certainly interesting spaces,
+but they are also totally disconnected unlike virtually every non-discrete topological space one
+would typically mention.</p>
+<h2 id="first-order">First-Order</h2>
+<p>The next term is the term “first-order”. As the name suggests, a first-order hyperdoctrine has the
+necessary structure to interpret first-order logic. The question, then, is what kind of categories
+have this structure and only this structure. The answer, as far as I’m aware, is not many.</p>
+<p>Many (classes of) categories have the structure to be first-order hyperdoctrines, but often they have
+additional structure as well that it seems odd to ignore. The most notable and interesting example is
+toposes. All elementary toposes (which includes all Grothendieck toposes) have the structure to give
+rise to a first-order hyperdoctrine. But, famously, they also have the structure to give rise to a
+higher order logic. Even more interesting, while Grothendieck toposes, being elementary toposes, technically
+<em>do</em> support the necessary structure for first-order logic, the natural morphisms of Grothendieck
+toposes, geometric morphisms, <em>do not preserve that structure</em>, unlike the logical functors between
+elementary toposes.</p>
+<p>The natural internal logic for Grothendieck toposes turns out to
+be <a href="https://ncatlab.org/nlab/show/geometric+theory">geometric logic</a>. This is a logic that lacks
+universal quantification and implication (and thus negation) but does have <em>infinitary</em> disjunction.
+This leads to a logic that is, at least superficially, incomparable to first-order logic. Closely
+related logics are regular logic and coherent logic which are sub-logics of both geometric
+logic and first-order logic.</p>
+<p>We see, then, just from the examples of the natural logics of toposes, none of them are first-order
+logic, and we get examples that are more powerful, less powerful, and incomparable to first-order
+logic. Other common classes of categories give other natural logics, such as the cartesian logic
+from left exact categories, and monoidal categories give rise to (ordered) linear logics.
+We get the simply typed lambda calculus from cartesian closed categories which leads
+to the next topic.</p>
+<h2 id="hyperdoctrine">Hyperdoctrine</h2>
+<p>A (posetal) hyperdoctrine essentially takes a category and, for each object in that category, assigns to it
+a poset of “predicates” on that object. In many cases, this takes the form of the <strong>Sub</strong> functor assigning
+to each object its poset of subobjects. Various versions of hyperdoctrines will require additional structure
+on the source category, these posets, and/or the functor itself to interpret various logical connectives.
+For example, a <a href="https://ncatlab.org/nlab/show/regular+hyperdoctrine">regular hyperdoctrine</a> requires the
+source category to have finite limits, the posets to be meet-semilattices, and the functor to give rise
+to monotonic functions with left adjoints satisfying certain properties. This notion of hyperdoctrines is
+suitable for regular logic.</p>
+<p>It’s very easy to recognize that these functors are essentially <a href="https://ncatlab.org/nlab/show/indexed+category">indexed</a>
+<a href="https://ncatlab.org/nlab/show/%280%2C1%29-category+theory">|(0,1)|-categories</a>. This immediately
+suggests that we should consider higher categorical versions or at the very least normal indexed categories.</p>
+<p>What this means for the logic is that we move from proof-irrelevant logic to proof-relevant logic. We now
+have potentially multiple ways a “predicate” could “entail” another “predicate”. We can
+<a href="https://doi.org/10.1017/CBO9780511525902.008">present the simply typed lambda calculus in this indexed category manner</a>.
+This naturally leads/connects to the categorical semantics of type theories.</p>
+<p>Pushing forward to |(\infty, 1)|-categories is also fairly natural, as it’s natural to want to
+talk about an entailment holding for distinct but “equivalent” reasons.</p>
+<h2 id="summary">Summary</h2>
+<p>Moving in all three of these directions simultaneously leads pretty naturally to something like
+Homotopy Type Theory (HoTT). HoTT is a naturally constructive (but not anti-classical) type theory
+aimed at being an internal language for |(\infty, 1)|-toposes.</p>
+<h2 id="why-classical-fol">Why Classical FOL?</h2>
+<p>Okay, so why did people pick classical FOL in the first place? It’s not like the concept of, say, a
+higher-order logic wasn’t considered at the time.</p>
+<p>Classical versus Intuitionistic was debated at the time, but at that time it was primarily a philosophical
+argument, and the defense of Intuitionism was not very compelling (to me and obviously people at the time).
+The focus would probably have been more on (classical) FOL versus second- (or higher-)order logic.</p>
+<p>Oversimplifying, the issue with second-order logic is fairly evident from the semantics. There are two
+main approaches: Henkin-semantics and full (or standard) semantics. Henkin-semantics keeps the nice
+properties of (classical) FOL but fails to get the nice properties, namely categoricity properties,
+of second-order logic. This isn’t surprising as Henkin-semantics can be encoded into first-order logic.
+It’s essentially syntactic sugar. Full semantics, however, states that the interpretation of predicate
+sorts is power sets of (cartesian products of) the domain<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. This leads to massive completeness problems as our metalogical set theory has many, many
+ways of building subsets of the domain. There are <a href="https://en.wikipedia.org/wiki/Second-order_logic#Metalogical_results">metatheoretic results</a>
+that state that there is no computable set of <em>logical</em> axioms that would give us a sound and
+complete theory for second-order logic with respect to full semantics. This aspect is also philosophically
+problematic, because we don’t want to need set theory to understand the very formulation of set theory.
+Thus Quine’s comment that “second-order logic [was] set theory in sheep’s clothing”.</p>
+<p>On the more positive and (meta-)mathematical side, we have results like
+<a href="https://ncatlab.org/nlab/show/Lindstr%C3%B6m%27s+theorem">Lindström’s theorem</a> which states that
+classical FOL is the strongest logic that simultaneously satisfies (downward) Löwenheim-Skolem
+and <a href="https://en.wikipedia.org/wiki/Compactness_theorem">compactness</a>. There’s also a syntactic
+result by Lindström which characterizes first-order logic as the only logic having a recursively
+enumerable set of tautologies and satisfying Löwenheim-Skolem<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.</p>
+<h3 id="the-catch">The Catch</h3>
+<p>There’s one big caveat to the above. All of the above results are formulated in traditional model
+theory which means there are various assumptions built in to their statements. In the language of
+categorical logic, these assumptions can basically be summed up in the statement that the <em>only</em>
+category of semantics that traditional model theory considers is <strong>Set</strong>.</p>
+<p>This is an utterly bizarre thing to do from the standpoint of categorical logic.</p>
+<p>The issues with full semantics follow directly from this choice. If, as categorical logic would
+have us do, we considered <em>every</em> category with sufficient structure as a potential category of
+semantics, then our theory would not be forced to follow every nook and cranny of <strong>Set</strong>’s
+notion of subset to be complete. Valid formulas would need to be true not only in <strong>Set</strong> but
+in wildly different categories, e.g. every (Boolean) topos.</p>
+<p>These traditional results are also often very specific to <em>classical</em> FOL. Dropping this constraint
+of classical logic would lead to an even broader class of models.</p>
+<h3 id="categorical-perspective-on-classical-first-order-logic">Categorical Perspective on Classical First-Order Logic</h3>
+<p>A <a href="https://ncatlab.org/nlab/show/Boolean+category">Boolean category</a> is just a <a href="https://ncatlab.org/nlab/show/coherent+category">coherent category</a>
+where every object has a complement. Since <a href="https://ncatlab.org/nlab/show/coherent+functor">coherent functors</a>
+preserve complements, we have that the category of Boolean categories is a <em>full</em> subcategory of the
+category of coherent categories.</p>
+<p>One nice thing about, specifically, <em>classical</em> first-order logic from the perspective of category
+theory is the following. First, <a href="https://ncatlab.org/nlab/show/coherent+logic">coherent logic</a>
+is a sub-logic of geometric logic restricted to finitary disjunction. Via <a href="posts/morleyization.html">Morleyization</a>, (TODO: Check link)
+we can encode <em>classical</em> first-order logic into coherent logic such that the
+categories of models of each are equivalent. This implies that a classical FOL formula is
+valid if and only if its encoding is. Morleyization allows us to analyze classical FOL using
+the tools of classifying toposes. On the one hand, this once again suggests the importance
+of <em>coherent</em> logic, but it also means that we <em>can</em> use categorical tools with <em>classical</em> FOL.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>There are certain things that I and, I believe, most logicians take as table stakes for a
+(foundational) logic<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>.
+For example, <em>checking</em> a proof should be computably decidable. For these reasons, I am in
+complete accord with early (formal) logicians that classical second-order logic with full semantics
+<em>is</em> an unacceptably worse alternative to classical first-order logic.</p>
+<p>However, when it comes to statements about the specialness of FOL, a lot of them seem to be more
+statements about traditional model theory than FOL itself, and also statements about the philosophical
+predilections of the time. I feel that philosophical attitudes among logicians and mathematicians
+have shifted a decent amount since the beginning of the 20th century. We have different philosophical
+predilections today than then, but they are informed by another hundred years of thought, and they are
+more relevant to what is being done today.</p>
+<p>Martin-Löf type theory (MLTT) and its progeny also present an alternative path with their own philosophical
+and metalogical justifications. I mention this to point out actual cases of foundational frameworks
+that a (<em>very</em>) superficial reading of traditional model theory results would seem to have been “ruled
+out”. Even if one thinks the FOL+<strong>ZFC</strong> (or whatever) is the better foundations, I think it is unreasonable
+to assert that MLTT derivatives are unworkable as a foundations.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>It’s worth mentioning that this is exactly
+what categorical logic would suggest: our syntactic power objects should be mapped to semantic power
+objects.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>While nice, it’s not clear that
+compactness and, especially, Löwenheim-Skolem are sacrosanct properties that we’d be unwilling
+to do without. Lindström’s first theorem is thus a nice abstract characterization theorem for
+classical FOL, but it doesn’t shut the door on considering alternatives even in the context of
+traditional model theory.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>I’m totally fine thinking about logics that lack these properties, but
+I would never put any of them forward as an acceptable foundational logic.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        function loadDisqus() {
+        const disqus_shortname = 'hedonisticlearning';
+        const disqus_identifier = 'a8ccba9b-9900-40e1-b2d4-47e0f944d456';
+        const disqus_title = 'Classical First-Order Logic from the Perspective of Categorical Logic';
+
+        (function() {
+            const dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+        }
+        const commentsBtn = document.createElement("button");
+        commentsBtn.textContent = "Click to show comments";
+        commentsBtn.addEventListener("click", () => loadDisqus());
+        const disqusDiv = document.getElementById("disqus_thread");
+        disqusDiv.append(commentsBtn);
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript> 
+</div>
+
+        </div><!-- /.blog-main -->
+        
+        
+      </div><!-- /.row -->
+    </div><!-- /.container -->
+
+    <footer class="blog-footer">
+      <p>Site generated by <a href="https://jaspervdj.be/hakyll">Hakyll</a></p>
+      <p>
+        <a href="#">Back to top</a>
+      </p>
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/javascript" src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!--<script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>-->
+    
+    
+    <script>
+        MathJax = {
+            loader: {
+                load: ['ui/lazy', '[custom]/xypic.js'],
+                paths: { custom: '/js' }
+            },
+            tex: {
+                packages: { '[+]': ['xypic'] },
+                inlineMath: [['|','|']],
+                macros: window.extraMacros || {}
+            }
+        };
+    </script>
+    <script type="text/javascript" src="../js/MathJax-3/es5/tex-mml-chtml.js"></script>
+  </body>
+</html>
