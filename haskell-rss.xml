@@ -126,7 +126,7 @@ preserve complements, we have that the category of Boolean categories is a <em>f
 category of coherent categories.</p>
 <p>One nice thing about, specifically, <em>classical</em> first-order logic from the perspective of category
 theory is the following. First, <a href="https://ncatlab.org/nlab/show/coherent+logic">coherent logic</a>
-is a sub-logic of geometric logic restricted to finitary disjunction. Via <a href="posts/morleyization.html">Morleyization</a>, (TODO: Check link)
+is a sub-logic of geometric logic restricted to finitary disjunction. Via <a href="posts/morleyization.html">Morleyization</a>,
 we can encode <em>classical</em> first-order logic into coherent logic such that the
 categories of models of each are equivalent. This implies that a classical FOL formula is
 valid if and only if its encoding is. Morleyization allows us to analyze classical FOL using
