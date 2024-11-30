@@ -198,7 +198,7 @@ realize it in any particular example is not. The overall idea is simply that ins
 waiting until the last moment and then rebuilding the data structure all at once, we’ll start
 the rebuild sooner and work at it incrementally as we perform other operations. If we
 update the new version faster than we update the original version, we’ll finish it by the
-time we would have wanted to perform a batch rebuild, and we can just switch to this new version.</p>
+time we would have wanted to perform a batched rebuild, and we can just switch to this new version.</p>
 <p>More concretely, though still quite vaguely, <strong>global rebuilding</strong> involves, when a
 threshold is reached, rebuilding by creating a new “empty” version of the data
 structure called the <em>shadow copy</em>. The original version is the <em>working copy</em>. Work on
@@ -227,7 +227,7 @@ an expression of them as two coroutining processes. Ideally, we should be able t
 take a data structure implemented via batched rebuilding and simply run the batch
 rebuilding step as a coroutine. Modifying the data structure’s operations and the
 rebuilding step should, in theory, just be a matter of inserting appropriate <code>yield</code>
-statements. Of course, it’s won’t be that easy since the batched version of rebuilding
+statements. Of course, it won’t be that easy since the batched version of rebuilding
 doesn’t need to worry about concurrent updates to the original data structure.</p>
 <p>In theory, such a representation would be a perfectly effective way of articulating
 the global rebuilding version of the data structure. That said, I will be using the
@@ -730,6 +730,75 @@ is a better implementation than this in pretty much every way.</p>
 <span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a><span class="ot">enqueue ::</span> a <span class="ot">-&gt;</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">Queue</span> a</span>
 <span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>enqueue x (<span class="dt">Queue</span> lenf f state lenr r) <span class="ot">=</span> check lenf f state (lenr<span class="op">+</span><span class="dv">1</span>) (x<span class="op">:</span>r)</span></code></pre></div>
+<h3 id="okasakis-real-time-queues">Okasaki’s Real-Time Queues</h3>
+<p>Just for completeness. This implementation <em>crucially</em> relies on lazy evaluation. Our queues are of
+the form <code>Queue f r s</code>. If you look carefully, you’ll notice that the only place we consume <code>s</code> is
+in the first clause of <code>exec</code>, and there we discard its elements. In other words, we only care about
+the length of <code>s</code>. <code>s</code> gets “decremented” each time we <code>enqueue</code> until it’s empty at which point we
+rotate <code>r</code> to <code>f</code> in the second clause of <code>exec</code>. The key thing is that <code>f</code> and <code>s</code> are initialized
+to the same value in that clause. That means each time we “decrement” <code>s</code> we are also forcing a bit
+of <code>f</code>. Forcing a bit of <code>f</code>/<code>s</code> means computing a bit of <code>rotate</code>. <code>rotate xs ys a</code> is an
+incremental version of <code>xs ++ reverse ys ++ a</code> (where we use the invariant
+<code>length ys = 1 + length xs</code> for the base case).</p>
+<p>Using Okasaki’s terminology, <code>rotate</code> illustrates a simple form of <strong>lazy rebuilding</strong> where we use
+lazy evaluation rather than explicit or implicit coroutines to perform work “in parallel”. Here, we
+interleave the evaluation of <code>rotate</code> with <code>enqueue</code> and <code>dequeue</code> via forcing the conses of
+<code>f</code>/<code>s</code>. However, lazy rebuilding itself may not lead to worst-case optimal times (assuming it is
+amortized optimal). We need to use Okasaki’s other technique of <strong>scheduling</strong> to strategically
+force the thunks incrementally rather than all at once. Here <code>s</code> is a schedule telling us when to
+force parts of <code>f</code>. (As mentioned, <code>s</code> also serves as a counter telling us when to perform a
+rebuild.)</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> <span class="dt">OkasakiQueue</span> ( <span class="dt">Queue</span>, empty, dequeue, enqueue ) <span class="kw">where</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Queue</span> a <span class="ot">=</span> <span class="dt">Queue</span> [a] <span class="op">!</span>[a] [a]</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="ot">empty ::</span> <span class="dt">Queue</span> a</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>empty <span class="ot">=</span> <span class="dt">Queue</span> [] [] []</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="ot">dequeue ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> (<span class="dt">Maybe</span> a, <span class="dt">Queue</span> a)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>dequeue q<span class="op">@</span>(<span class="dt">Queue</span> [] _ _) <span class="ot">=</span> (<span class="dt">Nothing</span>, q)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>dequeue (<span class="dt">Queue</span> (x<span class="op">:</span>f) r s) <span class="ot">=</span> (<span class="dt">Just</span> x, exec f r s)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="ot">rotate ::</span> [a] <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> [a]</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>rotate     [] (y<span class="op">:</span> _) a <span class="ot">=</span> y<span class="op">:</span>a</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>rotate (x<span class="op">:</span>xs) (y<span class="op">:</span>ys) a <span class="ot">=</span> x<span class="op">:</span>rotate xs ys (y<span class="op">:</span>a)</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="ot">exec ::</span> [a] <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">Queue</span> a</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>exec f <span class="op">!</span>r (_<span class="op">:</span>s) <span class="ot">=</span> <span class="dt">Queue</span> f r s</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>exec f <span class="op">!</span>r [] <span class="ot">=</span> <span class="kw">let</span> f&#39; <span class="ot">=</span> rotate f r [] <span class="kw">in</span> <span class="dt">Queue</span> f&#39; [] f&#39;</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="ot">enqueue ::</span> a <span class="ot">-&gt;</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">Queue</span> a</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>enqueue x (<span class="dt">Queue</span> f r s) <span class="ot">=</span> exec f (x<span class="op">:</span>r) s </span></code></pre></div>
+<p>It’s instructive to compare the above to the following implementation which doesn’t use a schedule.
+This implementation is essentially the Banker’s Queue from Okasaki’s book, except we use lazy
+rebuilding to spread the <code>xs ++ reverse ys</code> (particularly the <code>reverse</code> part) over multiple
+<code>dequeue</code>s via <code>rotate</code>. The following implementation performs extremely well in my benchmark, but
+the operations are subtly not constant-time. Specifically, after a long series of <code>enqueue</code>s, a
+<code>dequeue</code> will do work proportional to the logarithm of the number of <code>enqueue</code>s. Essentially, <code>f</code>
+will be a nested series of <code>rotate</code> calls, one for every doubling of the length of the queue. Even
+if we change <code>let f'</code> to <code>let !f'</code>, that will only make the first <code>dequeue</code> cheap. The second will
+still be expensive.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> <span class="dt">UnscheduledOkasakiQueue</span> ( <span class="dt">Queue</span>, empty, dequeue, enqueue ) <span class="kw">where</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Queue</span> a <span class="ot">=</span> <span class="dt">Queue</span> [a] <span class="op">!</span><span class="dt">Int</span> [a] <span class="op">!</span><span class="dt">Int</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="ot">empty ::</span> <span class="dt">Queue</span> a</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>empty <span class="ot">=</span> <span class="dt">Queue</span> [] <span class="dv">0</span> [] <span class="dv">0</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="ot">dequeue ::</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> (<span class="dt">Maybe</span> a, <span class="dt">Queue</span> a)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>dequeue q<span class="op">@</span>(<span class="dt">Queue</span> [] _ _ _) <span class="ot">=</span> (<span class="dt">Nothing</span>, q)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>dequeue (<span class="dt">Queue</span> (x<span class="op">:</span>f) lenf r lenr) <span class="ot">=</span> (<span class="dt">Just</span> x, exec f (lenf <span class="op">-</span> <span class="dv">1</span>) r lenr)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="ot">rotate ::</span> [a] <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> [a]</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>rotate     [] (y<span class="op">:</span> _) a <span class="ot">=</span> y<span class="op">:</span>a</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>rotate (x<span class="op">:</span>xs) (y<span class="op">:</span>ys) a <span class="ot">=</span> x<span class="op">:</span>rotate xs ys (y<span class="op">:</span>a)</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="ot">exec ::</span> [a] <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Queue</span> a</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>exec f <span class="op">!</span>lenf <span class="op">!</span>r <span class="op">!</span>lenr <span class="op">|</span> lenf <span class="op">&gt;=</span> lenr <span class="ot">=</span> <span class="dt">Queue</span> f lenf r lenr</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>exec f <span class="op">!</span>lenf <span class="op">!</span>r <span class="op">!</span>lenr <span class="ot">=</span> <span class="kw">let</span> f&#39; <span class="ot">=</span> rotate f r [] <span class="kw">in</span> <span class="dt">Queue</span> f&#39; (lenf <span class="op">+</span> lenr) [] <span class="dv">0</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a><span class="ot">enqueue ::</span> a <span class="ot">-&gt;</span> <span class="dt">Queue</span> a <span class="ot">-&gt;</span> <span class="dt">Queue</span> a</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>enqueue x (<span class="dt">Queue</span> f lenf r lenr) <span class="ot">=</span> exec f lenf (x<span class="op">:</span>r) (lenr <span class="op">+</span> <span class="dv">1</span>) </span></code></pre></div>
 <h3 id="empirical-evaluation">Empirical Evaluation</h3>
 <p>I won’t reproduce the evaluation code as it’s not very sophisticated or interesting.
 It randomly generated a sequence of enqueues and dequeues with an 80% chance to produce
@@ -751,7 +820,7 @@ other implementations, and the merely amortized time complexity of the batched o
 <p>While the batched version was best in overall time, the difference wasn’t that great.
 The worst implementations were still less 1.4x slower. All the worst-case optimal
 implementations performed roughly the same, but there were still some clear winners
-and losers. Okasaki’s real-time queue (not listed) is almost on-par with the batched
+and losers. Okasaki’s real-time queue is almost on-par with the batched
 implementation in overall time and handily beats the other implementations in average
 enqueue and dequeue times. The main surprise for me was that the loser was the
 Hood-Melville queue. My guess is this is due to <code>invalidate</code> which seems like it
@@ -759,7 +828,7 @@ would do more work and produce more garbage than the approach taken in my functi
 version.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>The point of this article was to illustrate the process of deriving a deamortized
-data structure from an amortized one utilizing batch rebuilding by explicitly
+data structure from an amortized one utilizing batched rebuilding by explicitly
 modeling global rebuilding as a coroutine.</p>
 <p>The point wasn’t to produce the fastest queue implementation, though I am pretty
 happy with the results. While this is an extremely simple example, it was still
