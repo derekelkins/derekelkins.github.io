@@ -830,7 +830,8 @@ modeling global rebuilding as a coroutine.</p>
 happy with the results. While this is an extremely simple example, it was still
 nice that each step was very easy and natural. It’s especially nice that this
 derivation approach produced a better result than the Hood-Melville queue.</p>
-<p>Of course, my advice is to use Okasaki’s real-time queue if you need a purely functional queue.</p>
+<p>Of course, my advice is to use Okasaki’s real-time queue if you need a purely functional queue
+with worst-case constant-time operations.</p>
 <section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr />
 <ol>
