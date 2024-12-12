@@ -1780,11 +1780,15 @@ Then, |\int^C H(FC, C) \cong \int^D H(D, UD)| when one, and thus both, exist. <s
 &amp; \square
 \end{align}
 \]</p>
-<p>Using the adjunction |\Delta \dashv \times : \mathcal{C} \times \mathcal{C}\to \mathcal{C}|
+<p>Using the adjunctions |\Delta \dashv \times : \mathcal{C} \times \mathcal{C}\to \mathcal{C}|
+and |{!}_1 \dashv 1 : \mathbf{1} \to \mathcal{C}|, where we’re treating |1| as the functor
+|\mathbf{1}\to\mathcal{C}| which picks out a terminal object of |\mathcal{C}|,
 gives the following corollary.</p>
 <p><strong>Corollary 2</strong>: For any |H : \mathcal{C}^{op} \times \mathcal{C}^{op} \times \mathcal{C} \to \mathcal{E}|,
 \[\int^{C} H(C, C, C) \cong \int^{C_1}\int^{C_2} H(C_1, C_2, C_1 \times C_2)\] when
-both exists. This allows us to combine two (co)ends into one.</p>
+both exists and for any |H’ : \mathcal{C} \to\mathcal{E}|, |H’(1) \cong \int^C H’(C)|.
+The former allows us to combine two (co)ends into one. The latter reproduces a standard result about
+colimits over diagrams whose index category has a terminal object.</p>
 <p>Now our theorem.</p>
 <p><strong>Theorem 3</strong>: Let |F : \mathcal{T}_1 \to \mathbf{Set}| and |J : \mathcal{T}_1 \to \mathcal{T}_2|
 where |\mathcal{T}_1| and |\mathcal{T}_2| have finite products. Then |\mathrm{Lan}_J(F)|
@@ -1798,10 +1802,21 @@ preserves finite products if |F| does.</p>
 &amp; \cong \int^{A_1}\int^{A_2}\mathcal{T}_2(J(A_1), X) \times \mathcal{T}_2(J(A_2), Y) \times F(A_1 \times A_2) \tag{Corollary 2} \\
 &amp; \cong \int^{A_1}\int^{A_2}\mathcal{T}_2(J(A_1), X) \times \mathcal{T}_2(J(A_2), Y) \times F(A_1) \times F(A_2) \tag{finite product preservation} \\
 &amp; \cong \left(\int^{A_1}\mathcal{T}_2(J(A_1), X) \times F(A_1) \right) \times \left(\int^{A_2}\mathcal{T}_2(J(A_2), Y) \times F(A_2)\right) \tag{commutativity and cocontinuity of $\times$} \\
-&amp; \cong \mathrm{Lan}_J(F)(X) \times \mathrm{Lan}_J(F)(Y) \tag{coend formula for left Kan extension} \\
-&amp; \square
+&amp; \cong \mathrm{Lan}_J(F)(X) \times \mathrm{Lan}_J(F)(Y) \tag{coend formula for left Kan extension}
 \end{flalign}
-\]</p>
+\]
+and for the <span class="math inline">0</span>-ary product case:
+\[
+\begin{flalign}
+\mathrm{Lan}_J(F)(1)
+&amp; \cong \int^A \mathcal{T}_2(J(A), 1) \times F(A) \tag{coend formula for left Kan extension} \\
+&amp; \cong \int^A 1 \times F(A) \tag{continuity} \\
+&amp; \cong 1 \times F(1) \tag{Corollary 2} \\
+&amp; \cong 1 \times 1 \tag{finite product preservation} \\
+&amp; \cong 1 \tag{1 is unit to $\times$}
+\end{flalign}
+\]
+|\square|</p>
 <h2 id="the-coproduct-of-groups">The Coproduct of Groups</h2>
 <p>To get general coproducts (and all colimits), we’ll show that |\mathbf{Mod}_{\mathcal{T}}|
 is a <em>reflective</em> subcategory of |[\mathcal{T}, \mathbf{Set}]|. Write
