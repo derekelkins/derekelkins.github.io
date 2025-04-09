@@ -1667,6 +1667,9 @@ and the empty list as the terminal object. The arrows are tuples with a componen
 object in the codomain list. Each component is a pair of an index into the domain list and
 an arrow from the corresponding object in the domain list to the object in the codomain list
 for this component. For example, the arrow |[A, B] \to [B, A]| would be |((1, id_B), (0, id_A))|.
+The idea is that |((k_1, f_1), \dots, (k_n, f_n))| will be interpreted as
+|\langle f_1 \circ \pi_{k_1}, \dots, f_n \circ \pi_{k_n}\rangle| where |\pi_{k_i}| is the
+projection |k_i|-th component of the input.
 Identity and composition is straightforward. |\sigma| then maps each object to a singleton
 list and each arrow |f| to |((0, f))|.</p>
 <p>Like most free constructions, this construction completely ignores any finite products the
@@ -1688,7 +1691,10 @@ is a finite-product-preserving functor that preserves these inclusions a la:
 along with finite-product-preservation ensures that the only objects in |\mathcal{T}|
 are powers of a single object which we’ll generically call |\mathsf{G}|. This is
 sometimes called the “generic object”, though the term “generic object” has other
-meanings in category theory.</p>
+meanings in category theory. To be clear, if |F| is an identity-on-objects functor, we’re not just
+saying |FX = X| for every object |X|, but that the object part of the functor is the identity
+function, i.e. if |F : \mathcal C \to \mathcal D|, then |\mathcal C| and |\mathcal D| have
+<em>exactly the same</em> objects.</p>
 <p>A <strong>model of a theory</strong> (in |\mathbf{Set}|) is then simply a finite-product-preserving
 functor into |\mathbf{Set}|. |\mathbf{Mod}_{\mathcal{T}}| is the full subcategory
 of functors from |\mathcal{T} \to \mathbf{Set}| which preserve finite products.
@@ -1818,10 +1824,11 @@ and for the <span class="math inline">0</span>-ary product case:
 |\square|</p>
 <h2 id="the-coproduct-of-groups">The Coproduct of Groups</h2>
 <p>To get general coproducts (and all colimits), we’ll show that |\mathbf{Mod}_{\mathcal{T}}|
-is a <em>reflective</em> subcategory of |[\mathcal{T}, \mathbf{Set}]|. Write
+is a <a href="https://ncatlab.org/nlab/show/reflective+subcategory"><em>reflective</em> subcategory</a> of
+|[\mathcal{T}, \mathbf{Set}]|. Write
 |\iota : \mathbf{Mod}_{\mathcal{T}} \hookrightarrow [\mathcal{T}, \mathbf{Set}]|.
-If we had a functor |R| such that |R \dashv \iota|, then we have
-|R \circ \iota = Id| which allows us to quickly produce colimits
+If we had a functor |R| such that |R \dashv \iota|, then |\iota| being full and faithful implies
+|\varepsilon : R \circ \iota \cong Id| which allows us to quickly produce colimits
 in the subcategory via |\int^I D(I) \cong R\int^I \iota D(I)|.
 It’s easy to verify that |R\int^I \iota D(I)| has the appropriate universal property
 to be |\int^I D(I)|.</p>
@@ -1829,10 +1836,12 @@ to be |\int^I D(I)|.</p>
 we have |\bar{({-})} \dashv \iota({-}) \circ \sigma : \mathbf{Mod}_{\mathcal{T}^{\times}} \to [\mathcal T, \mathbf{Set}]|.
 This is essentially the universal property of |\mathcal{T}^{\times}|.
 When |\mathcal{T}| has finite products, which, of course, we’re assuming,
-then we can use the universal property of |\mathcal{T}^{\times}| to factor |Id_{\mathcal{T}}|
+we can use the universal property of |\mathcal{T}^{\times}| to factor |Id_{\mathcal{T}}|
 into |Id = \bar{Id} \circ \sigma|. The second adjunction is then |\mathrm{Lan}_{\bar{Id}} \dashv {-} \circ \bar{Id} : \mathbf{Mod}_{\mathcal{T}} \to \mathbf{Mod}_{\mathcal{T}^{\times}}|.
-The left adjoint sends finite-product-preserving functors to finite-product-preserving functors
-via Theorem 3. The right adjoint is the composition of finite-product-preserving functors.</p>
+To verify that these are well-defined, i.e. they produce finite-product-preserving functors,
+we argue as follows. The left adjoint sends finite-product-preserving functors to
+finite-product-preserving functors via Theorem 3. The right adjoint is the composition of
+finite-product-preserving functors.</p>
 <p>The composite of the left adjoints is |\iota({-} \circ \bar{Id}) \circ \sigma = \iota({-}) \circ \bar{Id} \circ \sigma = \iota({-})|.
 The composite of the right adjoint is
 \[
@@ -1877,8 +1886,8 @@ The name “free product” is also made a bit clearer, as we are essentially bu
 group on the disjoint union of the underlying sets of the inputs, and then quotienting that to
 get the result. While there are some categorical treatments of normalization, the normalization
 arguments used above were not guided by the category theory. The (underlying sets of the) models
-produced by the above |F| and |R| functors big equivalence classes of “terms”. The above constructions
-provide no guidance for finding “good” representatives of those equivalence classes.</p>
+produced by the above |F| and |R| functors are big equivalence classes of “terms”. The above
+constructions provide no guidance for finding “good” representatives of those equivalence classes.</p>
 <h2 id="conclusions">Conclusions</h2>
 <p>This was, of course, a very complex and round-about way of answering the title question.
 Obviously the real goal was illustrating these ideas and illustrating how “abstract” categorical
@@ -1916,7 +1925,7 @@ describing and proving finite-product-preservation for free models.</p>
 <p>Thinking about what <em>exactly</em> was going on around finite-product-preservation was fairly interesting.
 The incorrect definition of the free model functor could be corrected in a different
 (though, of course, ultimately equivalent) way. The key is to remember that the coend
-formula for the left Kan extension is generally a <em>copower</em> and not a cartesian product.
+formula for the left Kan extension generally involves a <em>copower</em> and not a cartesian product.
 The copower for |\mathbf{Set}|-valued functors is different from the copower for
 finite-product-preserving |\mathbf{Set}|-valued functors. For a category with (arbitrary)
 coproducts, the copower corresponds to the coproduct of a constant family. We get,
@@ -1930,8 +1939,7 @@ and those are more tractable. In particular, an easy and neat exercise is to wor
 out what |\mathcal{T}(\mathsf{G}^n, {-}) + \mathcal{T}(\mathsf{G}^m, {-})| is.
 Just use Yoneda and work out what must be true of the mapping out property, and remember
 that the object you’re mapping into preserves finite products. Once you have finite
-coproducts described, you can get all the rest via filtered colimits, and since those
-commute with finite products that gives us arbitrary coproducts.</p>]]></summary>
+coproducts described, you can get all the rest via filtered colimits.</p>]]></summary>
 </entry>
 <entry>
     <title>Preserving, Reflecting, and Creating Limits</title>
