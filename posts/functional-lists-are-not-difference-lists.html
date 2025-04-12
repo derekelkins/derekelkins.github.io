@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="A blog mostly on math, physics, and computer science.">
+    <meta name="author" content="Derek Elkins">
+    <!--<link rel="icon" href="/images/favicon.ico">-->
+
+    <title>What difference lists actually are</title>
+    <!-- Bootstrap core CSS -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="../css/blog.css" rel="stylesheet">
+    <link href="../css/syntax.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="blog-masthead">
+      <div class="container">
+        <nav class="blog-nav">
+          <a class="blog-nav-item " href="../">Home</a>
+          <a class="blog-nav-item " href="../about.html">About</a>
+          <a class="blog-nav-item " href="../contact.html">Contact</a>
+          <a class="blog-nav-item " href="../readinglist.html">Reading List</a>
+          <a class="blog-nav-item " href="../archive.html">Archive</a>
+          <a class="blog-nav-item pull-right" href="../rss.xml">RSS</a>
+          <a class="blog-nav-item pull-right" href="../atom.xml">Atom</a>
+        </nav>
+      </div>
+    </div>
+
+    <div class="container">
+      
+      
+      <div class="row">
+        
+        <div class="col-sm-12 blog-main">
+        
+          <div class="blog-post">
+    <h2 class="blog-post-title" style="margin-top: 30px;">What difference lists actually are</h2>
+    <p class="blog-post-meta">April 12, 2025 23:25 UTC 
+        
+        (Last updated on April 12, 2025 23:25 UTC)
+    </p>
+    <h6 class="blog-post-meta">
+        
+        Tags: <a title="All pages tagged 'programming'." href="../tags/programming.html">programming</a>
+        
+    </h6>
+
+    <h2 id="introduction">Introduction</h2>
+<p>Purely functional list concatenation, <code>xs ++ ys</code> in Haskell syntax, is well known to be linear time
+in the length of the first input and constant time in the length of the second, i.e. <code>xs ++ ys</code> is
+O(length xs). This leads to quadratic complexity if we have a bunch of left associated uses of
+concatenation.</p>
+<p>The ancient trick to resolve this is to, instead of producing lists, produce list-to-list functions
+a la <code>[a] -&gt; [a]</code> or <code>ShowS</code> = <code>String -&gt; String</code> = <code>[Char] -&gt; [Char]</code>. “Concatenation” of “lists”
+represented this way is just function composition which is a constant time operation. We can lift a
+list <code>xs</code> to this representation via the section <code>(xs ++)</code>. This will still lead to O(length xs)
+amount of work to apply this function, but a composition of such functions applied to a list will
+always result in a fully right associated expression even if the function compositions aren’t
+right associated.</p>
+<p>In the last several years, it has become popular to refer to this technique as “difference lists”.
+Often no justification is given for this name. When it is given, it is usually a reference to the
+idea of difference lists in logic programming. Unfortunately, other than both techniques giving rise
+to efficient concatenation, they have almost no similarities.</p>
+<!--more-->
+<h2 id="functional-lists">Functional Lists</h2>
+<p>To start, I want to do a deeper analysis of the “functional lists” approach, because I think what it
+is doing is a bit misunderstood and, consequently, oversold<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. Let’s see how we would model this approach in an OO
+language without higher-order functions, such as early Java. I’ll use strings for simplicity, but it
+would be exactly the same for generic lists.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode java"><code class="sourceCode java"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> PrependTo <span class="op">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">String</span> <span class="fu">prependTo</span><span class="op">(</span><span class="bu">String</span> end<span class="op">);</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Compose <span class="kw">implements</span> PrependTo <span class="op">{</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> PrependTo left<span class="op">;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> PrependTo right<span class="op">;</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="kw">public</span> <span class="fu">Compose</span><span class="op">(</span>PrependTo left<span class="op">,</span> PrependTo right<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="fu">left</span> <span class="op">=</span> left<span class="op">;</span> <span class="kw">this</span><span class="op">.</span><span class="fu">right</span> <span class="op">=</span> right<span class="op">;</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="bu">String</span> <span class="fu">prependTo</span><span class="op">(</span><span class="bu">String</span> end<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="fu">left</span><span class="op">.</span><span class="fu">prependTo</span><span class="op">(</span><span class="kw">this</span><span class="op">.</span><span class="fu">right</span><span class="op">.</span><span class="fu">prependTo</span><span class="op">(</span>end<span class="op">));</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Prepend <span class="kw">implements</span> PrependTo <span class="op">{</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> <span class="bu">String</span> s<span class="op">;</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  <span class="kw">public</span> <span class="fu">Prepend</span><span class="op">(</span><span class="bu">String</span> s<span class="op">)</span> <span class="op">{</span> <span class="kw">this</span><span class="op">.</span><span class="fu">s</span> <span class="op">=</span> s<span class="op">;</span> <span class="op">}</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="bu">String</span> <span class="fu">prependTo</span><span class="op">(</span><span class="bu">String</span> end<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="fu">s</span> <span class="op">+</span> end<span class="op">;</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>This is just a straight, manual implementation of closures for <code>(.)</code> and <code>(++)</code> (specialized to
+strings). Other lambdas not of the above two forms would lead to other implementations of
+<code>PrependTo</code>. Let’s say, however, these are the only two forms that actually occur, which is mostly
+true in Haskell practice, then another view on this OO code (to escape back to FP) is that it is an
+OOP encoding of the algebraic data type:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">PrependTo</span> <span class="ot">=</span> <span class="dt">Compose</span> <span class="dt">PrependTo</span> <span class="dt">PrependTo</span> <span class="op">|</span> <span class="dt">Prepend</span> <span class="dt">String</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ot">prependTo ::</span> <span class="dt">PrependTo</span> <span class="ot">-&gt;</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">String</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>prependTo (<span class="dt">Compose</span> left right) end <span class="ot">=</span> prependTo left (prependTo right end)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>prependTo (<span class="dt">Prepend</span> s) end <span class="ot">=</span> s <span class="op">++</span> end</span></code></pre></div>
+<p>We could have also arrived at this by defunctionalizing a typical example of the technique. Modulo
+some very minor details (that could be resolved by using the Church-encoded version of this), this
+does accurately reflect what’s going on in the technique. <code>Compose</code> is clearly constant time. Less
+obviously, applying these functional lists requires traversing this tree of closures – made
+into an explicit tree here. In fact, this reveals that this representation could require arbitrarily
+large amounts of work for a given size of output. This is due to the fact that prepending an empty
+string doesn’t increase the output size but still increases the size of the tree. In practice,
+it’s a safe assumption that, on average, at least one character will be prepended per leaf of the
+tree which makes the overhead proportional to the size of the output.</p>
+<p>This tree representation is arguably better than the “functional list” representation. It’s less
+flexible for producers, but that’s arguably a good thing because we didn’t really want <em>arbitrary</em>
+<code>String -&gt; String</code> functions. It’s more flexible for consumers. For example, getting the head of
+the list is a relatively efficient operation compared to applying a “functional list” and taking
+the head of the result even in an eager language. (Laziness makes both approaches comparably
+efficient.) Getting the last element is just the same for the tree version, but, even with laziness,
+is much worse for the functional version. More to the point, this concrete representation allows
+the concatenation function to avoid adding empty nodes to the tree whereas <code>(.)</code> can’t pattern
+match on whether a function is the identity function or not.</p>
+<p>This view makes it very clear what the functional version is doing.</p>
+<h2 id="difference-lists-in-prolog">Difference Lists in Prolog</h2>
+<p>List append is the archetypal example of a Prolog program due to the novelty of its “invertibility”.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode prolog"><code class="sourceCode prolog"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>append([]<span class="kw">,</span> <span class="dt">Ys</span><span class="kw">,</span> <span class="dt">Ys</span>)<span class="kw">.</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>append([<span class="dt">X</span><span class="fu">|</span><span class="dt">Xs</span>]<span class="kw">,</span> <span class="dt">Ys</span><span class="kw">,</span> [<span class="dt">X</span><span class="fu">|</span><span class="dt">Zs</span>]) <span class="kw">:-</span> append(<span class="dt">Xs</span><span class="kw">,</span> <span class="dt">Ys</span><span class="kw">,</span> <span class="dt">Zs</span>)<span class="kw">.</span></span></code></pre></div>
+<p>For our purposes, viewing this as a function of the first two arguments, this is exactly the usual
+functional implementation of list concatenation with exactly the same problems. We could, of course,
+encode the defunctionalized version of the functional approach into (pure) Prolog. This would
+produce:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode prolog"><code class="sourceCode prolog"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>prepend_to(compose(<span class="dt">Xs</span><span class="kw">,</span> <span class="dt">Ys</span>)<span class="kw">,</span> <span class="dt">End</span><span class="kw">,</span> <span class="dt">Zs</span>) <span class="kw">:-</span> prepend_to(<span class="dt">Ys</span><span class="kw">,</span> <span class="dt">End</span><span class="kw">,</span> <span class="dt">End2</span>)<span class="kw">,</span> prepend_to(<span class="dt">Xs</span><span class="kw">,</span> <span class="dt">End2</span><span class="kw">,</span> <span class="dt">Zs</span>)<span class="kw">.</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>prepend_to(prepend(<span class="dt">Xs</span>)<span class="kw">,</span> <span class="dt">End</span><span class="kw">,</span> <span class="dt">Zs</span>) <span class="kw">:-</span> append(<span class="dt">Xs</span><span class="kw">,</span> <span class="dt">End</span><span class="kw">,</span> <span class="dt">Zs</span>)<span class="kw">.</span></span></code></pre></div>
+<p>(I’ll be ignoring the issues that arise due to Prolog’s untyped nature.)</p>
+<p>However, this being a logic programming language means we have additional tools available to use
+that functional languages lack. Namely, unification variables. For an imperative (destructive)
+implementation of list concatenation, the way we’d support efficient append of linked lists is we’d
+keep pointers to the start <em>and end</em> of the list. To append two lists, we’d simply use the end
+pointer of the first to update the end of the first list to point at the start of the second. We’d
+then return a pair consisting of the start pointer of the first and the end pointer of the second.</p>
+<p>This is exactly how Prolog difference lists work, except instead of pointers, we use unification
+variables which are more principled. Concretely, we represent a list as a pair of lists, but the
+second list will be represented by an <em>unbound</em> unification variable and the first list contains
+that same unification variable as a suffix. This pair is often represented using the infix
+operator (“functor” in Prolog terminology), <code>-</code>, e.g. <code>Xs - Ys</code>. We could use <code>diff(Xs, Ys)</code> or
+some other name. <code>-</code> isn’t a built-in operator, it’s just a binary constructor essentially.</p>
+<p>At the level of logic, there are no unification variables. The constraints above mean that <code>Xs - Ys</code>
+is a list <code>Xs</code> which contains <code>Ys</code> as a suffix.</p>
+<p>The name “difference list” is arguably motivated by the definition of concatenation in this
+representation.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode prolog"><code class="sourceCode prolog"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>concat(<span class="dt">Xs</span> <span class="fu">-</span> <span class="dt">Ys</span><span class="kw">,</span> <span class="dt">Ys</span> <span class="fu">-</span> <span class="dt">Zs</span><span class="kw">,</span> <span class="dt">Xs</span> <span class="fu">-</span> <span class="dt">Zs</span>)<span class="kw">.</span></span></code></pre></div>
+<p>This looks a lot like |Xs - Ys + Ys - Zs = Xs - Zs|. If the suffix component of the first argument
+is unbound, like it’s supposed to be, then this is a constant-time operation of binding that
+component to <code>Ys</code>. If it is bound, then we need to unify which, in the worst-case, is O(length Ys)
+where the length is up to either nil or an unbound variable tail<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.</p>
+<p>We also have the unit of <code>concat</code>, i.e. the empty
+list via<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode prolog"><code class="sourceCode prolog"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>empty(<span class="dt">Xs</span> <span class="fu">-</span> <span class="dt">Xs</span>)<span class="kw">.</span></span></code></pre></div>
+<p>See the footnote, but this does in some way identify <code>Xs - Ys</code> with the “difference” of <code>Xs</code> and
+<code>Ys</code>.</p>
+<p>We get back to a “normal” list via:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode prolog"><code class="sourceCode prolog"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>to_list(<span class="dt">Xs</span> <span class="fu">-</span> []<span class="kw">,</span> <span class="dt">Xs</span>)<span class="kw">.</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">% or more generally,</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>prepend_to(<span class="dt">Xs</span> <span class="fu">-</span> <span class="dt">Ys</span><span class="kw">,</span> <span class="dt">Ys</span><span class="kw">,</span> <span class="dt">Xs</span>)<span class="kw">.</span></span></code></pre></div>
+<p><code>to_list</code> is a constant-time operation, no matter what. Note, <code>to_list</code> binds the suffix component
+of the difference list. This means that the first input no longer meets our condition to be a
+difference list. In other words, <code>to_list</code> (and <code>prepend_to</code>) <em>consumes</em> the difference list.
+More precisely, it constrains the possible suffixes the list could be.
+Indeed, any operation that binds the suffix component of a difference list consumes it. For example,
+<code>concat</code> consumes its first argument.</p>
+<p>Of course, it still makes logical sense to work with the difference list when its suffix component
+is bound, it’s just that its operational interpretation is different. More to the point, given a
+difference list, you cannot prepend it (via <code>prepend_to</code> or <code>concat</code>) to two different lists to get
+two different results.</p>
+<p>Converting from a list does require traversing the list since we need to replace the nil node, i.e.
+<code>[]</code>, with a fresh unbound variable. Luckily, this is exactly what <code>append</code> does.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode prolog"><code class="sourceCode prolog"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>from_list(<span class="dt">Xs</span><span class="kw">,</span> <span class="dt">Ys</span> <span class="fu">-</span> <span class="dt">Zs</span>) <span class="kw">:-</span> append(<span class="dt">Xs</span><span class="kw">,</span> <span class="dt">Zs</span><span class="kw">,</span> <span class="dt">Ys</span>)<span class="kw">.</span></span></code></pre></div>
+<p><code>from_list</code> also suggests this “difference list” idea. If all of <code>Xs</code>, <code>Ys</code>, and <code>Zs</code> are ground
+terms, then <code>from_list(Xs, Ys - Zs)</code> holds when <code>append(Xs, Zs, Ys)</code> holds. Exactly when if our
+invariants are maintained, i.e. that <code>Zs</code> is a suffix of <code>Ys</code>. Writing these relations more
+functionally and writing <code>append</code> as addition, we’d have:</p>
+<p>\[\mathtt{from\_list}(Xs) = Ys - Zs \iff Xs + Zs = Ys\]</p>
+<p>If we did want to “duplicate” a difference list, we’d essentially need to convert it to a (normal)
+list with <code>to_list</code>, and then we could use <code>from_list</code> multiple times on that result. This would,
+of course, still consume the original difference list. We’d also be paying O(length Xs) for every
+duplicate, including to replace the one we just consumed<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>.</p>
+<p>That said, we <em>can</em> prepend to a list to a difference list without consuming it. We can perform
+other actions with the risk of (partially) consuming the list, e.g. indexing into the list. Indexing
+into the list would force the list to be at least a certain length, but still allow prepending to
+any list that will result in a final list at least that long.</p>
+<h2 id="comparison">Comparison</h2>
+<p>I’ll start the comparison with a massive discrepancy that we will ignore going forward. Nothing
+enforces that a value of type <code>ShowS</code> actually just appends something to its input. We could use
+abstract data type techniques or the defunctionalized version to avoid this. To be fair, difference
+lists also need an abstraction barrier to ensure their invariants, though their failure modes are
+different. A difference list can’t change what it is based on what it is prepended to.</p>
+<style>
+tr.even {
+  background-color: var(--panel-heading-bg-color);
+}
+tr.odd {
+  background-color: var(--panel-heading-border-color);
+}
+</style>
+<table>
+<colgroup>
+<col style="width: 53%" />
+<col style="width: 46%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Functional Representation</th>
+<th>Difference Lists</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>constant-time concatenation</td>
+<td>constant-time concatenation</td>
+</tr>
+<tr class="even">
+<td>constant-time conversion from a list (though you pay for it later)</td>
+<td>O(n) conversion from a list</td>
+</tr>
+<tr class="odd">
+<td>persistent</td>
+<td>non-persistent, requires linear use</td>
+</tr>
+<tr class="even">
+<td>represented by a tree of closures</td>
+<td>represented by a pair of a list and a unification variable</td>
+</tr>
+<tr class="odd">
+<td>O(n) (or worse!) conversion to a list</td>
+<td>constant-time conversion to a list</td>
+</tr>
+<tr class="even">
+<td>defunctionalized version can be implemented in pretty much any language</td>
+<td>requires at least single-assignment variables</td>
+</tr>
+<tr class="odd">
+<td>unclear connection to being the difference of two lists (which two lists?)</td>
+<td>mathematical, if non-obvious, connection to being the difference of two (given) lists</td>
+</tr>
+</tbody>
+</table>
+<p><br /></p>
+<p>As an illustration of the difference between persistent and non-persistent uses, the function:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>double f <span class="ot">=</span> f <span class="op">.</span> f</span></code></pre></div>
+<p>is a perfectly sensible function on <code>ShowS</code> values that behaves exactly as you’d expect. On the
+other hand:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode prolog"><code class="sourceCode prolog"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>double(<span class="dt">In</span><span class="kw">,</span> <span class="dt">Out</span>) <span class="kw">:-</span> concat(<span class="dt">In</span><span class="kw">,</span> <span class="dt">In</span><span class="kw">,</span> <span class="dt">Out</span>)<span class="kw">.</span></span></code></pre></div>
+<p>is nonsense that will fail the occurs check (if it is enabled, otherwise it will create a cyclic
+list) except for when <code>In</code> is the empty difference list.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>I hope I’ve illustrated that the functional representation is not just <em>not</em> difference lists, but
+is, in fact, <em>wildly different from</em> difference lists.</p>
+<p>This functional representation is enshrined into Haskell via the <code>ShowS</code> type and related functions,
+but I’d argue the concrete tree representation is actually clearer and better. The functional
+representation is more of a cute trick that allows us to reuse existing functions. Really, <code>ShowS</code>
+should have been an abstract type.</p>
+<p>Difference lists are an interesting example of how imperative ideas can be incorporated into a
+declarative language. That said, difference lists come with some of the downsides of an imperative
+approach, namely the lack of persistence.</p>
+<p>As far as I’m aware, there isn’t an unambiguous and widely accepted name for this functional
+representation. Calling it “functional lists” or something like that is, in my opinion, very
+ambiguous and potentially misleading. I think the lack of a good name for this is why “difference
+lists” started becoming popular. As I’ve argued, using “difference list” in this context is even
+more misleading and confusing.</p>
+<p>If people really want a name, one option might be “<strong>delta list</strong>”. I don’t think this term is used.
+It keeps the intuitive idea that the functional representation represents some “change” to a list,
+a collection of deltas that will all be applied at once, but it doesn’t make any false reference to
+difference lists. I’m not super into this name; I just want something that isn’t “difference list”
+or otherwise misleading.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>To be clear, it’s still much, <em>much</em>,
+better than using plain concatenation.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Such a length relation couldn’t
+be written in pure Prolog but can in actual Prolog.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>For those algebraically minded, this almost makes <code>concat</code> and <code>empty</code> into another
+monoid except <code>concat</code> is partial, but such a partial monoid is just a category! In other words,
+we have a category whose objects are lists and whose homsets are, at most, singletons containing
+<code>Xs - Ys</code> for Hom(Xs, Ys). If we maintain our invariant that we have <code>Xs - Ys</code> only when <code>Ys</code> is a
+suffix of <code>Xs</code>, this thin category is exactly the category corresponding to the reflexive,
+transitive “has suffix” relation. We could generalize this to any monoid via a “factors through”
+relation, i.e. |\mathrm{Hom}(m, n)| is inhabited if and only if |\exists p. m = pn| which you can
+easily prove is a reflexive, transitive relation given the monoid axioms. However, for a general
+monoid, we can have a (potentially) non-thin category by saying |p \in \mathrm{Hom}(m,n)| if and
+only if |m = pn|. The category will be thin if and only if the monoid is cancellative. This is
+exactly the slice category of the monoid viewed as a one-object category.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>Again, in <em>actual</em> Prolog, we <em>could</em>
+make a duplicate without consuming the original, though it would still take O(length Xs) time using
+the notion of length mentioned before.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        function loadDisqus() {
+        const disqus_shortname = 'hedonisticlearning';
+        const disqus_identifier = '5a2c020e-cf8c-4b96-9d02-551a3509becf';
+        const disqus_title = 'What difference lists actually are';
+
+        (function() {
+            const dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+        }
+        const commentsBtn = document.createElement("button");
+        commentsBtn.textContent = "Click to show comments";
+        commentsBtn.addEventListener("click", () => loadDisqus());
+        const disqusDiv = document.getElementById("disqus_thread");
+        disqusDiv.append(commentsBtn);
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript> 
+</div>
+
+        </div><!-- /.blog-main -->
+        
+        
+      </div><!-- /.row -->
+    </div><!-- /.container -->
+
+    <footer class="blog-footer">
+      <p>Site generated by <a href="https://jaspervdj.be/hakyll">Hakyll</a></p>
+      <p>
+        <a href="#">Back to top</a>
+      </p>
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/javascript" src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!--<script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>-->
+    
+    
+    <script>
+        MathJax = {
+            loader: {
+                load: ['ui/lazy', '[custom]/xypic.js'],
+                paths: { custom: '/js' }
+            },
+            tex: {
+                packages: { '[+]': ['xypic'] },
+                inlineMath: [['|','|']],
+                macros: window.extraMacros || {}
+            }
+        };
+    </script>
+    <script type="text/javascript" src="../js/MathJax-3/es5/tex-mml-chtml.js"></script>
+  </body>
+</html>

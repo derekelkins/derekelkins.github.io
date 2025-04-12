@@ -8,8 +8,263 @@
         <name>Derek Elkins</name>
         <email>derek.a.elkins+blog@gmail.com</email>
     </author>
-    <updated>2024-10-25T00:55:55Z</updated>
+    <updated>2025-04-12T23:25:24Z</updated>
     <entry>
+    <title>What difference lists actually are</title>
+    <link href="https://derekelkins.github.io/posts/functional-lists-are-not-difference-lists.html" />
+    <id>https://derekelkins.github.io/posts/functional-lists-are-not-difference-lists.html</id>
+    <published>2025-04-12 16:25:24-07:00</published>
+    <updated>2025-04-12T23:25:24Z</updated>
+    <summary type="html"><![CDATA[<h2 id="introduction">Introduction</h2>
+<p>Purely functional list concatenation, <code>xs ++ ys</code> in Haskell syntax, is well known to be linear time
+in the length of the first input and constant time in the length of the second, i.e. <code>xs ++ ys</code> is
+O(length xs). This leads to quadratic complexity if we have a bunch of left associated uses of
+concatenation.</p>
+<p>The ancient trick to resolve this is to, instead of producing lists, produce list-to-list functions
+a la <code>[a] -&gt; [a]</code> or <code>ShowS</code> = <code>String -&gt; String</code> = <code>[Char] -&gt; [Char]</code>. “Concatenation” of “lists”
+represented this way is just function composition which is a constant time operation. We can lift a
+list <code>xs</code> to this representation via the section <code>(xs ++)</code>. This will still lead to O(length xs)
+amount of work to apply this function, but a composition of such functions applied to a list will
+always result in a fully right associated expression even if the function compositions aren’t
+right associated.</p>
+<p>In the last several years, it has become popular to refer to this technique as “difference lists”.
+Often no justification is given for this name. When it is given, it is usually a reference to the
+idea of difference lists in logic programming. Unfortunately, other than both techniques giving rise
+to efficient concatenation, they have almost no similarities.</p>
+<!--more-->
+<h2 id="functional-lists">Functional Lists</h2>
+<p>To start, I want to do a deeper analysis of the “functional lists” approach, because I think what it
+is doing is a bit misunderstood and, consequently, oversold<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. Let’s see how we would model this approach in an OO
+language without higher-order functions, such as early Java. I’ll use strings for simplicity, but it
+would be exactly the same for generic lists.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode java"><code class="sourceCode java"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> PrependTo <span class="op">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">String</span> <span class="fu">prependTo</span><span class="op">(</span><span class="bu">String</span> end<span class="op">);</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Compose <span class="kw">implements</span> PrependTo <span class="op">{</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> PrependTo left<span class="op">;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> PrependTo right<span class="op">;</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="kw">public</span> <span class="fu">Compose</span><span class="op">(</span>PrependTo left<span class="op">,</span> PrependTo right<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="fu">left</span> <span class="op">=</span> left<span class="op">;</span> <span class="kw">this</span><span class="op">.</span><span class="fu">right</span> <span class="op">=</span> right<span class="op">;</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="bu">String</span> <span class="fu">prependTo</span><span class="op">(</span><span class="bu">String</span> end<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="fu">left</span><span class="op">.</span><span class="fu">prependTo</span><span class="op">(</span><span class="kw">this</span><span class="op">.</span><span class="fu">right</span><span class="op">.</span><span class="fu">prependTo</span><span class="op">(</span>end<span class="op">));</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Prepend <span class="kw">implements</span> PrependTo <span class="op">{</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> <span class="bu">String</span> s<span class="op">;</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  <span class="kw">public</span> <span class="fu">Prepend</span><span class="op">(</span><span class="bu">String</span> s<span class="op">)</span> <span class="op">{</span> <span class="kw">this</span><span class="op">.</span><span class="fu">s</span> <span class="op">=</span> s<span class="op">;</span> <span class="op">}</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="bu">String</span> <span class="fu">prependTo</span><span class="op">(</span><span class="bu">String</span> end<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="fu">s</span> <span class="op">+</span> end<span class="op">;</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>This is just a straight, manual implementation of closures for <code>(.)</code> and <code>(++)</code> (specialized to
+strings). Other lambdas not of the above two forms would lead to other implementations of
+<code>PrependTo</code>. Let’s say, however, these are the only two forms that actually occur, which is mostly
+true in Haskell practice, then another view on this OO code (to escape back to FP) is that it is an
+OOP encoding of the algebraic data type:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">PrependTo</span> <span class="ot">=</span> <span class="dt">Compose</span> <span class="dt">PrependTo</span> <span class="dt">PrependTo</span> <span class="op">|</span> <span class="dt">Prepend</span> <span class="dt">String</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ot">prependTo ::</span> <span class="dt">PrependTo</span> <span class="ot">-&gt;</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">String</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>prependTo (<span class="dt">Compose</span> left right) end <span class="ot">=</span> prependTo left (prependTo right end)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>prependTo (<span class="dt">Prepend</span> s) end <span class="ot">=</span> s <span class="op">++</span> end</span></code></pre></div>
+<p>We could have also arrived at this by defunctionalizing a typical example of the technique. Modulo
+some very minor details (that could be resolved by using the Church-encoded version of this), this
+does accurately reflect what’s going on in the technique. <code>Compose</code> is clearly constant time. Less
+obviously, applying these functional lists requires traversing this tree of closures – made
+into an explicit tree here. In fact, this reveals that this representation could require arbitrarily
+large amounts of work for a given size of output. This is due to the fact that prepending an empty
+string doesn’t increase the output size but still increases the size of the tree. In practice,
+it’s a safe assumption that, on average, at least one character will be prepended per leaf of the
+tree which makes the overhead proportional to the size of the output.</p>
+<p>This tree representation is arguably better than the “functional list” representation. It’s less
+flexible for producers, but that’s arguably a good thing because we didn’t really want <em>arbitrary</em>
+<code>String -&gt; String</code> functions. It’s more flexible for consumers. For example, getting the head of
+the list is a relatively efficient operation compared to applying a “functional list” and taking
+the head of the result even in an eager language. (Laziness makes both approaches comparably
+efficient.) Getting the last element is just the same for the tree version, but, even with laziness,
+is much worse for the functional version. More to the point, this concrete representation allows
+the concatenation function to avoid adding empty nodes to the tree whereas <code>(.)</code> can’t pattern
+match on whether a function is the identity function or not.</p>
+<p>This view makes it very clear what the functional version is doing.</p>
+<h2 id="difference-lists-in-prolog">Difference Lists in Prolog</h2>
+<p>List append is the archetypal example of a Prolog program due to the novelty of its “invertibility”.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode prolog"><code class="sourceCode prolog"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>append([]<span class="kw">,</span> <span class="dt">Ys</span><span class="kw">,</span> <span class="dt">Ys</span>)<span class="kw">.</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>append([<span class="dt">X</span><span class="fu">|</span><span class="dt">Xs</span>]<span class="kw">,</span> <span class="dt">Ys</span><span class="kw">,</span> [<span class="dt">X</span><span class="fu">|</span><span class="dt">Zs</span>]) <span class="kw">:-</span> append(<span class="dt">Xs</span><span class="kw">,</span> <span class="dt">Ys</span><span class="kw">,</span> <span class="dt">Zs</span>)<span class="kw">.</span></span></code></pre></div>
+<p>For our purposes, viewing this as a function of the first two arguments, this is exactly the usual
+functional implementation of list concatenation with exactly the same problems. We could, of course,
+encode the defunctionalized version of the functional approach into (pure) Prolog. This would
+produce:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode prolog"><code class="sourceCode prolog"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>prepend_to(compose(<span class="dt">Xs</span><span class="kw">,</span> <span class="dt">Ys</span>)<span class="kw">,</span> <span class="dt">End</span><span class="kw">,</span> <span class="dt">Zs</span>) <span class="kw">:-</span> prepend_to(<span class="dt">Ys</span><span class="kw">,</span> <span class="dt">End</span><span class="kw">,</span> <span class="dt">End2</span>)<span class="kw">,</span> prepend_to(<span class="dt">Xs</span><span class="kw">,</span> <span class="dt">End2</span><span class="kw">,</span> <span class="dt">Zs</span>)<span class="kw">.</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>prepend_to(prepend(<span class="dt">Xs</span>)<span class="kw">,</span> <span class="dt">End</span><span class="kw">,</span> <span class="dt">Zs</span>) <span class="kw">:-</span> append(<span class="dt">Xs</span><span class="kw">,</span> <span class="dt">End</span><span class="kw">,</span> <span class="dt">Zs</span>)<span class="kw">.</span></span></code></pre></div>
+<p>(I’ll be ignoring the issues that arise due to Prolog’s untyped nature.)</p>
+<p>However, this being a logic programming language means we have additional tools available to use
+that functional languages lack. Namely, unification variables. For an imperative (destructive)
+implementation of list concatenation, the way we’d support efficient append of linked lists is we’d
+keep pointers to the start <em>and end</em> of the list. To append two lists, we’d simply use the end
+pointer of the first to update the end of the first list to point at the start of the second. We’d
+then return a pair consisting of the start pointer of the first and the end pointer of the second.</p>
+<p>This is exactly how Prolog difference lists work, except instead of pointers, we use unification
+variables which are more principled. Concretely, we represent a list as a pair of lists, but the
+second list will be represented by an <em>unbound</em> unification variable and the first list contains
+that same unification variable as a suffix. This pair is often represented using the infix
+operator (“functor” in Prolog terminology), <code>-</code>, e.g. <code>Xs - Ys</code>. We could use <code>diff(Xs, Ys)</code> or
+some other name. <code>-</code> isn’t a built-in operator, it’s just a binary constructor essentially.</p>
+<p>At the level of logic, there are no unification variables. The constraints above mean that <code>Xs - Ys</code>
+is a list <code>Xs</code> which contains <code>Ys</code> as a suffix.</p>
+<p>The name “difference list” is arguably motivated by the definition of concatenation in this
+representation.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode prolog"><code class="sourceCode prolog"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>concat(<span class="dt">Xs</span> <span class="fu">-</span> <span class="dt">Ys</span><span class="kw">,</span> <span class="dt">Ys</span> <span class="fu">-</span> <span class="dt">Zs</span><span class="kw">,</span> <span class="dt">Xs</span> <span class="fu">-</span> <span class="dt">Zs</span>)<span class="kw">.</span></span></code></pre></div>
+<p>This looks a lot like |Xs - Ys + Ys - Zs = Xs - Zs|. If the suffix component of the first argument
+is unbound, like it’s supposed to be, then this is a constant-time operation of binding that
+component to <code>Ys</code>. If it is bound, then we need to unify which, in the worst-case, is O(length Ys)
+where the length is up to either nil or an unbound variable tail<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.</p>
+<p>We also have the unit of <code>concat</code>, i.e. the empty
+list via<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode prolog"><code class="sourceCode prolog"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>empty(<span class="dt">Xs</span> <span class="fu">-</span> <span class="dt">Xs</span>)<span class="kw">.</span></span></code></pre></div>
+<p>See the footnote, but this does in some way identify <code>Xs - Ys</code> with the “difference” of <code>Xs</code> and
+<code>Ys</code>.</p>
+<p>We get back to a “normal” list via:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode prolog"><code class="sourceCode prolog"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>to_list(<span class="dt">Xs</span> <span class="fu">-</span> []<span class="kw">,</span> <span class="dt">Xs</span>)<span class="kw">.</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">% or more generally,</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>prepend_to(<span class="dt">Xs</span> <span class="fu">-</span> <span class="dt">Ys</span><span class="kw">,</span> <span class="dt">Ys</span><span class="kw">,</span> <span class="dt">Xs</span>)<span class="kw">.</span></span></code></pre></div>
+<p><code>to_list</code> is a constant-time operation, no matter what. Note, <code>to_list</code> binds the suffix component
+of the difference list. This means that the first input no longer meets our condition to be a
+difference list. In other words, <code>to_list</code> (and <code>prepend_to</code>) <em>consumes</em> the difference list.
+More precisely, it constrains the possible suffixes the list could be.
+Indeed, any operation that binds the suffix component of a difference list consumes it. For example,
+<code>concat</code> consumes its first argument.</p>
+<p>Of course, it still makes logical sense to work with the difference list when its suffix component
+is bound, it’s just that its operational interpretation is different. More to the point, given a
+difference list, you cannot prepend it (via <code>prepend_to</code> or <code>concat</code>) to two different lists to get
+two different results.</p>
+<p>Converting from a list does require traversing the list since we need to replace the nil node, i.e.
+<code>[]</code>, with a fresh unbound variable. Luckily, this is exactly what <code>append</code> does.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode prolog"><code class="sourceCode prolog"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>from_list(<span class="dt">Xs</span><span class="kw">,</span> <span class="dt">Ys</span> <span class="fu">-</span> <span class="dt">Zs</span>) <span class="kw">:-</span> append(<span class="dt">Xs</span><span class="kw">,</span> <span class="dt">Zs</span><span class="kw">,</span> <span class="dt">Ys</span>)<span class="kw">.</span></span></code></pre></div>
+<p><code>from_list</code> also suggests this “difference list” idea. If all of <code>Xs</code>, <code>Ys</code>, and <code>Zs</code> are ground
+terms, then <code>from_list(Xs, Ys - Zs)</code> holds when <code>append(Xs, Zs, Ys)</code> holds. Exactly when if our
+invariants are maintained, i.e. that <code>Zs</code> is a suffix of <code>Ys</code>. Writing these relations more
+functionally and writing <code>append</code> as addition, we’d have:</p>
+<p>\[\mathtt{from\_list}(Xs) = Ys - Zs \iff Xs + Zs = Ys\]</p>
+<p>If we did want to “duplicate” a difference list, we’d essentially need to convert it to a (normal)
+list with <code>to_list</code>, and then we could use <code>from_list</code> multiple times on that result. This would,
+of course, still consume the original difference list. We’d also be paying O(length Xs) for every
+duplicate, including to replace the one we just consumed<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>.</p>
+<p>That said, we <em>can</em> prepend to a list to a difference list without consuming it. We can perform
+other actions with the risk of (partially) consuming the list, e.g. indexing into the list. Indexing
+into the list would force the list to be at least a certain length, but still allow prepending to
+any list that will result in a final list at least that long.</p>
+<h2 id="comparison">Comparison</h2>
+<p>I’ll start the comparison with a massive discrepancy that we will ignore going forward. Nothing
+enforces that a value of type <code>ShowS</code> actually just appends something to its input. We could use
+abstract data type techniques or the defunctionalized version to avoid this. To be fair, difference
+lists also need an abstraction barrier to ensure their invariants, though their failure modes are
+different. A difference list can’t change what it is based on what it is prepended to.</p>
+<style>
+tr.even {
+  background-color: var(--panel-heading-bg-color);
+}
+tr.odd {
+  background-color: var(--panel-heading-border-color);
+}
+</style>
+<table>
+<colgroup>
+<col style="width: 53%" />
+<col style="width: 46%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Functional Representation</th>
+<th>Difference Lists</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>constant-time concatenation</td>
+<td>constant-time concatenation</td>
+</tr>
+<tr class="even">
+<td>constant-time conversion from a list (though you pay for it later)</td>
+<td>O(n) conversion from a list</td>
+</tr>
+<tr class="odd">
+<td>persistent</td>
+<td>non-persistent, requires linear use</td>
+</tr>
+<tr class="even">
+<td>represented by a tree of closures</td>
+<td>represented by a pair of a list and a unification variable</td>
+</tr>
+<tr class="odd">
+<td>O(n) (or worse!) conversion to a list</td>
+<td>constant-time conversion to a list</td>
+</tr>
+<tr class="even">
+<td>defunctionalized version can be implemented in pretty much any language</td>
+<td>requires at least single-assignment variables</td>
+</tr>
+<tr class="odd">
+<td>unclear connection to being the difference of two lists (which two lists?)</td>
+<td>mathematical, if non-obvious, connection to being the difference of two (given) lists</td>
+</tr>
+</tbody>
+</table>
+<p><br/></p>
+<p>As an illustration of the difference between persistent and non-persistent uses, the function:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>double f <span class="ot">=</span> f <span class="op">.</span> f</span></code></pre></div>
+<p>is a perfectly sensible function on <code>ShowS</code> values that behaves exactly as you’d expect. On the
+other hand:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode prolog"><code class="sourceCode prolog"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>double(<span class="dt">In</span><span class="kw">,</span> <span class="dt">Out</span>) <span class="kw">:-</span> concat(<span class="dt">In</span><span class="kw">,</span> <span class="dt">In</span><span class="kw">,</span> <span class="dt">Out</span>)<span class="kw">.</span></span></code></pre></div>
+<p>is nonsense that will fail the occurs check (if it is enabled, otherwise it will create a cyclic
+list) except for when <code>In</code> is the empty difference list.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>I hope I’ve illustrated that the functional representation is not just <em>not</em> difference lists, but
+is, in fact, <em>wildly different from</em> difference lists.</p>
+<p>This functional representation is enshrined into Haskell via the <code>ShowS</code> type and related functions,
+but I’d argue the concrete tree representation is actually clearer and better. The functional
+representation is more of a cute trick that allows us to reuse existing functions. Really, <code>ShowS</code>
+should have been an abstract type.</p>
+<p>Difference lists are an interesting example of how imperative ideas can be incorporated into a
+declarative language. That said, difference lists come with some of the downsides of an imperative
+approach, namely the lack of persistence.</p>
+<p>As far as I’m aware, there isn’t an unambiguous and widely accepted name for this functional
+representation. Calling it “functional lists” or something like that is, in my opinion, very
+ambiguous and potentially misleading. I think the lack of a good name for this is why “difference
+lists” started becoming popular. As I’ve argued, using “difference list” in this context is even
+more misleading and confusing.</p>
+<p>If people really want a name, one option might be “<strong>delta list</strong>”. I don’t think this term is used.
+It keeps the intuitive idea that the functional representation represents some “change” to a list,
+a collection of deltas that will all be applied at once, but it doesn’t make any false reference to
+difference lists. I’m not super into this name; I just want something that isn’t “difference list”
+or otherwise misleading.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>To be clear, it’s still much, <em>much</em>,
+better than using plain concatenation.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Such a length relation couldn’t
+be written in pure Prolog but can in actual Prolog.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>For those algebraically minded, this almost makes <code>concat</code> and <code>empty</code> into another
+monoid except <code>concat</code> is partial, but such a partial monoid is just a category! In other words,
+we have a category whose objects are lists and whose homsets are, at most, singletons containing
+<code>Xs - Ys</code> for Hom(Xs, Ys). If we maintain our invariant that we have <code>Xs - Ys</code> only when <code>Ys</code> is a
+suffix of <code>Xs</code>, this thin category is exactly the category corresponding to the reflexive,
+transitive “has suffix” relation. We could generalize this to any monoid via a “factors through”
+relation, i.e. |\mathrm{Hom}(m, n)| is inhabited if and only if |\exists p. m = pn| which you can
+easily prove is a reflexive, transitive relation given the monoid axioms. However, for a general
+monoid, we can have a (potentially) non-thin category by saying |p \in \mathrm{Hom}(m,n)| if and
+only if |m = pn|. The category will be thin if and only if the monoid is cancellative. This is
+exactly the slice category of the monoid viewed as a one-object category.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>Again, in <em>actual</em> Prolog, we <em>could</em>
+make a duplicate without consuming the original, though it would still take O(length Xs) time using
+the notion of length mentioned before.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>]]></summary>
+</entry>
+<entry>
     <title>Classical First-Order Logic from the Perspective of Categorical Logic</title>
     <link href="https://derekelkins.github.io/posts/categorical-logic-and-fol.html" />
     <id>https://derekelkins.github.io/posts/categorical-logic-and-fol.html</id>
@@ -2732,390 +2987,6 @@ for details.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</
 by Bornemann (2009) nevertheless has a good discussions of the concerns here.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn5"><p>If
 we allowed arbitrary multivector-valued functions, then we’d need to add a projection producing the tangential derivative.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-</ol>
-</section>]]></summary>
-</entry>
-<entry>
-    <title>Enriched Indexed Categories, Syntactically</title>
-    <link href="https://derekelkins.github.io/posts/enriched-indexed-categories-syntactically.html" />
-    <id>https://derekelkins.github.io/posts/enriched-indexed-categories-syntactically.html</id>
-    <published>2020-07-05 22:03:27-07:00</published>
-    <updated>2020-07-06T05:03:27Z</updated>
-    <summary type="html"><![CDATA[<script>
-extraMacros = {
-  proarrow: "{\\mathrel{-\\!\\!\\!\\mapsto}}",
-  V: "{\\mathcal V}",
-  O: "{\\mathsf O}",
-  A: "{\\mathsf A}",
-};
-</script>
-<h2 id="introduction">Introduction</h2>
-<p>This is part 3 in a series. See <a href="/posts/internal-language-of-indexed-monoidal-categories.html">the previous part about internal languages for indexed monoidal categories</a>
-upon which this part heavily depends.</p>
-<p>In category theory, the hom-sets between two objects can often be equipped with some extra structure which is respected
-by identities and composition. For example, the set of group homomorphisms between two abelian groups is itself an abelian group by defining
-the operations pointwise. Similarly, the set of monotonic functions between two partially ordered sets (posets) is a poset
-again by defining the ordering pointwise. Linear functions between vector spaces form a vector space. The set of functors
-between small categories is a small category. Of course, the structure
-on the hom-sets can be different than the objects. Trivially, with the earlier examples a vector space is an abelian group, so we could
-say that linear functions form an abelian group instead of a vector space. Likewise groups are monoids. Less trivially, the set of relations
-between two sets is a partially ordered set via inclusion. There are many cases where instead of hom-sets we have hom-objects that
-aren’t naturally thought of as sets. For example, we can have hom-objects be non-negative (extended) real numbers from which
-the category laws become the laws of a generalized metric space. We can identify posets with categories who hom-objects are elements
-of a two element set or, even better, a two element poset with one element less than or equal to the other.</p>
-<p>This general process is called <a href="https://ncatlab.org/nlab/show/enriched+category+theory">enriching</a> a category in some other
-category which is almost always called |\V| in the generic
-case. We then talk about having |\V|-categories and |\V|-functors, etc. In a specific case, it will be something
-like |\mathbf{Ab}|-categories for an |\mathbf{Ab}|-enriched category, where |\mathbf{Ab}| is the category of abelian groups.
-Unsurprisingly, not just <em>any</em> category will do for |\V|. However, it turns out very little structure is needed to define
-a notion of |\V|-category, |\V|-functor, |\V|-natural transformation, and |\V|-profunctor. The
-usual “baseline” is that |\V| is a <a href="https://ncatlab.org/nlab/show/monoidal+category">monoidal category</a>. As mentioned in the previous
-post, paraphrasing Bénabou, notions of “families of objects/arrows” are ubiquitous and fundamental in category theory. It is useful for
-our purposes to make this structure explicit. For very little cost, this will also provide a vastly more general notion that will readily
-capture enriched categories, <a href="https://ncatlab.org/nlab/show/indexed+category">indexed categories</a>, and categories that are simultaneously
-indexed and enriched, of which <a href="https://ncatlab.org/nlab/show/internal+category">internal categories</a> are an example. The tool for this is
-a <a href="https://ncatlab.org/nlab/show/Grothendieck+fibration">(Grothendieck) fibration</a> aka a fibered category or the mostly equivalent concept
-of an indexed category.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
-<p>To that end, instead of just a monoidal category, we’ll be using <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal categories</a>.
-Typically, to get an experience as much like ordinary category theory as possible, additional structure is assumed on |\V|. In
-particular, it is assumed to be an <a href="https://ncatlab.org/nlab/show/cosmos#indexed_bnabou_cosmoi">(indexed) cosmos</a> which means
-that it is an indexed symmetric monoidally closed category with indexed coproducts preserved by |\otimes| and indexed products
-and fiberwise finite limits and colimits (preserved by the indexed structure). This is quite a lot more structure which I’ll introduce
-in later parts. In this part, I’ll make no assumptions beyond having an indexed monoidal category.</p>
-<!--more-->
-<h2 id="basic-category-theory-in-indexed-monoidal-categories">Basic Category Theory in Indexed Monoidal Categories</h2>
-<p>The purpose of the machinery of the previous posts is to make this section seem boring and pedestrian. Other than being
-a little more explicit and formal, for most of the following concepts it will look like we’re restating the usual definitions
-of categories, functors, and natural transformations. The main exception is profunctors which will be presented in a quite different
-manner, though still in a manner that is easy to connect to the usual presentation. (We will see how to recover the usual presentation
-in later parts.)</p>
-<p>While I’ll start by being rather explicit about indexes and such, I will start to suppress that detail over time as most of it
-is inferrable. One big exception is that right from the start I’ll omit the explicit dependence of primitive terms on indexes.
-For example, while I’ll write |\mathsf F(\mathsf{id}) = \mathsf{id}| for the first functor law, what the syntax of the previous
-posts says I should be writing is |\mathsf F(s, s; \mathsf{id}(s)) = \mathsf{id}(s)|.</p>
-<p>To start, I want to introduce two different notions of |\V|-category, small |\V|-categories and large |\V|-categories,
-and talk about what this distinction actually means. I will proceed afterwards with the “large” notions, e.g. |\V|-functors between
-large |\V|-categories, as the small case will be an easy special case.</p>
-<h3 id="small-v-categories">Small |\V|-categories</h3>
-<p>The <strong>theory of a small |\V|-category</strong> consists of:</p>
-<ul>
-<li>an index type |\O|,</li>
-<li>a linear type |s, t : \O \vdash \A(t, s)|,</li>
-<li>a linear term |s : \O; \vdash \mathsf{id} : \A(s, s)|, and</li>
-<li>a linear term |s, u, t : \O; g : \A(t, u), f : \A(u, s) \vdash g \circ f : \A(t, s)|</li>
-</ul>
-<p>satisfying <span class="math display">$$\begin{gather}
-s, t : \O; f : \A(t, s) \vdash \mathsf{id} \circ f = f = f \circ \mathsf{id} : \A(t, s)\qquad \text{and} \\ \\
-s, u, v, t : \O; h : \A(t, v), g : \A(v, u), f : \A(u, s) \vdash h \circ (g \circ f) = (h \circ g) \circ f : \A(t, s)
-\end{gather}$$</span></p>
-<p>In the notation of the previous posts, I’m saying |\O : \mathsf{IxType}|, |\A : (\O, \O) \to \mathsf{Type}|,
-|\mathsf{id} : (s : \O;) \to \A(s, s)|, and |\circ : (s, u, t : \O; \A(t, u), \A(u, s)) \to \A(t, s)|
-are primitives added to the signature of the theory. I’ll continue to use the earlier, more pointwise presentation above to
-describe the signature.</p>
-<p>A <strong>small |\V|-category</strong> for an |\mathbf S|-indexed monoidal category |\V| is then an interpretation of
-this theory. That is, an object |O| of |\mathbf S| as the interpretation of |\O|, and an
-object |A| of |\V^{O\times O}| as the interpretation of |\A|. The interpretation of |\mathsf{id}|
-is an arrow |I_O \to \Delta_O^* A| of |\V^O|, where |\Delta_O : O \to O\times O| is the diagonal
-arrow |\langle id, id\rangle| in |\mathbf S|. The interpretation of |\circ| is an
-arrow |\pi_{23}^* A \otimes \pi_{12}^* A \to \pi_{13}^* A| of |\V^{O\times O \times O}|
-where |\pi_{ij} : X_1 \times X_2 \times X_3 \to X_i \times X_j| are the appropriate projections.</p>
-<p>Since we can prove in the internal language that the choice of |()| for |\O|, |s, t : () \vdash I|
-for |\A|, |s, t : (); x : I \vdash x : I| for |\mathsf{id}|,
-and |s, u, t : (); f : I, g: I \vdash \mathsf{match}\ f\ \mathsf{as}\ *\ \mathsf{in}\ g : I| for |\circ|
-satisfies the laws of the theory of a small |\V|-category, we know we have a |\V|-category which I’ll call |\mathbb I|
-for any |\V|<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.</p>
-<p>For |\V = \mathcal Fam(\mathbf V)|, |O| is a set of objects. |A| is an |(O\times O)|-indexed family of objects of |\mathbf V|
-which we can write |\{A(t,s)\}_{s,t\in O}|. The interpretation of |\mathsf{id}| is an |O|-indexed family of arrows
-of |\mathbf V|, |\{ id_s : I_s \to A(s, s) \}_{s\in O}|. Finally, the interpretation of |\circ| is a family of arrows
-of |\mathbf V|, |\{ \circ_{s,u,t} : A(t, u)\otimes A(u, s) \to A(t, s) \}_{s,u,t \in O}|. This is exactly
-the data of a (small) |\mathbf V|-enriched category. One example is when |\mathbf V = \mathbf{Cat}| which
-produces (strict) |2|-categories.</p>
-<p>For |\V = \mathcal Self(\mathbf S)|, |O| is an object of |\mathbf S|. |A| is an arrow of |\mathbf S| into |O\times O|, i.e.
-an object of |\mathbf S/O\times O|. I’ll write the object part of this as |A| as well, i.e. |A : A \to O\times O|. The idea
-is that the two projections are the target and source of the arrow. The interpretation of |\mathsf{id}| is an arrow |ids : O \to A|
-such that |A \circ ids = \Delta_O|, i.e. the arrow produced by |ids| should have the same target and source. Finally, the interpretation
-of |\circ| is an arrow |c| from the pullback of |\pi_2 \circ A| and |\pi_1 \circ A| to |A|. The source of this arrow is the
-object of composable pairs of arrows. We further require |c| to produce an arrow with the appropriate target and source of the
-composable pair. This is exactly the data for a category internal to |\mathbf S|. An interesting case for contrast with the
-previous paragraph is that a category internal to |\mathbf{Cat}| is a double category.</p>
-<p>For |\V = \mathcal Const(\mathbf V)|, the above data is exactly the data of a <a href="https://ncatlab.org/nlab/show/monoid+object">monoid object</a>
-in |\mathbf V|. This is a formal illustration that a (|\mathbf V|-enriched) category is just an “indexed monoid”.
-Indeed, |\mathcal Const(\mathbf V)|-functors will be monoid homomorphisms and |\mathcal Const(\mathbf V)|-profunctors
-will be double-sided monoid actions. In particular, when |\mathbf V = \mathbf{Ab}|, we get rings, ring homomorphisms,
-and bimodules of rings. The intuitions here are the guiding ones for the construction we’re realizing.</p>
-<p>One aspect of working in a not-necessarily-symmetric (indexed) monoidal category is the choice of the standard
-order of composition or diagrammatic order is not so trivial since it is not possible to even state what it
-means for them to be the equivalent. To be clear, this definition isn’t really taking a stance on the issue.
-We can interpret |\A(t, s)| as the type of arrows |s \to t| and then |\circ| will be the standard
-order of composition, or as the type of arrows |t \to s| and then |\circ| will be the diagrammatic order.
-In fact, there’s nothing in this definition that stops us from having |\A(t, s)| being the type
-of arrows |t \to s| while still having |\circ| be standard order composition as usual. The issue comes up
-only once we consider |\V|-profunctors as we will see.</p>
-<h3 id="large-v-categories">Large |\V|-categories</h3>
-<p>A <strong>large |\V|-category</strong> is a model of a theory of the following form. There is</p>
-<ul>
-<li>a collection of index types |\O_x|,</li>
-<li>for each pair of index types |\O_x| and |\O_y|, a linear type |s : \O_x, t : \O_y \vdash \A_{yx}(t, s)|,</li>
-<li>for each index type |\O_x|, a linear term |s : \O_x; \vdash \mathsf{id}_x : \A_{xx}(s, s)|, and</li>
-<li>for each triple of index types, |\O_x|, |\O_y|, and |\O_z|, a linear term
-|s: \O_x, u : \O_y, t : \O_z; g : \A_{zy}(t, u), f : \A_{yx}(u, s) \vdash g \circ_{xyz} f : \A_{zx}(t, s)|</li>
-</ul>
-<p>satisfying the same laws as small |\V|-categories, just with some extra subscripts. Clearly, a small |\V|-category
-is just a large |\V|-category where the collection of index types consists of just a single index type.</p>
-<h3 id="small-versus-large">Small versus Large</h3>
-<p>The typical way of describing the difference between small and large (|\V|-)categories would be to say something like: “By
-having a collection of index types in a large |\V|-category, we can have a proper class of them. In a
-small |\V|-category, the index type of objects is interpreted as an object in a category, and a proper class can’t
-be an object of a category<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>.” However, for us, there’s
-a more directly relevant distinction. Namely, while we had a single theory of small |\V|-categories, there is no
-single theory of large |\V|-categories. Different large |\V|-categories correspond to models of (potentially) different theories.
-In other words, the notion of a small |\V|-category is able to be captured by our notion of theory but not the concept
-of a large |\V|-category. This extends to |\V|-functors, |\V|-natural transformations,
-and |\V|-profunctors. In the small case, we can define a single theory which captures each of these concepts,
-but that isn’t possible in the large case. In general, notions of “large” and “small” are about what we can internalize
-within the relevant object language, usually a set theory. Arguably, the only reason we speak of “size” and of proper
-classes being “large” is that the <a href="https://en.wikipedia.org/wiki/Axiom_schema_of_specification">Axiom of Specification</a>
-outright states that any subclass of a set is a set, so proper classes in <strong>ZFC</strong> can’t be subsets of any set.
-As I’ve mentioned <a href="/posts/finite.html">elsewhere</a>, you can definitely have set theories with proper classes that are
-contained in even finite sets, so the issue isn’t one of “bigness”.</p>
-<p>The above discussion also explains the hand-wavy word “collection”. The collection is a collection in the meta-language in
-which we’re discussing/formalizing the notion of theory. When working <em>within</em> the theory of a particular
-large |\V|-category, all the various types and terms are just available ab initio and are independent. There is
-no notion of “collection of types” within the theory and nothing indicating that some types are part of a “collection” with others.</p>
-<p>Another perspective on this distinction between large and small |\V|-categories is that small |\V|-categories have
-a <em>family</em> of arrows, identities, and compositions with respect to the notion of “family” represented by our internal
-language. If we hadn’t wanted to bother with formulating the internal language of an <em>indexed</em> monoidal category, we
-could have still defined the notion of |\V|-category with respect to the internal language of a (non-indexed) monoidal
-category. It’s just that all such |\V|-categories (except for monoid objects) would have to be large |\V|-categories. That is,
-the indexing and notion of “family” would be at a meta-level. Since most of the |\V|-categories of interest will be
-large (though, generally a special case called a |\V|-fibration which reins in the size a bit), it may seem that there
-was no real benefit to the indexing stuff. Where it comes in, or rather where small |\V|-categories come in, is that
-our notion of (co)complete means “has all (co)limits of <em>small</em> diagrams” and small diagrams are |\V|-functors from
-small |\V|-categories.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> There are several other places, e.g. the notion
-of presheaf, where we implicitly depend on what we mean by “small |\V|-category”. So while we won’t usually be
-focused on small |\V|-categories, which |\V|-categories are small impacts the structure of the whole theory.</p>
-<h3 id="v-functors">|\V|-functors</h3>
-<p>The formulation of |\V|-functors is straightforward. As mentioned before, I’ll only present the “large” version.</p>
-<p>Formally, we can’t formulate a theory of just a |\V|-functor, but rather we need to formulate a
-theory of “a pair of |\V|-categories and a |\V|-functor between them”.</p>
-<p>A <strong>|\V|-functor between (large) |\V|-categories |\mathcal C| and |\mathcal D|</strong> is a model of
-a theory consisting of a theory of a large |\V|-category, of which |\mathcal C| is a model, and a theory
-of a large |\V|-category which I’ll write with primes, of which |\mathcal D| is a model, and model of
-the following additional data:</p>
-<ul>
-<li>for each index type |\O_x|, an index type |\O’_{F_x}| and
-an index term, |s : \O_x \vdash \mathsf F_x(s) : \O’_{F_x}|, and</li>
-<li>for each pair of index types, |\O_x| and |\O_y|, a linear term
-|s : \O_x, t : \O_y; f : \A_{yx}(t, s) \vdash \mathsf F_{yx}(f) : \A’_{F_yF_x}(\mathsf F_y(t), \mathsf F_x(s))|</li>
-</ul>
-<p>satisfying <span class="math display">$$\begin{gather}
-s : \O_x; \vdash \mathsf F_{xx}(\mathsf{id}_x) = \mathsf{id}'_{F_x}: \A'_{F_xF_x}(F_x(s), F_x(s))\qquad\text{and} \\
-s : \O_x, u : \O_y, t : \O_z; g : \A_{zy}(t, u), f : \A_{yx}(u, s)
-    \vdash \mathsf F_{zx}(g \circ_{xyz} f) = F_{zy}(g) \circ'_{F_xF_yF_z} F_{yx}(f) : \A'_{F_zF_x}(F_z(t), F_x(s))
-\end{gather}$$</span></p>
-<p>The assignment of |\O’_{F_x}| for |\O_x| is, again, purely metatheoretical. From within the theory, all we know
-is that we happen to have some index types named |\O_x| and |\O’_{F_x}| and some data relating them. The fact
-that there is some kind of mapping of one to the other is not part of the data.</p>
-<p>Next, I’ll define <strong>|\V|-natural transformations</strong> . As before, what we’re really doing is defining |\V|-natural transformations
-as a model of a theory of “a pair of (large) |\V|-categories with a pair of |\V|-functors between them and a |\V|-natural transformation
-between those”. As before, I’ll use primes to indicate the types and terms of the second of each pair of subtheories. Unlike
-before, I’ll only mention what is added which is:</p>
-<ul>
-<li>for each index type |\O_x|, a linear term |s : \O_x; \vdash \tau_x : \A’_{F’_xF_x}(\mathsf F’_x(s), \mathsf F_x(s))|</li>
-</ul>
-<p>satisfying <span class="math display">$$\begin{gather}
-s : \O_x, t : \O_y; f : \A_{yx}(t, s)
-    \vdash \mathsf F'_{yx}(f) \circ'_{F_xF'_xF'_y} \tau_x = \tau_y \circ'_{F_xF_yF'_y} \mathsf F_{yx}(f) : \A'_{F'_yF_x}(\mathsf F'_y(t), \mathsf F_x(s))
-\end{gather}$$</span></p>
-<p>In practice, I’ll suppress the subscripts on all but index types as the rest are inferrable. This makes the above equation the
-much more readable
-<span class="math display">$$\begin{gather}
-s : \O_x, t : \O_y; f : \A(t, s)
-    \vdash \mathsf F'(f) \circ' \tau = \tau \circ' \mathsf F(f) : \A'(\mathsf F'(t), \mathsf F(s))
-\end{gather}$$</span></p>
-<h3 id="v-profunctors">|\V|-profunctors</h3>
-<p>Here’s where we need to depart from the usual story. In the usual story, a |\mathbf V|-enriched profunctor
-|P : \mathcal C \proarrow \mathcal D| is
-a |\mathbf V|-enriched functor |P : \mathcal C\otimes\mathcal D^{op}\to\mathbf V| (or, often, the opposite
-convention is used |P : \mathcal C^{op}\otimes\mathcal D \to \mathbf V|). There are many problems with this
-definition in our context.</p>
-<ol type="1">
-<li>Without symmetry, we have no definition of opposite category.</li>
-<li>Without symmetry, the tensor product of |\mathbf V|-enriched categories doesn’t make sense.</li>
-<li>|\mathbf V| is not itself a |\mathbf V|-enriched category, so it doesn’t make sense to talk
-about |\mathbf V|-enriched functors into it.</li>
-<li>Even if it was, we’d need some way of converting between arrows of |\mathbf V| as a category and
-arrows of |\mathbf V| as a |\mathbf V|-enriched category.</li>
-<li>The equation |P(g \circ f, h \circ k) = P(g, k) \circ P(f, h)| requires symmetry. (This is arguably
-2 again.)</li>
-</ol>
-<p>All of these problems are solved when |\mathbf V| is a symmetric monoidally closed category.</p>
-<p>Alternatively, we can reformulate the notion of a |\V|-profunctor so that it works in our context
-and is equivalent to the usual one when it makes sense.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a> To this end, at a low level a |\mathbf V|-enriched profunctor is a family of
-arrows <span class="math display">$$\begin{gather}P : \mathcal C(t, s)\otimes\mathcal D(s', t') \to [P(s, s'), P(t, t')]\end{gather}$$</span> which
-satisfies <span class="math display">$$\begin{gather}P(g \circ f, h \circ k)(p) = P(g, k)(P(f, h)(p))\end{gather}$$</span> in the internal language of a symmetric
-monoidally closed category among other laws. We can uncurry |P| to eliminate the need for closure,
-getting <span class="math display">$$\begin{gather}P : \mathcal C(t, s)\otimes \mathcal D(s', t')\otimes P(s, s') \to P(t, t')\end{gather}$$</span>
-satisfying <span class="math display">$$\begin{gather}P(g \circ f, h \circ k, p) = P(g, k, P(f, h, p))\end{gather}$$</span> We see that we’re always going to need
-to permute |f| and |h| past |k| unless we move the third argument to the second producing the
-nice <span class="math display">$$\begin{gather}P : \mathcal C(t, s)\otimes P(s, s') \otimes \mathcal D(s', t') \to P(t, t')\end{gather}$$</span> and the
-law <span class="math display">$$\begin{gather}P(g \circ f, p, h \circ k) = P(g, P(f, p, h), k)\end{gather}$$</span> which no longer requires symmetry. This is
-also where the order of the arguments of |\circ| drives the order of the arguments of |\V|-profunctors.</p>
-<p>A <strong>|\V|-profunctor</strong>, |P : \mathcal C \proarrow \mathcal D|, is a model of the theory (containing
-subtheories for |\mathcal C| and |\mathcal D| etc. as in the |\V|-functor case) having:</p>
-<ul>
-<li>for each pair of index types |\O_x| and |\O’_{x’}|,
-a linear type |s : \O_x, t : \O’_{x’} \vdash \mathsf P_{x’x}(t, s)|, and</li>
-<li>for each quadruple of index types |\O_x|, |\O_y|, |\O’_{x’}|, and |\O’_{y’}|,
-a linear term |s : \O_x, s’ : \O’_{x’}, t : \O_y, t’ : \O’_{y’};
-f : \A_{yx}(t, s), p : \mathsf P_{xx’}(s, s’), h : \A’_{x’y’}(s’, t’) \vdash \mathsf P_{yxx’y’}(f, p, h) : \mathsf P_{yy’}(t, t’)|</li>
-</ul>
-<p>satisfying <span class="math display">$$\begin{align}
- &amp; s : \O_x, s' : \O'_{x'}; p : \mathsf P(s, s')
-    \vdash \mathsf P(\mathsf{id}, p, \mathsf{id}') = p : \mathsf P(s, s') \\ \\
- &amp; s : \O_x, s' : \O'_{x'}, u : \O_y, u' : \O'_{y'}, t : \O_z, t' : \O'_{z'}; \\
- &amp;  g : \A(t, u), f : \A(u, s), p : \mathsf P(s, s'), h : \A'(s', u'), k : \A'(u', t') \\
-    \vdash\  &amp; \mathsf P(g \circ f, p, h \circ' k) = \mathsf P(g, \mathsf P(f, p, h), k) : \mathsf P(t, t')
-\end{align}$$</span></p>
-<p>This can also be equivalently presented as a pair of a left and a right action satisfying <a href="https://en.wikipedia.org/wiki/Bimodule#Definition">bimodule laws</a>. We’ll make
-the following definitions |\mathsf P_l(f, p) = \mathsf P(f, p, \mathsf {id})|
-and |\mathsf P_r(p, h) = \mathsf P(\mathsf{id}, p ,h)|.</p>
-<p>A <strong>|\V|-presheaf</strong> on |\mathcal C| is a |\V|-profunctor |P : \mathbb I \proarrow \mathcal C|. Similarly,
-a <strong>|\V|-copresheaf</strong> on |\mathcal C| is a |\V|-profunctor |P : \mathcal C \proarrow \mathbb I|.</p>
-<p>Of course, we have the fact that the term <span class="math display">$$\begin{gather}
-s : \O_x, t : \O_y, s' : \O_z, t' : \O_w; h : \A(t, s), g : \A(s, s'), f : \A(s', t')
-    \vdash h \circ g \circ f : \A(t, t')
-\end{gather}$$</span> witnesses the interpretation of |\A| as a |\V|-profunctor |\mathcal C \proarrow \mathcal C|
-for any |\V|-category, |\mathcal C|, which we’ll call the <strong>hom |\V|-profunctor</strong>. More generally, given
-a |\V|-profunctor |P : \mathcal C \proarrow \mathcal D|, and |\V|-functors |F : \mathcal C’ \to \mathcal C|
-and |F’ : \mathcal D’ \to \mathcal D|, we have the |\V|-profunctor |P(F, F’) : \mathcal C’ \proarrow \mathcal D’|
-defined as <span class="math display">$$\begin{gather}
-s : \O_x, s' : \O'_{x'}, t : \O_y, t' : \O'_{y'}; f : \A(t, s), p : \mathsf P(\mathsf F(s), \mathsf F'(s')), f' : \A'(s', t')
-    \vdash \mathsf P(\mathsf F(f), p, \mathsf F'(f')) : \mathsf P(\mathsf F(t), \mathsf F'(t'))
-\end{gather}$$</span> In particular, we have the <strong>representable |\V|-profunctors</strong> when |P| is the hom |\V|-profunctor and
-either |F| or |F’| is the identity |\V|-functor, e.g. |\mathcal C(Id, F)| or |\mathcal C(F, Id)|.</p>
-<h3 id="multimorphisms">Multimorphisms</h3>
-<p>There’s a natural notion of morphism of |\V|-profunctors which we could derive either via passing the notion of
-natural transformation of the bifunctorial view through the same reformulations as above, or by generalizing the notion of
-a bimodule homomorphism. This would produce a notion like: a |\V|-natural transformation from |\alpha : P \to Q|
-is a |\alpha : P(t, s) \to Q(t, s)| satisfying |\alpha(P(f, p, h)) = Q(f, \alpha(p), h)|. While there’s nothing wrong
-with this definition, it doesn’t quite meet our needs. One way to see this is that it would be nice to have a bicategory
-whose |0|-cells were |\V|-categories, |1|-cells |\V|-profunctors, and |2|-cells |\V|-natural
-transformations as above. The problem there isn’t the |\V|-natural transformations but the |1|-cells. In particular,
-we don’t have composition of |\V|-profunctors. In the analogy with bimodules, we don’t have tensor products so we
-can’t reduce multilinear maps to linear maps; therefore, linear maps don’t suffice, and we really want a notion of multilinear maps.</p>
-<p>So, instead of a bicategory what we’ll have is a virtual bicategory (or, more generally, a <a href="https://ncatlab.org/nlab/show/virtual+double+category">virtual double category</a>).
-A virtual bicategory is to a bicategory what a multicategory is to a monoidal category, i.e. multicategories are “virtual monoidal
-categories”. The only difference between a virtual bicategory and a multicategory is that instead of our multimorphisms having
-arbitrary lists of objects as their sources, our “objects” (|1|-cells) themselves have sources and targets (|0|-cells) and our
-multimorphisms (|2|-cells) have <em>composable sequences</em> of |1|-cells as their sources.</p>
-<p>A <strong>|\V|-multimorphism</strong> from a composable sequence of |\V|-profunctors |P_1, \dots, P_n| to
-the |\V|-profunctor |Q| is a model of the theory consisting of the various necessary subtheories and:</p>
-<ul>
-<li>a linear term, |s_0 : \O_{x_0}^0, \dots, s_n : \O_{x_n}^n;
-p_1 : \mathsf P_{x_0x_1}^1(s_0, s_1), \dots, p_n : \mathsf P_{x_{n-1}x_n}^n(s_{n-1}, s_n)
-\vdash \tau_{x_0\cdots x_n}(p_1, \dots, p_n) : \mathsf Q_{x_0x_n}(s_0, s_n)|</li>
-</ul>
-<p>satisfying <span class="math display">$$\begin{align}
-&amp; t, s_0 : \O^0, \dots, s_n : \O^n;
-    f : \A^0(t, s_0), p_1 : \mathsf P^1(s_0, s_1), \dots, p_n : \mathsf P^n(s_{n-1}, s_n) \\
-    \vdash\ &amp; \tau(\mathsf P_l^0(f, p_1), \dots, p_n) = \mathsf Q_l(f, \tau(p_1, \dots, p_n)) : \mathsf Q(t, s_n) \\ \\
-&amp; s_0 : \O^0, \dots, s_n, s : \O^n;
-    p_1 : \mathsf P^1(s_0, s_1), \dots, p_n : \mathsf P^n(s_{n-1}, s_n), f : \A^n(s_n, s) \\
-    \vdash\ &amp; \tau(p_1, \dots, \mathsf P_r^n(p_n, f)) = \mathsf Q_r(\tau(p_1, \dots, p_n), f) : \mathsf Q(s_0, s) \\ \\
-&amp; s_0 : \O^0, \dots, s_n : \O^n; \\
-    &amp; p_1 : \mathsf P^1(s_0, s_1), \dots, p_i : \mathsf P^i(s_{i-1}, s_i), f : \A^i(s_i, s_{i+1}),
-      p_{i+1} : \mathsf P^{i+1}(s_i, s_{i+1}), \dots, p_n : \mathsf P^n(s_{n-1}, s_n) \\
-    \vdash\ &amp; \tau(p_1, \dots, \mathsf P_r^i(p_i, f), p_{i+1}, \dots, p_n) = \tau(p_1, \dots, p_i, \mathsf P_l^{i+1}(f, p_{i+1}) \dots, p_n) : \mathsf Q(s_0, s_n)
-\end{align}$$</span>
-except for the |n=0| case in which case the only law is <span class="math display">$$\begin{gather}
-t, s : \O^0; f : \A^0(t, s) \vdash \mathsf Q_l(f, \tau()) = \mathsf Q_r(\tau(), f) : \mathsf Q(t, s)
-\end{gather}$$</span></p>
-<p>The laws involving the action of |\mathsf Q| are called <strong>external equivariance</strong>, while the remaining law is called <strong>internal
-equivariance</strong>. We’ll write |\V\mathbf{Prof}(P_1, \dots, P_n; Q)| for the set of |\V|-multimorphisms from the
-composable sequence of |\V|-profunctors |P_1, \dots, P_n| to the |\V|-profunctor |Q|.</p>
-<p>As with multilinear maps, we can characterize composition via a universal property. Write |Q_1\diamond\cdots\diamond Q_n|
-for the <strong>composite |\V|-profunctor</strong> (when it exists) of the composable sequence |Q_1, \dots, Q_n|. We then have
-for any pair of composable sequences |R_1, \dots, R_m| and |S_1, \dots, S_k| which compose with |Q_1, \dots, Q_n|,
-<span class="math display">$$\begin{gather}
-\V\mathbf{Prof}(R_1,\dots, R_m, Q_1 \diamond \cdots \diamond Q_n, S_1, \dots, S_k; -)
-    \cong \V\mathbf{Prof}(R_1,\dots, R_m, Q_1, \dots, Q_n, S_1, \dots, S_k; -)
-\end{gather}$$</span> where the forward direction is induced by precomposition with a |\V|-multimorphism
-|Q_1, \dots, Q_n \to Q_1 \diamond \cdots \diamond Q_n|. A |\V|-multimorphism with this property
-is called <strong>opcartesian</strong>. The |n=0| case is particularly important and, for a |\V|-category |\mathcal C|,
-produces the <strong>unit |\V|-profunctor</strong>, |U_\mathcal C : \mathcal C \proarrow \mathcal C| as the composite
-of the empty sequence. When we have all composites, |\V\mathbf{Prof}| becomes an actual bicategory rather
-than a virtual bicategory. |\V\mathbf{Prof}| always has all units, namely the hom |\V|-profunctors. Much like we
-can define the tensor product of modules by quotienting the tensor product of their underlying abelian groups by internal
-equivariance, we will find that we can make composites when we have enough (well-behaved) colimits<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>.</p>
-<p>Related to composites, we can talk about left/right closure of |\V\mathbf{Prof}|. In this case we have the
-natural isomorphisms: <span class="math display">$$\begin{gather}
-\V\mathbf{Prof}(Q_1,\dots, Q_n, R; S) \cong \V\mathbf{Prof}(Q_1, \dots, Q_n; R \triangleright S) \\
-\V\mathbf{Prof}(R, Q_1, \dots, Q_n; S) \cong \V\mathbf{Prof}(Q_1, \dots, Q_n;S \triangleleft R)
-\end{gather}$$</span> Like composites, this merely characterizes these constructs; they need not exist in general.
-These will be important when we talk about Yoneda and (co)limits in |\V|-categories.</p>
-<p>A |\V|-natural transformation |\alpha : F \to G : \mathcal C \to \mathcal D| is the same as |\alpha\in\V\mathbf{Prof}(;\mathcal D(G, F))|.</p>
-<h3 id="example-proof">Example Proof</h3>
-<p>Just as an example, let’s prove a basic fact about categories for arbitrary |\V|-categories. This will use an informal
-style.</p>
-<p>The fact will be that full and faithful functors reflect isomorphisms. Let’s go through the typical proof for the ordinary
-category case.</p>
-<p>Suppose we have an natural transformation |\varphi : \mathcal D(FA, FB) \to \mathcal C(A, B)| natural in |A| and |B| such that |\varphi|
-is an inverse to |F|, i.e. the action of the functor |F| on arrows. If |Ff \circ Fg = id| and |Fg \circ Ff = id|, then by the naturality
-of |\varphi|, |\varphi(id) = \varphi(Ff \circ id \circ Fg) = f \circ \varphi(id) \circ g| and similarly with |f| and |g| switched.
-We now just need to show that |\varphi(id) = id| but |id = F(id)|, so |\varphi(id) = \varphi(F(id)) = id|. |\square|</p>
-<p>Now in the internal language. We’ll start with the theory of a |\V|-functor, so we have |\O|, |\O’|, |\A|, |\A’|, and |\mathsf F|.
-While the previous paragraph talks about a natural transformation, we can readily see that it’s really a multimorphism. In our case, it
-is a |\V|-multimorphism |\varphi| from |\A’(\mathsf F, \mathsf F)| to |\A|. Before we do that though, we need to show that |\mathsf F|
-itself is a |\V|-multimorphism. This corresponds to the naturality of the action on arrows of |F| which we took for granted in the previous
-paragraph. This is quickly verified: the external equivariance equations are just the functor law for composites. The additional data we have
-is two linear terms |\mathsf f| and |\mathsf g| such that |\mathsf F(\mathsf f) \circ \mathsf F(\mathsf g) = \mathsf{id}|
-and |\mathsf F(\mathsf g) \circ \mathsf F(\mathsf f) = \mathsf{id}|. Also, |\varphi(\mathsf F(h)) = h|.
-The result follows through almost identically to the previous paragraph.
-|\varphi(\mathsf{id}) = \varphi(\mathsf F(\mathsf f) \circ \mathsf F(\mathsf g)) = \varphi(\mathsf F(\mathsf f) \circ \mathsf{id} \circ \mathsf F(\mathsf g))|,
-we apply external equivariance twice to get |\mathsf f \circ \varphi(\mathsf{id}) \circ \mathsf g|. The functor law for |\mathsf{id}|
-gives |\varphi(\mathsf{id}) = \varphi(\mathsf F(\mathsf{id})) = \mathsf{id}|. A quick glance verifies that all these
-equations use their free variables linearly as required. |\square|</p>
-<p>As a warning, in the above |\mathsf f| and |\mathsf g| are not free variables but constants, i.e. primitive linear terms. Thus
-there is no issue with an equation like |\mathsf F(\mathsf f) \circ \mathsf F(\mathsf g) = \mathsf{id}| as both sides have no free variables.</p>
-<p>This is a very basic result but, again, the payoff here is how boring and similar to the usual case this is. For contrast, the definition
-of an internal profunctor is given <a href="https://ncatlab.org/nlab/show/internal+profunctor">here</a>. This definition is easier to
-connect to our notion of |\V|-presheaf, specifically a |\mathcal Self(\mathbf S)|-presheaf, than it is to the usual |\mathbf{Set}|-valued
-functor definition. While not hard, it would take me a bit of time to even formulate the above proposition, and a proof in terms
-of the explicit definitions would be hard to recognize as just the ordinary proof.</p>
-<p>For fun, let’s figure out what the |\mathcal Const(\mathbf{Ab})| case of this result says explicitly.
-A |\mathcal Const(\mathbf{Ab})|-category is a ring, a |\mathcal Const(\mathbf{Ab})|-functor is a ring homomorphism, and
-a |\mathcal Const(\mathbf{Ab})|-profunctor is a bimodule. Let |R| and |S| be rings
-and |f : R \to S| be a ring homomorphism. An isomorphism in |R| viewed as a |\mathcal Const(\mathbf{Ab})|-category is just
-an invertible element. Every ring, |R|, is an |R|-|R|-bimodule. Given any |S|-|S|-bimodule |P|, we have
-an |R|-|R|-bimodule |f^*(P)| via restriction of scalars, i.e. |f^*(P)| has the same elements as |P| and for |p \in f^*(P)|,
-|rpr’ = f(r)pf(r’)|. In particular, |f| gives rise to a bimodule homomorphism, i.e. a linear function, |f : R \to f^*(S)|
-which corresponds to its action on arrows from the perspective of |f| as a |\mathcal Const(\mathbf{Ab})|-functor. If this
-linear transformation has an inverse, then the above result states that when |f(r)| is invertible so is |r|. So to restate this
-all in purely ring theoretic terms, given a ring homomorphism |f : R \to S| and an abelian group homomorphism |\varphi : S \to R|
-satisfying |\varphi(f(rst)) = r\varphi(f(s))t| and |\varphi(f(r)) = r|, then if |f(r)| is invertible so is |r|.</p>
-<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
-<hr />
-<ol>
-<li id="fn1"><p>Indexed categories are equivalent to <em>cloven</em> fibrations and, if you have the Axiom of Choice, all fibrations can
-be cloven. Indexed categories can be viewed as <em>presentations</em> of fibrations.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>This
-suggests that we could define a small |\V|-category |\mathcal C \otimes \mathcal D| where |\mathcal C| and |\mathcal D|
-are small |\V|-categories. Start formulating a definition of such a |\V|-category. You will get stuck. Where? Why? This implies
-that the (ordinary, or better, 2-)category of small |\V|-categories does not have a monoidal product with |\mathbb I| as
-unit in general.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3"><p>With a good understanding of what a class is, it’s clear that it doesn’t even make
-sense to have a proper class be an object. In frameworks with an explicit notion of ”class”, this is often manifested by
-saying that a class that is an element of another class is a set (and thus not a proper class).<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn4"><p>This suggests that it might be interesting to consider categories that are (co)complete with
-respect to this monoid notion of “small”. I don’t think I’ve ever seen a study of such categories. (Co)limits of
-monoids are <a href="https://doi.org/10.1007/BFb0084220">not trivial</a>.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn5"><p>This is one of the main things I like about working
-in weak foundations. It forces you to come up with better definitions that make it clear what is and is not
-important and eliminates coincidences. Of course, it also produces definitions and theorems that are inherently
-more general too.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn6"><p>This connection isn’t
-much of a surprise as the tensor product of modules is exactly the (small) |\mathcal Const(\mathbf{Ab})| case of this.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>]]></summary>
 </entry>

@@ -46,6 +46,51 @@
           
     <div class="blog-post teaser panel panel-default">
     <div class="panel-heading">
+        <h2 class="blog-post-title"><a href="./posts/functional-lists-are-not-difference-lists.html">What difference lists actually are</a></h2>
+        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="5a2c020e-cf8c-4b96-9d02-551a3509becf" href="./posts/functional-lists-are-not-difference-lists.html#disqus_thread"></a></h6>
+    </div>
+
+    <div class="panel-body">
+        
+            <h2 id="introduction">Introduction</h2>
+<p>Purely functional list concatenation, <code>xs ++ ys</code> in Haskell syntax, is well known to be linear time
+in the length of the first input and constant time in the length of the second, i.e. <code>xs ++ ys</code> is
+O(length xs). This leads to quadratic complexity if we have a bunch of left associated uses of
+concatenation.</p>
+<p>The ancient trick to resolve this is to, instead of producing lists, produce list-to-list functions
+a la <code>[a] -&gt; [a]</code> or <code>ShowS</code> = <code>String -&gt; String</code> = <code>[Char] -&gt; [Char]</code>. “Concatenation” of “lists”
+represented this way is just function composition which is a constant time operation. We can lift a
+list <code>xs</code> to this representation via the section <code>(xs ++)</code>. This will still lead to O(length xs)
+amount of work to apply this function, but a composition of such functions applied to a list will
+always result in a fully right associated expression even if the function compositions aren’t
+right associated.</p>
+<p>In the last several years, it has become popular to refer to this technique as “difference lists”.
+Often no justification is given for this name. When it is given, it is usually a reference to the
+idea of difference lists in logic programming. Unfortunately, other than both techniques giving rise
+to efficient concatenation, they have almost no similarities.</p>
+
+            <h6><a href="./posts/functional-lists-are-not-difference-lists.html">Read more...</a></h6>
+        
+    </div>
+
+    <div class="panel-footer">
+        <h6 class="blog-post-meta">
+            April 12, 2025 23:25 UTC
+            
+            (Last updated on April 12, 2025 23:25 UTC)
+
+            
+                Tags: <a title="All pages tagged 'programming'." href="./tags/programming.html">programming</a>
+            
+        </h6>
+    </div>
+
+</div><!-- /.blog-post -->
+
+
+
+    <div class="blog-post teaser panel panel-default">
+    <div class="panel-heading">
         <h2 class="blog-post-title"><a href="./posts/categorical-logic-and-fol.html">Classical First-Order Logic from the Perspective of Categorical Logic</a></h2>
         <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="a8ccba9b-9900-40e1-b2d4-47e0f944d456" href="./posts/categorical-logic-and-fol.html#disqus_thread"></a></h6>
     </div>
@@ -735,76 +780,6 @@ will be more efficient, more accurate, and easier to use.</p>
 
 
 
-    <div class="blog-post teaser panel panel-default">
-    <div class="panel-heading">
-        <h2 class="blog-post-title"><a href="./posts/enriched-indexed-categories-syntactically.html">Enriched Indexed Categories, Syntactically</a></h2>
-        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="981177c3-f86e-47e7-9c45-00e7a4f34a43" href="./posts/enriched-indexed-categories-syntactically.html#disqus_thread"></a></h6>
-    </div>
-
-    <div class="panel-body">
-        
-            <script>
-extraMacros = {
-  proarrow: "{\\mathrel{-\\!\\!\\!\\mapsto}}",
-  V: "{\\mathcal V}",
-  O: "{\\mathsf O}",
-  A: "{\\mathsf A}",
-};
-</script>
-<h2 id="introduction">Introduction</h2>
-<p>This is part 3 in a series. See <a href="./posts/internal-language-of-indexed-monoidal-categories.html">the previous part about internal languages for indexed monoidal categories</a>
-upon which this part heavily depends.</p>
-<p>In category theory, the hom-sets between two objects can often be equipped with some extra structure which is respected
-by identities and composition. For example, the set of group homomorphisms between two abelian groups is itself an abelian group by defining
-the operations pointwise. Similarly, the set of monotonic functions between two partially ordered sets (posets) is a poset
-again by defining the ordering pointwise. Linear functions between vector spaces form a vector space. The set of functors
-between small categories is a small category. Of course, the structure
-on the hom-sets can be different than the objects. Trivially, with the earlier examples a vector space is an abelian group, so we could
-say that linear functions form an abelian group instead of a vector space. Likewise groups are monoids. Less trivially, the set of relations
-between two sets is a partially ordered set via inclusion. There are many cases where instead of hom-sets we have hom-objects that
-aren’t naturally thought of as sets. For example, we can have hom-objects be non-negative (extended) real numbers from which
-the category laws become the laws of a generalized metric space. We can identify posets with categories who hom-objects are elements
-of a two element set or, even better, a two element poset with one element less than or equal to the other.</p>
-<p>This general process is called <a href="https://ncatlab.org/nlab/show/enriched+category+theory">enriching</a> a category in some other
-category which is almost always called |\V| in the generic
-case. We then talk about having |\V|-categories and |\V|-functors, etc. In a specific case, it will be something
-like |\mathbf{Ab}|-categories for an |\mathbf{Ab}|-enriched category, where |\mathbf{Ab}| is the category of abelian groups.
-Unsurprisingly, not just <em>any</em> category will do for |\V|. However, it turns out very little structure is needed to define
-a notion of |\V|-category, |\V|-functor, |\V|-natural transformation, and |\V|-profunctor. The
-usual “baseline” is that |\V| is a <a href="https://ncatlab.org/nlab/show/monoidal+category">monoidal category</a>. As mentioned in the previous
-post, paraphrasing Bénabou, notions of “families of objects/arrows” are ubiquitous and fundamental in category theory. It is useful for
-our purposes to make this structure explicit. For very little cost, this will also provide a vastly more general notion that will readily
-capture enriched categories, <a href="https://ncatlab.org/nlab/show/indexed+category">indexed categories</a>, and categories that are simultaneously
-indexed and enriched, of which <a href="https://ncatlab.org/nlab/show/internal+category">internal categories</a> are an example. The tool for this is
-a <a href="https://ncatlab.org/nlab/show/Grothendieck+fibration">(Grothendieck) fibration</a> aka a fibered category or the mostly equivalent concept
-of an indexed category.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
-<p>To that end, instead of just a monoidal category, we’ll be using <a href="https://ncatlab.org/nlab/show/indexed+monoidal+category">indexed monoidal categories</a>.
-Typically, to get an experience as much like ordinary category theory as possible, additional structure is assumed on |\V|. In
-particular, it is assumed to be an <a href="https://ncatlab.org/nlab/show/cosmos#indexed_bnabou_cosmoi">(indexed) cosmos</a> which means
-that it is an indexed symmetric monoidally closed category with indexed coproducts preserved by |\otimes| and indexed products
-and fiberwise finite limits and colimits (preserved by the indexed structure). This is quite a lot more structure which I’ll introduce
-in later parts. In this part, I’ll make no assumptions beyond having an indexed monoidal category.</p>
-
-            <h6><a href="./posts/enriched-indexed-categories-syntactically.html">Read more...</a></h6>
-        
-    </div>
-
-    <div class="panel-footer">
-        <h6 class="blog-post-meta">
-            July  6, 2020 05:03 UTC
-            
-            (Last updated on January  6, 2022 12:07 UTC)
-
-            
-                Tags: <a title="All pages tagged 'math'." href="./tags/math.html">math</a>, <a title="All pages tagged 'category theory'." href="./tags/category%20theory.html">category theory</a>
-            
-        </h6>
-    </div>
-
-</div><!-- /.blog-post -->
-
-
-
 
         </div><!-- /.blog-main -->
         
@@ -814,6 +789,8 @@ in later parts. In this part, I’ll make no assumptions beyond having an indexe
                 <div class="panel-heading"><h4>Recent</h4></div>
                 <div class="panel-body">
                     <ol class="list-unstyled">
+                        
+                          <li><div class="blog-post-link">2025-04-12 - <a href="./posts/functional-lists-are-not-difference-lists.html">What difference lists actually are</a></div></li>
                         
                           <li><div class="blog-post-link">2024-10-25 - <a href="./posts/categorical-logic-and-fol.html">Classical First-Order Logic from the Perspective of Categorical Logic</a></div></li>
                         
@@ -833,8 +810,6 @@ in later parts. In this part, I’ll make no assumptions beyond having an indexe
                         
                           <li><div class="blog-post-link">2020-08-09 - <a href="./posts/complex-step-differentiation.html">Complex-Step Differentiation</a></div></li>
                         
-                          <li><div class="blog-post-link">2020-07-06 - <a href="./posts/enriched-indexed-categories-syntactically.html">Enriched Indexed Categories, Syntactically</a></div></li>
-                        
                     </ol>
                 </div>
               </div>
@@ -850,7 +825,7 @@ in later parts. In this part, I’ll make no assumptions beyond having an indexe
 <li><a href="./tags/javascript.html">javascript (1)</a></li>
 <li><a href="./tags/logic.html">logic (6)</a></li>
 <li><a href="./tags/math.html">math (23)</a></li>
-<li><a href="./tags/programming.html">programming (5)</a></li>
+<li><a href="./tags/programming.html">programming (6)</a></li>
 <li><a href="./tags/type%20theory.html">type theory (2)</a></li>
                     </ol>
                 </div>
