@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">What difference lists actually are</h2>
     <p class="blog-post-meta">April 12, 2025 23:25 UTC 
         
-        (Last updated on April 12, 2025 23:25 UTC)
+        (Last updated on April 13, 2025 05:54 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -188,7 +188,7 @@ functionally and writing <code>append</code> as addition, we’d have:</p>
 list with <code>to_list</code>, and then we could use <code>from_list</code> multiple times on that result. This would,
 of course, still consume the original difference list. We’d also be paying O(length Xs) for every
 duplicate, including to replace the one we just consumed<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>.</p>
-<p>That said, we <em>can</em> prepend to a list to a difference list without consuming it. We can perform
+<p>That said, we <em>can</em> prepend a list to a difference list without consuming it. We can perform
 other actions with the risk of (partially) consuming the list, e.g. indexing into the list. Indexing
 into the list would force the list to be at least a certain length, but still allow prepending to
 any list that will result in a final list at least that long.</p>

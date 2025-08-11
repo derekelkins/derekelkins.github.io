@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">A better way to write convolution</h2>
     <p class="blog-post-meta">September 14, 2015 06:12 UTC 
         
-        (Last updated on December 30, 2021 14:11 UTC)
+        (Last updated on August 11, 2025 05:57 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -151,7 +151,17 @@ is now, what is |\mu|? Well, all we need to do is say what it is on prime powers
 the Euler product formula to the above we see, for prime |p|, |\mu(p) = -1| and |\mu(p^n) = 0| for |n &gt; 1|. This is
 the <a href="https://en.wikipedia.org/wiki/M%C3%B6bius_function">Möbius function</a>. Because
 |\zeta(s) \cdot \frac{1}{\zeta(s)} = 1| we have |(1 \star \mu)(n) = \sum_{d\mid n} \mu(d) = 0| for |n &gt; 1|.
-Continuing in this vein leads to analytic number theory and the Riemann hypothesis, though you may want
+More generally, we get <strong>Möbius inversion</strong>. Let |\beta(n) = \sum_{d\mid n} \alpha(d) = (\alpha \star 1)(n)|.
+Then</p>
+<p>\[\begin{align}
+\sum_{n=1}^\infty (\beta \star \mu)(n)n^{-s}
+&amp; = \frac{\sum_{n=1}^\infty \beta(n)n^{-s}}{\zeta(s)} \\
+&amp; = \frac{\sum_{n=1}^\infty (\alpha \star 1)(n)n^{-s}}{\zeta(s)} \\
+&amp; = \frac{\zeta(s)\sum_{n=1}^\infty \alpha(n)n^{-s}}{\zeta(s)} \\
+&amp; = \sum_{n=1}^\infty \alpha(n)n^{-s}
+\end{align}\]</p>
+<p>In other words, |\alpha(n) = (\beta \star \mu)(n) = \sum_{d \mid n} \mu(n/d)\beta(d)|.</p>
+<p>Continuing in this vein leads to analytic number theory and the Riemann hypothesis, though you may want
 to pick up the <a href="https://en.wikipedia.org/wiki/Mellin_transform">Mellin transform</a> along the way.</p>
 
     <div id="disqus_thread"></div>
