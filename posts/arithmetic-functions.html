@@ -9,50 +9,49 @@
     <meta name="author" content="Derek Elkins">
     <!--<link rel="icon" href="/images/favicon.ico">-->
 
-    <title>Home</title>
+    <title>Arithmetic Functions</title>
     <!-- Bootstrap core CSS -->
-    <link href="./css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom styles for this template -->
-    <link href="./css/blog.css" rel="stylesheet">
-    <link href="./css/syntax.css" rel="stylesheet">
+    <link href="../css/blog.css" rel="stylesheet">
+    <link href="../css/syntax.css" rel="stylesheet">
   </head>
 
   <body>
     <div class="blog-masthead">
       <div class="container">
         <nav class="blog-nav">
-          <a class="blog-nav-item active" href="./">Home</a>
-          <a class="blog-nav-item " href="./about.html">About</a>
-          <a class="blog-nav-item " href="./contact.html">Contact</a>
-          <a class="blog-nav-item " href="./readinglist.html">Reading List</a>
-          <a class="blog-nav-item " href="./archive.html">Archive</a>
-          <a class="blog-nav-item pull-right" href="./rss.xml">RSS</a>
-          <a class="blog-nav-item pull-right" href="./atom.xml">Atom</a>
+          <a class="blog-nav-item " href="../">Home</a>
+          <a class="blog-nav-item " href="../about.html">About</a>
+          <a class="blog-nav-item " href="../contact.html">Contact</a>
+          <a class="blog-nav-item " href="../readinglist.html">Reading List</a>
+          <a class="blog-nav-item " href="../archive.html">Archive</a>
+          <a class="blog-nav-item pull-right" href="../rss.xml">RSS</a>
+          <a class="blog-nav-item pull-right" href="../atom.xml">Atom</a>
         </nav>
       </div>
     </div>
 
     <div class="container">
       
-          <div class="blog-header">
-            <a href="./"><h1 class="blog-title">Hedonistic Learning</h1></a>
-            <p class="lead blog-description">Learning for the fun of it</p>
-          </div>
       
       <div class="row">
         
-        <div class="col-sm-8 blog-main">
+        <div class="col-sm-12 blog-main">
         
-          
-    <div class="blog-post teaser panel panel-default">
-    <div class="panel-heading">
-        <h2 class="blog-post-title"><a href="./posts/arithmetic-functions.html">Arithmetic Functions</a></h2>
-        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="302f88e5-c578-47d2-8929-54cdb572011f" href="./posts/arithmetic-functions.html#disqus_thread"></a></h6>
-    </div>
+          <div class="blog-post">
+    <h2 class="blog-post-title" style="margin-top: 30px;">Arithmetic Functions</h2>
+    <p class="blog-post-meta">August 22, 2025 23:25 UTC 
+        
+        (Last updated on August 22, 2025 23:25 UTC)
+    </p>
+    <h6 class="blog-post-meta">
+        
+        Tags: <a title="All pages tagged 'math'." href="../tags/math.html">math</a>, <a title="All pages tagged 'number theory'." href="../tags/number%20theory.html">number theory</a>
+        
+    </h6>
 
-    <div class="panel-body">
-        
-            <h2 id="introduction">Introduction</h2>
+    <h2 id="introduction">Introduction</h2>
 <p>I want to talk about one of the many pretty areas of number theory. This involves the notion of an
 arithmetic function and related concepts. A few relatively simple concepts will allow us to produce
 a variety of useful functions and theorems. This provides only a glimpse of the start of the
@@ -870,773 +869,31 @@ original multisets producing two sub-multisets of the disjoint multisets.<a href
 of the notion of a <a href="https://en.wikipedia.org/wiki/Category_algebra">category algebra</a>.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
-        
-    </div>
 
-    <div class="panel-footer">
-        <h6 class="blog-post-meta">
-            August 22, 2025 23:25 UTC
-            
-            (Last updated on August 22, 2025 23:25 UTC)
-
-            
-                Tags: <a title="All pages tagged 'math'." href="./tags/math.html">math</a>, <a title="All pages tagged 'number theory'." href="./tags/number%20theory.html">number theory</a>
-            
-        </h6>
-    </div>
-
-</div><!-- /.blog-post -->
-
-
-
-    <div class="blog-post teaser panel panel-default">
-    <div class="panel-heading">
-        <h2 class="blog-post-title"><a href="./posts/functional-lists-are-not-difference-lists.html">What difference lists actually are</a></h2>
-        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="5a2c020e-cf8c-4b96-9d02-551a3509becf" href="./posts/functional-lists-are-not-difference-lists.html#disqus_thread"></a></h6>
-    </div>
-
-    <div class="panel-body">
-        
-            <h2 id="introduction">Introduction</h2>
-<p>Purely functional list concatenation, <code>xs ++ ys</code> in Haskell syntax, is well known to be linear time
-in the length of the first input and constant time in the length of the second, i.e. <code>xs ++ ys</code> is
-O(length xs). This leads to quadratic complexity if we have a bunch of left associated uses of
-concatenation.</p>
-<p>The ancient trick to resolve this is to, instead of producing lists, produce list-to-list functions
-a la <code>[a] -&gt; [a]</code> or <code>ShowS</code> = <code>String -&gt; String</code> = <code>[Char] -&gt; [Char]</code>. “Concatenation” of “lists”
-represented this way is just function composition which is a constant time operation. We can lift a
-list <code>xs</code> to this representation via the section <code>(xs ++)</code>. This will still lead to O(length xs)
-amount of work to apply this function, but a composition of such functions applied to a list will
-always result in a fully right associated expression even if the function compositions aren’t
-right associated.</p>
-<p>In the last several years, it has become popular to refer to this technique as “difference lists”.
-Often no justification is given for this name. When it is given, it is usually a reference to the
-idea of difference lists in logic programming. Unfortunately, other than both techniques giving rise
-to efficient concatenation, they have almost no similarities.</p>
-
-            <h6><a href="./posts/functional-lists-are-not-difference-lists.html">Read more...</a></h6>
-        
-    </div>
-
-    <div class="panel-footer">
-        <h6 class="blog-post-meta">
-            April 12, 2025 23:25 UTC
-            
-            (Last updated on April 13, 2025 05:54 UTC)
-
-            
-                Tags: <a title="All pages tagged 'programming'." href="./tags/programming.html">programming</a>
-            
-        </h6>
-    </div>
-
-</div><!-- /.blog-post -->
-
-
-
-    <div class="blog-post teaser panel panel-default">
-    <div class="panel-heading">
-        <h2 class="blog-post-title"><a href="./posts/categorical-logic-and-fol.html">Classical First-Order Logic from the Perspective of Categorical Logic</a></h2>
-        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="a8ccba9b-9900-40e1-b2d4-47e0f944d456" href="./posts/categorical-logic-and-fol.html#disqus_thread"></a></h6>
-    </div>
-
-    <div class="panel-body">
-        
-            <h2 id="introduction">Introduction</h2>
-<p>Classical First-Order Logic (Classical FOL) has an absolutely central place in traditional
-logic, model theory, and set theory. It is the foundation upon which <strong>ZF</strong>(<strong>C</strong>), which is itself
-often taken as the foundation of mathematics, is built. When classical FOL was being established
-there was a lot of study and debate around alternative options. There are a variety of philosophical
-and metatheoretic reasons supporting classical FOL as The Right Choice.</p>
-<p>This all happened, however, well before category theory was even a twinkle in Mac Lane’s and Eilenberg’s
-eyes, and when type theory was taking its first stumbling steps.</p>
-<p>My focus in this article is on what classical FOL looks like to a modern categorical logician.
-This can be neatly summarized as “classical FOL is the internal logic of
-a <a href="https://ncatlab.org/nlab/show/first-order+hyperdoctrine">Boolean First-Order Hyperdoctrine</a>.”
-Each of the three words in this term, “Boolean”, “First-Order”, and “Hyperdoctrine”, suggest
-a distinct axis in which to vary the (class of categorical models of the) logic. <em>All</em> of them
-have compelling categorical motivations to be varied.</p>
-
-            <h6><a href="./posts/categorical-logic-and-fol.html">Read more...</a></h6>
-        
-    </div>
-
-    <div class="panel-footer">
-        <h6 class="blog-post-meta">
-            October 25, 2024 00:55 UTC
-            
-            (Last updated on February  3, 2025 02:19 UTC)
-
-            
-                Tags: <a title="All pages tagged 'math'." href="./tags/math.html">math</a>, <a title="All pages tagged 'category theory'." href="./tags/category%20theory.html">category theory</a>, <a title="All pages tagged 'logic'." href="./tags/logic.html">logic</a>
-            
-        </h6>
-    </div>
-
-</div><!-- /.blog-post -->
-
-
-
-    <div class="blog-post teaser panel panel-default">
-    <div class="panel-heading">
-        <h2 class="blog-post-title"><a href="./posts/global-rebuilding-coroutines-and-defunctionalization.html">Global Rebuilding, Coroutines, and Defunctionalization</a></h2>
-        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="8cfcff8b-beef-4e06-b534-2da8e05b95bc" href="./posts/global-rebuilding-coroutines-and-defunctionalization.html#disqus_thread"></a></h6>
-    </div>
-
-    <div class="panel-body">
-        
-            <h2 id="introduction">Introduction</h2>
-<p>In 1983, Mark Overmars described global rebuilding in <em>The Design of Dynamic Data Structures</em>.
-The problem it was aimed at solving was turning the amortized time complexity bounds of
-batched rebuilding into worst-case bounds. In <strong>batched rebuilding</strong> we perform a series of
-updates to a data structure which may cause the performance of operations to degrade, but
-occasionally we expensively rebuild the data structure back into an optimal arrangement.
-If the updates don’t degrade performance too much before we rebuild, then we can achieve
-our target time complexity bounds in an amortized sense. An update that doesn’t degrade
-performance too much is called a <strong>weak update</strong>.</p>
-<p>Taking an example from Okasaki’s <em>Purely Functional Data Structures</em>, we can consider a
-binary search tree where deletions occur by simply marking the deleted nodes as deleted.
-Then, once about half the tree is marked as deleted, we rebuild the tree into a balanced
-binary search tree and clean out the nodes marked as deleted at that time. In this case,
-the deletions count as weak updates because leaving the deleted nodes in the tree even
-when it corresponds to up to half the tree can only mildly impact the time complexity of
-other operations. Specifically, assuming the tree was balanced at the start, then deleting
-half the nodes could only reduce the tree’s depth by about 1. On the other hand, naive inserts
-are <em>not</em> weak updates as they can quickly increase the tree’s depth.</p>
-<p>The idea of global rebuilding is relatively straightforward, though how you would actually
-realize it in any particular example is not. The overall idea is simply that instead of
-waiting until the last moment and then rebuilding the data structure all at once, we’ll start
-the rebuild sooner and work at it incrementally as we perform other operations. If we
-update the new version faster than we update the original version, we’ll finish it by the
-time we would have wanted to perform a batched rebuild, and we can just switch to this new version.</p>
-<p>More concretely, though still quite vaguely, <strong>global rebuilding</strong> involves, when a
-threshold is reached, rebuilding by creating a new “empty” version of the data
-structure called the <em>shadow copy</em>. The original version is the <em>working copy</em>. Work on
-rebuilding happens incrementally as operations are performed on the data structure. During
-this period, we service queries from the working copy and continue to update it as usual.
-Each update needs to make more progress on building the shadow copy than it worsens the
-working copy. For example, an insert should insert more nodes into the shadow copy than
-the working copy. Once the shadow copy is built, we may still have more work to do to
-incorporate changes that occurred after we started the rebuild. To this end, we can
-maintain a queue of update operations performed on the working copy since the start of
-a rebuild, and then apply these updates, also incrementally, to the shadow copy. Again,
-we need to apply the updates from the queue at a fast enough rate so that we will
-eventually catch up. Of course, all of this needs to happen fast enough so that 1)
-the working copy doesn’t get too degraded before the shadow copy is ready, and 2)
-we don’t end up needing to rebuild the shadow copy before it’s ready to do any work.</p>
-
-            <h6><a href="./posts/global-rebuilding-coroutines-and-defunctionalization.html">Read more...</a></h6>
-        
-    </div>
-
-    <div class="panel-footer">
-        <h6 class="blog-post-meta">
-            October  4, 2024 08:24 UTC
-            
-            (Last updated on November 30, 2024 07:55 UTC)
-
-            
-                Tags: <a title="All pages tagged 'CS'." href="./tags/CS.html">CS</a>, <a title="All pages tagged 'programming'." href="./tags/programming.html">programming</a>
-            
-        </h6>
-    </div>
-
-</div><!-- /.blog-post -->
-
-
-
-    <div class="blog-post teaser panel panel-default">
-    <div class="panel-heading">
-        <h2 class="blog-post-title"><a href="./posts/morleyization.html">Morleyization</a></h2>
-        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="99955925-f718-4b7d-93ed-ee44a99d8085" href="./posts/morleyization.html#disqus_thread"></a></h6>
-    </div>
-
-    <div class="panel-body">
-        
-            <h2 id="introduction">Introduction</h2>
-<p>Morleyization is a fairly important operation in categorical logic for which it is hard to find readily
-accessible references to a statement and proof. Most refer to D1.5.13 of “Sketches of an Elephant” which is
-not an accessible text. 3.2.8 of “Accessible Categories” by Makkai and Paré is another reference, and
-“Accessible Categories” is more accessible but still a big ask for just a single theorem.</p>
-<p>Here I reproduce the statement and proof from “Accessible Categories” albeit with some notational and
-conceptual adaptations as well as some commentary. This assumes some basic familiarity with the ideas
-and notions of traditional model theory, e.g. what structures, models, and |\vDash| are.</p>
-
-            <h6><a href="./posts/morleyization.html">Read more...</a></h6>
-        
-    </div>
-
-    <div class="panel-footer">
-        <h6 class="blog-post-meta">
-            July 19, 2024 02:35 UTC
-            
-            (Last updated on July 27, 2024 02:40 UTC)
-
-            
-                Tags: <a title="All pages tagged 'math'." href="./tags/math.html">math</a>, <a title="All pages tagged 'category theory'." href="./tags/category%20theory.html">category theory</a>, <a title="All pages tagged 'logic'." href="./tags/logic.html">logic</a>
-            
-        </h6>
-    </div>
-
-</div><!-- /.blog-post -->
-
-
-
-    <div class="blog-post teaser panel panel-default">
-    <div class="panel-heading">
-        <h2 class="blog-post-title"><a href="./posts/the-pullback-lemma-in-gory-detail-redux.html">The Pullback Lemma in Gory Detail (Redux)</a></h2>
-        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="87a1a741-3ec6-4df2-9b7e-fd7f2ce0545f" href="./posts/the-pullback-lemma-in-gory-detail-redux.html#disqus_thread"></a></h6>
-    </div>
-
-    <div class="panel-body">
-        
-            <h2 id="introduction">Introduction</h2>
-<p>Andrej Bauer has a paper titled <a href="http://math.andrej.com/wp-content/uploads/2012/05/pullback.pdf">The pullback lemma in gory detail</a>
-that goes over the proof of the <a href="https://ncatlab.org/nlab/show/pasting+law+for+pullbacks">pullback lemma</a>
-in full detail. This is a basic result of category theory and most introductions leave it as an exercise.
-It is a good exercise, and you should prove it yourself before reading this article or Andrej Bauer’s.</p>
-<p>Andrej Bauer’s proof is what most introductions are expecting you to produce.
-I very much like the <a href="styles-of-category-theory.html">representability perspective</a> on category theory
-and like to see what proofs look like using this perspective.</p>
-<p>So this is a proof of the pullback lemma from the perspective of representability.</p>
-<h2 id="preliminaries">Preliminaries</h2>
-<p>The key thing we need here is a characterization of pullbacks in terms of representability. To
-just jump to the end, we have for |f : A \to C| and |g : B \to C|, |A \times_{f,g} B| is <strong>the
-pullback of |f| and |g|</strong> if and only if it represents the functor
-\[\{(h, k) \in \mathrm{Hom}({-}, A) \times \mathrm{Hom}({-}, B) \mid f \circ h = g \circ k \}\]</p>
-<p>That is to say we have the natural isomorphism \[
-\mathrm{Hom}({-}, A \times_{f,g} B) \cong
-\{(h, k) \in \mathrm{Hom}({-}, A) \times \mathrm{Hom}({-}, B) \mid f \circ h = g \circ k \}
-\]</p>
-<p>We’ll write the left to right direction of the isomorphism as |\langle u,v\rangle : U \to A \times_{f,g} B|
-where |u : U \to A| and |v : U \to B| and they satisfy |f \circ u = g \circ v|. Applying
-the isomorphism right to left on the identity arrow gives us two arrows |p_1 : A \times_{f,g} B \to A|
-and |p_2 : A \times_{f,g} B \to B| satisfying |p_1 \circ \langle u, v\rangle = u| and
-|p_2 \circ \langle u,v \rangle = v|. (Exercise: Show that this follows from being a <em>natural</em> isomorphism.)</p>
-<p>One nice thing about representability is that it reduces categorical reasoning to set-theoretic
-reasoning that you are probably already used to, as we’ll see. You can connect this definition
-to a typical universal property based definition used in Andrej Bauer’s article. Here we’re taking
-it as the definition of the pullback.</p>
-<h2 id="proof">Proof</h2>
-<p>The claim to be proven is if the right square in the below diagram is a pullback square, then the left
-square is a pullback square if and only if the whole rectangle is a pullback square.
-\[
-\xymatrix {
-A \ar[d]_{q_1} \ar[r]^{q_2} &amp; B \ar[d]_{p_1} \ar[r]^{p_2} &amp; C \ar[d]^{h} \\
-X \ar[r]_{f} &amp; Y \ar[r]_{g} &amp; Z
-}\]</p>
-<p>Rewriting the diagram as equations, we have:</p>
-<p><strong>Theorem</strong>: If |f \circ q_1 = p_1 \circ q_2|, |g \circ p_1 = h \circ p_2|, and |(B, p_1, p_2)| is a
-pullback of |g| and |h|, then |(A, q_1, q_2)| is a pullback of |f| and |p_1| if and only if
-|(A, q_1, p_2 \circ q_2)| is a pullback of |g \circ f| and |h|.</p>
-<p><strong>Proof</strong>: If |(A, q_1, q_2)| was a pullback of |f| and |p_1| then we’d have the following.</p>
-<p>\[\begin{align}
-\mathrm{Hom}({-}, A)
-&amp; \cong \{(u_1, u_2) \in \mathrm{Hom}({-}, X)\times\mathrm{Hom}({-}, B) \mid f \circ u_1 = p_1 \circ u_2 \} \\
-&amp; \cong \{(u_1, (v_1, v_2)) \in \mathrm{Hom}({-}, X)\times\mathrm{Hom}({-}, Y)\times\mathrm{Hom}({-}, C) \mid f \circ u_1 = p_1 \circ \langle v_1, v_2\rangle \land g \circ v_1 = h \circ v_2 \} \\
-&amp; = \{(u_1, (v_1, v_2)) \in \mathrm{Hom}({-}, X)\times\mathrm{Hom}({-}, Y)\times\mathrm{Hom}({-}, C) \mid f \circ u_1 = v_1 \land g \circ v_1 = h \circ v_2 \} \\
-&amp; = \{(u_1, v_2) \in \mathrm{Hom}({-}, X)\times\mathrm{Hom}({-}, C) \mid g \circ f \circ u_1 = h \circ v_2 \}
-\end{align}\]</p>
-<p>The second isomorphism is |B| being a pullback and |u_2| is an arrow into |B| so it’s necessarily
-of the form |\langle v_1, v_2\rangle|. The first equality is just |p_1 \circ \langle v_1, v_2\rangle = v_1|
-mentioned earlier. The second equality merely eliminates the use of |v_1| using the equation |f \circ u_1 = v_1|.</p>
-<p>This overall natural isomorphism, however, is exactly what it means for |A| to be a pullback
-of |g \circ f| and |h|. We verify the projections are what we expect by pushing |id_A| through
-the isomorphism. By assumption, |u_1| and |u_2| will be |q_1| and |q_2| respectively in the first isomorphism.
-We see that |v_2 = p_2 \circ \langle v_1, v_2\rangle = p_2 \circ q_2|.</p>
-<p>We simply run the isomorphism backwards to get the other direction of the if and only if. |\square|</p>
-<p>The simplicity and compactness of this proof demonstrates why I like representability.</p>
-        
-    </div>
-
-    <div class="panel-footer">
-        <h6 class="blog-post-meta">
-            January 15, 2024 01:33 UTC
-            
-            (Last updated on August  2, 2024 02:45 UTC)
-
-            
-                Tags: <a title="All pages tagged 'math'." href="./tags/math.html">math</a>, <a title="All pages tagged 'category theory'." href="./tags/category%20theory.html">category theory</a>
-            
-        </h6>
-    </div>
-
-</div><!-- /.blog-post -->
-
-
-
-    <div class="blog-post teaser panel panel-default">
-    <div class="panel-heading">
-        <h2 class="blog-post-title"><a href="./posts/universal-quantification-and-infinite-conjunction.html">Universal Quantification and Infinite Conjunction</a></h2>
-        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="627f2fde-9bbc-482e-9273-0dcf930ae935" href="./posts/universal-quantification-and-infinite-conjunction.html#disqus_thread"></a></h6>
-    </div>
-
-    <div class="panel-body">
-        
-            <script>
-extraMacros = {
-  den: ["{[\\\![#1]\\\!]}", 1],
-  bigden: ["{\\left[\\\!\\\!\\left[#1\\right]\\\!\\\!\\right]}", 1]
-};
-</script>
-<h3 id="introduction">Introduction</h3>
-<p>It is not uncommon for universal quantification to be described as
-(potentially) infinite conjunction<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.
-Quoting Wikipedia’s <a href="https://en.wikipedia.org/w/index.php?title=Quantifier_(logic)&amp;oldid=1060503100#Relations_to_logical_conjunction_and_disjunction">Quantifier_(logic)</a>
-page (my emphasis):</p>
-<blockquote>
-<p>For a finite domain of discourse |D = \{a_1,\dots,a_n\}|, the universal quantifier is equivalent to a logical conjunction of propositions with singular terms |a_i| (having the form |Pa_i| for monadic predicates).</p>
-<p>The existential quantifier is equivalent to a logical disjunction of propositions having the same structure as before. <strong>For infinite domains of discourse, the equivalences are similar.</strong></p>
-</blockquote>
-<p>While there’s a small grain of truth
-to this, I think it is wrong and/or misleading far more often than
-it’s useful or correct. Indeed, it takes a bit of effort to even
-get a statement that makes sense at all. There’s a bit of conflation
-between syntax and semantics that’s required to have it naively
-make sense, unless you’re working (quite unusually) in an infinitary
-logic where it is typically outright false.</p>
-<p>What harm does this confusion do? The most obvious harm is that
-this view does not generalize to non-classical logics. I’ll focus
-on constructive logics, in particular. Besides causing problems in
-these contexts, which maybe you think you don’t care about, it betrays
-a significant gap in understanding of what universal quantification
-actually is. Even in purely classical contexts, this confusion often
-manifests, e.g., in <a href="https://math.stackexchange.com/questions/110635/how-it-is-posible-that-omega-inconsistency-does-not-lead-to-inconsistency">confusion about |\omega|-inconsistency</a>.</p>
-<p>So what is the difference between universal quantification and
-infinite conjunction? Well, the most obvious difference is that
-infinite conjunction is indexed by some (meta-theoretic) set that
-doesn’t have anything to do with the domain the universal quantifier
-quantifies over. However, even if these sets happened to coincide<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> there are
-still differences between universal quantification and infinite
-conjunction. The key is that universal quantification
-requires the predicate being quantified over to hold <em>uniformly</em>,
-while infinite conjunction does not. It just so happens that for
-the standard set-theoretic semantics of classical first-order logic
-this “uniformity” constraint is degenerate. However, even for
-classical first-order logic, this notion of uniformity will be
-relevant.</p>
-
-            <h6><a href="./posts/universal-quantification-and-infinite-conjunction.html">Read more...</a></h6>
-        
-    </div>
-
-    <div class="panel-footer">
-        <h6 class="blog-post-meta">
-            January  3, 2024 06:00 UTC
-            
-            (Last updated on January  3, 2024 06:00 UTC)
-
-            
-                Tags: <a title="All pages tagged 'math'." href="./tags/math.html">math</a>, <a title="All pages tagged 'logic'." href="./tags/logic.html">logic</a>
-            
-        </h6>
-    </div>
-
-</div><!-- /.blog-post -->
-
-
-
-    <div class="blog-post teaser panel panel-default">
-    <div class="panel-heading">
-        <h2 class="blog-post-title"><a href="./posts/what-is-the-coproduct-of-two-groups.html">What is the coproduct of two groups?</a></h2>
-        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="cdbde61f-6727-4861-9dad-8b03af99031c" href="./posts/what-is-the-coproduct-of-two-groups.html#disqus_thread"></a></h6>
-    </div>
-
-    <div class="panel-body">
-        
-            <h2 id="introduction">Introduction</h2>
-<p>The purpose of this article is to answer the question: what is the coproduct
-of two groups? The approach, however, will be somewhat absurd. Instead of
-simply presenting a construction and proving that it satisfies the appropriate
-universal property, I want to find the general answer and simply instantiate
-it for the case of groups.</p>
-<p>Specifically, this will be a path through the theory of Lawvere theories and
-their models with the goal of motivating some of the theory around it in
-pursuit of the answer to this relatively simple question.</p>
-<p>If you really just want to know the answer to the title question, then the
-construction is usually called the <a href="https://en.wikipedia.org/wiki/Free_product">free product</a>
-and is described on the linked Wikipedia page.</p>
-
-            <h6><a href="./posts/what-is-the-coproduct-of-two-groups.html">Read more...</a></h6>
-        
-    </div>
-
-    <div class="panel-footer">
-        <h6 class="blog-post-meta">
-            December 22, 2023 02:47 UTC
-            
-            (Last updated on March 24, 2025 08:01 UTC)
-
-            
-                Tags: <a title="All pages tagged 'math'." href="./tags/math.html">math</a>, <a title="All pages tagged 'category theory'." href="./tags/category%20theory.html">category theory</a>
-            
-        </h6>
-    </div>
-
-</div><!-- /.blog-post -->
-
-
-
-    <div class="blog-post teaser panel panel-default">
-    <div class="panel-heading">
-        <h2 class="blog-post-title"><a href="./posts/preserves-reflects-creates.html">Preserving, Reflecting, and Creating Limits</a></h2>
-        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="e09446bb-cbc9-4eed-81d0-eee5c51653b5" href="./posts/preserves-reflects-creates.html#disqus_thread"></a></h6>
-    </div>
-
-    <div class="panel-body">
-        
-            <h2 id="introduction">Introduction</h2>
-<p>This is a brief article about the notions of preserving, reflecting, and creating limits and,
-by duality, colimits. Preservation is relatively intuitive, but the distinction between
-reflection and creation is subtle.</p>
-<h2 id="preservation-of-limits">Preservation of Limits</h2>
-<p>A functor, |F|, <strong>preserves limits</strong> when it takes limiting cones to limiting cones. As
-often happens in category theory texts, the notation focuses on the objects. You’ll often
-see things like |F(X \times Y) \cong FX \times FY|, but implied is that one direction of
-this isomorphism is the canonical morphism |\langle F\pi_1, F\pi_2\rangle|. To put it yet
-another way, in this example we require |F(X \times Y)| to satisfy the universal property
-of a product with the projections |F\pi_1| and |F\pi_2|.</p>
-<p>Other than that subtlety, preservation is fairly intuitive.</p>
-<h2 id="reflection-of-limits-versus-creation-of-limits">Reflection of Limits versus Creation of Limits</h2>
-<p>A functor, |F|, <strong>reflects limits</strong> when whenever the image of a <em>cone</em> is a limiting cone,
-then the original cone was a limiting cone. For products this would mean that if we
-had a wedge |A \stackrel{p}{\leftarrow} Z \stackrel{q}{\to} B|, and |FZ| was the product
-of |FA| and |FB| with projections |Fp| and |Fq|, then |Z| was the product of |A| and |B|
-with projections |p| and |q|.</p>
-<p>A functor, |F|, <strong>creates limits</strong> when whenever the image of a <em><strong>diagram</strong> has a limit</em>,
-then the diagram itself has a limit and |F| preserves the limiting cones. For products
-this would mean if |FX| and |FY| had a product, |FX \times FY|, then |X| and |Y| have
-a product and |F(X \times Y) \cong FX \times FY| via the canonical morphism.</p>
-<p>Creation of limits implies reflection of limits since we can just ignore the apex of the
-cone. While creation is more powerful, often reflection is enough in practice as we usually
-have a candidate limit, i.e. a cone. Again, this is often not made too explicit.</p>
-<h3 id="example">Example</h3>
-<p>Consider the posets:</p>
-<p><span class="math display">$$\xymatrix{
-     &amp;          &amp;                   &amp; c \\
-X\ar@{}[r]|{\Large{=}} &amp; a \ar[r] &amp; b \ar[ur] \ar[dr] &amp;   \\
-     &amp;          &amp;                   &amp; d 
-\save "1,2"."3,4"*+[F]\frm{}
-\restore
-} \qquad \xymatrix{
-     &amp;                   &amp; c \\
-Y\ar@{}[r]|{\Large{=}} &amp; b \ar[ur] \ar[dr] &amp;   \\
-     &amp;                   &amp; d 
-\save "1,2"."3,3"*+[F]\frm{}
-\restore
-} \qquad \xymatrix{
-     &amp; c \\ 
-Z\ar@{}[r]|{\Large{=}} &amp;   \\ 
-     &amp; d
-\save "1,2"."3,2"*+[F]\frm{}
-\restore
-}$$</span></p>
-<h4 id="failure-of-reflection">Failure of reflection</h4>
-<p>Let |X=\{a, b, c, d\}| with |a \leq b \leq c| and |b \leq d| mapping to |Y=\{b, c, d\}|
-where |a \mapsto b|. Reflection fails because |a| maps to a meet but is not itself a meet.</p>
-<h4 id="failure-of-creation">Failure of creation</h4>
-<p>If we change the source to just |Z=\{c, d\}|, then creation fails because |c| and |d| have a meet
-in the image but not in the source. Reflection succeeds, though, because there are no
-non-trivial cones in the source, so every cone (trivially) gets mapped to a limit cone.
-It’s just that we don’t have any cones with both |c| and |d| in them.</p>
-<p>In general, recasting reflection and creation of limits for posets gives us: Let |F: X \to Y| be
-a monotonic function. |F| reflects limits if every lower bound that |F| maps to a meet is
-already a meet. |F| creates limits if whenever |F[U]| has a meet for |U \subseteq X|, then |U|
-already had a meet and |F| sends the meet of |U| to the meet of |F[U]|.</p>
-        
-    </div>
-
-    <div class="panel-footer">
-        <h6 class="blog-post-meta">
-            March 21, 2023 05:39 UTC
-            
-            (Last updated on March 21, 2023 07:26 UTC)
-
-            
-                Tags: <a title="All pages tagged 'math'." href="./tags/math.html">math</a>, <a title="All pages tagged 'category theory'." href="./tags/category%20theory.html">category theory</a>
-            
-        </h6>
-    </div>
-
-</div><!-- /.blog-post -->
-
-
-
-    <div class="blog-post teaser panel panel-default">
-    <div class="panel-heading">
-        <h2 class="blog-post-title"><a href="./posts/overlaps.html">Overlaps</a></h2>
-        <h6 class="pull-right" style="margin-top: -1.5ex"><a data-disqus-identifier="71bfb06a-0ff4-4d3e-b3fe-d8b59b164256" href="./posts/overlaps.html#disqus_thread"></a></h6>
-    </div>
-
-    <div class="panel-body">
-        
-            <p><strong>tl;dr</strong> The notion of two sets overlapping is very common. Often it is expressed
-via |A \cap B \neq \varnothing|. Constructively, this is not the best definition
-as it does not imply |\exists x. x \in A \land x \in B|. Even classically, this
-second-class treatment of overlapping obscures important and useful connections.
-In particular, writing |U \between A| for “|U| overlaps |A|”, we have a De Morgan-like
-duality situation with |\between| being dual to |\subseteq|. Recognizing and
-exploiting this duality, in part by using more appropriate notation for “overlaps”,
-can lead to new concepts and connections.</p>
-<h3 id="introduction">Introduction</h3>
-<p>The most common way I’ve seen the statement “|A| overlaps |B|” formalized
-is |A \cap B \neq \varnothing|. To a constructivist, this definition isn’t
-very satisfying. In particular, this definition of overlaps does not allow
-us to constructively conclude that there exists an element contained in both
-|A| and |B|. That is, |A \cap B \neq \varnothing| does not imply
-|\exists x. x \in A \land x \in B| constructively.</p>
-<p>As is usually the case, even if you are not philosophically a constructivist,
-taking a constructivist perspective can often lead to better definitions and
-easier to see connections. In this case, constructivism suggests the more positive
-statement |\exists x. x \in A \land x \in B| be the definition of “overlaps”.
-However, given that we now have two (constructively) non-equivalent definitions,
-it is better to introduce notation to abstract from the particular definition. In
-many cases, it makes sense to have a primitive notion of “overlaps”. Here I will
-use the notation |A \between B| which is the most common option I’ve seen.</p>
-<h3 id="properties">Properties</h3>
-<p>We can more compactly write the quantifier-based definition as |\exists x \in A.x \in B|
-using a common set-theoretic abbreviation. This presentation suggests a perhaps surprising
-connection. If we swap the quantifier, we get |\forall x\in A.x \in B| which is commonly
-abbreviated |A \subseteq B|. This leads to a duality between |\subseteq| and |\between|,
-particularly in topological contexts. In particular, if we pick a containing set |X|,
-then |\neg(U \between A) \iff U \subseteq A^c| where the complement is relative to |X|,
-and |A| is assumed to be a subset of |X|. This is a De Morgan-like duality.</p>
-<p>If we want to characterize these operations via an adjunction, or, more precisely, a Galois
-connection, we have a slight awkwardness arising from |\subseteq| and |\between| being
-binary predicates on sets. So, as a first step we’ll identify sets with predicates via, for
-a set |A|, |\underline A(x) \equiv x \in A|. In terms of predicates, the adjunctions we
-want are just a special case of the adjunctions characterizing the quantifiers.</p>
-<p>\[\underline U(x) \land P \to \underline A(x) \iff P \to U \subseteq A\]</p>
-<p>\[U \between B \to Q \iff \underline B(x) \to (\underline U(x) \to Q)\]</p>
-<p>What we actually want is a formula of the form |U \between B \to Q \iff B \subseteq (\dots)|.
-To do this, we need an operation that will allow us to produce a set from a predicate. This is
-exactly what set comprehension does. For reasons that will become increasingly clear, we’ll
-assume that |A| and |B| are subsets of a set |X|. We will then consider quantification relative
-to |X|. The result we get is:</p>
-<p>\[\{x \in U \mid P\} \subseteq A \iff \{x \in X \mid x \in U \land P\} \subseteq A \iff P \to U \subseteq A\]</p>
-<p>\[U \between B \to Q \iff B \subseteq \{x \in X \mid x \in U \to Q\} \iff B \subseteq \{x \in U \mid \neg Q\}^c\]</p>
-<p>The first and last equivalences require additionally assuming |U \subseteq X|.
-The last equivalence requires classical reasoning. You can already see motivation to
-limit to subsets of |X| here. First, set complementation, the |(-)^c|, only makes sense relative to
-some containing set. Next, if we choose |Q \equiv \top|, then the latter formulas
-state that <em>no matter what |B| is</em> it should be a subset of the expression that
-follows it. Without constraining to subsets of |X|, this would require a universal
-set which doesn’t exist in typical set theories.</p>
-<p>Choosing |P| as |\top|, |Q| as |\bot|, and |B| as |A^c| leads to the
-familiar |\neg (U \between A^c) \iff U \subseteq A|, i.e. |U| is a
-subset of |A| if and only if it doesn’t overlap |A|’s complement.</p>
-<p>Incidentally, characterizing |\subseteq| and |\between| in terms of Galois
-connections, i.e. adjunctions, immediately gives us some properties for free via continuity.
-We have |U \subseteq \bigcap_{i \in I}A_i \iff \forall i\in I.U \subseteq A_i|
-and |U \between \bigcup_{i \in I}A_i \iff \exists i \in I.U \between A_i|. This
-is relative to a containing set |X|, so |\bigcap_{i \in \varnothing}A_i = X|, and |U|
-and each |A_i| are assumed to be subsets of |X|.</p>
-<h3 id="categorical-perspective">Categorical Perspective</h3>
-<p>Below I’ll perform a categorical analysis of the situation. I’ll mostly be using categorical
-notation and perspectives to manipulate normal sets. That said, almost all of what I say will
-be able to be generalized immediately just by reinterpreting the symbols.</p>
-<p>To make things a bit cleaner in the future, and to make it easier to apply these ideas
-beyond sets, I’ll introduce the concept of a <a href="https://en.wikipedia.org/wiki/Heyting_algebra">Heyting algebra</a>.
-A Heyting algebra is a partially ordered set |H| satisfying the following:</p>
-<ol type="1">
-<li>|H| has two elements called |\top| and |\bot| satisfying for all |x| in |H|, |\bot \leq x \leq \top|.</li>
-<li>We have operations |\land| and |\lor| satisfying for all |x|, |y|, |z| in |H|,
-|x \leq y \land z| if and only |x \leq y| and |x \leq z|, and similarly for |\lor|,
-|x \lor y \leq z| if and only |x \leq z| and |y \leq z|.</li>
-<li>We have an operation |\to| satisfying for all |x|, |y|, and |z| in |H|,
-|x \land y \leq z| if and only if |x \leq y \to z|.</li>
-</ol>
-<p>For those familiar with category theory, you might recognize this as simply the decategorification
-of the notion of a <a href="https://ncatlab.org/nlab/show/bicartesian+closed+category">bicartesian closed category</a>.
-We can define the <strong>pseudo-complement</strong>, |\neg x \equiv x \to \bot|.</p>
-<p>Any <a href="https://en.wikipedia.org/wiki/Boolean_algebra_(structure)">Boolean algebra</a> is an
-example of a Heyting algebra where we can define |x \to y| via |\neg x \lor y| where
-here |\neg| is taken as primitive. In particular, subsets of a given set ordered by
-inclusion form a Boolean algebra, and thus a Heyting algebra. The |\to| operation can also
-be characterized by |x \leq y \iff (x \to y) = \top|. This lets us immediately see
-that for subsets of |X|, |(A \to B) = \{x \in X \mid x \in A \to x \in B\}|. All
-this can be generalized to the subobjects in any <a href="https://ncatlab.org/nlab/show/Heyting+category">Heyting category</a>.</p>
-<p>As the notation suggests, intuitionistic logic (and thus classical logic) is another
-example of a Heyting algebra.</p>
-<p>We’ll write |\mathsf{Sub}(X)| for the partially ordered set of subsets of |X| ordered
-by inclusion. As mentioned above, this is (classically) a Boolean algebra and thus a
-Heyting algebra. Any function |f : X \to Y| gives a monotonic function
-|f^* : \mathsf{Sub}(Y) \to \mathsf{Sub}(X)|. Note the swap. |f^*(U) \equiv f^{-1}(U)|.
-(Alternatively, if we think of subsets in terms of characteristic functions, |f^*(U) \equiv U \circ f|.)
-Earlier, we needed a way to turn predicates into sets. In this case, we’ll go the other way
-and identify truth values with subsets of |1| where |1| stands for an arbitrary singleton set.
-That is, |\mathsf{Sub}(1)| is the poset of truth values. |1| being the terminal object of |\mathbf{Set}|
-induces the (unique) function |!_U : U \to 1| for any set |U|. This leads to the important
-monotonic function |!_U^* : \mathsf{Sub}(1) \to \mathsf{Sub}(U)|. This can be described
-as |!_U^*(P) = \{x \in U \mid P\}|. Note, |P| cannot contain |x| as a free variable.
-In particular |!_U^*(\bot) = \varnothing| and |!_U^*(\top) = U|. This monotonic function
-has left and right adjoints:</p>
-<p>\[\exists_U \dashv {!_U^*} \dashv \forall_U : \mathsf{Sub}(U) \to \mathsf{Sub}(1)\]</p>
-<p>|F \dashv G| for monotonic functions |F : X \to Y| and |G : Y \to X|
-means |\forall x \in X. \forall y \in Y.F(x) \leq_Y y \iff x \leq_X G(y)|.</p>
-<p>|\exists_U(A) \equiv \exists x \in U. x \in A| and |\forall_U(A) \equiv \forall x \in U. x \in A|.
-It’s easily verified that each of these functions are monotonic.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
-<p>It seems like we should be done. These formulas are the formulas I originally gave for
-|\between| and |\subseteq| in terms of quantifiers. The problem here is that these functions
-are only defined for subsets of |U|. This is especially bad for interpreting |U \between A|
-as |\exists_U(A)| as it excludes most of the interesting cases where |U| partially overlaps |A|.
-What we need is a way to extend |\exists_U| / |\forall_U| beyond subsets of |U|. That is,
-we need a suitable monotonic function |\mathsf{Sub}(X) \to \mathsf{Sub}(U)|.</p>
-<p>Assume |U \subseteq X| and that we have an inclusion |\iota_U : U \hookrightarrow X|.
-Then |\iota_U^* : \mathsf{Sub}(X) \to \mathsf{Sub}(U)| and |\iota_U^*(A) = U \cap A|.
-This will indeed allow us to define |\subseteq| and |\between| as |U \subseteq A \equiv \forall_U(\iota_U^*(A))|
-and |U \between A \equiv \exists_U(\iota_U^*(A))|. We have:</p>
-<p>\[\iota_U[-] \dashv \iota_U^* \dashv U \to \iota_U[-] : \mathsf{Sub}(U) \to \mathsf{Sub}(X)\]</p>
-<p>Here, |\iota_U[-]| is the direct image of |\iota_U|. This doesn’t really do anything in this case
-except witness that if |A \subseteq U| then |A \subseteq X| because |U \subseteq X|.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
-<p>We can recover the earlier adjunctions by simply using these two pairs of adjunctions.
-\[\begin{align}
-U \between B \to Q
-&amp; \iff \exists_U(\iota_U^*(B)) \to Q \\
-&amp; \iff \iota_U^*(B) \subseteq {!}_U^*(Q) \\
-&amp; \iff B \subseteq U \to \iota_U[{!}_U^*(Q)] \\
-&amp; \iff B \subseteq \{x \in X \mid x \in U \to Q\}
-\end{align}\]</p>
-<p>Here the |\iota_U[-]| is crucial so that we use the |\to| of |\mathsf{Sub}(X)|
-and not |\mathsf{Sub}(U)|.</p>
-<p>\[\begin{align}
-P \to U \subseteq A
-&amp; \iff P \to \forall_U(\iota_U^*(A)) \\
-&amp; \iff {!}_U^*(P) \subseteq \iota_U^*(A) \\
-&amp; \iff \iota_U[{!}_U^*(P)] \subseteq A \\
-&amp; \iff \{x \in X \mid x \in U \land P\} \subseteq A
-\end{align}\]</p>
-<p>In this case, the |\iota_U[-]| is truly doing nothing because |\{x \in X \mid x \in U \land P\}|
-is the same as |\{x \in U \mid P\}|.</p>
-<p>While we have |{!}_U^* \circ \exists_U \dashv {!}_U^* \circ \forall_U|, we
-see that the inclusion of |\iota_U^*| is what breaks the direct connection between
-|U \between A| and |U \subseteq A|.</p>
-<h3 id="examples">Examples</h3>
-<p>As a first example, write |\mathsf{Int}A| for the <strong>interior</strong> of |A| and |\bar A| for the <strong>closure</strong> of |A|
-each with respect to some <a href="https://en.wikipedia.org/wiki/Topological_space#Definition_via_open_sets">topology</a>
-on a containing set |X|.
-One way to define |\mathsf{Int}A| is |x \in \mathsf{Int}A| if and only if there exists an open set
-containing |x| that’s a subset of |A|. Writing |\mathcal O(X)| for the set of open sets, we
-can express this definition in symbols:
-\[x \in \mathsf{Int}A \iff \exists U \in \mathcal O(X). x \in U \land U \subseteq A\]
-We have a “dual” notion:
-\[x \in \bar A \iff \forall U \in \mathcal O(X). x \in U \to U \between A\]
-That is, |x| is in the closure of |A| if and only if every open set containing |x| overlaps |A|.</p>
-<p>As another example, here is a fairly unusual way of characterizing a compact subset |Q|.
-|Q| is <strong>compact</strong> if and only if |\{U \in \mathcal O(X) \mid Q \subseteq U\}| is open
-in |\mathcal O(X)| equipped with the <a href="https://ncatlab.org/nlab/show/Scott+topology">Scott topology</a><a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>.
-As before, this suggests a “dual” notion characterized by |\{U \in \mathcal O(X) \mid O \between U\}|
-being an open subset. A set |O| satisfying this is called <a href="https://ncatlab.org/nlab/show/overt+space"><strong>overt</strong></a>.
-This concept is never mentioned in traditional presentations of point-set topology because <em>every</em>
-subset is overt. However, if we don’t require that <em>arbitrary</em> unions of open sets are open (and only require
-finite unions to be open) as happens in <a href="https://ncatlab.org/nlab/show/synthetic+topology">synthetic topology</a>
-or if we aren’t working in a classical context then overtness becomes a meaningful concept.</p>
-<p>One benefit of the intersection-based definition of overlaps is that it is
-straightforward to generalize to many sets overlapping, namely |\bigcap_{i\in I} A_i \neq \varnothing|.
-This is also readily expressible using quantifiers as: |\exists x.\forall i \in I. x \in A_i|.
-As before, having an explicit “universe” set also clarifies this. So,
-|\exists x \in X.\forall i \in I. x \in A_i| with |\forall i \in I. A_i \subseteq X| would
-be better. The connection of |\between| to |\subseteq| suggests instead of this fully
-symmetric presentation, it may still be worthwhile to single out a set producing
-|\exists x \in U.\forall i \in I. x \in A_i| where |U \subseteq X|. This can be
-read as “there is a point in |U| that touches/meets/overlaps every |A_i|”.
-If desired we could notate this as |U \between \bigcap_{i \in I}A_i|. Negating and
-complementing the |A_i| leads to the dual notion |\forall x \in U.\exists i \in I.x \in A_i|
-which is equivalent to |U \subseteq \bigcup_{i \in I}A_i|. This dual notion could
-be read as “the |A_i| (jointly) cover |U|” which is another common and important concept
-in mathematics.</p>
-<h3 id="conclusion">Conclusion</h3>
-<p>Ultimately, the concept of two (or more) sets overlapping comes up quite often. The usual
-circumlocution, |A \cap B \neq \varnothing|, is both notationally and conceptually clumsy.
-Treating overlapping as a first-class notion via notation and formulating definitions in terms
-of it can reveal some common and important patterns.</p>
-<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
-<hr />
-<ol>
-<li id="fn1"><p>If one wanted to be super pedantic, I should technically write something like
-|\{\star \mid \exists x \in U. x \in A\}| where |1 = \{\star\}|
-because elements of |\mathsf{Sub}(1)| are subsets of |1|. Instead, we’ll conflate subsets
-of |1| and truth values.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>If we think
-of subobjects as (equivalence classes of) monomorphisms as is typical in category theory,
-then because |\iota_U| is itself a monomorphism, the direct image, |\iota_U[-]|, is simply
-post-composition by |\iota_U|, i.e. |\iota_U \circ {-}|.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3"><p>The
-Scott topology is the natural topology on the space of continuous functions |X \to \Sigma| where
-|\Sigma| is the <a href="https://en.wikipedia.org/wiki/Sierpi%C5%84ski_space">Sierpinski space</a>.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-</ol>
-</section>
-        
-    </div>
-
-    <div class="panel-footer">
-        <h6 class="blog-post-meta">
-            January  6, 2021 03:46 UTC
-            
-            (Last updated on August  2, 2024 02:45 UTC)
-
-            
-                Tags: <a title="All pages tagged 'math'." href="./tags/math.html">math</a>, <a title="All pages tagged 'logic'." href="./tags/logic.html">logic</a>, <a title="All pages tagged 'category theory'." href="./tags/category%20theory.html">category theory</a>
-            
-        </h6>
-    </div>
-
-</div><!-- /.blog-post -->
-
-
-
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        function loadDisqus() {
+        const disqus_shortname = 'hedonisticlearning';
+        const disqus_identifier = '302f88e5-c578-47d2-8929-54cdb572011f';
+        const disqus_title = 'Arithmetic Functions';
+
+        (function() {
+            const dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+        }
+        const commentsBtn = document.createElement("button");
+        commentsBtn.textContent = "Click to show comments";
+        commentsBtn.addEventListener("click", () => loadDisqus());
+        const disqusDiv = document.getElementById("disqus_thread");
+        disqusDiv.append(commentsBtn);
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript> 
+</div>
 
         </div><!-- /.blog-main -->
         
-            <div class="col-sm-3 col-sm-offset-1 blog-sidebar">
-              
-              <div class="sidebar-module panel panel-default" style="padding: 0;">
-                <div class="panel-heading"><h4>Recent</h4></div>
-                <div class="panel-body">
-                    <ol class="list-unstyled">
-                        
-                          <li><div class="blog-post-link">2025-08-22 - <a href="./posts/arithmetic-functions.html">Arithmetic Functions</a></div></li>
-                        
-                          <li><div class="blog-post-link">2025-04-12 - <a href="./posts/functional-lists-are-not-difference-lists.html">What difference lists actually are</a></div></li>
-                        
-                          <li><div class="blog-post-link">2024-10-25 - <a href="./posts/categorical-logic-and-fol.html">Classical First-Order Logic from the Perspective of Categorical Logic</a></div></li>
-                        
-                          <li><div class="blog-post-link">2024-10-04 - <a href="./posts/global-rebuilding-coroutines-and-defunctionalization.html">Global Rebuilding, Coroutines, and Defunctionalization</a></div></li>
-                        
-                          <li><div class="blog-post-link">2024-07-19 - <a href="./posts/morleyization.html">Morleyization</a></div></li>
-                        
-                          <li><div class="blog-post-link">2024-01-15 - <a href="./posts/the-pullback-lemma-in-gory-detail-redux.html">The Pullback Lemma in Gory Detail (Redux)</a></div></li>
-                        
-                          <li><div class="blog-post-link">2024-01-03 - <a href="./posts/universal-quantification-and-infinite-conjunction.html">Universal Quantification and Infinite Conjunction</a></div></li>
-                        
-                          <li><div class="blog-post-link">2023-12-22 - <a href="./posts/what-is-the-coproduct-of-two-groups.html">What is the coproduct of two groups?</a></div></li>
-                        
-                          <li><div class="blog-post-link">2023-03-21 - <a href="./posts/preserves-reflects-creates.html">Preserving, Reflecting, and Creating Limits</a></div></li>
-                        
-                          <li><div class="blog-post-link">2021-01-06 - <a href="./posts/overlaps.html">Overlaps</a></div></li>
-                        
-                    </ol>
-                </div>
-              </div>
-              <div class="sidebar-module panel panel-default" style="padding: 0;">
-                <div class="panel-heading"><h4>Tags</h4></div>
-                <div class="panel-body">
-                    <ol class="list-unstyled">
-                      <li><a href="./tags/Agda.html">Agda (1)</a></li>
-<li><a href="./tags/CS.html">CS (4)</a></li>
-<li><a href="./tags/category%20theory.html">category theory (15)</a></li>
-<li><a href="./tags/concurrency.html">concurrency (1)</a></li>
-<li><a href="./tags/geometric%20algebra.html">geometric algebra (1)</a></li>
-<li><a href="./tags/javascript.html">javascript (1)</a></li>
-<li><a href="./tags/logic.html">logic (6)</a></li>
-<li><a href="./tags/math.html">math (24)</a></li>
-<li><a href="./tags/number%20theory.html">number theory (1)</a></li>
-<li><a href="./tags/programming.html">programming (6)</a></li>
-<li><a href="./tags/type%20theory.html">type theory (2)</a></li>
-                    </ol>
-                </div>
-              </div>
-            </div><!-- /.blog-sidebar -->
         
       </div><!-- /.row -->
     </div><!-- /.container -->
@@ -1651,20 +908,11 @@ Scott topology is the natural topology on the space of continuous functions |X \
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script type="text/javascript" src="./js/jquery.min.js"></script>
-    <script type="text/javascript" src="./js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/bootstrap.min.js"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <!--<script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>-->
     
-    <script type="text/javascript">
-        var disqus_shortname = 'hedonisticlearning';
-        (function () {
-            var s = document.createElement('script'); s.async = true;
-            s.type = 'text/javascript';
-            s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
-            (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
-        }());
-    </script>
     
     <script>
         MathJax = {
@@ -1679,6 +927,6 @@ Scott topology is the natural topology on the space of continuous functions |X \
             }
         };
     </script>
-    <script type="text/javascript" src="./js/MathJax-3/es5/tex-mml-chtml.js"></script>
+    <script type="text/javascript" src="../js/MathJax-3/es5/tex-mml-chtml.js"></script>
   </body>
 </html>

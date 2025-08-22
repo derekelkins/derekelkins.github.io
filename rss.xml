@@ -7,8 +7,833 @@
         <description><![CDATA[Mostly math, physics, and CS]]></description>
         <atom:link href="https://derekelkins.github.io/rss.xml" rel="self"
                    type="application/rss+xml" />
-        <lastBuildDate>Sat, 12 Apr 2025 23:25:24 UT</lastBuildDate>
+        <lastBuildDate>Fri, 22 Aug 2025 23:25:34 UT</lastBuildDate>
         <item>
+    <title>Arithmetic Functions</title>
+    <link>https://derekelkins.github.io/posts/arithmetic-functions.html</link>
+    <description><![CDATA[<h2 id="introduction">Introduction</h2>
+<p>I want to talk about one of the many pretty areas of number theory. This involves the notion of an
+arithmetic function and related concepts. A few relatively simple concepts will allow us to produce
+a variety of useful functions and theorems. This provides only a glimpse of the start of the
+field of analytic number theory, though many of these techniques are used in other places as we’ll
+also start to see.</p>
+<p>(See <a href="#summary">the end for a summary of identities and results</a>.)</p>
+<h2 id="prelude">Prelude</h2>
+<p>As some notation, I’ll write |\mathbb N_+| for the set of positive naturals, and |\mathbb P| for
+the set of primes. |\mathbb N| will contain |0|. Slightly atypically, I’ll write |[n]| for the set
+of numbers from |1| to |n| inclusive, i.e. |a \in [n]| if and only if |1 \leq a \leq n|.</p>
+<p>I find that the easiest way to see results in number theory
+is to view a positive natural number as a multiset of primes which is uniquely given by
+factorization. Coprime numbers are ones where these multisets are disjoint. Multiplication unions
+the multisets. The greatest common divisor is multiset intersection. |n| divides |m| if and only
+if |n| corresponds to a sub-multiset of |m|, in which case |m/n| corresponds to the multiset
+difference. The <strong>multiplicity</strong> of an element of a multiset is the number of occurrences.
+For a multiset |P|, |\mathrm{dom}(P)| is the <em>set</em> of elements of the multiset |P|, i.e. those
+with multiplicity greater than |0|. For a finite multiset |P|, |\vert P\vert| will be the sum of
+the multiplicities of the distinct elements, i.e. the number of elements (with duplicates) in the
+multiset.</p>
+<p>We can represent a multiset of primes as a function |\mathbb P \to \mathbb N| which maps an
+element to its multiplicity. A <em>finite</em> multiset would then be such a function that is |0| at all
+but finitely many primes. Alternatively, we can represent the multiset as a <em>partial</em> function
+|\mathbb P \rightharpoonup \mathbb N_+|. It will be finite when it is defined for only finitely
+many primes. Equivalently, when it is a finite subset of |\mathbb P\times\mathbb N_+| (which is
+also a functional relation).</p>
+<p>Unique factorization provides a bijection between finite multisets of primes and positive natural
+numbers. Given a finite multiset |P|, the corresponding positive natural number is
+|n_P = \prod_{(p, k) \in P} p^k|.</p>
+<p>I will refer to this view often in the following.</p>
+<h2 id="arithmetic-functions">Arithmetic Functions</h2>
+<p>An <a href="https://en.wikipedia.org/wiki/Arithmetic_function"><strong>arithmetic function</strong></a> is just a function
+defined on the positive naturals. Usually, they’ll land in (not necessarily positive) natural
+numbers, but that isn’t required.</p>
+<p>In most cases, we’ll be interested in the specific subclass of multiplicative arithmetic functions.
+An arithmetic function, |f|, is <strong>multiplicative</strong> if |f(1) = 1| and |f(ab) = f(a)f(b)| whenever
+|a| and |b| are coprime. We also have the notion of a <strong>completely multiplicative</strong> arithmetic
+function for which |f(ab) = f(a)f(b)| always. Obviously, completely multiplicative functions are
+multiplicative. Analogously, we also have a notion of (<strong>completely</strong>) <strong>additive</strong> where
+|f(ab) = f(a) + f(b)|. <em>Warning</em>: In other mathematical contexts, “additive” means |f(a+b)=f(a)+f(b)|.
+An obvious example of a completely additive function being the logarithm. Exponentiating an additive
+function will produce a multiplicative function.</p>
+<p>For an additive function, |f|, we automatically get |f(1) = 0| since |f(1) = f(1\cdot 1) = f(1) + f(1)|.</p>
+<p><strong>Lemma</strong>: The product of two multiplicative functions |f| and |g| is multiplicative.<br/>
+<strong>Proof</strong>: For |a| and |b| coprime, |f(ab)g(ab) = f(a)f(b)g(a)g(b) = f(a)g(a)f(b)g(b)|. |\square|</p>
+<p>A parallel statement holds for completely multiplicative functions.</p>
+<p>It’s also clear that a completely multiplicative function is entirely determined by its action on
+prime numbers. Since |p^n| is coprime to |q^n| whenever |p| and |q| are coprime, we see
+that a multiplicative function is entirely determined by its action on powers of primes. To this
+end, I’ll often define multiplicative/additive functions by their action on prime powers and
+completely multiplicative/additive functions by their action on primes.</p>
+<p>Multiplicative functions aren’t closed under composition, but we do have that if |f| is <em>completely</em>
+multiplicative and |g| is multiplicative, then |f \circ g| is multiplicative when that composite
+makes sense.</p>
+<p>Here are some examples. Not all of these will be used in the sequel.</p>
+<ul>
+<li>The power function |({-})^z| for any |z|, not necessarily an integer, is completely multiplicative.</li>
+<li>Choosing |z=0| in the previous, we see the constantly one function |\bar 1(n) = 1| is completely
+multiplicative.</li>
+<li>The identity function is clearly completely multiplicative and is also the |z=1| case of the above.</li>
+<li>The Kronecker delta function |\delta(n) = \begin{cases}1, &amp; n = 0 \\ 0, &amp; n \neq 0\end{cases}|
+is completely multiplicative. Often written |\varepsilon| in this context.</li>
+<li>Define a multiplicative function via |\mu(p^n) = \begin{cases} -1, &amp; n = 1 \\ 0, &amp; n &gt; 1\end{cases}|
+where |p| is prime. This is the <a href="https://en.wikipedia.org/wiki/M%C3%B6bius_function">Möbius function</a>.
+More holistically, |\mu(n)| is |0| if |n| has any square factors, otherwise |\mu(n) = (-1)^k|
+where |k| is the number of (distinct) prime factors.</li>
+<li>Define a completely multiplicative function via |\lambda(p) = -1|. |\lambda(n) = \pm 1|
+depending on whether there is an even or odd number of prime factors (including duplicates).
+This function is known as the <a href="https://en.wikipedia.org/wiki/Liouville_function">Liouville function</a>.</li>
+<li>|\lambda(n) = (-1)^{\Omega(n)}| where |\Omega(n)| is the completely additive function which
+counts the number of prime factors of |n| including duplicates. |\Omega(n_P) = \vert P\vert|.</li>
+<li>Define a multiplicative function via |\gamma(p^n) = -1|. |\gamma(n) = \pm 1| depending on
+whether there is an even or odd number of <em>distinct</em> prime factors.</li>
+<li>|\gamma(n) = (-1)^{\omega(n)}| where |\omega(n)| is the additive function which counts the
+number of <em>distinct</em> prime factors of |n|. See <a href="https://en.wikipedia.org/wiki/Prime_omega_function">Prime omega function</a>.
+We also see that |\omega(n_P) = \vert\mathrm{dom}(P)\vert|.</li>
+<li>The completely additive function for |q\in\mathbb P|, |\nu_q(p) = \begin{cases}1,&amp;p=q\\0,&amp;p\neq q\end{cases}|
+is the <a href="https://en.wikipedia.org/wiki/P-adic_valuation">p-adic valuation</a>.</li>
+<li>It follows that the |p|-adic absolute value |\vert r\vert_p = p^{-\nu_p(r)}| is completely
+multiplicative. It can be characterized on naturals by
+|\vert p\vert_q = \begin{cases}p^{-1},&amp;p=q\\1,&amp;p\neq q\end{cases}|.</li>
+<li>|\gcd({-}, k)| for a fixed |k| is multiplicative. Given any multiplicative function |f|,
+|f \circ \gcd({-},k)| is multiplicative. This essentially “restricts” |f| to only see the prime
+powers that divide |k|. Viewing the finite multiset of primes |P| as a function |\mathbb P\to\mathbb N|,
+|f(\gcd(p^n,n_P)) = \begin{cases}f(p^n),&amp;n\leq P(p)\\f(p^{P(p)}),&amp;n&gt;P(p)\end{cases}|.</li>
+<li>The multiplicative function characterized by |a(p^n) = p(n)| where |p(n)| is the <a href="https://en.wikipedia.org/wiki/Partition_function_(number_theory)">partition function</a>
+counts the number of abelian groups the given order. That this function is multiplicative is a
+consequence of the fundamental theorem of finite abelian groups.</li>
+<li>The <a href="https://en.wikipedia.org/wiki/Jacobi_symbol">Jacobi symbol</a> |\left(\frac{a}{n}\right)|
+where |a\in\mathbb Z| and |n| is an <em>odd</em> positive integer is a completely multiplicative
+function with either |a| or |n| fixed. When |n| is an odd prime, it reduces to the
+<a href="https://en.wikipedia.org/wiki/Legendre_symbol">Legendre symbol</a>. For |p| an odd prime, we have
+|(\frac{a}{p}) = a^{\frac{p-1}{2}} \pmod p|. This will always be in
+|\{-1, 0, 1\}| and can be alternately defined as
+|\left(\frac{a}{p}\right) = \begin{cases}0,&amp;p\mid a\\1,&amp;p\nmid a\text{ and }\exists x.x^2\equiv a\pmod p\\-1,&amp;\not\exists x.x^2\equiv a\pmod p\end{cases}|.
+Therefore, |\left(\frac{a}{p}\right)=1| (|=0|) when |a| is a (trivial) <a href="https://en.wikipedia.org/wiki/Quadratic_residue">quadratic residue</a>
+mod |p|.</li>
+<li>An interesting example which is not multiplicative nor additive is the <a href="https://en.wikipedia.org/wiki/Arithmetic_derivative">arithmetic derivative</a>.
+Let |p\in\mathbb P|. Define |\frac{\partial}{\partial p}(n)| via |\frac{\partial}{\partial p}(p) = 1|,
+|\frac{\partial}{\partial p}(q) = 0| for |q\neq p| and |q\in\mathbb P|, and
+|\frac{\partial}{\partial p}(nm) = \frac{\partial}{\partial p}(n)m + n\frac{\partial}{\partial p}(m)|.
+We then have |D_S = \sum_{p\in S}\frac{\partial}{\partial p}| for non-empty |S\subseteq\mathbb P|
+which satisfies the same product rule identity. This perspective views a natural number (or, more
+generally, a rational number) as a monomial in infinitely many variables labeled by prime numbers.</li>
+<li>A <strong><a href="https://en.wikipedia.org/wiki/Dirichlet_character">Dirichlet character</a> of modulus |m|</strong> is,
+by definition, a completely multiplicative function |\chi| satisfying |\chi(n + m) = \chi(n)|
+and |\chi(n)| is non-zero if and only if |n| is coprime to |m|. The Jacobi symbol
+|\left(\frac{({-})}{m}\right)| is a Dirichlet character of modulus |m|. |\bar 1| is the
+Dirichlet character of modulus |1|.</li>
+</ul>
+<h2 id="dirichlet-series">Dirichlet Series</h2>
+<p>Given an arithmetic function |f|, we define the <a href="https://en.wikipedia.org/wiki/Dirichlet_series"><strong>Dirichlet series</strong></a>:</p>
+<p>\[\mathcal D[f](s) = \sum_{n=1}^\infty \frac{f(n)}{n^s} = \sum_{n=1}^\infty f(n)n^{-s}\]</p>
+<p>When |f| is a Dirichlet character, |\chi|, this is referred to as the <a href="https://en.wikipedia.org/wiki/Dirichlet_L-function">(Dirichlet) |L|-series</a>
+of the character, and the analytic continuation is the (Dirichlet) |L|-function and is written
+|L(s, \chi)|.</p>
+<p>We’ll not focus much on when such a series converges. See <a href="https://en.wikipedia.org/wiki/Dirichlet_series#Analytic_properties">this section</a>
+of the above Wikipedia article for more details. Alternatively, we could talk about
+<a href="https://en.wikipedia.org/wiki/Dirichlet_series#Formal_Dirichlet_series">formal Dirichlet series</a>.
+We can clearly see that if |s = 0|, then we get
+the sum |\sum_{n=1}^\infty f(n)| which clearly won’t converge for, say, |f = \bar 1|. We can say
+that if |f| is asymptotically bounded by |n^k| for some |k|, i.e. |f \in O(n^k)|, then the series
+will converge absolutely when the real part of |s| is greater than |k+1|. For |\bar 1|, it follows
+that |\mathcal D[\bar 1](x + iy)| is defined when |x &gt; 1|. We can use <a href="https://en.wikipedia.org/wiki/Analytic_continuation">analytic continuation</a>
+to go beyond these limits.</p>
+<p>See <a href="https://projecteuclid.org/journals/missouri-journal-of-mathematical-sciences/volume-20/issue-1/A-Catalog-of-Interesting-Dirichlet-Series/10.35834/mjms/1316032830.full">A Catalog of Interesting Dirichlet Series</a>
+for a more reference-like listing. Beware differences in notation.</p>
+<h2 id="dirichlet-convolution">Dirichlet Convolution</h2>
+<p>Why is this interesting in this context? Let’s consider two arithmetic functions |f| and |g| and
+multiply their corresponding Dirichlet series. We’ll get:</p>
+<p>\[\mathcal D[f](s)\mathcal D[g](s) = \sum_{n=1}^\infty h(n)n^{-s} = \mathcal D[h](s)\]</p>
+<p>where now we need to figure out what |h(n)| is. But |h(n)| is going to be the sum of all the terms
+of the form |f(a)a^{-s}g(b)b^{-s} = f(a)g(b)(ab)^{-s}| where |ab = n|. We can thus write:
+\[h(n) = \sum_{ab=n} f(a)g(b) = \sum_{d\mid n} f(d)g(n/d)\] We’ll write this more compactly as
+|h = f \star g| which we’ll call <a href="https://en.wikipedia.org/wiki/Dirichlet_convolution"><strong>Dirichlet convolution</strong></a>.
+We have thus shown a <strong>convolution theorem</strong> of the form
+\[\mathcal D[f]\mathcal D[g] = \mathcal D[f \star g]\]</p>
+<p>The Kronecker delta serves as a unit to this operation which is reflected by
+|\mathcal D[\delta](s) = 1|.</p>
+<p>Since we will primarily be interested in multiplicative functions, we should check that
+|f \star g| is a multiplicative function when |f| and |g| are.</p>
+<p><strong>Lemma</strong>: Assume |a| and |b| are coprime, and |f| and |g| are multiplicative. Then
+|(f \star g)(ab) = (f \star g)(a)(f \star g)(b)|.</p>
+<p><strong>Proof</strong>: Since |a| and |b| are coprime, they share <em>no</em> divisors besides |1|. This means every |d|
+such that |d \mid ab| factors as |d = d_a d_b| where |d_a \mid a| and |d_b \mid b|. More
+strongly, write |D_n = \{ d \in \mathbb N_+ \mid d \mid n\}|, then for any coprime pair of
+numbers |i| and |j|, we have |D_{ij} \cong D_i \times D_j| and that every pair
+|(d_i, d_j) \in D_i \times D_j| are coprime<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. Thus,</p>
+<p>\[\begin{flalign}
+(f \star g)(ab)
+&amp; = \sum_{d \in D_{ab}} f(d)g((ab)/d) \tag{by definition} \\
+&amp; = \sum_{(d_a, d_b) \in D_a \times D_b} f(d_a d_b)g((ab)/(d_a d_b)) \tag{via the bijection} \\
+&amp; = \sum_{(d_a, d_b) \in D_a \times D_b} f(d_a)f(d_b)g(a/d_a)g(b/d_b) \tag{f and g are multiplicative} \\
+&amp; = \sum_{d_a \in D_a} \sum_{d_b \in D_b} f(d_a)f(d_b)g(a/d_a)g(b/d_b) \tag{sum over a Cartesian product} \\
+&amp; = \sum_{d_a \in D_a} f(d_a)g(a/d_a) \sum_{d_b \in D_b} f(d_b)g(b/d_b) \tag{undistributing} \\
+&amp; = \sum_{d_a \in D_a} f(d_a)g(a/d_a) (f \star g)(b) \tag{by definition} \\
+&amp; = (f \star g)(b) \sum_{d_a \in D_a} f(d_a)g(a/d_a) \tag{undistributing} \\
+&amp; = (f \star g)(b) (f \star g)(a) \tag{by definition} \\
+&amp; = (f \star g)(a) (f \star g)(b) \tag{commutativity of multiplication}
+\end{flalign}\] |\square|</p>
+<p>It is <em>not</em> the case that the Dirichlet convolution of two <em>completely</em> multiplicative functions is
+<em>completely</em> multiplicative.</p>
+<p>We can already start to do some interesting things with this. First, we see that
+|\mathcal D[\bar 1] = \zeta|, the <a href="https://en.wikipedia.org/wiki/Riemann_zeta_function"><strong>Riemann zeta function</strong></a>.
+Now consider |(\bar 1 \star \bar 1)(n) = \sum_{k \mid n} 1 = d(n)|.
+|d(n)| is the <a href="https://en.wikipedia.org/wiki/Divisor_function">divisor function</a>
+which counts the number of divisors of |n|. We see that
+|\mathcal D[d](s) = \zeta(s)^2|. A simple but useful fact is
+|\zeta(s - z) = \mathcal D[(-)^z](s)|. This directly generalizes the result for
+|\mathcal D[\bar 1]| and also implies |\mathcal D[\operatorname{id}](s) = \zeta(s - 1)|.</p>
+<p>Generalizing in a different way, we get the family of functions
+|\sigma_k = ({-})^k \star \bar 1|. |\sigma_k(n) = \sum_{d \mid n} d^k|.
+From the above, we see |\mathcal D[\sigma_k](s) = \zeta(s - k)\zeta(s)|.</p>
+<p><strong>Lemma</strong>: Given a completely multiplicative function |f|,
+we get |f(n)(g \star h)(n) = (fg \star fh)(n)|.<br/>
+<strong>Proof</strong>: \[\begin{flalign}
+(fg \star fh)(n)
+&amp; = \sum_{d \mid n} f(d)g(d)f(n/d)h(n/d) \\
+&amp; = \sum_{d \mid n} f(d)f(n/d)g(d)h(n/d) \\
+&amp; = \sum_{d \mid n} f(n)g(d)h(n/d) \\
+&amp; = f(n)\sum_{d \mid n} g(d)h(n/d) \\
+&amp; = f(n)(g \star h)(n)
+\end{flalign}\]
+|\square|</p>
+<p>As a simple corollary, for a completely multiplicative |f|,
+|f \star f = f(\bar 1 \star \bar 1) = fd|.</p>
+<h2 id="euler-product-formula">Euler Product Formula</h2>
+<p>However, the true power of this is unlocked by the following theorem:</p>
+<p><strong>Theorem</strong> (<a href="https://en.wikipedia.org/wiki/Euler_product"><strong>Euler product formula</strong></a>):
+Given a multiplicative function |f| which doesn’t grow too fast, e.g. is |O(n^k)| for some |k &gt; 0|,
+\[\mathcal D[f](s)
+= \sum_{n=1}^\infty f(n)n^{-s}
+= \prod_{p \in \mathbb P}\sum_{n=0}^\infty f(p^n)p^{-ns}
+= \prod_{p \in \mathbb P}\left(1 + \sum_{n=1}^\infty f(p^n)p^{-ns}\right)
+\]
+where the series converges.</p>
+<p><strong>Proof</strong>: The last equality is simply using the fact that |f(p^0)p^0 = f(1) = 1| because |f| is
+multiplicative. The idea for the main part is similar to how we derived Dirichlet convolution.
+When we start to distribute out the infinite product, each term will correspond to the product of
+selections of a term from each series. When all but finitely many of those selections select the |1|
+term, we get |\prod_{(p, k) \in P}f(p^k)(p^k)^{-s}| where |P| is some finite multiset of
+primes induced by those selections. Therefore,
+|\prod_{(p, k) \in P}f(p^k)(p^k)^{-s} = f(n_P)n_P^{-s}|. Thus, by unique factorization,
+|f(n)n^{-s}| for every positive natural occurs in the sum produced by distributing the right-hand
+side exactly once.</p>
+<p>In the case where |P| is not a <em>finite</em> multiset, we’ll have \[
+\frac{\prod_{(p, k) \in P}f(p^k)}{\left(\prod_{(p, k) \in P}p^k\right)^s}\]</p>
+<p>The denominator of this expression goes to infinity when the real part of |s| is greater than |0|.
+As long as the numerator doesn’t grow faster than the denominator (perhaps after restricting the
+real part of |s| to be greater than some bound), then this product goes to |0|. Therefore, the only
+terms that remain are these corresponding to the Dirichlet series on the left-hand side. |\square|</p>
+<p>If we assume |f| is <em>completely</em> multiplicative, we can further simplify Euler’s product formula
+via the usual sum of a geometric series, |\sum_{n=0}^\infty x^n = (1-x)^{-1}|, to:</p>
+<p>\[
+\sum_{n=1}^\infty f(n)n^{-s}
+= \prod_{p \in \mathbb P}\sum_{n=0}^\infty (f(p)p^{-s})^n
+= \prod_{p \in \mathbb P}(1 - f(p)p^{-s})^{-1}
+\]</p>
+<p>Now let’s put this to work. The first thing we can see is
+|\zeta(s) = \mathcal D[\bar 1](s) = \prod_{p\in\mathbb P}(1 - p^{-s})^{-1}|. But this lets
+us write |1/\zeta(s) = \prod_{p\in\mathbb P}(1 - p^{-s})|.
+If we look for a multiplicative function that would produce the right-hand side, we see that it must
+send a prime |p| to |-1| and |p^n| for |n &gt; 1| to |0|. In other words, it’s the Möbius function
+|\mu| we defined before. So |\mathcal D[\mu](s) = 1/\zeta(s)|.</p>
+<p>Using |\mathcal D[d](s) = \zeta(s)^2|, we see that
+\[\begin{flalign}
+\zeta(s)^2
+&amp; = \prod_{p\in\mathbb P}\left(\sum_{n=0}^\infty p^{-ns}\right)^{-2} \\
+&amp; = \prod_{p\in\mathbb P}\left(\sum_{n=0}^\infty (n+1)p^{-ns}\right)^{-1} \\
+&amp; = \prod_{p\in\mathbb P}\left(\sum_{n=0}^\infty d(p^n)p^{-ns}\right)^{-1} \\
+&amp; = \mathcal D[d](s)
+\end{flalign}\]
+Therefore, |d(p^n) = n + 1|. This intuitively makes sense because the only divisors of |p^n| are
+|p^k| for |k = 0, \dots, n|, and for |a| and |b| coprime
+|d(ab) = \vert D_{ab} \vert = \vert D_a \times D_b\vert = \vert D_a\vert\vert D_b\vert = d(a)d(b)|.</p>
+<p>Another result leveraging the theorem is given any multiplicative function |f|, we can define a new
+multiplicative function via
+|f^{[k]}(p^n) = \begin{cases}f(p^m), &amp; km = n\textrm{ for }m\in\mathbb N \\ 0, &amp; k \nmid n\end{cases}|.</p>
+<p><strong>Lemma</strong>: The operation just defined has the property that
+|\mathcal D[f^{[k]}](s) = \mathcal D[f](ks)|.<br/>
+<strong>Proof</strong>:
+\[\begin{flalign}
+\mathcal D[f^{[k]}](s)
+&amp; = \prod_{p \in \mathbb P}\sum_{n=0}^\infty f^{[k]}(p^n)p^{-ns} \\
+&amp; = \prod_{p \in \mathbb P}\sum_{n=0}^\infty f^{[k]}(p^{kn})p^{-nks} \\
+&amp; = \prod_{p \in \mathbb P}\sum_{n=0}^\infty f(p^n)p^{-nks} \\
+&amp; = \mathcal D[f](ks)
+\end{flalign}\]
+|\square|</p>
+<h2 id="möbius-inversion">Möbius Inversion</h2>
+<p>We can write a sum over some function, |f|, of the divisors of a given natural |n| as
+|(f \star \bar 1)(n) = \sum_{d \mid n} f(d)|. Call this |g(n)|. But then we have
+|\mathcal D[f \star \bar 1] = \mathcal D[f]\mathcal D[\bar 1] = \mathcal D[f]\zeta| and thus
+|\mathcal D[f] = \mathcal D[f]\zeta/\zeta = \mathcal D[(f \star \bar 1) \star \mu]|.
+Therefore, if we only have the sums |g(n) = \sum_{d \mid n} f(d)| for some unknown |f|, we can
+recover |f| via |f(n) = (g \star \mu)(n) = \sum_{d\mid n}g(d)\mu(n/d)|.
+This is <a href="https://en.wikipedia.org/wiki/Mobius_inversion">Möbius inversion</a>.</p>
+<p>As a simple example, we clearly have |\zeta(s)/\zeta(s) = 1 = \mathcal D[\delta](s)| so
+|\bar 1 \star \mu = \delta| or |\sum_{d \mid n}\mu(d) = 0| for |n &gt; 1| and |1| when |n = 1|.</p>
+<p>We also get generalized Möbius inversion via
+|\delta(n) = \delta(n)n^k = (\mu\star\bar 1)(n)n^k = (({-})^k\mu\star({-})^k)(n)|. Which
+is to say if |g(n) = \sum_{d\mid n}d^k f(n/d)| then |f(n) = \sum_{d\mid n} \mu(d)d^kg(n/d)|.</p>
+<p>By considering logarithms, we also get a multiplicative form of (generalized) Möbius inversion:
+\[g(n) = \prod_{d\mid n}f(n/d)^{d^k} \iff f(n) = \prod_{d\mid n}g(n/d)^{\mu(d)d^k}\]</p>
+<p><strong>Theorem</strong>: As another guise of Möbius inversion, given any completely multiplicative function |h|,
+let |g(m) = \sum_{n=1}^\infty f(mh(n))|. Assuming these sums make sense, we can recover |f(k)|
+via |f(k) = \sum_{m=1}^\infty \mu(m)g(kh(m))|.</p>
+<p><strong>Proof</strong>:
+\[\begin{align}
+\sum_{m=1}^\infty \mu(m)g(kh(m))
+&amp; = \sum_{m=1}^\infty \mu(m)\sum_{n=1}^\infty f(kh(m)h(n)) \\
+&amp; = \sum_{N=1}^\infty \sum_{N=mn} \mu(m)f(kh(N)) \\
+&amp; = \sum_{N=1}^\infty f(kh(N)) \sum_{N=nm} \mu(m) \\
+&amp; = \sum_{N=1}^\infty f(kh(N)) (\mu\star\bar 1)(N) \\
+&amp; = \sum_{N=1}^\infty f(kh(N)) \delta(N) \\
+&amp; = f(k)
+\end{align}\] |\square|</p>
+<p>This will often show up in the form of |r(x^{1/n})| or |r(x^{1/n})/n|, i.e. with |h(n)=n^{-1}|
+and |f_x(k) = r(x^k)| or |f_x(k) = kr(x^k)|. Typically, we’ll then be computing
+|f_x(1) = r(x)|.</p>
+<h3 id="lambert-series">Lambert Series</h3>
+<p>As a brief aside, it’s worth mentioning <a href="https://en.wikipedia.org/wiki/Lambert_series"><strong>Lambert Series</strong></a>.</p>
+<p>Given an arithmetic function |a|, these are series of the form:
+\[
+\sum_{n=1}^\infty a(n) \frac{x^n}{1-x^n}
+= \sum_{n=1}^\infty a(n) \sum_{k=1}^\infty x^{kn}
+= \sum_{n=1}^\infty (a \star \bar 1)(n) x^n
+\]</p>
+<p>This leads to:
+\[\sum_{n=1}^\infty \mu(n) \frac{x^n}{1-x^n} = x\]
+and:
+\[\sum_{n=1}^\infty \varphi(n) \frac{x^n}{1-x^n} = \frac{x}{(1-x)^2}\]</p>
+<h3 id="inclusion-exclusion">Inclusion-Exclusion</h3>
+<p>The Möbius and |\zeta| functions can be generalized to
+<a href="https://en.wikipedia.org/wiki/Incidence_algebra">incidence algebras</a> where this form is from the
+incidence algebra induced by the divisibility order<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.
+A notable and relevant example of a Möbius
+functions for another, closely related, incidence algebra is when we consider the incidence algebra
+induced by finite multisets with the inclusion ordering. Let |T| be a finite multiset, we get
+|\mu(T) = \begin{cases}0,&amp;T\text{ has repeated elements}\\(-1)^{\vert T\vert},&amp;T\text{ is a set}\end{cases}|.
+Since we can view a natural number as a finite multiset of primes, and we can always relabel the
+elements of a finite multiset with distinct primes, this is equivalent to the Möbius function we’ve
+been using.</p>
+<p>This leads to a nice and compact way of describing the <a href="https://en.wikipedia.org/wiki/Inclusion%E2%80%93exclusion_principle#Other_formulas">principle of inclusion-exclusion</a>.
+Let |A| and |S| be (finite) multisets with |S \subseteq A| and assume we have |f| and |g| defined
+on the set of sub-multisets of |A|. If \[g(A) = \sum_{S\subseteq A} f(S)\] then
+\[f(A) = \sum_{S\subseteq A}\mu(A\setminus S)g(S)\] and this is Möbius inversion for this
+notion of Möbius function. We can thus take a different perspective on Möbius inversion. If
+|P| is a finite multiset of primes, then
+\[g(n_P) = \sum_{Q\subseteq P}f(n_Q) \iff f(n_P) = \sum_{Q\subseteq P}\mu(P\setminus Q)g(n_Q)\]
+recalling that |Q\subseteq P \iff n_Q \mid n_P| and |n_{P\setminus Q} = n_P/n_Q| when
+|Q\subseteq P|.</p>
+<p>We get traditional inclusion-exclusion by noting that |\mu(T)=(-1)^{\vert T\vert}| when |T| is a
+set, i.e. all elements have multiplicity at most |1|. Let |I| be a finite set and assume we have a
+family of finite sets, |\{T_i\}_{i\in I}|. Write |T = \bigcup_{i\in I}T_i| and define
+|\bigcap_{i\in\varnothing}T_i = T|.</p>
+<p>Define
+\[f(J) = \left\vert\bigcap_{i\in I\setminus J}T_i\setminus\bigcup_{i \in J}T_i\right\vert\]
+for |J\subseteq I|. In particular, |f(I) = 0|.
+|f(J)| is then the number of elements shared by all |T_i| for |i\notin J| and no |T_j| for
+|j\in J|. Every |x \in \bigcup_{i\in I}T_i| is thus associated to exactly one such subset
+of |I|, namely |\{j\in I\mid x\notin T_j\}|. Formally,
+|x \in \bigcap_{i\in I\setminus J}T_i\setminus\bigcup_{i \in J}T_i \iff J = \{j\in I\mid x\notin T_j\}|
+so each |\bigcap_{i\in I\setminus J}T_i\setminus\bigcup_{i \in J}T_i| is disjoint and
+\[g(J)
+= \sum_{S\subseteq J}f(S)
+= \left\vert\bigcup_{S\subseteq J}\left(\bigcap_{i\in I\setminus S}T_i\setminus\bigcup_{i \in S}T_i\right)\right\vert
+= \left\vert\bigcap_{i\in I\setminus J}T_i\right\vert
+\]
+for |J \subseteq I|. In particular, |g(I) = \vert\bigcup_{i\in I}T_i\vert|.</p>
+<p>By the Möbius inversion formula for finite sets, we thus have:
+\[f(J) = \sum_{S\subseteq J}(-1)^{\vert J\vert - \vert S\vert}g(S)\]
+which for |J = I| gives:
+\[
+0
+= \sum_{J\subseteq I}(-1)^{\vert I\vert - \vert J\vert}\left\vert\bigcap_{i\in I\setminus J}T_i\right\vert
+= \left\vert\bigcup_{i\in I}T_i\right\vert + \sum_{J\subsetneq I}(-1)^{\vert I\vert - \vert J\vert}\left\vert\bigcap_{i\in I\setminus J}T_i\right\vert
+\]
+which is equivalent to the more usual form:
+\[\left\vert\bigcup_{i\in I}T_i\right\vert
+= \sum_{J\subsetneq I}(-1)^{\vert I\vert - \vert J\vert - 1}\left\vert\bigcap_{i\in I\setminus J}T_i\right\vert
+= \sum_{\varnothing\neq J\subseteq I}(-1)^{\vert J\vert + 1}\left\vert\bigcap_{i\in J}T_i\right\vert
+\]</p>
+<h3 id="varphi">|\varphi|</h3>
+<p>An obvious thing to explore is to apply Möbius inversion to various arithmetic functions.
+A fairly natural first start is applying Möbius inversion to the identity function. From the above
+results, we know that this unknown function |\varphi| will satisfy
+|\mathcal D[\varphi](s) = \zeta(s-1)/\zeta(s) = \mathcal D[\operatorname{id}\star\mu](s)|.
+We also immediately have the property that |n = \sum_{d \mid n}\varphi(d)|. Using Euler’s
+product formula we have:
+\[\begin{flalign}
+\zeta(s-1)/\zeta(s)
+&amp; = \prod_{p \in \mathbb P} \frac{1 - p^{-s}}{1 - p^{-s+1}} \\
+&amp; = \prod_{p \in \mathbb P} \frac{1 - p^{-s}}{1 - pp^{-s}} \\
+&amp; = \prod_{p \in \mathbb P} (1 - p^{-s})\sum_{n=0}^\infty p^n p^{-ns} \\
+&amp; = \prod_{p \in \mathbb P} \left(\sum_{n=0}^\infty p^n p^{-ns}\right) - \left(\sum_{n=0}^\infty p^n p^{-s} p^{-ns}\right) \\
+&amp; = \prod_{p \in \mathbb P} \left(\sum_{n=0}^\infty p^n p^{-ns}\right) - \left(\sum_{n=0}^\infty p^n p^{-(n + 1)s}\right) \\
+&amp; = \prod_{p \in \mathbb P} \left(1 + \sum_{n=1}^\infty p^n p^{-ns}\right) - \left(\sum_{n=1}^\infty p^{n-1} p^{-ns}\right) \\
+&amp; = \prod_{p \in \mathbb P} \left(1 + \sum_{n=1}^\infty (p^n - p^{n-1}) p^{-ns}\right) \\
+&amp; = \prod_{p \in \mathbb P} \left(1 + \sum_{n=1}^\infty \varphi(p^n) p^{-ns}\right) \\
+&amp; = \mathcal D[\varphi](s)
+\end{flalign}\]</p>
+<p>So |\varphi| is the multiplicative function defined by |\varphi(p^n) = p^n - p^{n-1}|.
+For |p^n|, we can see that this counts the number of positive integers less than or equal to |p^n|
+which are coprime to |p^n|. There are |p^n| positive integers less than or equal to |p^n|, and
+every |p|th one is a multiple of |p| so |p^n/p = p^{n-1}| are <em>not</em> coprime to |p^n|. All the
+remainder are coprime to |p^n| since they don’t have |p| in their prime factorizations and |p^n|
+only has |p| in its. We need to verify that this interpretation is multiplicative. To be clear, we
+know that |\varphi| is multiplicative and that this interpretation works for |p^n|. The question
+is whether |\varphi(n)| for general |n| meets the above description, i.e. whether the number of
+coprime numbers less than |n| is multiplicative.</p>
+<p><strong>Theorem</strong>: The number of coprime numbers less than |n| is multiplicative and is equal to |\varphi(n)|.</p>
+<p><strong>Proof</strong>: |\varphi = \mu\star\operatorname{id}|. We have:</p>
+<p>\[\begin{flalign}
+\varphi(n_P)
+&amp; = \sum_{d\mid n_P}\mu(d)\frac{n_P}{d} \\
+&amp; = \sum_{Q\subseteq P}\mu(Q)\frac{n_P}{n_Q} \\
+&amp; = \sum_{Q\subseteq \mathrm{dom}(P)}(-1)^{\vert Q\vert}\frac{n_P}{n_Q}
+\end{flalign}\]</p>
+<p>We can see an <a href="https://en.wikipedia.org/wiki/Inclusion-exclusion_principle">inclusion-exclusion</a>
+pattern. Specifically, let |C_k = \{ c \in [k] \mid \gcd(c, k) = 1\}| be the numbers less than
+or equal to |k| and coprime to |k|. Let |S_{k,m} = \{ c \in [k] \mid m \mid c\}|. We have
+|S_{k,a} \cap S_{k,b} = S_{k,\operatorname{lcm}(a,b)}|. Also, when |c \mid k|, then
+|\vert S_{k,c}\vert = k/c|. |C_{n_P} = [n_P] \setminus \bigcup_{p \in \mathrm{dom}(P)} S_{n_P,p}|
+because every number <em>not</em> coprime to |n_P| shares some prime factor with it. Applying
+inclusion-exclusion to the union yields
+\[\begin{align}
+\vert C_{n_P}\vert
+&amp; = n_P - \sum_{\varnothing\neq Q\subseteq\mathrm{dom}(P)}(-1)^{\vert Q\vert+1}\left\vert \bigcap_{p\in Q}S_{n_P,p}\right\vert \\
+&amp; = n_P + \sum_{\varnothing\neq Q\subseteq\mathrm{dom}(P)}(-1)^{\vert Q\vert}\frac{n_P}{\prod_{p\in Q}p} \\
+&amp; = \sum_{Q\subseteq\mathrm{dom}(P)}(-1)^{\vert Q\vert}\frac{n_P}{n_Q}
+\end{align}\]
+|\square|</p>
+<p>Many of you will already have recognized that this is <a href="https://en.wikipedia.org/wiki/Euler%27s_totient_function">Euler’s totient function</a>.</p>
+<h2 id="combinatorial-species">Combinatorial Species</h2>
+<p>The book <a href="https://www.cambridge.org/core/books/combinatorial-species-and-treelike-structures/D994A1F2877BDE63FF0C9EDE2F9788A8"><em>Combinatorial Species and Tree-Like Structures</em></a>
+has many examples where Dirichlet convolutions and Möbius inversion come up.
+A combinatorial species is a functor |\operatorname{Core}(\mathbf{FinSet})\to\mathbf{FinSet}|.
+Any permutation on a finite set can be decomposed into a collection of cyclic permutations.
+Let |U| be a finite set of cardinality |n| and |\pi : U \cong U| a permutation of |U|.
+For any |u\in U|, there is a smallest |k\in\mathbb N_+| such that |\pi^k(u) = u| where
+|\pi^{k+1} = \pi \circ \pi^k| and |\pi^0 = \operatorname{id}|. The |k| elements
+|\mathcal O(u)=\{\pi^{i-1}(u)\mid i\in[k]\}| make up a cycle of length |k|, and |\pi|
+restricted to |U\setminus O(u)| is a permutation on this smaller set. We can just inductively pull
+out another cycle until we run out of elements. Write |\pi_k| for the number of cycles of length
+|k| in the permutation |\pi|. We clearly have |n = \sum_{k=1}^\infty k\pi_k| as every cycle
+has |k| elements in it.</p>
+<p>Write |\operatorname{fix}\pi| for the number of fixed points of |\pi|, i.e. the cardinality of
+the set |\{u\in U\mid \pi(u) = u\}|. Clearly, every element that is fixed by |\pi^k| needs
+to be in a cycle whose length divides |k|. This leads to the equation:</p>
+<p>\[ \operatorname{fix}\pi^k = \sum_{d\mid k} d\pi_d = ((d \mapsto d\pi_d) \star \bar 1)(k)\]</p>
+<p>Since |F(\pi^k) = F(\pi)^k| for a combinatorial species |F|, Möbius inversion, as explicitly
+stated in Proposition 2.2.3 of <em>Combinatorial Species and Tree-Like Structures</em>, leads to:</p>
+<p>\[k(F(\pi))_k
+= \sum_{d\mid k}\mu\left(\frac{k}{d}\right)\operatorname{fix}F(\pi^d)
+= (\mu\star(d\mapsto \operatorname{fix}F(\pi^d)))(k) \]</p>
+<p>If we Dirichlet convolve both sides of this with |\operatorname{id}|, replacing |F(\pi)| with
+|\beta| as it doesn’t matter that this permutation comes from an action of a species, we get:</p>
+<p>\[\sum_{d\mid m} d\beta_d(m/d)
+= m\sum_{d\mid m} \beta_d
+= (\varphi\star(d\mapsto \operatorname{fix}\beta^d))(m)\]</p>
+<p>This is just using |\varphi = \operatorname{id}\star\mu|. If we choose |m| such that
+|\beta^m = \operatorname{id}|, then we get |\sum_{d\mid m} \beta_d = \sum_{k=1}^\infty \beta_k|
+because |\beta_k| will be |0| for all the |k| which don’t divide |m|.
+This makes the previous equation into equation 2.2 (34) in the book.</p>
+<p>Since we know |n = \sum_{k=1}^\infty k\pi_k| for any permutation |\pi|, we also get:
+\[\vert F([n])\vert
+= \sum_{k=1}^\infty\sum_{d\mid k}\mu\left(\frac{k}{d}\right)\operatorname{fix}F(\pi^d)
+= \sum_{k=1}^\infty(\mu\star(d\mapsto\operatorname{fix}F(\pi^d)))(k)\]</p>
+<p>These equations give us a way to compute some of these divisor sums by looking at the number
+fixed points and cycles of the action of species and vice versa. For example, 2.3 (49) is a
+series of Dirichlet convolutions connected to weighted species.</p>
+<h2 id="derivative-of-dirichlet-series">Derivative of Dirichlet series</h2>
+<p>We can easily compute the derivative of a Dirichlet series (assuming sufficiently strong convergence
+so we can push the differentiation into the sum):</p>
+<p>\[\begin{flalign}
+\mathcal D[f]’(s)
+&amp; = \frac{d}{ds}\sum_{n=1}^\infty f(n)n^{-s} \\
+&amp; = \sum_{n=1}^\infty f(n)\frac{d}{ds}n^{-s} \\
+&amp; = \sum_{n=1}^\infty f(n)\frac{d}{ds}e^{-s\ln n} \\
+&amp; = \sum_{n=1}^\infty -f(n)\ln n e^{-s\ln n} \\
+&amp; = -\sum_{n=1}^\infty f(n)\ln n n^{-s} \\
+&amp; = -\mathcal D[f\ln](s)
+\end{flalign}\]</p>
+<p>This leads to the identity |\frac{d}{ds}\ln\mathcal D[f](s) = \mathcal D[f]’ (s)/\mathcal D[f](s) = -\mathcal D[f\ln \star \mu](s)|.
+For example, we have |-\zeta’(s)/\zeta(s) = \mathcal D[\ln \star \mu](s)|. Using the Euler
+product formula, we have |\ln\zeta(s) = -\sum_{p\in\mathbb P}\ln(1-p^{-s})|. Differentiating
+this gives
+\[\begin{flalign}
+\frac{d}{ds}\ln\zeta(s)
+&amp; = -\sum_{p\in\mathbb P} p^{-s}\ln p/(1 - p^{-s}) \\
+&amp; = -\sum_{p\in\mathbb P} \sum_{k=1}^\infty \ln p (p^k)^{-s} \\
+&amp; = -\sum_{n=1}^\infty \Lambda(n) n^{-s} \\
+&amp; = -\mathcal D[\Lambda](s)
+\end{flalign}\]
+where |\Lambda(n) = \begin{cases}\ln p,&amp; n = p^k\text{ for some }k \in \mathbb N_+ \\ 0, &amp; \text{otherwise}\end{cases}|.
+|\Lambda|, which is <em>not</em> a multiplicative nor an additive function, is known as the <a href="https://en.wikipedia.org/wiki/Von_Mangoldt_function">von Mangoldt function</a>.
+Just to write it explicitly, the above implies |\Lambda = \ln \star \mu|, i.e. |\Lambda| is the
+Möbius inversion of |\ln|. This can be generalized for arbitrary completely multiplicative
+functions besides |\bar 1| to get |\mathcal D[f]’/\mathcal D[f] = \mathcal D[f\Lambda]|.</p>
+<p>We now have multiple perspectives on |\Lambda| which is a kind of “indicator function” for prime
+powers.</p>
+<h2 id="dirichlet-inverse">Dirichlet Inverse</h2>
+<p>Let’s say we’re given an arithmetic function |f|, and we want to find an arithmetic function |g|
+such that |f \star g = \delta| which we’ll call the <strong>Dirichlet inverse</strong> of |f|.
+We immediately get |(f \star g)(1) = f(1)g(1) = 1 = \delta(1)|.
+So, supposing |f(1)\neq 1|, we can define |g(1) = 1/f(1)|. We then get a recurrence relation for
+all the remaining values of |g| via:
+\[0 = (f \star g)(n) = f(1)g(n) + \sum_{d \mid n, d\neq 1} f(d)g(n/d)\]
+for |n &gt; 1|. Solving for |g(n)|, we have:
+\[g(n) = -f(1)^{-1}\sum_{d\mid n,d\neq 1}f(d)g(n/d)\]
+where the right-hand side only requires |g(k)| for |k &lt; n|. If |f| is multiplicative, then
+|f(1) = 1| and the inverse of |f| exists.</p>
+<p>If |f| is completely multiplicative, its Dirichlet inverse is |\mu f|. This follows easily from
+|f \star \mu f = (\bar 1 \star \mu)f = \delta f = \delta|. As an example, |({-})^z| is
+completely multiplicative so its inverse is |({-})^z\mu|. Since the inverse of a Dirichlet
+convolution is the convolution of the inverses, we get |\varphi^{-1}(n) = \sum_{d\mid n}d\mu(d)|.
+Not to be confused with |\varphi(n) = (\operatorname{id}\star\mu)(n) = \sum_{d\mid n} d\mu(n/d)|.</p>
+<p>Less trivially, the inverse of a multiplicative function is <em>also</em> a multiplicative function.
+We can prove it by complete induction on |\mathbb N_+| using the formula for |g| from above.</p>
+<p><strong>Theorem</strong>: If |f\star g = \delta|, then |g| is multiplicative when |f| is.</p>
+<p><strong>Proof</strong>: Let |n = ab| where |a| and |b| are coprime. If |a| (or, symmetrically, |b|) is equal to
+|1|, then since |g(1) = 1/f(1) = 1|, we have |g(1n) = g(1)g(n) = g(n)|. Now assume neither |a| nor
+|b| are |1| and, as the induction hypothesis, assume that |g| is multiplicative on all numbers less
+than |n|. We have:
+\[\begin{flalign}
+g(ab)
+&amp; = -\sum_{d\mid ab,d\neq 1}f(d)g(ab/d) \\
+&amp; = -\sum_{d_a \mid a}\sum_{d_b \mid b,d_a d_b \neq 1}f(d_ad_b)g(ab/(d_ad_b)) \\
+&amp; = -\sum_{d_a \mid a}\sum_{d_b \mid b,d_a d_b \neq 1}f(d_a)f(d_b)g(a/d_a)g(b/d_b)) \\
+&amp; = -\sum_{d_b \mid b,d_b \neq 1}f(d_b)g(a)g(b/d_b))
+- \sum_{d_a \mid a,d_a \neq 1}\sum_{d_b \mid b}f(d_a)f(d_b)g(a/d_a)g(b/d_b)) \\
+&amp; = -g(a)\sum_{d \mid b,d \neq 1}f(d)g(b/d))
+- \sum_{d_a \mid a,d_a \neq 1}f(d_a)g(a/d_a)\sum_{d_b \mid b}f(d_b)g(b/d_b)) \\
+&amp; = g(a)g(b) - \sum_{d_a \mid a,d_a \neq 1}f(d_a)g(a/d_a) (f \star g)(b) \\
+&amp; = g(a)g(b) - \delta(b)\sum_{d_a \mid a,d_a \neq 1}f(d_a)g(a/d_a) \\
+&amp; = g(a)g(b)
+\end{flalign}\] |\square|</p>
+<p>Assuming |f| has a Dirichlet inverse, we also have:
+\[\mathcal D[f^{-1}](s) = \mathcal D[f](s)^{-1}\]
+immediately from the convolution theorem.</p>
+<h2 id="more-examples">More Examples</h2>
+<p>Given a multiplicative function |f|:</p>
+<p>\[\begin{align}
+\mathcal D[f(\gcd({-},n_P))](s)
+&amp; = \zeta(s)\prod_{(p,k)\in P}(1 - p^{-s})\left(\sum_{n=0}^\infty f(p^{\min(k,n)})p^{-ns}\right) \\
+&amp; = \zeta(s)\prod_{(p,k)\in P}(1 - p^{-s})\left(\frac{f(p^k)p^{-(k+1)s}}{1 - p^{-s}} + \sum_{n=0}^k f(p^n)p^{-ns}\right)
+\end{align}\]</p>
+<p>As an example, |\eta(s) = (1 - 2^{1-s})\zeta(s) = \mathcal D[f](s)| where
+|f(n) = \begin{cases}-1,&amp;n=2\\1,&amp;n\neq 2\end{cases}|.</p>
+<p>Alternatively, |f(n) = \mu(\gcd(n, 2))| and we can apply the above formula to see:
+\[\begin{flalign}
+\mathcal D[\mu(\gcd({-},2))]
+&amp; = \zeta(s)(1-2^{-s})\left(\frac{\mu(2)2^{-2s}}{1 - 2^{-s}} + \sum_{n=0}^1 \mu(2^n)2^{-ns}\right) \\
+&amp; = \zeta(s)(1-2^{-s})\left(\frac{-2^{-2s}}{1 - 2^{-s}} + 1 - 2^{-s}\right) \\
+&amp; = \zeta(s)(-2^{-2s} + (1 - 2^{-s})^2) \\
+&amp; = \zeta(s)(1 - 2^{1-s})
+\end{flalign}\]</p>
+<h3 id="lambda-and-gamma">|\lambda| and |\gamma|</h3>
+<p>Recalling, |\lambda| is completely multiplicative and is characterized by |\lambda(p) = -1|.</p>
+<p>We can show that |\mathcal D[\lambda](s) = \zeta(2s)/\zeta(s)| which is equivalent to saying
+|\bar 1^{(2)} \star \mu = \lambda| or |\lambda\star\bar 1 = \bar 1^{(2)}|.</p>
+<p>\[\begin{flalign}
+\zeta(2s)/\zeta(s)
+&amp; = \prod_{p\in\mathbb P} \frac{1-p^{-s}}{1-(p^{-s})^2} \\
+&amp; = \prod_{p\in\mathbb P} \frac{1-p^{-s}}{(1-p^{-s})(1+p^{-s})} \\
+&amp; = \prod_{p\in\mathbb P} (1 + p^{-s})^{-1} \\
+&amp; = \prod_{p\in\mathbb P} (1 - \lambda(p)p^{-s})^{-1} \\
+&amp; = \mathcal D[\lambda](s)
+\end{flalign}\]</p>
+<p>We have |\lambda\mu = \vert\mu\vert = \mu\mu| is the inverse of |\lambda| so
+|\mathcal D[\vert\mu\vert](s) = \zeta(s)/\zeta(2s)|.</p>
+<p>Recalling, |\gamma| is multiplicative and is characterized by |\gamma(p^n) = -1|.</p>
+<p>\[\begin{flalign}
+\mathcal D[\gamma](s)
+&amp; = \prod_{p \in \mathbb P}\left(1 + \sum_{n=1}^\infty \gamma(p^n)p^{-ns}\right) \\
+&amp; = \prod_{p \in \mathbb P}\left(1 - \sum_{n=1}^\infty p^{-ns}\right) \\
+&amp; = \prod_{p \in \mathbb P}\left(1 - \left(\sum_{n=0}^\infty p^{-ns} - 1\right)\right) \\
+&amp; = \prod_{p \in \mathbb P}\frac{2(1 - p^{-s}) - 1}{1 - p^{-s}} \\
+&amp; = \prod_{p \in \mathbb P}\frac{1 - 2p^{-s}}{1 - p^{-s}}
+\end{flalign}\]</p>
+<p>This implies that |(\gamma\star\mu)(p^n) = \begin{cases}-2, &amp; n=1 \\ 0, &amp; n &gt; 1 \end{cases}|.</p>
+<h3 id="indicator-functions">Indicator Functions</h3>
+<p>Let |1_{\mathbb P}| be the indicator function for the primes.
+We have |\omega = 1_{\mathbb P}\star\bar 1| or |1_{\mathbb P} = \omega\star\mu|. Directly,
+|\mathcal D[1_{\mathbb P}](s) = \sum_{p\in\mathbb P}p^{-s}| so we have
+|\mathcal D[\omega](s)/\zeta(s) = \sum_{p\in\mathbb P} p^{-s}|.</p>
+<p><strong>Lemma</strong>: |\mathcal D[1_{\mathbb P}](s)=\sum_{n=1}^\infty \frac{\mu(n)}{n}\ln\zeta(ns)|<br/>
+<strong>Proof</strong>: Recalling the expansion |\ln(1-x) = -\sum_{n=1}^\infty x^n/n|, we proceed as follows:
+\[\begin{align}
+\sum_{n=1}^\infty \frac{\mu(n)}{n}\ln\zeta(ns)
+&amp; = \sum_{n=1}^\infty \frac{\mu(n)}{n}\ln\left(\prod_{p\in\mathbb P}(1 - p^{-ns})^{-1}\right) \\
+&amp; = -\sum_{n=1}^\infty \frac{\mu(n)}{n}\sum_{p\in\mathbb P}\ln(1 - p^{-ns}) \\
+&amp; = \sum_{p\in\mathbb P}\sum_{n=1}^\infty \frac{\mu(n)}{n}\sum_{k=1}^\infty p^{-kns}/k \\
+&amp; = \sum_{p\in\mathbb P}\sum_{N=1}^\infty \sum_{N=kn} \frac{\mu(n)}{N}p^{-Ns} \\
+&amp; = \sum_{p\in\mathbb P}\sum_{N=1}^\infty \frac{p^{-Ns}}{N}\sum_{N=kn}\mu(n) \\
+&amp; = \sum_{p\in\mathbb P}\sum_{N=1}^\infty \frac{p^{-Ns}}{N}(\mu\star\bar 1)(N) \\
+&amp; = \sum_{p\in\mathbb P}\sum_{N=1}^\infty \frac{p^{-Ns}}{N}\delta(N) \\
+&amp; = \sum_{p\in\mathbb P} p^{-s} \\
+&amp; = \mathcal D[1_{\mathbb P}](s)
+\end{align}\] |\square|</p>
+<p>Let |1_{\mathcal P}| be the indicator function for prime powers.
+|\Omega = 1_{\mathcal P}\star\bar 1| or |1_{\mathcal P} = \Omega\star\mu|.
+|\mathcal D[1_{\mathcal P}](s) = \sum_{p\in\mathbb P}(1 - p^{-s})^{-1}| so we have
+|\mathcal D[\Omega](s)/\zeta(s) = \sum_{p\in\mathbb P}(1 - p^{-s})^{-1}|.</p>
+<p><strong>Lemma</strong>: |\mathcal D[1_{\mathcal P}](s)=\sum_{n=1}^\infty \frac{\varphi(n)}{n}\ln\zeta(ns)|<br/>
+<strong>Proof</strong>: This is quite similar to the previous proof.
+\[\begin{align}
+\sum_{n=1}^\infty \frac{\varphi(n)}{n}\ln\zeta(ns)
+&amp; = \sum_{p\in\mathbb P}\sum_{N=1}^\infty \frac{p^{-Ns}}{N}\sum_{N=kn}\varphi(n) \\
+&amp; = \sum_{p\in\mathbb P}\sum_{N=1}^\infty \frac{p^{-Ns}}{N}(\varphi\star\bar 1)(N) \\
+&amp; = \sum_{p\in\mathbb P}\sum_{N=1}^\infty \frac{p^{-Ns}}{N} N \\
+&amp; = \sum_{p\in\mathbb P}\sum_{N=1}^\infty p^{-Ns} \\
+&amp; = \mathcal D[1_{\mathcal P}](s)
+\end{align}\] |\square|</p>
+<h2 id="summatory-functions">Summatory Functions</h2>
+<p>One thing we’ve occasionally been taking for granted is that the operator |\mathcal D| is
+injective. That is, |\mathcal D[f] = \mathcal D[g]| if and only if |f = g|. To show this, we’ll
+use the fact that we can (usually) <a href="https://en.wikipedia.org/wiki/Dirichlet_series_inversion">invert</a>
+the Mellin transform which can be viewed roughly as a version of |\mathcal D| that operates on
+continuous functions.</p>
+<p>Before talking about the Mellin transform, we’ll talk about summatory functions as this will ease
+our later discussion.</p>
+<p>We will turn a sum into a continuous function via a zero-order hold, i.e. we will take the floor
+of the input. Thus |\sum_{n\leq x} f(n)| is constant on any interval of the form |[k,k+1)|. It
+then (potentially) has jump discontinuities at integer values. The beginning of the sum is at |n=1|
+so for all |x&lt;1|, the sum up to |x| is |0|. We will need a slight tweak to better deal with these
+discontinuities. This will be indicated by a prime on the summation sign.</p>
+<p>For non-integer values of |x|, we have:
+\[\sum_{n \leq x}’ f(n) = \sum_{n \leq x} f(n)\]</p>
+<p>For |m| an integer, we have:
+\[
+\sum_{n \leq m}’ f(n)
+= \frac{1}{2}\left(\sum_{n&lt;m} f(n) + \sum_{n \leq m} f(n)\right)
+= \sum_{n\leq m} f(n) - f(m)/2
+\]</p>
+<p>This kind of thing should be familiar to those who’ve worked with things like Laplace transforms of
+<a href="https://en.wikipedia.org/wiki/Heaviside_step_function">discontinuous functions</a>.
+(Not for no reason…)</p>
+<p>One reason for introducing these summation functions is they are a little easier to
+work with. Arguably, we want something like |\frac{d}{dx}\sum_{n\leq x}f(n) = \sum_{n=1}^\infty f(n)\delta(n-x)|,
+but that means we end up with a bunch of distribution nonsense and even more improper integrals.
+The summation function may be discontinuous, but it at least has a finite value everywhere.
+Of course, another reason for introducing these functions is that they often are values we’re
+interested in.</p>
+<p>Several important functions are these continuous “sums” of arithmetic functions of this form:</p>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Mertens_function">Mertens function</a>:
+|M(x) = \sum_{n\leq x}’ \mu(n)|</li>
+<li><a href="https://en.wikipedia.org/wiki/Chebyshev_function">Chebyshev function</a>:
+|\vartheta(x) = \sum_{p\leq x, p\in\mathbb P}’ \ln p = \sum_{n\leq x} 1_{\mathbb P}(n)\ln n|</li>
+<li>Second Chebyshev function:
+|\psi(x) = \sum_{n\leq x}’ \Lambda(n) = \sum_{n=1}^\infty \vartheta(x^{1/n})|</li>
+<li>The <a href="https://en.wikipedia.org/wiki/Prime_counting_function">prime-counting function</a>:
+|\pi(x) = \sum_{n\leq x}’ 1_{\mathbb P}|</li>
+<li><a href="https://en.wikipedia.org/wiki/Prime_counting_function#Riemann&#39;s_prime-power_counting_function">Riemann’s prime-power counting function</a>:
+|\Pi_0(x) = \sum_{n\leq x} \frac{\Lambda(n)}{\ln n}
+= \sum_{n=1}^\infty \sum_{p^n\leq x,p\in\mathbb P}’ n^{-1}
+= \sum_{n=1}^\infty\pi(x^{1/n})n^{-1}|</li>
+<li>|D(x) = \sum_{n\leq x}d(n)|</li>
+</ul>
+<p>These are interesting in how they <a href="https://en.wikipedia.org/wiki/Prime-counting_function#Other_prime-counting_functions">related to the prime-counting function</a>.</p>
+<p>Let’s consider the arithmetic function |\Lambda/\ln| whose Dirichlet series is |\ln\zeta|.</p>
+<p>We have the summation function |\sum_{n\leq x}’ \Lambda(n)/\ln(n)|, but |\Lambda(n)| is |0|
+except when |n=p^k| for some |p\in\mathbb P| and |k\in\mathbb N_+|. Therefore, we have
+\[\begin{align}
+\sum_{n\leq x}’ \frac{\Lambda(n)}{\ln(n)}
+&amp; = \sum_{k=1}^\infty\sum_{p^k\leq x, p\in\mathbb P}’ \frac{\Lambda(p^k)}{\ln(p^k)} \\
+&amp; = \sum_{k=1}^\infty\sum_{p^k\leq x, p\in\mathbb P}’ \frac{\ln(p)}{k\ln(p)} \\
+&amp; = \sum_{k=1}^\infty\sum_{p^k\leq x, p\in\mathbb P}’ \frac{1}{k} \\
+&amp; = \sum_{k=1}^\infty \frac{1}{k} \sum_{p^k\leq x, p\in\mathbb P}’ 1 \\
+&amp; = \sum_{k=1}^\infty \frac{1}{k} \sum_{p\leq x^{1/k}, p\in\mathbb P}’ 1 \\
+&amp; = \sum_{k=1}^\infty \frac{\pi(x^{1/k})}{k} \\
+\end{align}\]</p>
+<p>|\ln\zeta(s) = s\mathcal M[\Pi_0](-s)=\mathcal D[\Lambda/\ln](s)|
+where |\mathcal M| is the Mellin transform, and the connection to Dirichlet series is described
+in the following section.</p>
+<h3 id="mellin-transform">Mellin Transform</h3>
+<p>The definition of the <a href="https://en.wikipedia.org/wiki/Mellin_transform">Mellin transform</a> and its
+inverse are:</p>
+<p>\[\mathcal M[f](s) = \int_0^\infty x^s\frac{f(x)}{x}dx\]
+\[\mathcal M^{-1}[\varphi](x) = \frac{1}{2\pi i}\int_{c-i\infty}^{c+i\infty} x^{-s}\varphi(s)ds\]</p>
+<p>The contour integral is intended to mean the vertical line with real part |c| traversed from
+negative to positive imaginary values. Modulo the opposite sign of |s| and the extra factor of |x|,
+this is quite similar to a continuous version of a Dirichlet series.</p>
+<p>The Mellin transform is closely related to the <a href="https://en.wikipedia.org/wiki/Two-sided_Laplace_transform">two-sided Laplace transform</a>.</p>
+<p>\[\mathcal D[f](s) = s\mathcal M\left[x\mapsto \sum_{n\leq x}’ f(n)\right](-s)\]</p>
+<p>Using <a href="https://en.wikipedia.org/wiki/Mellin_transform#Properties">Mellin transform properties</a>,
+particularly the one for transforming the derivative, we can write the following.</p>
+<p>\[\begin{align}
+\mathcal D[f](s) = s\mathcal M\left[x\mapsto \sum_{n\leq x}’ f(n)\right](-s)
+&amp; \iff \mathcal D[f](1-s) = -(s-1)\mathcal M\left[x\mapsto \sum_{n\leq x}’ f(n)\right](s-1) \\
+&amp; \iff \mathcal D[f](1-s) = \mathcal M\left[x\mapsto \frac{d}{dx}\sum_{n\leq x}’ f(n)\right](s) \\
+&amp; \iff \mathcal D[f](1-s) = \int_0^\infty x^{s-1}\frac{d}{dx}\sum_{n\leq x}’ f(n)dx \\
+&amp; \iff \mathcal D[f](1-s) = \int_0^\infty x^{s-1}\sum_{n=1}^\infty f(n)\delta(x-n)dx \\
+&amp; \iff \mathcal D[f](1-s) = \sum_{n=1}^\infty f(n)n^{s-1} \\
+&amp; \iff \mathcal D[f](s) = \sum_{n=1}^\infty f(n)n^{-s}
+\end{align}\]</p>
+<p>This leads to <a href="https://en.wikipedia.org/wiki/Perron%27s_formula">Perron’s formula</a></p>
+<p>\[\begin{align}
+\sum_{n\leq x}’ f(n)
+&amp; = \mathcal M^{-1}[s\mapsto -\mathcal D[f](-s)/s](x) \\
+&amp; = \frac{1}{2\pi i}\int_{-c-i\infty}^{-c+i\infty}\frac{\mathcal D[f](-s)}{-s} x^{-s} ds \\
+&amp; = -\frac{1}{2\pi i}\int_{c+i\infty}^{c-i\infty}\frac{\mathcal D[f](s)}{s} x^s ds \\
+&amp; = \frac{1}{2\pi i}\int_{c-i\infty}^{c+i\infty}\frac{\mathcal D[f](s)}{s} x^s ds
+\end{align}\]</p>
+<p>for which we need to take the <a href="https://en.wikipedia.org/wiki/Cauchy_principal_value">Cauchy principal value</a>
+to get something defined. (See also <a href="https://en.wikipedia.org/wiki/Abel%27s_summation_formula">Abel summation</a>.)</p>
+<p>There are side conditions on the convergence of |\mathcal D[f]| for these formulas to be
+justified. See the links.</p>
+<p>Many of the operations we’ve described on Dirichlet series follow from Mellin transform properties.
+For example, we have |\mathcal M[f]’(s) = \mathcal M[f\ln](s)| generally.</p>
+<h2 id="summary">Summary</h2>
+<h3 id="properties">Properties</h3>
+<h4 id="dirichlet-convolution-1">Dirichlet Convolution</h4>
+<p>Dirichlet convolution is |(f\star g)(n) = \sum_{d\mid n} f(d)g(n/d) = \sum_{mk=n} f(m)g(k)|.</p>
+<p>Dirichlet convolution forms a commutative ring with it as the multiplication, |\delta| as the
+multiplicative unit and the usual additive structure. This is to say that Dirichlet convolution
+is commutative, associative, unital, and bilinear.</p>
+<p>For |f| completely multiplicative, |f(g\star h) = fg \star fh|.</p>
+<h4 id="dirichlet-inverse-1">Dirichlet Inverse</h4>
+<p>For any |f| such that |f(1)\neq 0|, there is a |g| such that |f\star g = \delta|. In particular,
+the set of multiplicative functions forms a subgroup of this multiplicative group, i.e. the
+Dirichlet convolution of multiplicative functions is multiplicative.</p>
+<p>If |f(1) \neq 0|, then |f \star g = \delta| where |g| is defined by the following recurrence:</p>
+<p>\[\begin{flalign}
+g(1) &amp; = 1/f(1) \\
+g(n) &amp; = -f(1)^{-1}\sum_{d\mid n,d\neq 1}f(d)g(n/d)
+\end{flalign}\]</p>
+<p>For a completely multiplicative |f|, its Dirichlet inverse is |\mu f|.</p>
+<h4 id="convolution-theorem">Convolution Theorem</h4>
+<p>\[\mathcal D[f](s)\mathcal D[g](s) = \mathcal D[f\star g](s)\]</p>
+<h4 id="möbius-inversion-1">Möbius Inversion</h4>
+<p>\[\delta = \bar 1 \star \mu\]</p>
+<p>This means from a divisor sum |g(n)\sum_{d\mid n}f(d) = (f\star\bar 1)(n)| for each |n|, we can
+recover |f| via |g\star\mu = f\star\bar 1\star\mu = f|. Which is to say
+|f(n)=\sum_{d\mid n}g(d)\mu(n/d)|.</p>
+<p>This can be generalized via |({-})^k\mu\star({-})^k = \delta|. In sums, this means when
+|g(n)=\sum_{d\mid n}d^k f(n/d)|, then |f(n)=\sum_{d\mid n}\mu(d)d^k g(n/d)|.</p>
+<p>Let |h| be a completely multiplicative function.
+Given |g(m) = \sum_{n=1}^\infty f(mh(n))|, then |f(n) = \sum_{m=1}^\infty \mu(m)g(nh(m))|.</p>
+<p>Using the Möbius function for finite multisets and their inclusion ordering, we can recast
+Möbius inversion of naturals as Möbius inversion of finite multisets (of primes) a la:
+\[n_P
+= \sum_{Q\subseteq P}\mu(P\setminus Q)n_Q
+= \sum_{Q\subseteq P}\mu(n_P/n_Q)n_Q
+= \sum_{d\mid n_P}\mu(n_P/d)d
+\]</p>
+<h4 id="dirichlet-series-1">Dirichlet Series</h4>
+<p>\[\mathcal D[f](s) = \sum_{n=1}^\infty f(n)n^{-s}\]</p>
+<p>\[\mathcal D[n\mapsto f(n)n^k](s) = \mathcal D[f](s - k)\]</p>
+<p>\[\mathcal D[f^{-1}](s) = \mathcal D[f](s)^{-1}\]
+where the inverse on the left is the Dirichlet inverse.</p>
+<p>\[\mathcal D[f]’(s) = -\mathcal D[f\ln](s)\]</p>
+<p>For a completely multiplicative |f|,
+\[\mathcal D[f]’(s)/\mathcal D[f](s) = -\mathcal D[f\Lambda](s)\]
+and:
+\[\ln\mathcal D[f](s) = \mathcal D[f\Lambda/\ln](s)\]</p>
+<p>Dirichlet series as a Mellin transform:</p>
+<p>\[\mathcal D[f](s) = s\mathcal M\left[x\mapsto \sum_{n\leq x}’ f(n)\right](-s)\]</p>
+<p>The corresponding inverse Mellin transform statement is called <strong>Perron’s Formula</strong>:</p>
+<p>\[\sum_{n\leq x}’ f(n)
+= \frac{1}{2\pi i}\int_{c-i\infty}^{c+i\infty}\frac{\mathcal D[f](s)}{s} x^s ds\]</p>
+<h4 id="euler-product-formula-1">Euler Product Formula</h4>
+<p>Assuming |f| is multiplicative, we have:</p>
+<p>\[\mathcal D[f](s)
+= \prod_{p \in \mathbb P}\sum_{n=0}^\infty f(p^n)p^{-ns}
+= \prod_{p \in \mathbb P}\left(1 + \sum_{n=1}^\infty f(p^n)p^{-ns}\right)
+\]</p>
+<p>When |f| is completely multiplicative, this can be simplified to:</p>
+<p>\[\mathcal D[f](s) = \prod_{p \in \mathbb P}(1 - f(p)p^{-s})^{-1} \]</p>
+<h4 id="lambert-series-1">Lambert Series</h4>
+<p>Given an arithmetic function |a|, these are series of the form:
+\[
+\sum_{n=1}^\infty a(n) \frac{x^n}{1-x^n} = \sum_{n=1}^\infty (a \star \bar 1)(n) x^n
+\]</p>
+<p>\[\sum_{n=1}^\infty \mu(n) \frac{x^n}{1-x^n} = x\]</p>
+<p>\[\sum_{n=1}^\infty \varphi(n) \frac{x^n}{1-x^n} = \frac{x}{(1-x)^2}\]</p>
+<h3 id="arithmetic-function-definitions">Arithmetic function definitions</h3>
+<p>|f(p^n)=\cdots| implies a multiplicative/additive function, while |f(p)=\cdots| implies a
+completely multiplicative/additive function.</p>
+<p>|p^z| for |z\in\mathbb C| is completely multiplicative. This includes the identity function
+(|z=1|) and |\bar 1| (|z=0|). For any multiplicative |f|, |f\circ \gcd({-},k)| is multiplicative.</p>
+<p>|\ln| is completely additive.</p>
+<p>Important but neither additive nor multiplicative are the indicator functions for primes
+|1_{\mathbb P}| and prime powers |1_{\mathcal P}|.</p>
+<p>The following functions are (completely) multiplicative unless otherwise specified.</p>
+<p>\[\begin{align}
+\delta(p) &amp; = 0 \tag{Kronecker delta} \\
+\bar 1(p) &amp; = 1 = p^0 \\
+\mu(p^n) &amp; = \begin{cases}-1, &amp; n = 1 \\ 0, &amp; n &gt; 1\end{cases} \tag{Möbius function} \\
+\Omega(p) &amp; = 1 \tag{additive} \\
+\lambda(p) &amp; = -1 = (-1)^{\Omega(p)} \tag{Liouville function} \\
+\omega(p^n) &amp; = 1 \tag{additive} \\
+\gamma(p^n) &amp; = -1 = (-1)^{\omega(p^n)} \\
+a(p^n) &amp; = p(n) \tag{p(n) is the partition function} \\
+\varphi(p^n) &amp; = p^n - p^{n-1} = p^n(1 - 1/p) = J_1(p^n) \tag{Euler totient function} \\
+\sigma_k(p^n) &amp; = \sum_{m=0}^n p^{km} = \sum_{d\mid p^n} d^k = \frac{p^{k(n+1)}-1}{p^k - 1} \tag{last only works for k&gt;0} \\
+d(p^n) &amp; = n + 1 = \sigma_0 \\
+f^{[k]}(p^n) &amp; = \begin{cases}f(p^m),&amp; km=n\\0,&amp; k\nmid n\end{cases} \tag{f multiplicative} \\
+\Lambda(n) &amp; = \begin{cases}\ln p,&amp;\exists k.n=p^k \\ 0, &amp; \text{otherwise}\end{cases} \tag{not multiplicative} \\
+J_k(p^n) &amp; = p^{kn} - p^{k(n-1)} = p^{kn}(1 - p^{-k}) \tag{Jordan totient function} \\
+\psi_k(p^n) &amp; = p^{kn} + p^{k(n-1)} = p^{kn}(1 + p^{-k}) = J_{2k}(p^n)/J_k(p^n) \tag{Dedekind psi function} \\
+\end{align}\]</p>
+<h3 id="dirichlet-convolutions">Dirichlet convolutions</h3>
+<p>\[\begin{align}
+\delta &amp; = \bar 1 \star \mu \\
+\varphi &amp; = \operatorname{id}\star\mu \\
+\sigma_z &amp; = ({-})^z \star \bar 1 = \psi_z \star \bar 1^{(2)} \\
+\sigma_1 &amp; = \varphi \star d \\
+d &amp; = \sigma_0 = \bar 1 \star \bar 1 \\
+f \star f &amp; = fd \tag{f completely multiplicative} \\
+f\Lambda &amp; = f\ln \star f\mu = f\ln \star f^{-1} \tag{f completely multiplicative, Dirichlet inverse} \\
+\lambda &amp; = \bar 1^{(2)} \star \mu \\
+\vert\mu\vert &amp; = \lambda^{-1} = \mu\lambda \tag{Dirichlet inverse} \\
+2^\omega &amp; = \vert\mu\vert \star \bar 1 \\
+\psi_z &amp; = ({-})^z \star \vert\mu\vert \\
+\operatorname{fix} \pi^{(-)} &amp; = \bar 1 \star (k \mapsto k\pi_k) \tag{for a permutation} \\
+({-})^k &amp; = J_k \star \bar 1
+\end{align}\]</p>
+<p>More Dirichlet convolution identities are <a href="https://en.wikipedia.org/wiki/Dirichlet_ring#Properties_and_examples">here</a>,
+though many are trivial consequences of the earlier properties.</p>
+<h3 id="dirichlet-series-2">Dirichlet series</h3>
+<p>\[\begin{array}{l|ll}
+f(n) &amp; \mathcal D[f](s) &amp; \\ \hline
+\delta(n) &amp; 1 &amp; \\
+\bar 1(n) &amp; \zeta(s) &amp; \\
+n &amp; \zeta(s-1) &amp; \\
+n^z &amp; \zeta(s-z) &amp; \\
+\sigma_z(n) &amp; \zeta(s-z)\zeta(s) &amp; \\
+\mu(n) &amp; \zeta(s)^{-1} &amp; \\
+\vert\mu(n)\vert &amp; \zeta(s)/\zeta(2s) &amp; \\
+\varphi(n) &amp; \zeta(s-1)/\zeta(s) &amp; \\
+d(n) &amp; \zeta(s)^2 &amp; \\
+\mu(\gcd(n, 2)) &amp; \eta(s) = (1-2^{1-s})\zeta(s) &amp; \\
+\lambda(n) &amp; \zeta(2s)/\zeta(s) \\
+\gamma(n) &amp; \prod_{p \in \mathbb P}\frac{1-2p^{-s}}{1-p^{-s}} &amp; \\
+f^{[k]}(n) &amp; \mathcal D[f](ks) &amp; \\
+f(n)\ln n &amp; -\mathcal D[f]’ (s) &amp; f\text{ completely multiplicative}\\
+\Lambda(n) &amp; -\zeta’(s)/\zeta(s) &amp; \\
+\Lambda(n)/\ln(n) &amp; \ln\zeta(s) &amp; \\
+1_{\mathbb P}(n) &amp; \sum_{n=1}^\infty \frac{\mu(n)}{n}\ln\zeta(ns) &amp; \\
+1_{\mathcal P}(n) &amp; \sum_{n=1}^\infty \frac{\varphi(n)}{n}\ln\zeta(ns) &amp; \\
+\psi_k(n) &amp; \zeta(s)\zeta(s - k)/\zeta(2s) &amp; \\
+J_k(n) &amp; \zeta(s - k)/\zeta(s) &amp;
+\end{array}\]</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Viewing natural numbers as multisets, |D_n| is
+the set of all sub-multisets of |n|. The isomorphism described is then simply the fact that given
+any sub-multiset of the union of two disjoint multisets, we can sort the elements into their
+original multisets producing two sub-multisets of the disjoint multisets.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Incidence algebras are a decategorification
+of the notion of a <a href="https://en.wikipedia.org/wiki/Category_algebra">category algebra</a>.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>]]></description>
+    <pubDate>2025-08-22 16:25:34-07:00</pubDate>
+    <guid>https://derekelkins.github.io/posts/arithmetic-functions.html</guid>
+    <dc:creator>Derek Elkins</dc:creator>
+</item>
+<item>
     <title>What difference lists actually are</title>
     <link>https://derekelkins.github.io/posts/functional-lists-are-not-difference-lists.html</link>
     <description><![CDATA[<h2 id="introduction">Introduction</h2>
@@ -2461,532 +3286,6 @@ Scott topology is the natural topology on the space of continuous functions |X \
 </section>]]></description>
     <pubDate>2021-01-05 19:46:59-08:00</pubDate>
     <guid>https://derekelkins.github.io/posts/overlaps.html</guid>
-    <dc:creator>Derek Elkins</dc:creator>
-</item>
-<item>
-    <title>Complex-Step Differentiation</title>
-    <link>https://derekelkins.github.io/posts/complex-step-differentiation.html</link>
-    <description><![CDATA[<h2 id="introduction">Introduction</h2>
-<p>Complex-step differentiation is a simple and effective technique for numerically differentiating a(n analytic) function.
-Discussing it is a neat combination of complex analysis, numerical analysis, and ring theory. We’ll see that it is very
-closely connected to forward-mode automatic differentiation (FAD). For better or worse, while widely applicable, the scenarios
-where complex-step differentiation is the <em>best</em> solution are a bit rare. To apply complex-step differentiation, you need
-a version of your desired function that operates on complex numbers. If you have that, then you can apply complex-step
-differentiation immediately. Otherwise, you need to adapt the function to complex arguments. This can be done essentially
-automatically using the same techniques as automatic differentiation, but at that point you might as well use automatic
-differentiation. Adapting the code to complex numbers or AD takes about the same amount of effort, however, the AD version
-will be more efficient, more accurate, and easier to use.</p>
-<p>Nevertheless, this serves as a simple example to illustrate several theoretical and practical ideas.</p>
-<!--more-->
-<h2 id="numerical-differentiation">Numerical Differentiation</h2>
-<p>The problem we’re solving is given a function |f : \mathbb R \to \mathbb R| which is differentiable around a point |x_0|,
-we’d like to compute its derivative |f’| at |x_0|. In many cases, |f| is <a href="https://en.wikipedia.org/wiki/Analytic_function">real analytic</a>
-at the point |x_0| meaning |f| has a <a href="https://en.wikipedia.org/wiki/Taylor_series#Definition">Taylor series</a> which converges
-to |f| in some open interval containing |x_0|.</p>
-<p>The most obvious way of numerically differentiating |f| is to approximate the limit in the definition of
-the derivative, \[f’(x) = \lim_{h\to 0} [f(x + h) - f(x)] / h\] by simply choosing a small value for |h| rather
-than taking the limit. When |f| is real analytic at |x|, we can analyze the quality of this approximation by expanding |f(x + h)|
-in a Taylor series at |x|. This produces \[[f(x + h) - f(x)]/h = f’(x) + O(h)\] A slight tweak produces a better result with the
-same number of evaluations of |f|. Specifically, the Taylor series of |f(x + h) - f(x - h)| at |x| is equal to the
-odd part the Taylor series of |f(x + h)| at |x|. This leads to the <strong>Central Differences</strong> formula:</p>
-<p><span class="math display">$$f'(x) + O(h^2) = \frac{f(x + h) - f(x - h)}{2h}$$</span></p>
-<p>The following interactively illustrates this using the function
-<select style="width: 2em;" id="functionSelector">
-<option value="0" selected>1</option>
-<option value="1">2</option>
-<option value="2">3</option>
-<option value="3">4</option>
-<option value="4">5</option>
-</select> <span id="ex1">|f(x) = x^{9/2}|</span><span id="sin" style="display: none;">|f(x) = \sin(x)|</span><span id="exp" style="display: none;">|f(x) = e^x|</span><span id="ex2" style="display: none;">|f(x) = e^x/(\sin(x)^3 + \cos(x)^3)|</span> evaluated at |x_0 =| <span class="point"></span>.
-The correct answer to |17| digits is |f’(|<span class="point"></span>|) {}={}|<span id="correct"></span>. The slider ranges from |h=10^{-2}| to |h=10^{-20}|.</p>
-<p><input id="realInput" type="range" min="2" max="20"><br />
-|h|: <span id="realH"></span><br />
-|f’(|<span class="point"></span>|)|: <span id="real"></span><br />
-error: <span id="realError"></span></p>
-<p>If you play with the slider using the first example, you’ll see that the error decreases until around |10^{-5}| after which it starts
-increasing until |10^{-15}| where it is off by more than |1|. At |10^{-16}| the estimated derivative is |0| which is, of course,
-completely incorrect. Even at |10^{-5}| the error is on the order of |10^{-9}| which is much higher than the
-double precision floating point machine epsilon of approximately |10^{-16}|.</p>
-<p>There are two issues here. First, we have the issue that if |x_0 \neq 0|, then |x_0 + h = x_0| for sufficiently small |h|.
-This happens when |x_0/h| has a magnitude of around |10^{16}| or more.</p>
-<p>The second issue here is known as catastrophic cancellation. For simplicity, let’s say |f(x)=1|. (It’s actually about |6.2| for the
-first example.) Let’s further say for some small value of |h|, |f(x+h) = 1.00000000000020404346|. The value we care about is the
-|0.00000000000020404346|, but given limited precision, we might have |f(x + h) = 1.000000000000204|, meaning we only
-have three digits of precision for the value we care about. Indeed, as |h| becomes smaller we’ll lose more and more
-precision in our desired value until we lose all precision which happens when |f(x + h) = f(x)|. It is generally
-a bad idea numerically to calculate a small value by subtracting two larger values for this reason.</p>
-<p>We would not have the first issue if |x_0 = 0| as in the second and fourth examples (|f(x) = e^x|).
-We would not have the second issue if |f(x) = 0| as in the second and third examples (|f(x) = \sin(x)| with |x_0 = \pi|).
-We have neither issue in the second example of |f(x) = \sin(x)| with |x_0 = 0|.
-This will become important later.</p>
-<p>We have a dilemma. For the theory, we want as small a value of |h| as possible without being zero. In practice, we start
-losing precision as |h| gets smaller, and generally larger values of |h| are going to be less impacted by this.</p>
-<p>Let’s set this aside for now and look at other ways of numerically computing the derivative in the hopes that
-we can avoid this problem.</p>
-<h2 id="cauchys-residue-theorem">Cauchy’s Residue Theorem</h2>
-<p>If we talk about functions |f : \mathbb C \to \mathbb C|, the analogue of real analyticity
-is <a href="https://en.wikipedia.org/wiki/Holomorphic_function">holomorphicity</a> or <a href="https://en.wikipedia.org/wiki/Holomorphic_functions_are_analytic">complex analyticity</a>.
-A complex function is <strong>holomorphic</strong> if it satisfies the <a href="https://en.wikipedia.org/wiki/Cauchy%E2%80%93Riemann_equations">Cauchy-Riemann equations</a>.
-(See the <a href="#appendix">Appendix</a> for more details about where the Cauchy-Riemann equations come from.)
-A complex function is <strong>complex analytic</strong> if it has a Taylor series which converges to the function. It can be proven
-that these two descriptions are equivalent, though this isn’t a trivial fact. We can also talk about functions that
-are holomorphic or complex analytic on an open subset of |\mathbb C| and at a point by considering an open subset around
-that point. The typical choice of open subset is some suitably small open disk in the complex plane about the point.
-(Other common domains are ellipses, infinite strips, and areas bounded by <a href="https://en.wikipedia.org/wiki/Hankel_contour">Hankel contours</a>
-and variations such as sideways opening parabolas.)</p>
-<p>A major fact about holomorphic functions is the <a href="https://en.wikipedia.org/wiki/Cauchy%27s_integral_theorem">Cauchy integral theorem</a>.
-If |f| is a holomorphic function inside a (suitably nice) closed curve |\Gamma| in the complex plane, then |\oint_\Gamma f(z)\mathrm dz = 0|.
-Again, |\Gamma| will typically be chosen to be some circle. (Integrals like this in the complex plane are often called
-<strong>contour integrals</strong> and the curves we’re integrating along are called <strong>contours</strong>.)</p>
-<p>Things get really interesting when we generalize to <a href="https://en.wikipedia.org/wiki/Meromorphic_function">meromorphic functions</a>
-which are complex functions that are holomorphic except at an isolated set of points. These take the form of <a href="https://en.wikipedia.org/wiki/Pole_(complex_analysis)"><strong>poles</strong></a>
-which are points |z_0| such that |1/f(z_0) = 0|, i.e. poles are where a function goes to infinity as, e.g., |1/z| does at |0|.
-The generalization of Cauchy’s integral theorem is <a href="https://en.wikipedia.org/wiki/Residue_theorem">Cauchy’s Residue Theorem</a>. <em>This theorem
-is surprising and is one of the most useful theorems in all of mathematics both theoretically and practically</em>.</p>
-<p>We’ll only need a common special case of it. Let |f| be a holomorphic function, then |f(z)/(z - z_0)^n| is a meromorphic function
-with a single pole of order |n| at |z_0|. If |\Gamma| is a positively oriented, simple closed curve containing |z_0|,
-then <span class="math display">$$f^{(n-1)}(z_0) = \frac{(n-1)!}{2 \pi i}\oint_{\Gamma} \frac{f(z)\mathrm dz}{(z - z_0)^n}$$</span> In this case, |f^{(n-1)}(z_0)/(n-1)!|
-is the <strong>residue</strong> of |f(z)/(z - z_0)^n| at |z_0|. More generally, if there are multiple poles in the area bounded by |\Gamma|, then we will
-sum up their residues.</p>
-<p>This formula provides us a means of calculating the |(n-1)|-st Taylor coefficient of a complex analytic function at any point.
-For our particular purposes, we’ll only need the |n=2| case, \[f’(z_0) = \frac{1}{2 \pi i}\oint_{\Gamma} \frac{f(z)\mathrm dz}{(z - z_0)^2}\]</p>
-<p>For the remainder of this section I want to give some examples of how Cauchy’s Residue Theorem is used both theoretically
-and practically. This whole article will itself be another practical example of Cauchy’s Residue Theorem. This is not exhaustive
-by any means.</p>
-<p>To start illustrating some of the surprising properties of this theorem, we can take the |n=1| case which states that we can evaluate
-a holomorphic function at any point via |f(z_0) = \frac{1}{2 \pi i}\oint_{\Gamma} \frac{f(z)\mathrm dz}{z - z_0}| where |\Gamma|
-is any contour which bounds an area containing |z_0|. This leads to an interesting discreteness. Not only can we evaluate
-a (holomorphic) function (or any of its derivatives) at a point via the values of the function on a contour, the only significant
-constraint on that contour is that it bound an area containing the desired point. In other words, no matter how we deform the contour the
-integral is constant except when we deform the contour so as not to bound an area containing the point being evaluated, at which point
-the integral’s value is |0|<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. It may seem odd to use an integral to evaluate
-a function at a point, but it can be useful when there are numerical issues with evaluating the function near the desired point<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>. In fact, these results show that if we know the values of a holomorphic function on the boundary of a given open subset of
-the complex plane, then we know the value of the function <em>everywhere</em>. In this sense, holomorphic functions (and analytic
-functions in general) are extremely rigid.</p>
-<p>This leads to the notion of <a href="https://en.wikipedia.org/wiki/Analytic_continuation">analytic continuation</a>
-where we try to compute an analytic function beyond its overt domain of definition. This is the basis of most “sums of divergent series”.
-For example, there is the first-year calculus fact that the sum of the infinite series |\sum_{n=0}^\infty x^n| is |1/(1-x)| converging
-on the interval |x \in (-1,1)|. In fact, the proof of convergence only needs |\|x\| &lt; 1| so we can readily generalize to
-complex |z| with |\|z\| &lt; 1|, i.e. |z| contained in the open unit disk. However, |1/(1-z)| is a meromorphic function that is holomorphic
-everywhere except for |z=1|, therefore there is a <em>unique</em> analytic function defined everywhere except |z=1| that agrees with
-the infinite sum on the unit disk, namely |1/(1-z)| itself. Choosing |z=2| leads to the common example of “summing a divergent series”
-with “|\sum_{n=0}^\infty 2^n = -1|” which really means “the value at |2| of the unique complex analytic function which agrees
-with this infinite series when it converges”.</p>
-<p>Sticking with just evaluation, applying the Cauchy Residue theorem to quadrature, i.e. numerical integration, leads to an interesting
-connection to a rational approximation problem. Say we want to compute |\int_{-1}^1 f(x) \mathrm dx|, we can use the Cauchy
-integral to evaluate |f(x)| leading to <span class="math display">$$\int_{-1}^1 f(x) \mathrm dx
-= \int_{-1}^1 \frac{1}{2\pi i}\oint \frac{f(z)\mathrm dz}{z - x}\mathrm dx
-= \frac{1}{2\pi i}\oint f(z)\int_{-1}^1 \frac{\mathrm dx}{z - x}\mathrm dz
-= \frac{1}{2\pi i}\oint f(z)\log\left(\frac{z+1}{z-1}\right)\mathrm dz$$</span>
-A quadrature formula looks like |\int_{-1}^1 f(x) \mathrm dx \approx \sum_{k=1}^N w_k f(x_k)|. The sum
-can be written as a Cauchy integral of |\oint f(z)\sum_{k=1}^N \frac{1}{2\pi i}\frac{w_k\mathrm dz}{z - x_k}|. We thus have
-<span class="math display">$$\left|\frac{1}{2\pi i}\oint f(z)\left[\log\left(\frac{z+1}{z-1}\right) - \sum_{k=1}^N \frac{w_k}{z - x_k}\right]\mathrm dz\right|$$</span> as the error of
-the approximation. The sum is a rational function (in partial fraction form) and thus the error is minimized by points (|x_k|)
-and weights (|w_k|) that lead to better rational approximations of |\log((z+1)/(z-1))|<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>.</p>
-<p>The ability to calculate coefficients of the Taylor series of a holomorphic function is, by itself, already a valuable
-tool in both theory and practice. In particular, the coefficients of a <a href="https://en.wikipedia.org/wiki/Generating_function">generating function</a>
-or a <a href="https://en.wikipedia.org/wiki/Z-transform">Z-transform</a> can be computed with Cauchy integrals. This has applications
-in probability theory, statistics, finance, combinatorics, recurrences, differential equations, and signal processing.
-Indeed, when |z_0 = 0| and |\Gamma| is the unit circle, then the Cauchy integral is a component of the <a href="https://en.wikipedia.org/wiki/Fourier_series#Complex-valued_functions">Fourier series</a>
-of |f|. Approximating these integrals with the Trapezoid Rule (which we’ll discuss in a bit) produces the <a href="https://en.wikipedia.org/wiki/Discrete_Fourier_transform">Discrete Fourier Transform</a>.</p>
-<p>Let |p| be a polynomial and, for simplicity, assume all its zeroes are of multiplicity one. Then |1/p(z)| is a meromorphic function
-that’s holomorphic everywhere except for the roots of |p|. The Cauchy integral |\frac{1}{2\pi i}\oint_{\Gamma} \frac{p’(z)\mathrm dz}{p(z)}|
-counts the number of roots of |p| contained in the area bounded by |\Gamma|. If we know there is only one root of |p| within
-the area bounded by |\Gamma|, then we can compute that root with |\frac{1}{2\pi i}\oint_{\Gamma} \frac{z p’(z)\mathrm dz}{p(z)}|.
-A better approach is to use the formulas |\left(\oint \frac{z\mathrm dz}{p(z)}\right)/\left(\oint \frac{\mathrm dz}{p(z)}\right)|.
-Similar ideas can be used to adapt this to counting and finding multiple roots. See
-<a href="https://doi.org/10.1137/130931035">Numerical Algorithms based on Analytic Function Values at Roots of Unity</a> by Austin, Kravanja, and
-Trefethen (2014) which is a good survey in general.</p>
-<p>Another very common use of Cauchy’s Residue Theorem is to sum (convergent) infinite series. |\tan(\pi z)/\pi| has a zero at
-|z = k| for each integer |k| and a non-zero derivative at those points. In fact, the derivative is |1|. Alternatively,
-we could use |\sin(\pi z)/\pi| which has a zero at |z = k| for each integer |k| but has derivative |(-1)^k| at those points.
-Therefore, |\pi\cot(\pi z) = \pi/\tan(\pi z)| has a (first-order) pole at |z = k| for each integer |k|
-with residue |1|. In particular, if |f| is a holomorphic function (at least near the real axis), then the value of the
-Cauchy integral of |f(z)\pi\cot(\pi z)| along a Hankel contour will be |2\pi i \sum_{k=0}^\infty f(k)|. Along an infinite strip
-around the real axis we’d get |2 \pi i \sum_{k=-\infty}^\infty f(k)|. As an example, we can consider the
-<a href="https://en.wikipedia.org/wiki/Basel_problem">famous sum</a>, |\sum_{k=1}^\infty 1/k^2|. It can be shown that if |f| is a meromorphic
-function whose poles are not located at integers and |\vert zf(z)\vert| is bounded for sufficiently large |\vert z\vert|, then |\oint f(z)\pi \cot(\pi z)\mathrm dz = 0|. We thus have
-that \[\sum_{k=-\infty}^{\infty} f(k) = -\sum_j \mathrm{Res}(f(z)\pi\cot(\pi z); z_j)\] where |z_j| are the poles of |f|.
-In particular, |f(z) = \frac{1}{z^2 + a^2}| has (first-order) poles at |\pm ai|. This gives us simply
-<span class="math display">$$\sum_{k=-\infty}^{\infty} \frac{1}{k^2 + a^2} = -\pi\frac{\cot(\pi a i)-\cot(-\pi a i)}{2ai} = \frac{\pi}{a}\coth(\pi a)$$</span>
-where I’ve used |\coth(x) = i\cot(xi)| and the fact that |\coth| is an odd function. Exploiting the symmetry of the sum
-gives us <span class="math display">$$\sum_{k=1}^{\infty} \frac{1}{k^2 + a^2} = \frac{\pi}{2a}\coth(\pi a) - \frac{1}{2a^2}$$</span> By expanding |\coth|
-in a Laurent series, we see that the limit of the right-hand side as |a| approaches |0| is |\frac{\pi^2}{6}|. While contour
-integration is quite effective for coming up with analytic solutions to infinite sums, numerically integrating the contour
-integrals is also highly effective as illustrated in <a href="https://doi.org/10.1007/s10543-006-0077-9">Talbot quadratures and rational approximations</a>
-by Trefethen, Weideman, and Schmelzer (2006), for example.</p>
-<h2 id="computing-the-integrals">Computing the Integrals</h2>
-<p>We’ve seen in the previous section that |f’(z_0) = \frac{1}{2\pi i}\oint_{\Gamma} \frac{f(z)\mathrm dz}{(z-z_0)^2}|.
-This doesn’t much help us if we don’t have a way to compute the integrals. From this point forward, fix |\Gamma|
-as a circle of radius |h| centered on |z_0|.</p>
-<p>Before that, let’s consider numerical integration in general. Say we want to integrate the real function |f| from |0| to |b|,
-i.e. we want to calculate |\int_0^b f(x)\mathrm dx|. The most obvious way to go about it is to approximate the Riemann
-sums that define the (Riemann) integral. This would produce a formula like
-|\int_0^b f(x)\mathrm dx \approx \frac{b}{N}\sum_{k=0}^{N-1} f(bk/N)| corresponding to summing the areas of rectangles
-whose left points are the values of |f|. As before with central differences, relatively minor tweaks will give better approximations. In particular,
-we get the two roughly equivalent approximations of the <a href="https://en.wikipedia.org/wiki/Midpoint_rule#Midpoint_rule"><strong>Midpoint Rule</strong></a>
-\[\int_0^b f(x)\mathrm dx \approx \frac{b}{N}\sum_{k=0}^{N-1} f\left(\frac{b(k+(1/2))}{N}\right)\] where we take the midpoint rather than the
-left or right point, and the <a href="https://en.wikipedia.org/wiki/Trapezoidal_rule"><strong>Trapezoid Rule</strong></a>
-\[\int_0^b f(x)\mathrm dx \approx \frac{b}{2N}\sum_{k=0}^{N-1}[f(b(k+1)/N) + f(bk/N)]\] where we average the left and right Riemann
-sums. While both of these perform substantially better than the left/right Riemann sums, they are still rather basic
-quadrature rules; the error decreases as |O(1/N^2)|.</p>
-<p>Something special happens when |f| is a periodic function. First, the Trapezoid rule reduces to
-|\frac{b}{N}\sum_{k=0}^{N-1} f(bk/N)|. More importantly, the Midpoint rule and the Trapezoid rule both start converging
-geometrically rather than quadratically. Furthermore, for the particular case we’re interested in, namely integrating analytic
-functions along a circle in the complex plane, these quadrature rules are optimal. Let |\zeta| be the |2N|-th root of unity.
-The Trapezoid rule corresponds to sum the values of |f| at the even powers of |\zeta| scaled by the radius |h| and translated
-by |z_0|, and the Midpoint rule corresponds to the sum of the odd powers.</p>
-<p>We now have two parameters for approximating a Cauchy integral via the Trapezoid or Midpoint rules: the radius |h| and the
-number of points |N|.</p>
-<p>Complex-Step Differentiation corresponds to approximating the Cauchy integral for the derivative using the extreme case of
-the Midpoint rule with |N=2| and very small radii (i.e. values of |h|). Meanwhile, Central Differences corresponds to the extreme case
-of using the Trapezoid rule with |N=2| and very small radii. To spell this out a bit more, we perform the substitution
-|z - z_0 = he^{\theta i}| which leads to |\mathrm dz = hie^{\theta i}\mathrm d\theta| and
-<span class="math display">$$\frac{1}{2\pi i}\oint_{|z - z_0| = h} \frac{f(z)\mathrm dz}{(z - z_0)^2} = \frac{1}{2 \pi h}\int_0^{2\pi} f(z_0 + he^{\theta i})e^{-\theta i}\mathrm d\theta$$</span></p>
-<p>Applying the Trapezoid rule to the right hand side of this corresponds to picking |\theta = 0, \pi|, while applying the
-Midpoint rule corresponds to picking |\theta = \pm \pi/2|. |e^{\theta i} = \pm 1| for |\theta = 0, \pi|, and |e^{\theta i} = \pm i|
-for |\theta = \pm \pi/2|. For the Trapezoid rule, this leads to \[f’(z_0) \approx \frac{1}{2h}[f(z_0 + h) - f(z_0 - h)]\] which is
-Central Differences. For the Midpoint rule, this leads to \[f’(z_0) \approx \frac{1}{2hi}[f(z_0 + hi) - f(z_0 - hi)]\] This
-is Complex-Step Differentiation when |z_0| is real.</p>
-<h2 id="complex-step-differentiation">Complex-Step Differentiation</h2>
-<p>As just calculated, <strong>Complex-Step Differentiation</strong> computes the derivative at the <em>real</em> number |x_0| via the formula:
-<span class="math display">$$f'(x_0) \approx \frac{1}{2hi} [f(x_0 + hi) - f(x_0 - hi)]$$</span> Another perspective on this formula is that it is just the
-Central Differences formula along the imaginary axis instead of the real axis.</p>
-<p>When |f| is complex analytic and real-valued on real arguments, then we have
-|f(\overline z) = \overline{f(z)}| where |\overline z| is the complex conjugate of |z|, i.e. it maps |a + bi| to |a - bi|
-or |re^{\theta i}| to |re^{-\theta i}|. This leads to
-|f(x_0 + hi) - f(\overline{x_0 + hi}) = f(x_0 + hi) - \overline{f(x_0 + hi)} = 2i\operatorname{Im}(f(x_0 + hi))|. This lets us simplify
-Complex-Step Differentiation to |f’(x_0) \approx \operatorname{Im}(f(x_0 + hi))/h|.</p>
-<p>Here is the earlier interactive example but now using Complex-Step Differentiation. As |h| decreases in magnitude, the error
-steadily decreases until there is no error at all.</p>
-<p><input id="complexInput" type="range" min="2" max="20"><br />
-|h|: <span id="complexH"></span><br />
-|f’(|<span class="point"></span>|)|: <span id="complex"></span><br />
-error: <span id="complexError"></span></p>
-<p>This formula using |\operatorname{Im}| avoids catastrophic cancellation simply by not doing a subtraction. However, it turns out
-for real |x_0| (which is necessary to derive the simplified formula), there isn’t a problem either way. Using the first form of
-the Complex-Step Differentiation formula is also numerically stable. The key here is that the imaginary part of |x_0| and |f(x_0)| are
-both |0| and so we don’t get catastrophic cancellation for the same reason we wouldn’t get it with Central Differences if |f(x_0) = 0|.
-This suggests that if we wanted to evaluate |f’| at some non-zero point on the imaginary axis, Complex-Step Differentiation would
-perform poorly while Central Differences would perform well. Further, if we wanted to evaluate |f’| at some point not on either
-the real or imaginary axes, neither approach would perform well. In this case, choosing different values for |N| and the radius
-would be necessary<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>.</p>
-<p>A third perspective on Complex-Step Differentiation comes when we think about which value of |h| should we use. The smaller |f’(x_0)|
-is, the smaller we’d want |h| to be. Unlike Central Differences, there is little stopping us from having |h| be <em>very</em> small and
-values like |h=10^{-100}| are typical. In fact, around |h=10^{-155}| in double precision floating point arithmetic, |h| gets the
-theoretically useful property that |h^2 = 0| due to underflow. In this case, |x_0 + hi| behaves like |x_0 + \varepsilon| where
-|\varepsilon^2 = 0|. This is the defining property of the ring of <a href="https://en.wikipedia.org/wiki/Dual_number">dual numbers</a>.
-Dual numbers are exactly what are used in forward-mode automatic differentiation.</p>
-<h2 id="forward-mode-automatic-differentiation">Forward-Mode Automatic Differentiation</h2>
-<p>The ring of dual numbers has numbers of the form |a + b\varepsilon| where |a, b \in \mathbb R|. This behaves just like
-the complex numbers except that instead of |i^2 = -1| we have |\varepsilon^2 = 0|. The utility of dual numbers for
-our purposes can be seen by expanding |f(x_0 + \varepsilon)| in a Taylor series about |x_0|. We get
-|f(x_0 + \varepsilon) = f(x_0) + f’(x_0)\varepsilon|. All higher power terms of the Taylor series are zero because |\varepsilon^2 = 0|.
-We can thus get the derivative of |f| simply by computing |f(x + \varepsilon)| and then looking at the coefficient of |\varepsilon|
-in the result.</p>
-<p>In this example there is no interactivity as we are not estimating the derivative in the AD case but instead calculating it in parallel.
-There is no |h| parameter.</p>
-<p>|f’(|<span class="point"></span>|)|: <span id="fad"></span><br />
-error: <span id="fadError"></span></p>
-<p>As the end of the previous section indicated, Complex-Step Differentiation approximates this (often exactly) by using |hi| as |\varepsilon|.
-Nevertheless, this is not ideal. Often the complex versions of a function will be more costly than their dual number counterparts.
-For example, |(a + bi)(c + di) = (ac - bd) + (ad + bc)i| involves four real multiplications and two additions.
-|(a + b\varepsilon)(c + d\varepsilon) = ac + (ad + bc)\varepsilon| involves three real multiplications and one addition on
-the other hand.</p>
-<h2 id="references">References</h2>
-<p><a href="https://doi.org/10.1137/S003614459631241X">Using Complex Variables to Estimate Derivatives of Real Functions</a> by Squire and Trapp (1998)
-is the first(?) published paper <em>specifically</em> about the idea of complex-step differentiation. It’s a three page paper and the authors
-are not claiming any originality but just demonstrating the effectiveness of ideas from the ’60s that the authors found to be underappreciated.</p>
-<p><a href="https://doi.org/10.1145/838250.838251">The Complex-Step Derivative Approximation</a> by Martins, Sturdza, and Alonso (2003) does
-a much deeper dive into the theory behind complex-step differentiation and its connections to automatic differentiation.</p>
-<p>You may have noticed the name “Trefethen” in many of the papers cited. Nick Trefethen and his collaborators have been doing amazing
-work for the past couple of decades, most notably in the <a href="https://www.chebfun.org/about/">Chebfun project</a>. Looking at
-Trefethen’s book <a href="http://www.chebfun.org/ATAP/">Approximation Theory and Approximation Practice</a> (and <a href="https://people.maths.ox.ac.uk/trefethen/atapvideos.html">lectures</a>)
-recently reintroduced me to <a href="https://people.maths.ox.ac.uk/trefethen/papers.html">Trefethen’s work</a>. This particular article was
-prompted by a footnote in the paper <a href="https://doi.org/10.1137/130932132">The Exponentially Convergent Trapezoidal Rule</a> which I highly
-recommend. In fact, I highly recommend Chebfun as well as nearly all of Trefethen’s work. It is routinely compelling, interesting, and
-well presented.</p>
-<h2 id="appendix">Appendix</h2>
-<p>Using the language of <a href="http://geocalc.clas.asu.edu/">Geometric Calculus</a>, we can write a very general form of the Fundamental
-Theorem of Calculus. Namely, \[\int_{\mathcal M} \mathrm d^m\mathbf x \cdot \nabla f(\mathbf x) = \oint_{\partial \mathcal M}\mathrm d^{m-1}\mathbf x f(\mathbf x)\] where
-|\mathcal M| is an |m|-dimensional manifold. Here |f| is a multivector-valued vector function. If |m=2| and |\nabla f = 0|,
-then this would produce a formula very similar to the Cauchy integral formula.</p>
-<p>Writing |f(x + yi) = u(x, y) + v(x, y)i|, the Cauchy-Riemann equations are |\frac{\partial u}{\partial x} = \frac{\partial v}{\partial y}|
-and |\frac{\partial u}{\partial y} = -\frac{\partial v}{\partial x}|. However, |\nabla f = 0| leads to the slightly
-different equations |\frac{\partial u}{\partial x} = -\frac{\partial v}{\partial y}| and |\frac{\partial u}{\partial y} = \frac{\partial v}{\partial x}|.</p>
-<p>The resolution of this discrepancy is found by recognizing that we don’t want |f| to be a vector-valued vector function but rather
-a spinor-valued spinor function. It is most natural to identify complex numbers with the even subalgebra of the 2D geometric
-algebra. If |\mathbf e_1| and |\mathbf e_2| are the two orthonormal basis vectors of the 2D space, then the pseudoscalar
-|I \equiv \mathbf e_1\wedge \mathbf e_2 = \mathbf e_1 \mathbf e_2| satisfies |I^2 = -1|. For the 2D case, a spinor
-is a multivector of the form |a + bI|.</p>
-<p>We can generalize the vector derivative, |\nabla|, to a multivector derivative |\nabla_X| where |X| is a multivector variable
-by using the generic formula for the directional derivative in a linear space and then defining |\nabla_X| to be a linear
-combination of directional derivatives. Given any |\mathbb R|-linear space |V| and an element |v \in V|, we can
-define the directional derivative of |f : V \to V| in the direction |v| via
-|\frac{\partial f}{\partial v}(x) \equiv \frac{\mathrm d f(x + \tau v)}{\mathrm d\tau}|. In our case,
-we have the basis vectors |\{1, \mathbf e_1, \mathbf e_2, I\}| though we only care about the even subalgebra
-corresponding to the basis vectors |\{1, I\}|. Define |\partial_1 f(x) \equiv \frac{\mathrm d f(x + \tau)}{\mathrm d \tau}|
-and |\partial_I f(x) \equiv \frac{\mathrm d f(x + \tau I)}{\mathrm d \tau}| assuming |f| is a spinor-valued function<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>.
-We can then define |\nabla_{\mathbf z} \equiv \partial_1 + I\partial_I|. We now have |\nabla_{\mathbf z} f = 0| is
-the equivalent to the Cauchy-Riemann equations where |f| is now a spinor-valued spinor function, i.e. a function of |\mathbf z|.</p>
-See <a href="https://doi.org/10.1016/0022-247X(68)90002-4">Multivector Functions</a> by Hestenes for more about this.
-<script>
-var Num = (function () {
-    function Num(real) {
-        this.real = real;
-    }
-    Num.prototype.add = function (z) {
-        return new Num(this.real + z.real);
-    };
-    Num.prototype.addReal = function (x) {
-        return new Num(this.real + x);
-    };
-    Num.prototype.sub = function (z) {
-        return new Num(this.real - z.real);
-    };
-    Num.prototype.scale = function (a) {
-        return new Num(a * this.real);
-    };
-    Num.prototype.mul = function (z) {
-        return new Num(this.real * z.real);
-    };
-    Num.prototype.div = function (z) {
-        return new Num(this.real / z.real);
-    };
-    Num.prototype.exp = function () {
-        return new Num(Math.exp(this.real));
-    };
-    Num.prototype.sin = function () {
-        return new Num(Math.sin(this.real));
-    };
-    Num.prototype.cos = function () {
-        return new Num(Math.cos(this.real));
-    };
-    Num.prototype.powN = function (n) {
-        return new Num(Math.pow(this.real, n));
-    };
-    return Num;
-}());
-
-var Complex = (function () {
-    function Complex(real, imag) {
-        this.real = real;
-        this.imag = imag;
-    }
-    Complex.cis = function (theta) {
-        return new Complex(Math.cos(theta), Math.sin(theta));
-    };
-    Complex.prototype.normSquared = function () {
-        var r = this.real;
-        var i = this.imag;
-        return r * r + i * i;
-    };
-    Complex.prototype.norm = function () {
-        return Math.sqrt(this.normSquared());
-    };
-    Complex.prototype.arg = function () {
-        return Math.atan2(this.imag, this.real);
-    };
-    Complex.prototype.add = function (z) {
-        return new Complex(this.real + z.real, this.imag + z.imag);
-    };
-    Complex.prototype.addReal = function (x) {
-        return new Complex(this.real + x, this.imag);
-    };
-    Complex.prototype.sub = function (z) {
-        return new Complex(this.real - z.real, this.imag - z.imag);
-    };
-    Complex.prototype.scale = function (a) {
-        return new Complex(a * this.real, a * this.imag);
-    };
-    Complex.prototype.mul = function (z) {
-        var r = this.real;
-        var i = this.imag;
-        var zr = z.real;
-        var zi = z.imag;
-        return new Complex(r * zr - i * zi, r * zi + i * zr);
-    };
-    Complex.prototype.div = function (z) {
-        return this.mul(z.powN(-1));
-    };
-    Complex.prototype.exp = function () {
-        return Complex.cis(this.imag).scale(Math.exp(this.real));
-    };
-    Complex.prototype.cos = function () {
-        var r = this.real;
-        var i = this.imag;
-        return new Complex(Math.cos(r)*Math.cosh(i), -Math.sin(r)*Math.sinh(i));
-    };
-    Complex.prototype.sin = function () {
-        var r = this.real;
-        var i = this.imag;
-        return new Complex(Math.sin(r)*Math.cosh(i), Math.cos(r)*Math.sinh(i));
-    };
-    Complex.prototype.powN = function (n) {
-        var r2 = this.normSquared();
-        var theta = this.arg();
-        return Complex.cis(n * theta).scale(Math.pow(r2, 0.5 * n));
-    };
-    return Complex;
-}());
-
-var Dual = (function () {
-    function Dual(real, eps) {
-        this.real = real;
-        this.eps = eps;
-    }
-    Dual.prototype.add = function (z) {
-        return new Dual(this.real + z.real, this.eps + z.eps);
-    };
-    Dual.prototype.addReal = function (x) {
-        return new Dual(this.real + x, this.eps);
-    };
-    Dual.prototype.sub = function (z) {
-        return new Dual(this.real - z.real, this.eps - z.eps);
-    };
-    Dual.prototype.scale = function (a) {
-        return new Dual(a * this.real, a * this.eps);
-    };
-    Dual.prototype.mul = function (z) {
-        var r = this.real;
-        var e = this.eps;
-        var zr = z.real;
-        var ze = z.eps;
-        return new Dual(r * zr, r * ze + e * zr);
-    };
-    Dual.prototype.div = function (z) {
-        return this.mul(z.powN(-1));
-    };
-    Dual.prototype.exp = function () {
-        return new Dual(Math.exp(this.real), this.eps * Math.exp(this.real));
-    };
-    Dual.prototype.sin = function () {
-        return new Dual(Math.sin(this.real), this.eps * Math.cos(this.real));
-    };
-    Dual.prototype.cos = function () {
-        return new Dual(Math.cos(this.real), this.eps * -Math.sin(this.real));
-    };
-    Dual.prototype.powN = function (n) {
-        return new Dual(Math.pow(this.real, n), n * this.eps * Math.pow(this.real, n - 1));
-    };
-    return Dual;
-}());
-
-var functions = [
-    function (x) { return x.powN(9 / 2); },
-    function (x) { return x.sin(); },
-    function (x) { return x.sin(); },
-    function (x) { return x.exp(); },
-    function (x) { return x.exp().div(x.sin().powN(3).add(x.cos().powN(3))); }];
-var functionSpans = [
-    document.getElementById('ex1'),
-    document.getElementById('sin'),
-    document.getElementById('sin'),
-    document.getElementById('exp'),
-    document.getElementById('ex2')];
-var points = [1.5, 0, Math.PI, 0, 1.5];
-var correct = ["18.600812734259759", "1.0000000000000000", "-1.0000000000000000", "1.0000000000000000", "3.6220337007163260"]
-
-// Midpoint method
-function midpoint(f, x, h) {
-    return f(new Num(x + h)).sub(f(new Num(x - h))).scale(0.5 / h).real;
-}
-
-// Complex-step differentiation
-function complexStep(f, x, h) {
-    // return f(new Complex(x, h)).sub(f(new Complex(x, -h))).scale(0.5 / h).imag;
-    return f(new Complex(x, h)).imag / h;
-}
-
-// Forward Automatic Differentiation
-function FAD(f, x) {
-    return f(new Dual(x, 1)).eps;
-}
-
-var correctText = document.getElementById('correct');
-var functionSelector = document.getElementById('functionSelector');
-
-var realH = document.getElementById('realH');
-var real = document.getElementById('real');
-var realError = document.getElementById('realError');
-var realInput = document.getElementById('realInput');
-realInput.addEventListener('input', function() {
-    update(functionSelector.value);
-});
-
-var complexH = document.getElementById('complexH');
-var complex = document.getElementById('complex');
-var complexError = document.getElementById('complexError');
-var complexInput = document.getElementById('complexInput');
-complexInput.addEventListener('input', function() {
-    update(functionSelector.value);
-});
-
-var fad = document.getElementById('fad');
-var fadError = document.getElementById('fadError');
-
-function update(i) {
-    var f = functions[i];
-    var x = points[i];
-    document.querySelectorAll('span.point').forEach(function (pointText) {
-        pointText.textContent = points[i];
-    });
-    correctText.textContent = correct[i];
-    var correctValue = parseFloat(correct[i]);
-
-    var rv = parseFloat(realInput.value);
-    var rh = Math.pow(10, -rv);
-    var ry = midpoint(f, x, rh);
-    realH.textContent = rh;
-    real.textContent = ry;
-    realError.textContent = Math.abs(ry - correctValue);
-
-    var cv = parseFloat(complexInput.value);
-    var ch = Math.pow(10, -cv);
-    var cy = complexStep(f, x, ch);
-    complexH.textContent = ch;
-    complex.textContent = cy;
-    complexError.textContent = Math.abs(cy - correctValue);
-
-    fad.textContent = FAD(f, x);
-    fadError.textContent = Math.abs(FAD(f, x) - correctValue);
-
-    functionSpans.forEach(function (span) {
-        span.style = "display: none;";
-    });
-    functionSpans[i].style = "display: inline;";
-}
-
-update(functionSelector.value);
-
-functionSelector.addEventListener('input', function() {
-    update(functionSelector.value);
-});
-</script>
-<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
-<hr />
-<ol>
-<li id="fn1"><p>In terms of the general theory of partial differential equations, we are saying that |z^{-1}| is
-a <a href="https://en.wikipedia.org/wiki/Green&#39;s_function">Green’s function</a> for |\nabla|. We can then understand everything that is happening
-here in terms of general results. In particular, it is the two-dimensional case of the results described in
-<a href="https://doi.org/10.1016/0022-247X(68)90002-4">Multivector Functions</a> by Hestenes.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>See
-<a href="https://doi.org/10.1137/130931035">Numerical Algorithms based on Analytic Function Values at Roots of Unity</a> by Austin, Kravanja, and Trefethen (2014)
-for an example. Also, with some minor tweaks, we can have that “point” be a matrix and these integrals can be used to calculate functions
-of matrices, e.g. the square root, exponent, inverse, and log of a matrix. See
-<a href="https://doi.org/10.1137/070700607">Computing |A^\alpha|, |\log(A)|, and Related Matrix Functions by Contour Integrals</a> by Hale, Higham, and Trefethen (2009)
-for details.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3"><p>See
-<a href="https://doi.org/10.1137/060659831">Is Gauss Quadrature Better than Clenshaw-Curtis?</a> by Trefethen (2008) for more details.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn4"><p>While focused on issues that mostly come up with very high-order derivatives, e.g. |100|-th derivatives and higher,
-<a href="https://arxiv.org/abs/0910.1841">Accuracy and Stability of Computing High-Order Derivatives of Analytic Functions by Cauchy Integrals</a>
-by Bornemann (2009) nevertheless has a good discussions of the concerns here.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn5"><p>If
-we allowed arbitrary multivector-valued functions, then we’d need to add a projection producing the tangential derivative.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-</ol>
-</section>]]></description>
-    <pubDate>2020-08-08 22:28:55-07:00</pubDate>
-    <guid>https://derekelkins.github.io/posts/complex-step-differentiation.html</guid>
     <dc:creator>Derek Elkins</dc:creator>
 </item>
 
