@@ -508,7 +508,7 @@ this gives
 &amp; = -\sum_{n=1}^\infty \Lambda(n) n^{-s} \\
 &amp; = -\mathcal D[\Lambda](s)
 \end{flalign}\]
-where |\Lambda(n) = \begin{cases}\ln p,&amp; n = p^k\text{ for some }k \in \mathbb N_+ \\ 0, &amp; \text{otherwise}\end{cases}|.
+where |\Lambda(n) = \begin{cases}\ln p,&amp;p\in\mathbb P\land\exists k\in\mathbb N_+.n=p^k \\ 0, &amp; \text{otherwise}\end{cases}|.
 |\Lambda|, which is <em>not</em> a multiplicative nor an additive function, is known as the <a href="https://en.wikipedia.org/wiki/Von_Mangoldt_function">von Mangoldt function</a>.
 Just to write it explicitly, the above implies |\Lambda = \ln \star \mu|, i.e. |\Lambda| is the
 Möbius inversion of |\ln|. This can be generalized for arbitrary completely multiplicative
@@ -813,7 +813,7 @@ a(p^n) &amp; = p(n) \tag{p(n) is the partition function} \\
 \sigma_k(p^n) &amp; = \sum_{m=0}^n p^{km} = \sum_{d\mid p^n} d^k = \frac{p^{k(n+1)}-1}{p^k - 1} \tag{last only works for k&gt;0} \\
 d(p^n) &amp; = n + 1 = \sigma_0 \\
 f^{[k]}(p^n) &amp; = \begin{cases}f(p^m),&amp; km=n\\0,&amp; k\nmid n\end{cases} \tag{f multiplicative} \\
-\Lambda(n) &amp; = \begin{cases}\ln p,&amp;\exists k.n=p^k \\ 0, &amp; \text{otherwise}\end{cases} \tag{not multiplicative} \\
+\Lambda(n) &amp; = \begin{cases}\ln p,&amp;p\in\mathbb P\land\exists k\in\mathbb N_+.n=p^k \\ 0, &amp; \text{otherwise}\end{cases} \tag{not multiplicative} \\
 J_k(p^n) &amp; = p^{kn} - p^{k(n-1)} = p^{kn}(1 - p^{-k}) \tag{Jordan totient function} \\
 \psi_k(p^n) &amp; = p^{kn} + p^{k(n-1)} = p^{kn}(1 + p^{-k}) = J_{2k}(p^n)/J_k(p^n) \tag{Dedekind psi function} \\
 \end{align}\]</p>
@@ -877,7 +877,7 @@ of the notion of a <a href="https://en.wikipedia.org/wiki/Category_algebra">cate
         <h6 class="blog-post-meta">
             August 22, 2025 23:25 UTC
             
-            (Last updated on August 22, 2025 23:25 UTC)
+            (Last updated on August 22, 2025 23:46 UTC)
 
             
                 Tags: <a title="All pages tagged 'math'." href="./tags/math.html">math</a>, <a title="All pages tagged 'number theory'." href="./tags/number%20theory.html">number theory</a>
