@@ -155,6 +155,15 @@ We have thus shown a <strong>convolution theorem</strong> of the form
 \[\mathcal D[f]\mathcal D[g] = \mathcal D[f \star g]\]</p>
 <p>The Kronecker delta serves as a unit to this operation which is reflected by
 |\mathcal D[\delta](s) = 1|.</p>
+<p>In the same way we can view a sum of the form |\sum_{a+b=n}f(a)g(b)| that arises in “normal”
+convolution as a sum along the line |y = n - x|, we can view the sum |\sum_{ab=n}f(a)g(b)| as
+a sum along a hyperbola of the form |y = n/x|. For all of
+|\sum_{n=1}^\infty\sum_{k=1}^\infty f(n)g(k)|, |\sum_{n=1}^\infty\sum_{k=1}^n f(k)g(n-k)|,
+and |\sum_{n=1}^\infty\sum_{k\mid n}f(k)g(n/k)| we’re including |f(a)g(b)| for every
+|(a,b)\in\mathbb N_+\times\mathbb N_+| in the sum exactly once. The difference is whether
+we’re grouping the internal sum by rows, diagonals, or hyperbolas. This idea of summing hyperbolas
+can be expanded to a computational technique for sums of multiplicative functions called the
+<a href="https://en.wikipedia.org/wiki/Dirichlet_hyperbola_method">Dirichlet hyperbola method</a>.</p>
 <p>Since we will primarily be interested in multiplicative functions, we should check that
 |f \star g| is a multiplicative function when |f| and |g| are.</p>
 <p><strong>Lemma</strong>: Assume |a| and |b| are coprime, and |f| and |g| are multiplicative. Then
@@ -273,6 +282,8 @@ multiplicative function via
 Therefore, if we only have the sums |g(n) = \sum_{d \mid n} f(d)| for some unknown |f|, we can
 recover |f| via |f(n) = (g \star \mu)(n) = \sum_{d\mid n}g(d)\mu(n/d)|.
 This is <a href="https://en.wikipedia.org/wiki/Mobius_inversion">Möbius inversion</a>.</p>
+<p>Formally:</p>
+<p>\[g(n) = \sum_{d\mid n} f(d) \iff f(n) = \sum_{d \mid n} \mu(d)g(n/d)\]</p>
 <p>As a simple example, we clearly have |\zeta(s)/\zeta(s) = 1 = \mathcal D[\delta](s)| so
 |\bar 1 \star \mu = \delta| or |\sum_{d \mid n}\mu(d) = 0| for |n &gt; 1| and |1| when |n = 1|.</p>
 <p>We also get generalized Möbius inversion via
@@ -448,6 +459,30 @@ This makes the previous equation into equation 2.2 (34) in the book.</p>
 <p>These equations give us a way to compute some of these divisor sums by looking at the number
 fixed points and cycles of the action of species and vice versa. For example, 2.3 (49) is a
 series of Dirichlet convolutions connected to weighted species.</p>
+<p>Example 12 from this book presents a nice and perhaps surprising identity. The core of it can be
+written as: \[\sum_{k=1}^\infty\ln(1-ax^k) = \sum_{k=1}^\infty\rho_k(a)\ln(1-x^k)\]
+where |\rho_k(a) = k^{-1}\sum_{d\mid k}\varphi(k/d)a^d|. We can rewrite this definition as
+the characterization |k\rho_k(a) = (\varphi\star a^{({-})})(k)|. Recalling that
+|\varphi = \mu \star \operatorname{id}| and |\ln(1-x) = -\sum_{n=1}^\infty x^n/n|, we get
+the following derivation:</p>
+<p><strong>Theorem</strong>: \[\sum_{k=1}^\infty\ln(1-ax^k) = \sum_{k=1}^\infty\rho_k(a)\ln(1-x^k)\]
+where |\rho_k(a) = k^{-1}\sum_{d\mid k}\varphi(k/d)a^d|.</p>
+<p><strong>Proof</strong>:
+\[\begin{flalign}
+\sum_{k=1}^\infty\ln(1-ax^k)
+&amp; = -\sum_{k=1}^\infty\sum_{n=1}^\infty \frac{a^n x^{nk}}{n} \\
+&amp; = -\sum_{n=1}^\infty\sum_{k=1}^\infty \frac{a^n x^{nk}}{n} \\
+&amp; = -\sum_{N=1}^\infty\sum_{k\mid N} \frac{a^{N/k} x^N}{N/k} \tag{N=nk} \\
+&amp; = -\sum_{N=1}^\infty\frac{x^N}{N}\sum_{k\mid N} ka^{N/k} \\
+&amp; = -\sum_{N=1}^\infty\frac{x^N}{N}(\operatorname{id}\star a^{({-})})(N) \\
+&amp; = -\sum_{N=1}^\infty\frac{x^N}{N}(\delta\star\operatorname{id}\star a^{({-})})(N) \tag{the trick} \\
+&amp; = -\sum_{N=1}^\infty\frac{x^N}{N}(\bar 1\star\mu\star\operatorname{id}\star a^{({-})})(N) \\
+&amp; = -\sum_{N=1}^\infty\frac{x^N}{N}(\bar 1\star\varphi\star a^{({-})})(N) \\
+&amp; = -\sum_{N=1}^\infty\frac{x^N}{N}\sum_{k\mid N}(\varphi\star a^{({-})})(k) \\
+&amp; = -\sum_{N=1}^\infty\frac{x^N}{N}\sum_{k\mid N}k\rho_k(a) \\
+&amp; = -\sum_{n=1}^\infty\frac{x^{nk}}{n}\sum_{k=1}^\infty\rho_k(a) \tag{N=nk again} \\
+&amp; = \sum_{k=1}^\infty\rho_k(a) \ln(1-x^k)
+\end{flalign}\] |\square|</p>
 <h2 id="derivative-of-dirichlet-series">Derivative of Dirichlet series</h2>
 <p>We can easily compute the derivative of a Dirichlet series (assuming sufficiently strong convergence
 so we can push the differentiation into the sum):</p>
@@ -564,7 +599,7 @@ We have |\omega = 1_{\mathbb P}\star\bar 1| or |1_{\mathbb P} = \omega\star\mu|.
 |\mathcal D[1_{\mathbb P}](s) = \sum_{p\in\mathbb P}p^{-s}| so we have
 |\mathcal D[\omega](s)/\zeta(s) = \sum_{p\in\mathbb P} p^{-s}|.</p>
 <p><strong>Lemma</strong>: |\mathcal D[1_{\mathbb P}](s)=\sum_{n=1}^\infty \frac{\mu(n)}{n}\ln\zeta(ns)|<br/>
-<strong>Proof</strong>: Recalling the expansion |\ln(1-x) = -\sum_{n=1}^\infty x^n/n|, we proceed as follows:
+<strong>Proof</strong>: We proceed as follows:
 \[\begin{align}
 \sum_{n=1}^\infty \frac{\mu(n)}{n}\ln\zeta(ns)
 &amp; = \sum_{n=1}^\infty \frac{\mu(n)}{n}\ln\left(\prod_{p\in\mathbb P}(1 - p^{-ns})^{-1}\right) \\
@@ -724,6 +759,9 @@ Möbius inversion of naturals as Möbius inversion of finite multisets (of prime
 = \sum_{Q\subseteq P}\mu(n_P/n_Q)n_Q
 = \sum_{d\mid n_P}\mu(n_P/d)d
 \]</p>
+<p>As a nice result, we have:
+\[\sum_{n=1}^\infty\ln(1-ax^n) = \sum_{n=1}^\infty\rho_n(a)\ln(1-x^n)\]
+where |n\rho_n(a) = (\varphi \star a^{({-})})(n)|.</p>
 <h4 id="dirichlet-series-1">Dirichlet Series</h4>
 <p>\[\mathcal D[f](s) = \sum_{n=1}^\infty f(n)n^{-s}\]</p>
 <p>\[\mathcal D[n\mapsto f(n)n^k](s) = \mathcal D[f](s - k)\]</p>
@@ -763,7 +801,7 @@ completely multiplicative/additive function.</p>
 <p>Important but neither additive nor multiplicative are the indicator functions for primes
 |1_{\mathbb P}| and prime powers |1_{\mathcal P}|.</p>
 <p>The following functions are (completely) multiplicative unless otherwise specified.</p>
-<p>\[\begin{align}
+<p>\[\begin{flalign}
 \delta(p) &amp; = 0 \tag{Kronecker delta} \\
 \bar 1(p) &amp; = 1 = p^0 \\
 \mu(p^n) &amp; = \begin{cases}-1, &amp; n = 1 \\ 0, &amp; n &gt; 1\end{cases} \tag{Möbius function} \\
@@ -779,9 +817,9 @@ f^{[k]}(p^n) &amp; = \begin{cases}f(p^m),&amp; km=n\\0,&amp; k\nmid n\end{cases}
 \Lambda(n) &amp; = \begin{cases}\ln p,&amp;p\in\mathbb P\land\exists k\in\mathbb N_+.n=p^k \\ 0, &amp; \text{otherwise}\end{cases} \tag{not multiplicative} \\
 J_k(p^n) &amp; = p^{kn} - p^{k(n-1)} = p^{kn}(1 - p^{-k}) \tag{Jordan totient function} \\
 \psi_k(p^n) &amp; = p^{kn} + p^{k(n-1)} = p^{kn}(1 + p^{-k}) = J_{2k}(p^n)/J_k(p^n) \tag{Dedekind psi function} \\
-\end{align}\]</p>
+\end{flalign}\]</p>
 <h3 id="dirichlet-convolutions">Dirichlet convolutions</h3>
-<p>\[\begin{align}
+<p>\[\begin{flalign}
 \delta &amp; = \bar 1 \star \mu \\
 \varphi &amp; = \operatorname{id}\star\mu \\
 \sigma_z &amp; = ({-})^z \star \bar 1 = \psi_z \star \bar 1^{(2)} \\
@@ -795,7 +833,7 @@ f\Lambda &amp; = f\ln \star f\mu = f\ln \star f^{-1} \tag{f completely multiplic
 \psi_z &amp; = ({-})^z \star \vert\mu\vert \\
 \operatorname{fix} \pi^{(-)} &amp; = \bar 1 \star (k \mapsto k\pi_k) \tag{for a permutation} \\
 ({-})^k &amp; = J_k \star \bar 1
-\end{align}\]</p>
+\end{flalign}\]</p>
 <p>More Dirichlet convolution identities are <a href="https://en.wikipedia.org/wiki/Dirichlet_ring#Properties_and_examples">here</a>,
 though many are trivial consequences of the earlier properties.</p>
 <h3 id="dirichlet-series-2">Dirichlet series</h3>
