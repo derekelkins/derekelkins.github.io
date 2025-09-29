@@ -2,16 +2,19 @@
 <html lang="en-US">
     <head>
         <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
         <title>SmartCube Trainer</title>
-        
-        
-      <script type="module" crossorigin src="/smartcube/assets/index.ccf01297.js"></script>
-      <link rel="stylesheet" href="/smartcube/assets/index.9aaa6345.css">
+      <script type="module" crossorigin src="/assets/index-BmmAFTyI.js"></script>
+      <link rel="stylesheet" crossorigin href="/assets/index-D_EaUgV9.css">
     </head>
     <body>
         <div id="overlay" class="TRAIN_PAGE">
             <div id="appBar">
                 <div id="tabBar">
+                    <div id="closeBtn">
+                        <img class="white-menu-icon" src="./menu_white_24dp.svg" />
+                        <img class="black-menu-icon" src="./menu_black_24dp.svg" />
+                    </div>
                     <div id="settingsTab">Settings</div>
                     <div id="solveTab">Solve</div>
                     <div id="scrambleTab">Scramble</div>
@@ -21,13 +24,17 @@
                     <div id="helpTab">Help</div>
                 </div>
                 <div id="buttonBar">
-                    <button id="start" class="start">Start</button>
+                    <div id="menuBtn">
+                        <img class="white-menu-icon" src="./menu_white_24dp.svg" />
+                        <img class="black-menu-icon" src="./menu_black_24dp.svg" />
+                    </div>
                     <button id="center" title="Recenter the gyroscope reference frame.">Center</button>
                     <button id="reset" title="Reset the cube to a solved state.">Reset</button>
                     <button id="connect" class="disabled" title="Connect to Bluetooth cube.">Connect</button>
                     <input type="text" id="mac" placeholder="00:00:00:00:00:00" required
                         pattern="[a-fA-F0-9][a-fA-F0-9]:[a-fA-F0-9][a-fA-F0-9]:[a-fA-F0-9][a-fA-F0-9]:[a-fA-F0-9][a-fA-F0-9]:[a-fA-F0-9][a-fA-F0-9]:[a-fA-F0-9][a-fA-F0-9]"/>
                 </div>
+                <div><button id="start" class="start">Start</button></div>
                 <div id="rightBar">
                     <div id="powerIndicator"><div id="powerBar"></div></div>
                 </div>
@@ -37,6 +44,18 @@
                     <div class="formRow">
                         <div class="fieldName" title="Display the cube on the Solve, Scramble, and Train pages.">Show Cube:</div>
                         <div><input type="checkbox" id="showCube" checked /></div>
+                    </div>
+                    <div class="formRow">
+                        <div class="fieldName" title="Invert the X axis.">Invert X:</div>
+                        <div><input type="checkbox" id="invertX" checked /></div>
+                    </div>
+                    <div class="formRow">
+                        <div class="fieldName" title="Invert the Y axis.">Invert Y:</div>
+                        <div><input type="checkbox" id="invertY" checked /></div>
+                    </div>
+                    <div class="formRow">
+                        <div class="fieldName" title="Invert the Z axis.">Invert Z:</div>
+                        <div><input type="checkbox" id="invertZ" checked /></div>
                     </div>
                     <div class="formRow">
                         <div class="fieldName" title="Have displayed cube follow gyroscope readings including in reconstruction.">Enable Gyroscope:</div>
@@ -297,6 +316,5 @@
         </div>
         <div id="container"></div>
         <div id="splash">Initializing...</div>
-        
     </body>
 </html>
