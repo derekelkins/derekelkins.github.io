@@ -4,8 +4,8 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <title>SmartCube Trainer</title>
-      <script type="module" crossorigin src="assets/index-CbO7yYbw.js"></script>
-      <link rel="stylesheet" crossorigin href="assets/index-D_EaUgV9.css">
+      <script type="module" crossorigin src="/assets/index-_2aC6Y1I.js"></script>
+      <link rel="stylesheet" crossorigin href="/assets/index-D0w-2up_.css">
     </head>
     <body>
         <div id="overlay" class="TRAIN_PAGE">
@@ -35,7 +35,7 @@
                         pattern="[a-fA-F0-9][a-fA-F0-9]:[a-fA-F0-9][a-fA-F0-9]:[a-fA-F0-9][a-fA-F0-9]:[a-fA-F0-9][a-fA-F0-9]:[a-fA-F0-9][a-fA-F0-9]:[a-fA-F0-9][a-fA-F0-9]"/>
                 </div>
                 <div><button id="start" class="start">Start</button></div>
-                <div id="rightBar">
+                <div id="rightBar" class="hidden">
                     <div id="powerIndicator"><div id="powerBar"></div></div>
                 </div>
             </div>
@@ -236,7 +236,7 @@
                 <p>This tab maintains some basic settings for display and recording. The items there have tooltips
                 to explain them in more detail. I'll highlight a few of the settings here. First, this is where
                 the colors of the cube can be set. Second, the Enable Gyroscope option controls whether the
-                displayed cube will reorient as you move it around or when when replaying from a recording. If
+                displayed cube will reorient as you move it around or when replaying from a recording. If
                 the movement of the cube is distracting in a replay, you can disable this option. Finally, the
                 Record Gyroscope option controls whether the gyroscope data is stored in the recording. This is
                 off by default as it adds a lot of data to the history. However, solves that are made with this
@@ -288,16 +288,19 @@
                 to copy and paste it. It will look something like "AB:12:34:02:47:A8". Don't confuse this
                 address for the Address of the Adapter which is on the Adapter tab of this page.</p>
 
-                <p>You can get the MAC Address using OS specific tools as well.</p>
+                <p>You can get the MAC address using OS specific tools as well.</p>
+
+                <p>The MAC address is stored to your browser's local storage, so you should not need to renter
+                it every time you visit the page, but it will be forgotten if you clear your browser's history.</p>
 
                 <h3 id="why-do-you-need-mac-address">Why do you need the MAC address?</h3>
                 <p>There are two parts of this answer. First, why is the MAC address necessary at all?
-                Second, why you can't get it for me?</p>
+                Second, why can't you get it for me?</p>
 
                 <p>For the first, the MAC address is used as part of the key to decrypt the messages coming from the cube.
                 This encryption provides no security benefit as the key is essentially public knowledge &mdash; your cube is literally broadcasting the MAC address.
-                The purpose of this encryption seems to solely to make reverse engineering the protocol more difficult to
-                make making tools like this page more difficult.</p>
+                The purpose of this encryption seems to solely to make reverse engineering the protocol more difficult so
+                that tools like this page more difficult to make.</p>
 
                 <p>For the second, the Web Bluetooth specification intentionally does not provide a way for a website to get
                 the MAC address of a Bluetooth device. The purpose of this is to protect privacy. The MAC address isn't sensitive
