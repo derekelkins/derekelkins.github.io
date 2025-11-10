@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">Umbral Calculus</h2>
     <p class="blog-post-meta">November 10, 2025 00:36 UTC 
         
-        (Last updated on November 10, 2025 00:41 UTC)
+        (Last updated on November 10, 2025 03:56 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -626,8 +626,8 @@ then we’ll see that |U| must commute with |\varepsilon_y(t)| which implies its
 |g(t)|.
 |\square|
 </details>
-<p>As an example, we see that the Bernoulli polynomials |B_n(x)| are Sheffer for |t| with |c_n = n!|
-for which the associated polynomials are |\pseq{x^n}{n}|. The Sheffer Identity is
+<p>As an example, we see that the Bernoulli polynomials |B_n(x)| are Sheffer for |(1, t)| with
+|c_n = n!| for which the associated polynomials are |\pseq{x^n}{n}|. The Sheffer Identity is
 thus the one mentioned in the Introduction.</p>
 <p><span id="jtbs"><strong>Theorem</strong> (id:jtbs):</span> <em>Let |\pseq{s_n(x)}{n}| be Sheffer for |(g, f)| and
 |\pseq{p_n(x)}{n}| be associated to |f|. For all |h, l \in \mathscr F|,
@@ -839,12 +839,12 @@ formal power series that is the output of |\theta_f^*|.</em></p>
 <strong>Proof</strong>: <span class="expander">(click to expand)</span>
 </summary>
 \[\begin{align}
-\pair{t^k}{\theta_f^*(h(t))x^n) + \theta_f h(t) x^n)}
-&amp; = \pair{t^k}{\theta_f^*(h(t))x^n)} + \pair{t^k}{\theta_f h(t) x^n)} \\
-&amp; = \pair{\theta_f^*(h(t)) t^k}{x^n)} + \pair{h(t)\theta_f^*(t^k)}{x^n)} \\
-&amp; = \pair{\theta_f^*(h(t)) t^k + h(t)\theta_f^*(t^k)}{x^n)} \\
-&amp; = \pair{\theta_f^*(h(t) t^k)}{x^n)} \\
-&amp; = \pair{t^k}{h(t) \theta_f x^n)}
+\pair{t^k}{\theta_f^*(h(t))x^n + \theta_f h(t) x^n}
+&amp; = \pair{t^k}{\theta_f^*(h(t))x^n} + \pair{t^k}{\theta_f h(t) x^n} \\
+&amp; = \pair{\theta_f^*(h(t)) t^k}{x^n} + \pair{h(t)\theta_f^*(t^k)}{x^n} \\
+&amp; = \pair{\theta_f^*(h(t)) t^k + h(t)\theta_f^*(t^k)}{x^n} \\
+&amp; = \pair{\theta_f^*(h(t) t^k)}{x^n} \\
+&amp; = \pair{t^k}{h(t) \theta_f x^n}
 \end{align}\]
 |\square|
 </details>
@@ -1054,7 +1054,7 @@ then |T(g(t)) = g(T(t))| and |(Tg)(f(t)) = T(g(f(t)))|.</em></p>
 \[\begin{align}
 T(g(t))
 &amp; = T\left(\sum_{k=0}^\infty g_k t^k\right) \\
-&amp; = \sum_{k=0}^\infty g_k T(t)^k) \\
+&amp; = \sum_{k=0}^\infty g_k T(t)^k \\
 &amp; = g(T(t))
 \end{align}\]
 and |(Tg)(f(t)) = g(T(f(t))) = T(g(f(t)))|.
@@ -1062,8 +1062,8 @@ and |(Tg)(f(t)) = g(T(f(t))) = T(g(f(t)))|.
 </details>
 <p><span id="stji"><strong>Theorem</strong> (id:stji):</span> <em>A linear operator |\lambda| on |P| is the transfer
 operator for |f \in \mathscr F| if and only if its adjoint |\lambda^*| is a
-|\mathbb K|-algebra automorphism of |\mathscr F| for which |\lambda^</em> f(t) = t|.
-This makes |\lambda_f(g(t)) = g(\bar f(t))|.*</p>
+|\mathbb K|-algebra automorphism of |\mathscr F| for which |\lambda^* f(t) = t|.
+This makes |\lambda_f(g(t)) = g(\bar f(t))|.</em></p>
 <details>
 <summary>
 <strong>Proof</strong>: <span class="expander">(click to expand)</span>
@@ -1104,7 +1104,7 @@ on |\mathscr F| and linear operators on |P|. Further, there’s a bijection betw
 surjective derivations on |\mathscr F| and umbral shifts, and a bijection between continuous
 |\mathbb K|-algebra automorphisms on |\mathscr F| and transfer operators.</p>
 <p><span id="ocfq"><strong>Corollary</strong> (id:ocfq):</span> <em>Transfer operators form a group with
-|(\lambda_f^*){-1} = \lambda_{\bar f}^*|,
+|(\lambda_f^*)^{-1} = \lambda_{\bar f}^*| and
 |\lambda_f^* \circ \lambda_g^* = \lambda_{g\circ f}^*|.</em></p>
 <p><strong>Proof</strong>: This readily follows from |\lambda_f^* g(t) = g(\bar f(t))|. |\square|</p>
 <p><span id="ydci"><strong>Theorem</strong> (id:ydci):</span></p>
@@ -1207,7 +1207,7 @@ then the sequence |t_n(x) = \sum_{k=0}^n a_{n,k} x^k| is Sheffer for
 <summary>
 <strong>Proof</strong>: <span class="expander">(click to expand)</span>
 </summary>
-Clearly, |r_n(x) = \ucomp{t}{s}|, so we just apply &lt;a href=“#pnci&gt;theorem (id:pnci)</a>
+Clearly, |r_n(x) = \ucomp{t}{s}|, so we just apply <a href="#pnci">theorem (id:pnci)</a>
 and solve for the |u, v \in \mathscr F| such that |\pseq{t_n(x)}{n}| is Sheffer for |(u, v)|.
 |\square|
 </details>
@@ -1238,7 +1238,7 @@ with |\pseq{p_n(x)}{n}| being associated to |f|.
 &amp; = \pair{g(t)}{\lambda_f x^n} \\
 &amp; = \pair{g(t)}{p_n(x)} \\
 &amp; = \bigpair{g(t)}{\theta_t\left(\frac{t}{f(t)}\right)^n x^{n-1}} \tag{Transfer Formula, alternate form} \\
-&amp; = \bigpair{\theta_t^* g(t)\left(\frac{t}{f(t)}\right)^n}{x^{n-1}} \\
+&amp; = \bigpair{\theta_t^*(g(t))\left(\frac{t}{f(t)}\right)^n}{x^{n-1}} \\
 &amp; = \bigpair{g’(t)\left(\frac{t}{f(t)}\right)^n}{x^{n-1}}
 \end{align}\]
 |\square|
@@ -1292,7 +1292,7 @@ and generally,
 <p>Given a linear operator |\mu| on |P|, the <strong>adjoint</strong> |\mu^*| is a linear operator on
 |\mathscr F| characterized by:
 \[ \pair{\mu^* f(t)}{p(x)} = \pair{f(t)}{\mu p(x)} \]</p>
-<p>It’s <strong>adjoint expansion</strong> is:
+<p>Its <strong>adjoint expansion</strong> is:
 \[ \mu^* f(t) = \sum_{k=0}^\infty \frac{\pair{f(t)}{\mu x^k}}{c_k} t^k \]</p>
 <p>This applies generally, but, in particular for umbral shifts and transfer operators.</p>
 <p><a href="#ahdu"><strong>Theorem</strong> (id:ahdu):</a> <em>The adjoint to a linear operator on |P| is continuous.</em></p>
@@ -1333,8 +1333,8 @@ Then for a |p \in P|,
 \[ p(x) = \sum_{n=0}^\infty \frac{\pair{g(t)f(t)^n}{p(x)}}{c_n} s_n(x) \]</em></p>
 <p><a href="#stji"><strong>Theorem</strong> (id:stji):</a> <em>A linear operator |\lambda| on |P| is the transfer
 operator for |f \in \mathscr F| if and only if its adjoint |\lambda^*| is a
-|\mathbb K|-algebra automorphism of |\mathscr F| for which |\lambda^</em> f(t) = t|.
-This makes |\lambda_f(g(t)) = g(\bar f(t))|.*</p>
+|\mathbb K|-algebra automorphism of |\mathscr F| for which |\lambda^* f(t) = t|.
+This makes |\lambda_f(g(t)) = g(\bar f(t))|.</em></p>
 <p><a href="#pnci"><strong>Theorem</strong> (id:pnci):</a> <em>Let |\pseq{s_n(x)}{n}| be Sheffer for |(g, f)| and let |\pseq{r_n(x)}{n}| be
 Sheffer for |(h, l)|. Then |\ucomp{r}{s}| is Sheffer for the pair |(g(t)h(f(t)), l(f(t)))|.</em></p>
 <p><a href="#fony"><strong>Corollary</strong> (id:fony):</a>
