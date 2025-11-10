@@ -10,13 +10,13 @@
         <email>derek.a.elkins+blog@gmail.com</email>
         
     </author>
-    <updated>2025-10-09T05:15:58Z</updated>
+    <updated>2025-11-10T00:36:38Z</updated>
     <entry>
     <title>Umbral Calculus</title>
     <link href="https://www.hedonisticlearning.com/posts/umbral-calculus.html" />
     <id>https://www.hedonisticlearning.com/posts/umbral-calculus.html</id>
-    <published>2025-10-08 22:15:58-07:00</published>
-    <updated>2025-10-09T05:15:58Z</updated>
+    <published>2025-11-09 16:36:38-08:00</published>
+    <updated>2025-11-10T00:36:38Z</updated>
     <summary type="html"><![CDATA[<h2 id="introduction">Introduction</h2>
 <p>I’ll start by rationalizing an example of “old” umbral calculus from <a href="https://en.wikipedia.org/wiki/Umbral_calculus#19th-century_umbral_calculus">Wikipedia</a>.
 |\newcommand{pair}[2]{\langle{#1}\mid{#2}\rangle}|
@@ -100,7 +100,7 @@ by Steven Roman (1984).</p>
 for the |\mathbb K|-algebra of univariate formal power series (with indeterminate |t|) and
 |P = \mathbb K[x]| for the |\mathbb K|-algebra of univariate polynomials (with indeterminate |x|).
 Further, |\mathrm{Hom}(X, Y)| will be the |\mathbb K|-vector space of |\mathbb K|-linear maps
-from a |\mathbb K|-vector |X| to a |\mathbb K|-vector space |Y|. In particular,
+from a |\mathbb K|-vector space |X| to a |\mathbb K|-vector space |Y|. In particular,
 |X^* = \mathrm{Hom}(X,\mathbb K)| is the dual space of |X|.</p>
 <p>The four main |\mathbb K|-vector spaces we’ll be focused on are |\mathscr F|, |P|, |P^*|, and
 |\mathrm{Hom}(P, P)|. The first two are additionally |\mathbb K|-algebras,
@@ -1320,6 +1320,17 @@ Sheffer for |(h, l)|. Then |\ucomp{r}{s}| is Sheffer for the pair |(g(t)h(f(t)),
 <em>Let |\pseq{s_n(x)}{n}| be Appell for |g|, then
 \[ s_n(\alpha x) = \alpha^n \frac{g(t)}{g(t/\alpha)} s_n(x) \]
 for |\alpha\neq 0|.</em></p>
+<p><a href="#LagrangeInversionFormula"><strong>Corollary</strong> (Lagrange Inversion Formula):</a>
+<em>Let |f, g \in \mathscr F| with |\deg f = 1| and |c_n = n!|, then for |n &gt; 0|
+\[ \pair{g(\bar f(t))}{x^n} = \bigpair{g’(t)\left(\frac{t}{f(t)}\right)^n}{x^{n-1}} \]
+Of course, |\pair{g(\bar f(t))}{x^0} = \pair{g(t)}{x^0}| since |\deg \bar f = 1|.</em></p>
+<p><a href="LagrangeInversionFormulaAlt"><strong>Corollary</strong> (Lagrange Inversion Formula, alternate form):</a>
+<em>Let |f, g \in \mathscr F| with |\deg f = 1| and |c_n = n!|, then for |n &gt; 0|
+\[ \pair{g(\bar f(t))}{x^n} = \bigpair{g(t)f’(t)\left(\frac{t}{f(t)}\right)^{n+1}}{x^n} \]</em></p>
+<p><a href="LagrangeInversionFormulaHermite"><strong>Corollary</strong> (Lagrange Inversion Formula, Hermite form):</a>
+<em>Let |f, h \in \mathscr F| with |\deg f = 1| and |c_n = n!|, then for |n &gt; 0|
+\[ \bigpair{\frac{th(\bar f(t))}{\bar f(t)f’(\bar f(t))}}{x^n}
+= \bigpair{h(t)\left(\frac{t}{f(t)}\right)^n}{x^n} \]</em></p>
 <section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr />
 <ol>
