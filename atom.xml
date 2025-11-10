@@ -1,18 +1,1341 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>Hedonistic Learning</title>
-    <link href="https://derekelkins.github.io/atom.xml" rel="self" />
-    <link href="https://derekelkins.github.io" />
-    <id>https://derekelkins.github.io/atom.xml</id>
+    <link href="https://www.hedonisticlearning.com/atom.xml" rel="self" />
+    <link href="https://www.hedonisticlearning.com" />
+    <id>https://www.hedonisticlearning.com/atom.xml</id>
     <author>
         <name>Derek Elkins</name>
+        
         <email>derek.a.elkins+blog@gmail.com</email>
+        
     </author>
-    <updated>2025-08-22T23:25:34Z</updated>
+    <updated>2025-10-09T05:15:58Z</updated>
     <entry>
+    <title>Umbral Calculus</title>
+    <link href="https://www.hedonisticlearning.com/posts/umbral-calculus.html" />
+    <id>https://www.hedonisticlearning.com/posts/umbral-calculus.html</id>
+    <published>2025-10-08 22:15:58-07:00</published>
+    <updated>2025-10-09T05:15:58Z</updated>
+    <summary type="html"><![CDATA[<h2 id="introduction">Introduction</h2>
+<p>I’ll start by rationalizing an example of “old” umbral calculus from <a href="https://en.wikipedia.org/wiki/Umbral_calculus#19th-century_umbral_calculus">Wikipedia</a>.
+|\newcommand{pair}[2]{\langle{#1}\mid{#2}\rangle}|
+|\newcommand{bigpair}[2]{\left\langle{#1}\ \middle|\ {#2}\right\rangle}|
+|\newcommand{pseq}[2]{\{#1\}_{#2 \in \mathbb N}}|
+|\newcommand{ucomp}[2]{#1_n(\underline #2(x))}|
+<style>details &gt; summary { cursor: pointer; } details:open &gt; summary &gt; .expander { display: none; }</style>
+<style>details { color: var(–list-group-item-color); margin-bottom: 1em; }</style></p>
+<p>We know |(x+y)^n = \sum_{k=0}^n {n \choose k} x^{n-k} y^k|. We then “infer”
+that |B_n(x+y) = \sum_{k=0}^n {n \choose k} B_{n-k}(x) y^k| where
+|B_n(x)| are the <a href="https://en.wikipedia.org/wiki/Bernoulli_polynomials">Bernoulli polynomials</a>.
+Actually, the “old” style would be even more dubious. You’d have a “rule” like representing
+|B_n(x+y)| as |(b+y)^n|, then expand like usual and replace |b^k = (b + 0)^k| with |B_k(x)|.
+The variables like |b| were the “shadow” or “umbral” variables.</p>
+<p>Rationalizing it using techniques I’ll describe below.
+Let |\varepsilon_y| be the linear operator on polynomials satisfying
+|\varepsilon_y p(x) = p(x + y)|. Since |D_x[\varepsilon_y p(x)] = \varepsilon_y D_x p(x)|
+for all |y| where |D_x| is differentiation by |x|, |\varepsilon_y| is induced from a formal power
+series. In particular, |\varepsilon_y = e^{yD_x}|.</p>
+<p>Let |T| be the linear operator (the transfer or umbral operator) characterized by mapping |x^n| to
+|B_n(x)| representing a change of basis on the vector space of polynomials. We can apply |T| to the
+equation
+\[ \varepsilon_y(x^n) = (x+y)^n = \sum_{k=0}^n {n \choose k} x^{n-k} y^k \]
+to get via linearity
+\[ T(\varepsilon_y(x^n)) = T((x+y)^n)
+= \sum_{k=0}^n {n \choose k} T(x^{n-k}) y^k
+= \sum_{k=0}^n {n \choose k} B_{n-k}(x) y^k
+\]</p>
+<p>The key property we then need is |T(\varepsilon_y(x^n)) = \varepsilon_y T(x^n) = B_n(x + y)|
+which can be reduced to |D_xT(x^n) = T(D_x x^n)|. This is just the statement that
+|D_x B_n(x) = nB_{n-1}(x) = nT(x^{n-1}) = T(nx^{n-1}) = T(D_x x^n)| using a well-known
+property of Bernoulli (and other) polynomials. In fact, this relation implies that |T| is itself
+induced by a formal power series and thus commutes with <em>any</em> other linear operator so induced.</p>
+<p>Ultimately, the only properties we needed for this was that we had a (linear) change of basis from
+the monomial basis to the polynomial sequence, which we’ll have for any polynomial
+sequence whose |n|th element has degree |n|, and that the change of basis commuted with the |D_x|
+operator. The latter is more stringent, but there are various ways we can expand the scope of the
+argument.</p>
+<p>First, |D_x x^n = \frac{c_n}{c_{n-1}} x^n| with |c_n = n!| completely characterizes
+(with |D_x x^0 = 0|) the differentiation operation on polynomials. Choosing a different sequence
+|c| leads to different notions of “differentiation”. This will change |\varepsilon_y| and lead to
+different formulas, but they will be structurally similar.</p>
+<p>In a different direction, we can ask for formal power series and polynomial sequences that
+relate to each other the way |D_x| and |x^n| do. We say that a polynomial sequence |s_n(x)| is
+<strong>Sheffer</strong> for a pair |(g(t), f(t))| with |\deg g = 0| and |\deg f = 1| when
+|\pair{g(t)f(t)^k}{s_n(x)} = c_n\delta_k^n|. This has |g(t)f(t)^k| taking the
+place of |t^k| and |s_n(x)| taking the place of |x^n|. This would let us transfer identities
+involving the |s_n(x)| to any linear operator that commutes with |g(t)f(t)|. While changing |c|
+changes our notion of “differentiation”, using a Sheffer sequence allows us to consider other
+“differential operators” using the same notion of “differentiation”.</p>
+<p>This is based primarily off of works by Steven Roman and Gian-Carlo Rota.
+It closely follows <a href="https://doi.org/10.1016/0022-247X(82)90154-8">The Theory of the Umbral Calculus. I</a>
+by Steven Roman (1982). See also <a href="http://sroman.com/MBOOKS/MathUmbral.htm">The Umbral Calculus</a>
+by Steven Roman (1984).</p>
+<p>I’ll include proofs below to illustrate that each bit of reasoning is fairly straightforward.</p>
+<!-- vim-markdown-toc GFM -->
+<ul>
+<li><a href="#conventions">Conventions</a></li>
+<li><a href="#formal-power-series">Formal Power Series</a></li>
+<li><a href="#linear-functionals">Linear Functionals</a>
+<ul>
+<li><a href="#properties">Properties</a></li>
+<li><a href="#evaluation-functional">Evaluation Functional</a></li>
+<li><a href="#formal-derivative">Formal Derivative</a></li>
+</ul></li>
+<li><a href="#linear-operators">Linear Operators</a>
+<ul>
+<li><a href="#evaluation-operator">Evaluation Operator</a></li>
+<li><a href="#characterizing-linear-operators-induced-from-formal-power-series">Characterizing Linear Operators Induced from Formal Power Series</a></li>
+</ul></li>
+<li><a href="#polynomial-sequences">Polynomial Sequences</a></li>
+<li><a href="#recurrence-formulas">Recurrence Formulas</a></li>
+<li><a href="#transfer-formulas">Transfer Formulas</a></li>
+<li><a href="#umbral-composition-and-transfer-operators">Umbral Composition and Transfer Operators</a></li>
+<li><a href="#example-chebyshev-polynomials">Example: Chebyshev Polynomials</a></li>
+<li><a href="#summary">Summary</a></li>
+</ul>
+<!-- vim-markdown-toc -->
+<h2 id="conventions">Conventions</h2>
+<p>Fix a field |\mathbb K| of characteristic |0|. I’ll write |\mathscr F = \mathbb K[\![t]\!]|
+for the |\mathbb K|-algebra of univariate formal power series (with indeterminate |t|) and
+|P = \mathbb K[x]| for the |\mathbb K|-algebra of univariate polynomials (with indeterminate |x|).
+Further, |\mathrm{Hom}(X, Y)| will be the |\mathbb K|-vector space of |\mathbb K|-linear maps
+from a |\mathbb K|-vector |X| to a |\mathbb K|-vector space |Y|. In particular,
+|X^* = \mathrm{Hom}(X,\mathbb K)| is the dual space of |X|.</p>
+<p>The four main |\mathbb K|-vector spaces we’ll be focused on are |\mathscr F|, |P|, |P^*|, and
+|\mathrm{Hom}(P, P)|. The first two are additionally |\mathbb K|-algebras,
+and we’ll find that the third is as well and is, in fact, isomorphic to |\mathscr F| which is
+arguably a key enabling fact of umbral calculus. In particular, the |\mathbb K|-algebra structure
+induced on |P^*| via |\mathscr F| is called the <strong>umbral algebra</strong>.</p>
+<p>Given the above, unsurprisingly, we’ll be talking a lot about formal power series and polynomials.
+To save a bit of space and typing for me, unless otherwise specified, if I say |f| is a formal
+power series or |f \in \mathscr F|, then that will also defined the sequence
+|\pseq{f_n}{n}| such that |f(t) = \sum_{k=0}^\infty f_k t^k|. Generally, when
+I state something is a sequence it will be a function |\mathbb N \to X| for some |X| and the
+parameter will be written as a subscript. So the formal power series |f| also defines a sequence,
+also called |f|, from |\mathbb N \to \mathbb K|. (In this case, we could literally identify
+formal power series with these sequences.) Similarly, stating |p| is a polynomial or |p \in P|
+defines a sequence also called |p| such that |p(x) = \sum_{n=0}^{\deg p}p_n x^n| where
+|\deg p| is the <strong>degree of the polynomial</strong>, i.e. the largest value of |n| such that
+|p_n \neq 0|. These are also sequences |\mathbb N \to \mathbb K|, and we could identify
+polynomials with such sequences that are eventually always |0|. We also have the <strong>degree of a
+formal power series</strong> written |\deg f| which is the <em>smallest</em> |k| such that |f_k \neq 0|. Note
+that this is <em>dual</em> to the notion for polynomials. It’s clear that |\deg(fg) = \deg f + \deg g|.</p>
+<p>Of course, sometimes I will explicitly state something like |f(t) = \sum_{k=0}^\infty a_k t^k|
+in which case the sequence |f| is not defined. Usually, this will arise with a formal power series
+expression, e.g. |(f \circ g)(t)| so there shouldn’t be any ambiguity. As is typical, I’ll often
+say “the formal power series |f(t)|” as opposed to “the formal power series |f|”. Finally, as has
+been illustrated, I’ll endeavor to use |k| as the indexing variable for formal power series and
+|n| for polynomials, but that won’t always be possible.</p>
+<p>The <strong>Kronecker delta</strong> is written |\delta_k^n| and
+defined by |\delta_n^n = 1| and |\delta_k^n = 0| for |k \neq n|. This should typically be
+thought of as a way of forcing |n| and |k| to be equal, i.e. |f(n)\delta_k^n = f(k)\delta_k^n|
+and |\delta_{f(k)}^n = \delta_k^{f^{-1}(n)}| for an invertible function |f|.</p>
+<h2 id="formal-power-series">Formal Power Series</h2>
+<p>I’ll assume familiarity with the basic algebra of <a href="https://en.wikipedia.org/wiki/Formal_power_series">formal power series</a>.
+<a href="https://arxiv.org/abs/2205.00879">This lecture</a> gives a nice in-depth and more technical overview,
+though it goes far beyond what we’ll need. I’ll recall a few results and fix the terminology and
+notation that will be used in this article which largely follows Roman but there are many
+variations in the literature.</p>
+<p><span id="wewp"><strong>Theorem</strong> (id:wewp):</span> <em>|f \in \mathscr F| has a multiplicative inverse, written |f^{-1}| if and only if
+|\deg f = 0|.</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+|f(t)g(t) = \sum_{k=0}^\infty c_n t^k| where |c_k = \sum_{i+j=k} f_i g_j|.
+Clearly, |c_0 = f_0 g_0| which makes it clear a multiplicative inverse to |f| can only exist if
+|f_0 \neq 0|. It also makes it clear that for |g| to be |f^{-1}|, |g_0 = 1/f_0|. A simple
+calculation shows that |g_k = f_0^{-1} \sum_{n=1} f_n g_{k-n}| for |k &gt; 0| which gives a
+recurrence computing all the remaining coefficients of |f^{-1}|.
+|\square|
+</details>
+<p>Thus, |f| being <strong>invertible</strong> will be synonymous with |f| having degree |0|.</p>
+<p>It’s worth noting that |f/g| can be defined even when |g| isn’t invertible, e.g. |t/t = 1|.
+If |\deg f &gt; \deg g|, then we can cancel out common factors of |t| until the denominator is
+invertible.</p>
+<p>Suppose |g : \mathbb N \to \mathscr F|, which we’ll write as |g_k(t) \in \mathscr F|,
+such that |\deg g_k \to \infty| as |k \to \infty|. Given any |a : \mathbb N \to \mathbb K|,
+then |\sum_{k=0}^\infty a_k g_k(t)| is a well-defined element of |\mathscr F|. In particular,
+if |\deg g &gt; 0|, then |g_k(t) = g(t)^k| satisfies the conditions. If we have |\deg g_k = k|,
+which is the case when |g_k(t) = g(t)^k| for |g| with degree |1| for example, then |g| forms a
+<strong>pseudobasis</strong><a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> for |\mathscr F| meaning for any
+|f \in \mathscr F|, there exists a unique sequence |a| such that
+|f(t) = \sum_{k=0}^\infty a_n g_k(t)|. A series |f| with |\deg f = 1| is called a
+<strong>delta series</strong>. Every delta series gives rise to a pseudobasis of |\mathscr F|.</p>
+<p>If |f, g \in \mathscr F| and |\deg g &gt; 0|, then we can thus form the composition
+|f(g(t)) = \sum_{k=0}^\infty f_k g(t)^k|. It’s clear that |\deg(f\circ g) = \deg f\deg g|.</p>
+<p><span id="cjme"><strong>Theorem</strong> (id:cjme):</span> <em>A series, |f|, has a <strong>compositional inverse</strong>, written |\bar f|, meaning
+|f(\bar f(t)) = t = \bar f(f(t)| if and only if |\deg f = 1|.</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+Suppose |g \in \mathscr F| such that |f(g(t)) = t|. By taking degrees, we
+immediately see that |f| (and |g|) need to be of degree exactly one to have any chance for |g| to be
+a compositional inverse to |f|. If |g(t)^k = \sum_{n=0}^\infty b_{k,n} t^n|, then clearly we
+need |f_1 b_{1,1} = 1|. By induction, we have |b_{k+1,n} = \sum_{i+j=n} b_{1,i}b_{k,j}| but
+note that |b_{k,n} = 0| for all |n &lt; k| so this sum always has |k \leq j &lt; n| and thus
+|1 \leq i \leq n-k|. This leads to
+\[\sum_{k=1}^n f_k b_{k,n} = 0 = f_1 b_{1,n} + \sum_{k=2}^n f_k b_{k,n}\]
+where the last sum only involves |b_{1,i}| for |i &lt; n|. Alternatively, simply note that if
+|f(t) = th(t)| and |g(t) = tk(t)| then, |h| and |k| have degree |0|, and
+|t = f(g(t)) = t k(t)h(g(t))|. So |k(t) = h(g(t))^{-1} = h(tk(t))^{-1}|. |h| is invertible and
+|tk(t)| clearly has degree greater than |0| so the composition is well-defined. Unfolding this
+expression for |k(t)| shows that the |i|th coefficient only depends on earlier coefficients.
+|\square|
+</details>
+<p>A useful result linking these two together is if |\deg f = 1|, then
+\[ 1 = t’ = [\bar f(f(t))]' = \bar f’(f(t))f’(t) \]
+In other words, |f’(t)^{-1} = \bar f’(f(t))|.</p>
+<h2 id="linear-functionals">Linear Functionals</h2>
+<p>For |L \in P^*| and |p \in P|, we’ll write |\pair{L}{p(x)}| for the action of
+|L| on |p|. Any such |L| is uniquely defined by its values on |x^n| for all |n\in\mathbb N|.</p>
+<p>If |c : \mathbb N \to \mathbb K\setminus \{0\}|, we can define for each |f \in \mathscr F| a
+linear functional which we’ll also write as |f| or |f(t)| via
+\[\pair{f(t)}{x^n} = c_n f_n\] Really, we should write something like
+|\pair{f(t)}{p(x)}_c| to indicate the dependence on |c|. This play on notation is unambiguous
+since |f(t) = g(t)| if and only if |\pair{f(t)}{x^n} = \pair{g(t)}{x^n}| for all |n|,
+i.e. |f| and |g| are equal as power series if and only if the induced linear functionals are equal.</p>
+<p>Notable choices for |c| are:</p>
+<ul>
+<li>|c_n = n!| is the most traditional case.</li>
+<li>|c_n = 1|</li>
+<li>|c_n = 1/{\lambda \choose n}| for |\lambda| not a negative integer.</li>
+</ul>
+<p>The definition of the linear functional induced by |f \in \mathscr F| implies that
+|\pair{t^k}{x^n} = c_n\delta_k^n|. This leads to
+\[\bigpair{\sum_{n=0}^\infty a_n t^n}{p(x)}
+= \sum_{n=0}^\infty a_n \pair{t^n}{p(x)} \] where the right-hand side
+is well-defined because only finitely many of the terms of the sum will be non-zero.
+(We can generalize to allow <a href="https://en.wikipedia.org/wiki/Laurent_series">Laurent series</a> with
+only finitely many negative powers on the left and Laurent series with only finitely many positive
+powers on the right.)</p>
+<p>We can articulate L’Hôpital’s rule with this notation as: if |\deg f \geq \deg g &gt; 0|, then
+\[\pair{f(t)/g(t)}{x^0} = \pair{f’(t)/g’(t)}{x^0} \]</p>
+<p>We can explicitly write the formal power series, |f_L|, corresponding to the linear functional,
+|L|, as \[f_L(t) = \sum_{k=0}^\infty \frac{\pair{L}{x^k}}{c_n}t^k\]
+It is trivial to verify that the linear functional induced by |f_L| is |L|. This gives an
+isomorphism |\mathscr F \cong P^*| as |\mathbb K|-vector spaces. However, the algebra
+structure on |\mathscr F| then induces an algebra structure on |P^*|. We can compute
+\[\pair{f(t)g(t)}{x^n}\rangle
+= \sum_{i+j=n}\frac{c_n}{c_i c_j}\pair{f(t)}{x^i}\pair{g(t)}{x^j}\]</p>
+<p>We’ll call |L| a <strong>delta</strong>/<strong>invertible functional</strong> when it corresponds to a delta/invertible
+power series.</p>
+<h3 id="properties">Properties</h3>
+<p>If |\deg f &gt; \deg p| then |\pair{f(t)}{p(x)} = 0|.</p>
+<p>If |\deg p_n(x) = n| and |\pair{f(t)}{p_n(x)} = 0| for all |n \in \mathbb N|, then
+|f(t) = 0|.</p>
+<p>|\pair{f(at)}{p(x)} = \pair{f(t)}{p(ax)}| [<strong>Proof</strong>: Follows immediately from
+|\pair{a^n t^n}{x^n} = a^n c_n = \pair{t^n}{a^n x^n}|. |\square|]</p>
+<p>|p(x) = \sum_{n=0}^\infty \frac{\pair{t^n}{p(x)}}{c_n}x^n|</p>
+<p>If |\deg f_k = k| and |\pair{f_k(t)}{p(x)} = 0| for all |k \in \mathbb N|, then |p(x) = 0|.</p>
+<h3 id="evaluation-functional">Evaluation Functional</h3>
+<p>We always have the <strong>evaluation functional</strong> |\varepsilon_y| for |y \in \mathbb K| defined by
+\[\pair{\varepsilon_y(t)}{p(x)} = p(y)\] Note that this definition doesn’t depend on the choice
+of |c|. We quickly compute |\pair{\varepsilon_y(t)}{x^n} = c_n y^n| so
+\[ \varepsilon_y(t) = \sum_{k=0}^\infty \frac{y^k}{c_k}t^k\]</p>
+<p>When |c_n = n!|, then |\varepsilon_y(t) = e^{yt}|.</p>
+<h3 id="formal-derivative">Formal Derivative</h3>
+<p>The <strong>formal derivative</strong> of |f \in \mathscr F|, written |\partial_t f(t)|, is
+defined as \[\partial_t t^k = \begin{cases}
+\frac{c_k}{c_{k-1}}t^{k-1}, &amp; k &gt; 0 \\
+0, &amp; k = 0
+\end{cases}\] which leads to the key property
+|\pair{\partial_t f(t)}{p(x)} = \pair{f(t)}{xp(x)}|.</p>
+<p>As an example, we immediately compute that |\partial_t\varepsilon_y(t) = y\varepsilon_y(t)|.</p>
+<p>We will also use the ordinary derivative of formal power series which we’ll notate with
+|f’(t)|. The formal derivative and the ordinary derivative coincide when |c_n = n!| as
+suggested by the previous example.</p>
+<h2 id="linear-operators">Linear Operators</h2>
+<p>We’ve identified formal power series with linear functionals on |P|. Next, we want to identify them
+with linear operators on |P|. We’re clearly not going to get an isomorphism in this case as
+multiplication (i.e. composition) of linear operators doesn’t commute in general, while
+multiplication of formal power series does. Nevertheless, we will derive simple characterizations
+of which linear operators are of this form.</p>
+<p>One of the most important properties we will want is the following <strong>adjointness property</strong>:
+\[ \pair{f(t)g(t)}{p(x)} = \pair{f(t)}{g(t)p(x)} \] where |g(t) p(x)| is the action of the
+linear operator induced by |g(t)| on |p(x)|. We can derive what the induced linear operator must
+be to satisfy this property.</p>
+<p>\[\begin{align}
+c_n \delta_m^n
+&amp; = \pair{t^m}{x^n} \\
+&amp; = \pair{t^{m-k} t^k}{x^n} \\
+&amp; = \pair{t^{m-k}}{t^k x^n} \\
+&amp; = \bigpair{t^{m-k}}{\frac{c_n}{c_{n-k}}x^{n-k}}
+\end{align}\]
+so |t^k x^n = \frac{c_n}{c_{n-k}} x^{n-k}| for |k \leq n| and |0| otherwise. Thus,
+\[f(t) x^n = \sum_{k=0}^n \frac{c_n}{c_{n-k}} f_k x^{n-k} \]
+which can be extended to all polynomials by linearity.</p>
+<p>This should look familiar. |tx^n = \frac{c_n}{c_{n-1}}x^{n-1}| which is exactly the same
+formula as the one for |\partial_t| except this operates on polynomials while |\partial_t|
+operates on formal power series. In particular, when |c_n = n!|, |t| behaves exactly like the
+derivative of polynomials with respect to |x|, and we see that the formal power series pick out a
+special class of differential operators on polynomials.</p>
+<p>A simple calculation shows that |(t^j t^k) x^n = t^j (t^k x^n)| which lifts to a general
+associativity law: |(f(t) g(t)) p(x) = f(t) (g(t) p(x))|. The adjointness property also immediately
+implies that the induced linear operators commute.</p>
+<p>As before, we will say <strong>delta</strong>/<strong>invertible operator</strong> when the linear operator is induced by
+a delta/invertible formal power series.</p>
+<p>Define |Dx^n = nx^{n-1}|, |D^{-1}x^n = \frac{1}{n+1}x^{n+1}|, and
+|x^{-1} x^n = \begin{cases}x^{n-1}, &amp; n &gt; 0 \\ 0, &amp; n = 0\end{cases}|. Then for various
+choices of |c|, |t| behaves as the following linear operators:</p>
+<ul>
+<li>|c_n = n!| implies |t = D|</li>
+<li>|c_n = 1| implies |t = x^{-1}|</li>
+<li>|c_n = (n!)^{m+1}| implies |t = (Dx)^m D|</li>
+<li>|c_n = 1/(-\lambda)_{(n)}| implies |t = -(\lambda + xD)^{-1} x^{-1}|</li>
+<li>|c_n = 1/n| implies |t = x^{-1} D^{-1} x^{-1}|</li>
+<li>|c_n = 1/{-\lambda \choose n}| implies |t = -(\lambda + xD)^{-1} D|</li>
+<li>|c_n = 2^{2n}(1+\alpha)^{(n)}/(1 + \alpha + \beta)^{(2n)}| implies
+|t = 4(1 + \alpha + \beta + 2xD)^{-1} (2 + \alpha + \beta + 2xD)^{-1} x^{-1} (\alpha + xD)|</li>
+<li>|c_n = (1-q^n)^{-1} \prod_{k=1}^n (1-q^k)| implies |tp(x) = (p(qx) - p(x))/(qx - x)|</li>
+</ul>
+<p>A linear operator |T| on |\mathscr F| is <strong>continuous</strong> if given a sequence of formal power series
+|\pseq{f_k}{k}| such that |\deg f_k \to \infty| as |k \to \infty|, we have
+|\deg T(f_k) \to \infty| as |k \to \infty|.</p>
+<p><span id="fqys"><strong>Theorem</strong> (id:fqys):</span> <em>If |T| is a continuous linear operator on |\mathscr F|, then
+\[ T\left(\sum_{k=0}^\infty a_k f_k(t)\right) = \sum_{k=0}^\infty a_k T(f_k(t)) \]
+for all sequences |\pseq{a_k}{k}| in |\mathbb K| and
+|\pseq{f_k}{k}| in |\mathscr F| for which |\deg f_k \to \infty|
+as |k \to \infty|.</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+By the assumptions, both |\pair{T\left(\sum_{k=0}^\infty a_k f_k(t)\right)}{x^n}| and
+|\pair{\sum_{k=0}^\infty a_k T(f_k(t))}{x^n}| involve only finitely many terms of the sum.
+That is, for every |n| there is some |N| such that for all |m &gt; N|,
+|\pair{T\left(\sum_{k=0}^\infty a_k f_k(t)\right)}{x^n}
+= \pair{T\left(\sum_{k=0}^m a_k f_k(t)\right)}{x^n}|
+and |\pair{\sum_{k=0}^\infty a_k T(f_k(t))}{x^n} = \pair{\sum_{k=0}^m a_k T(f_k(t))}{x^n}|.
+But
+\[\begin{align}
+\bigpair{T\left(\sum_{k=0}^\infty a_k f_k(t)\right)}{x^n}
+&amp; = \bigpair{T\left(\sum_{k=0}^m a_k f_k(t)\right)}{x^n} \\
+&amp; = \bigpair{\sum_{k=0}^m a_k T(f_k(t))}{x^n} \\
+&amp; = \bigpair{\sum_{k=0}^\infty a_k T(f_k(t))}{x^n}
+\end{align}\]
+so these two linear functionals agree on a pseudobasis and thus are the same which implies the
+formal power series are the same as well.
+|\square|
+</details>
+<p>This can be cast as an instance of topological continuity, but I won’t describe that here.</p>
+<h3 id="evaluation-operator">Evaluation Operator</h3>
+<p>Unlike the linear functional case, the linear operator induced by the formal power series
+corresponding to the evaluation functional does depend on the choice of |c|. In general, we have:
+\[\varepsilon_y(t) x^n = \sum_{k=0}^n \frac{c_n}{c_{n-k} c_k} y^k x^{n-k} \]</p>
+<p>For |c_n = n!|, |\varepsilon_y(t) p(x) = p(x + y)|. For |c_n = 1|,
+|\varepsilon_y(t) x^n = \frac{x^{n+1} - y^{n+1}}{x-y}|.</p>
+<h3 id="characterizing-linear-operators-induced-from-formal-power-series">Characterizing Linear Operators Induced from Formal Power Series</h3>
+<p><span id="lgtb"><strong>Theorem</strong> (id:lgtb):</span> <em>Let |U| be a linear operator on |P|. There is an |f \in \mathscr F| such that
+|Up(x) = f(t) p(x)| for all |p \in P| if and only if |U| commutes with the operator |t|, i.e.
+|Utp(x) = tUp(x)| for all |p \in P|.</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+The only if direction is obvious. For the other direction, first note that
+|\deg Ux^n \leq n| because |t^k Ux^n = Ut^k x^n = 0| if |k &gt; n| so |\pair{t^k}{Ux^n} = 0|
+for all |k &gt; n|. Now define
+\[f(t) = \sum_{k=0}^\infty \frac{\pair{t^0}{Ux^k}}{c_k}t^k \]
+Then, \[\begin{align}
+f(t) x^n
+&amp; = \sum_{k=0}^n \frac{\pair{t^0}{Ux^k}}{c_k}t^k x^n \\
+&amp; = \sum_{k=0}^n \frac{c_n}{c_k c_{n-k}} \pair{t^0}{Ux^k} x^{n-k} \\
+&amp; = \sum_{k=0}^n \frac{\pair{t^0}{Ut^{n-k} x^n}}{c_{n-k}} x^{n-k} \\
+&amp; = \sum_{k=0}^n \frac{\pair{t^0}{t^{n-k} Ux^n}}{c_{n-k}} x^{n-k} \\
+&amp; = \sum_{k=0}^n \frac{\pair{t^{n-k}}{Ux^n}}{c_{n-k}} x^{n-k} \\
+&amp; = \sum_{k=0}^n \frac{\pair{t^k}{Ux^n}}{c_k} x^k \\
+&amp; = Ux^n
+\end{align}\]
+The last equality relies on the degree of |Ux^n| being less than or equal to |n|.
+|\square|
+</details>
+<p><span id="viti"><strong>Corollary</strong> (id:viti):</span> <em>A linear operator on P has the form of |f(t)| for an |f \in \mathscr F| if and
+only if it commutes with any specific delta operator.</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+The sequence of powers of the formal power series associated with the specific delta
+operator form a pseudobasis which means we can write |t| as an infinite linear combination of them.
+Thus the linear operator commutes with |t| and we can apply the <a href="#lgtb">theorem</a>.
+|\square|
+</details>
+<p><span id="qllw"><strong>Corollary</strong> (id:qllw):</span> <em>A linear operator on P has the form of |f(t)| for an |f \in \mathscr F| if and
+only if it commutes with |\varepsilon_y(t)| for all |y \in \mathbb K|.</em></p>
+<p><strong>Proof</strong>: |\varepsilon_y(t) - c_0^{-1} t^0| is a delta operator. |\square|</p>
+<h2 id="polynomial-sequences">Polynomial Sequences</h2>
+<p>When we say |\pseq{p_n(x)}{n}| is a (<strong>polynomial</strong>) <strong>sequence</strong>, that will always
+mean that |\deg p_n(x) = n|.</p>
+<p><span id="cgsr"><strong>Theorem</strong> (id:cgsr):</span> <em>Let |f| be a delta series and |g| be an invertible series, then there is a unique
+polynomial sequence |\pseq{s_n(x)}{n}| such that
+\[\pair{g(t)f(t)^k}{s_n(x)} = c_n\delta_k^n \]
+holds for all |n,k \in \mathbb N|.</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+<p>Uniqueness follows easily by considering |\pair{g(t)f(t)^k}{s_n(x) - r_n(x)} = 0|
+where |\pseq{r_n(x)}{n}| is another sequence satisfying the same property.</p>
+For existence, we can just brute force it. If |g(t)f(t)^k = \sum_{i=k}^\infty b_{k,i} t^i|
+and we set |s_n(x) = \sum_{j=0}^n a_{n,j} x^j|, then we want to solve for the |a_{n,i}|
+induced by the following triangular system of linear equations:
+\[\begin{align}
+c_n\delta_k^n
+&amp; = \pair{g(t)f(t)^k}{s_n(x)} \\
+&amp; = \bigpair{\sum_{i=k}^\infty b_{k,i} t^i}{\sum_{j=0}^n a_{n,j} x^j} \\
+&amp; = \bigpair{\sum_{i=k}^n b_{k,i} t^i}{\sum_{j=0}^n a_{n,j} x^j} \\
+&amp; = \sum_{i=k}^n \sum_{j=0}^n b_{k,i} a_{n,j} \pair{t^i}{x^j} \\
+&amp; = \sum_{i=k}^n c_i b_{k,i} a_{n,i}
+\end{align}\]
+|b_{k,k} \neq 0| since |\deg g(t)f(t)^k = k| and |c_n \neq 0| by assumption. Therefore, the
+diagonal entries of the triangular matrix corresponding to this system of linear equations are
+non-zero, and thus the matrix is invertible.
+|\square|
+</details>
+<p>We’ll say |\pseq{s_n(x)}{n}| is the <strong>Sheffer sequence</strong> or is <strong>Sheffer</strong> for
+the pair |(g, f)|. When |g(t) = 1|, then we say that the corresponding Sheffer sequence is the
+<strong>associated sequence</strong> to |f|. When |f(t) = t|, then we say that the corresponding Sheffer sequence
+is the <strong>Appell sequence</strong> for |g|. Often I’ll use |\pseq{p_n(x)}{n}| for
+associated sequences, i.e. when |g(t) = 1|, and reserve |\pseq{s_n(x)}{n}| for
+the general case. The idea is that if |g(t)f(t)^k| takes the place of |t^k|, then |s_n(x)|
+takes the place of |x^n|. This is illustrated by the defining property and the following theorems.</p>
+<p><span id="ExpansionTheorem"><strong>Theorem</strong> (Expansion Theorem):</span> <em>Let |\pseq{s_n(x)}{n}| be a Sheffer for |(g, f)|.
+Then for any |h \in \mathscr F|,
+\[ h(t) = \sum_{k=0}^\infty \frac{\pair{h(t)}{s_k(x)}}{c_k}g(t)f(t)^k \]</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+|\pseq{s_n(x)}{n}|, like any polynomial sequence, is a basis for |P|, so two linear
+functionals are equal if they agree on all |s_n(x)|. Clearly,
+\[\begin{align}
+\bigpair{\sum_{k=0}^\infty \frac{\pair{h(t)}{s_k(x)}}{c_k}g(t)f(t)^k}{s_n(x)}
+&amp; = \bigpair{\sum_{k=0}^n \frac{\pair{h(t)}{s_k(x)}}{c_k}g(t)f(t)^k}{s_n(x)} \\
+&amp; = \sum_{k=0}^n \frac{\pair{h(t)}{s_k(x)}}{c_k}\pair{g(t)f(t)^k}{s_n(x)} \\
+&amp; = \pair{h(t)}{s_n(x)}
+\end{align}\]
+|\square|
+</details>
+<p><span id="PolynomialExpansionTheorem"><strong>Corollary</strong> (Polynomial Expansion Theorem):</span> <em>Let |\pseq{s_n(x)}{n}| be a Sheffer for |(g, f)|.
+Then for a |p \in P|,
+\[ p(x) = \sum_{n=0}^\infty \frac{\pair{g(t)f(t)^n}{p(x)}}{c_n} s_n(x) \]</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+Choose |h = \varepsilon_y| in the <a href="#ExpansionTheorem">Expansion Theorem</a>,
+then apply it as a linear functional to |p|.
+|\square|
+</details>
+<p><span id="GeneratingFunction"><strong>Theorem</strong> (Generating Function):</span> <em>|\pseq{s_n(x)}{n}| is
+Sheffer for |(g, f)| if and only if
+\[ \frac{1}{g(\bar f(t))} \varepsilon_y(\bar f(t))
+= \sum_{k=0}^\infty \frac{s_k(y)}{c_k} t^k \]
+for all |y \in \mathbb K|.</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+<p>For the forward implication, using the <a href="#ExpansionTheorem">Expansion Theorem</a> we have:
+\[ \varepsilon_y(t)
+= \sum_{k=0}^\infty \frac{\pair{\varepsilon_y}{s_k(x)}}{c_k} g(t) f(t)^k
+= \sum_{k=0}^\infty \frac{s_k(y)}{c_k} g(t) f(t)^k \]
+Substituting |\bar f(t)| for |t| and dividing both sides by |g(\bar f(t))| gives the result.</p>
+For the reverse implication, if |\pseq{r_n(x)}{n}| is the Sheffer sequence for |(g, f)| then we
+immediately get
+\[ \sum_{k=0}^\infty \frac{r_k(y)}{c_k} t^k
+= \frac{1}{g(\bar f(t))} \varepsilon_y(\bar f(t))
+= \sum_{k=0}^\infty \frac{s_k(y)}{c_k} t^k \]
+and applying both sides to |x^n| then gives |s_n(y) = r_n(y)| for all |y \in \mathbb K|.
+|\square|
+</details>
+<p><span id="ConjugateRepresentation"><strong>Theorem</strong> (Conjugate Representation):</span> <em>|\pseq{s_n(x)}{n}| is Sheffer for
+|(g, f)| if and only if
+\[ s_n(x) = \sum_{k=0}^n \frac{\pair{g(\bar f(t))^{-1}\bar f(t)^k}{x^n}}{c_k} x^k \]</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+Applying |\varepsilon_y| to both sides gives
+\[\begin{align}
+s_n(y)
+&amp; = \sum_{k=0}^n \frac{\pair{g(\bar f(t))^{-1}\bar f(t)^k}{x^n}}{c_k} y^k \\
+&amp; = \bigpair{\sum_{k=0}^n \frac{y^k}{c_k}g(\bar f(t))^{-1}\bar f(t)^k}{x^n} \\
+&amp; = \bigpair{\sum_{k=0}^\infty \frac{y^k}{c_k}g(\bar f(t))^{-1}\bar f(t)^k}{x^n} \\
+&amp; = \pair{g(\bar f(t))^{-1}\varepsilon_y(\bar f(t))}{x^n} \\
+\end{align}\]
+but \[ s_n(y) = \bigpair{\sum_{k=0}^\infty \frac{s_n(y)}{c_k}t^k}{x^n} \]
+so we can apply the <a href="#GeneratingFunction">Generating Function theorem</a>.
+|\square|
+</details>
+<p><span id="MultiplicationTheorem"><strong>Theorem</strong> (Multiplication Theorem):</span>
+<em>Let |\pseq{s_n(x)}{n}| be Appell for |g|, then
+\[ s_n(\alpha x) = \alpha^n \frac{g(t)}{g(t/\alpha)} s_n(x) \]
+for |\alpha\neq 0|.</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+\[\begin{align}
+\pair{t^k}{g(t/\alpha) s_n(\alpha x)}
+&amp; = \pair{t^k g(t/\alpha)}{s_n(\alpha x)} \\
+&amp; = \pair{(\alpha t)^k g(\alpha t/\alpha)}{s_n(x)} \\
+&amp; = \alpha^k \pair{g(t) t^k}{s_n(x)} \\
+&amp; = \alpha^k c_n \delta_k^n \\
+&amp; = \alpha^n c_n \delta_k^n \\
+&amp; = \alpha^n \pair{g(t)t^k}{s_n(x)} \\
+&amp; = \pair{t^k}{\alpha^n g(t) s_n(x)}
+\end{align}\]
+so |g(t/\alpha) s_n(\alpha x) = \alpha^n g(t) s_n(x)|.
+|\square|
+</details>
+<p><span id="qqes"><strong>Theorem</strong> (id:qqes):</span> <em>|\pseq{s_n(x)}{n}| is Sheffer for |(g, f)|
+if and only if |\pseq{g(t)s_n(x)}{n}| is the associated sequence for |f|.</em></p>
+<p><strong>Proof</strong>: Just apply adjointness to the definition. |\square|</p>
+<p><span id="cutg"><strong>Theorem</strong> (id:cutg):</span> <em>A sequence |\pseq{p_n(x)}{n}| is the associated sequence for
+|f| if and only if 1) |\pair{t^0}{p_n(x)} = c_0 \delta_n^0| for all |n \in \mathbb N|,
+and 2) |f(t) p_n(x) = \frac{c_n}{c_{n-1}}p_{n-1}(x)| for all |n \in \mathbb N|.</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+<p>|f(t)^0 = t^0| implies the first condition. For the second condition, if
+|\pseq{p_n(x)}{n}| is associated to |f|, then for |k &gt; 0|
+\[\begin{align}
+\bigpair{f(t)^{k-1}}{\frac{c_n}{c_{n-1}}p_{n-1}(x)}
+&amp; = \frac{c_n}{c_{n-1}}\pair{f(t)^{k-1}}{p_{n-1}(x)} \\
+&amp; = c_n \delta_k^n \\
+&amp; = \pair{f(t)^k}{p_n(x)} \\
+&amp; = \pair{f(t)^{k-1}}{f(t)p_n(x)}
+\end{align}\] and |\pseq{f(t)^k}{k}| is a pseudobasis.</p>
+Conversely, assuming (1) and (2) hold, then
+\[\begin{align}
+\pair{f(t)^k}{p_n(x)}
+&amp; = \pair{t^0}{f(t)^k p_n(x)} \\
+&amp; = \frac{c_n}{c_{n-k}} \pair{t^0}{p_{n-k}(x)} \tag{(2) k times} \\
+&amp; = \frac{c_n}{c_{n-k}} c_0 \delta_{n-k}^0 \tag{(1)} \\
+&amp; = c_n \delta_k^n
+\end{align}\]
+|\square|
+</details>
+<p><span id="hvdt"><strong>Theorem</strong> (id:hvdt):</span> <em>A sequence |\pseq{s_n(x)}{n}| is Sheffer for
+|(g, f)| for some invertible |g| if and only if |f(t) s_n(x) = \frac{c_n}{c_{n-1}}s_{n-1}(x)|.</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+<p>For the forward implication, simply apply the <a href="#cutg">previous theorem</a> to
+|\pseq{g(t)s_n(x)}{n}| which is associated to |f|, then apply |g(t)^{-1}| to the resulting
+recurrence equation.</p>
+For the reverse implication, let |\pseq{p_n(x)}{n}| be the associated sequence for |f| and
+|U| be the linear operator defined by sending |s_n(x)| to |p_n(x)|. Then we have
+\[
+Uf(t)s_n(x)
+= \frac{c_n}{c_{n-1}}Us_{n-1}(x)
+= \frac{c_n}{c_{n-1}}p_{n-1}(x)
+= f(t)p_n(x)
+= f(t)Us_n(x)
+\]
+Since |\pseq{s_n(x)}{n}| is a basis, we see that |U| commutes with a delta series and thus
+must be of the form |g(t)| for some |g| which is invertible because |U| preserves degree.
+Thus |\pseq{g(t)s_n(x)}{n}| is associated to |f| which is equivalent to |\pseq{s_n(x)}{n}|
+being Sheffer for |(g, f)|.
+|\square|
+</details>
+<p><span id="tvdx"><strong>Corollary</strong> (id:tvdx):</span>
+\[ ts_n(x) = \sum_{k=0}^{n-1} \frac{c_n}{c_k c_{n-k}} \pair{t}{p_{n-k}(x)} s_k(x) \]</p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+Start by expanding |ts_n(x)| via the
+<a href="#PolynomialExpansionTheorem">Polynomial Expansion Theorem</a>
+\[\begin{align}
+ts_n(x)
+&amp; = \sum_{k=0}^\infty \frac{\pair{g(t)f(t)^k}{ts_n(x)}}{c_k} s_k(x) \\
+&amp; = \sum_{k=0}^{n-1} \frac{\pair{t}{g(t)f(t)^k s_n(x)}}{c_k} s_k(x) \\
+&amp; = \sum_{k=0}^{n-1} \frac{c_k}{c_{n-k} c_k} \pair{t}{g(t) s_{n-k}(x)} s_k(x) \tag{theorem (id:hvdt)} \\
+&amp; = \sum_{k=0}^{n-1} \frac{c_k}{c_{n-k} c_k} \pair{t}{p_{n-k}(x)} s_k(x) \tag{theorem (id:qqes)}
+\end{align}\]
+|\square|
+</details>
+<p><span id="ShefferIdentity"><strong>Theorem</strong> (Sheffer Identity):</span> <em>A sequence |\pseq{s_n(x)}{n}| is Sheffer for
+|(g, f)| for some invertible |g| if and only if
+\[ \varepsilon_y(t) s_n(x) = \sum_{i+j=n} \frac{c_n}{c_i c_j} p_i(y) s_j(x) \]
+for all |y \in \mathbb K| where |\pseq{p_n(x)}{n}| is associated to |f|.</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+<p>First, we’ll establish that
+\[ \varepsilon_y(t) p_n(x) = \sum_{i+j=n} \frac{c_n}{c_i c_j} p_i(y) p_j(x) \]</p>
+<p>Applying |f(t)^k| to both sides of the equation leads to
+\[\begin{align}
+\pair{f(t)^k}{\varepsilon_y(t) p_n(x)}
+&amp; = \pair{\varepsilon_y(t)}{f(t)^k p_n(x)} \\
+&amp; = \frac{c_n}{c_{n-k}} \pair{\varepsilon_y(t)}{p_{n-k}(x)} \\
+&amp; = \frac{c_n}{c_{n-k}} p_{n-k}(y) \\
+&amp; = \sum_{i+j=n} \frac{c_n}{c_i c_{j-k}} p_i(y) \pair{t^0}{p_{j-k}(x)} \\
+&amp; = \sum_{i+j=n} \frac{c_n}{c_i c_j} p_i(y) \pair{t^0}{f(t)^k p_j(x)} \\
+&amp; = \sum_{i+j=n} \frac{c_n}{c_i c_j} p_i(y) \pair{f(t)^k}{p_j(x)} \\
+&amp; = \bigpair{f(t)^k}{\sum_{i+j=n} \frac{c_n}{c_i c_j} p_i(y) p_j(x)}
+\end{align}\]
+which is most easily read from outwards in.</p>
+Doing the same trick as the previous proof, we let |U| be a linear operator defined by
+sending |s_n(x)| to |p_n(x)|. If |\pseq{s_n(x)}{n}| is Sheffer for |(g, f)| for some |g|,
+we can choose |U = g(t)| and applying |U| to both sides of the above equation gives the forward
+direction since |g(t)| commutes with |\varepsilon_y(t)|. Conversely, if we assume the equation
+then we’ll see that |U| must commute with |\varepsilon_y(t)| which implies its of the form
+|g(t)|.
+|\square|
+</details>
+<p>As an example, we see that the Bernoulli polynomials |B_n(x)| are Sheffer for |t| with |c_n = n!|
+for which the associated polynomials are |\pseq{x^n}{n}|. The Sheffer Identity is
+thus the one mentioned in the Introduction.</p>
+<p><span id="jtbs"><strong>Theorem</strong> (id:jtbs):</span> <em>Let |\pseq{s_n(x)}{n}| be Sheffer for |(g, f)| and
+|\pseq{p_n(x)}{n}| be associated to |f|. For all |h, l \in \mathscr F|,
+\[ \pair{h(t)l(t)}{s_n(x)}
+= \sum_{i+j=n} \frac{c_n}{c_i c_j} \pair{h(t)}{p_i(x)} \pair{l(t)}{s_j(x)} \]</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+Use the <a href="#ExpansionTheorem">Expansion Theorem</a> on |h| with respect to |\pseq{p_n(x)}{n}| and |l|
+with respect to |\pseq{s_n(x)}{n}|. |h(t)l(t)| will then be
+\[ \sum_{i+j=k} \left(\frac{\pair{h(t)}{p_i(x)}}{c_i} f(t)^i\right) \left(\frac{\pair{l(t)}{s_j(x)}}{c_j} g(t)f(t)^j\right)
+= \left[\sum_{i+j=k} \frac{\pair{h(t)}{p_i(x)}\pair{l(t)}{s_j(x)}}{c_i c_j}\right] g(t)f(t)^k
+\]
+Applying this to |s_n(x)| gives the result.
+|\square|
+</details>
+<p>See the paper for an interesting alternative proof of this result.</p>
+<h2 id="recurrence-formulas">Recurrence Formulas</h2>
+<p>Given a linear operator |\mu| on |P|, the <strong>adjoint</strong> |\mu^*| is a linear operator on
+|\mathscr F| characterized by:
+\[ \pair{\mu^* f(t)}{p(x)} = \pair{f(t)}{\mu p(x)} \]</p>
+<p>We can readily compute that:
+\[ \mu^* f(t) = \sum_{k=0}^\infty \frac{\pair{f(t)}{\mu x^k}}{c_k} t^k \]</p>
+<p><span id="ahdu"><strong>Theorem</strong> (id:ahdu):</span> <em>The adjoint to a linear operator on |P| is continuous.</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+Let |\pseq{f_k(t)}{k}| where |\deg f_k \to \infty| as |k \to \infty|.
+Let |K_n| be an index such that |\deg f_{K_n} &gt; \sup_{i=0}^n \deg \mu x^i|.
+|\pair{f_{K_n}(t)}{\mu x^m} = 0| for all |m \leq n|, so, using the formula above,
+|\deg \mu^* f_{K_n} \geq n|.
+|\square|
+</details>
+<p>In fact, a linear operator on |\mathscr F| is an adjoint to one on |P| <em>if and only if</em> it is
+continuous.</p>
+<p><span id="fdui"><strong>Theorem</strong> (id:fdui):</span> <em>If |T| is a continuous linear operator on |\mathscr F|, then there exists a linear
+operator |\mu| on |P| such that |T = \mu^*|.</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+Define |\mu x^n = \sum_{k=0}^\infty \frac{\pair{Tt^k}{x^n}}{c_k} x^k| which
+is well-defined because |T| being continuous means only finitely many |\pair{Tt^k}{x^n}| are
+non-zero. By construction, we see that |\pair{t^k}{\mu x^n} = \pair{Tt^k}{x^n}|.
+|\square|
+</details>
+<p>If |\pseq{p_n(x)}{n}| is associated to |f|, then the <strong>umbral shift</strong> |\theta_f|
+associated to |f| is the linear operator on |P| defined by
+\[ \theta_f p_n(x) = \frac{(n+1)c_n}{c_{n+1}} p_{n+1}(x) \]
+for all |n \in \mathbb N|. In the case where |p_n(x) = x^n| and |c_n = n!| the umbral shift is
+just multiplication by |x|. Since, famously, multiplication by |x| does <em>not</em> commute with
+differentiation, |Dx - xD = 1| as operators, the umbral shift isn’t induced as a
+linear operator by a formal power series. We’ll see that this is generally the case below.</p>
+<p>A <strong>derivation</strong> on an algebra |A| is a linear operator |\partial| on |A| satisfying
+\[ \partial(ab) = (\partial a)b + a\partial b \] for all |a, b \in A|.</p>
+<p><span id="lxnr"><strong>Lemma</strong> (id:lxnr):</span> <em>A continuous linear operator |\partial| on |\mathscr F| is a continuous derivation if
+and only if |\partial 1 = 0| and for any delta series |f|, |\partial f(t)^k = kf(t)^{k-1}g(t)|
+for all |k \in \mathbb N| for some |g|.</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+A continuous derivation satisfies |\partial h(t) = h’(t)\partial t| from which the
+result follows with |g(t) = f’(t)\partial t|. A continuous linear operator satisfying these laws
+satisfies |\partial h(t) = h’(t)f’(t)^{-1}g(t)| which we can see by expanding |h(t)| in terms of the
+pseudobasis |\pseq{f(t)^k}{k}| and using continuity to push the |\partial| into the sum.
+Given this
+\[\begin{align}
+\partial (h(t)k(t))
+&amp; = (h(t)k(t))'f’(t)^{-1}g(t) \\
+&amp; = k(t)h’(t)f’(t)^{-1}g(t) + h(t)k’(t)f’(t)^{-1}g(t) \\
+&amp; = (\partial h(t))k(t) + h(t)\partial k(t)
+\end{align}\]
+|\square|
+</details>
+<p><span id="oqyq"><strong>Theorem</strong> (id:oqyq):</span> An operator |\theta| on |P| is the umbral shift for the delta series |f| if and
+only if its adjoint |\theta^*| is a derivation on |\mathscr F| and
+\[ \theta^* f(t)^k = kf(t)^{k-1} \] for all |k \in \mathbb N|.</p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+<p>If |\theta| is the umbral shift for |f| associated to |\pseq{p_n(x)}{n}|, then
+\[\begin{align}
+\pair{\theta^* f(t)^k}{p_n(x)}
+&amp; = \pair{f(t)^k}{\theta p_n(x)} \\
+&amp; = \frac{(n+1)c_n}{c_{n+1}}\pair{f(t)^k}{p_{n+1}(x)} \\
+&amp; = (n+1)c_n \delta_k^{n+1} \\
+&amp; = kc_n \delta_k^{n+1} \\
+&amp; = kc_n \delta_{k-1}^n \\
+&amp; = \pair{kf(t)^{k-1}}{p_n(x)}
+\end{align}\]
+We of course have
+|\pair{\theta^* t^0}{p_n(x)}
+= \pair{t^0}{\theta p_n(x)}
+= \frac{(n+1)c_n c_0}{c_{n+1}} \pair{f(t)^0}{p_{n+1}(x)}
+= \frac{(n+1)c_n c_0}{c_{n+1}} \delta_0^{n+1}
+= 0| since |n+1| is never |0|.
+Since |\theta^*| is an adjoint, it’s continuous, and we can apply the
+<a href="#lxnr">previous lemma</a> to conclude that it is a derivation.</p>
+If |\theta^*| is a derivation satisfying |\theta^* f(t)^k = kf(t)^{k-1}| then
+we can rearrange the equations of the first result to get:
+\[\begin{align}
+\pair{f(t)^k}{\theta p_n(x)}
+&amp; = \pair{\theta^* f(t)^k}{p_n(x)} \\
+&amp; = \pair{kf(t)^{k-1}}{p_n(x)} \\
+&amp; = kc_n \delta_{k-1}^n \\
+&amp; = kc_n \delta_k^{n+1} \\
+&amp; = (n+1)c_n \delta_k^{n+1} \\
+&amp; = \frac{(n+1)c_n}{c_{n+1}}\pair{f(t)^k}{p_{n+1}(x)}
+\end{align}\]
+|\square|
+</details>
+<p>In the particular case where |f(t) = t|, the above states that |\theta_t^* t^k = kt^{k-1}|,
+i.e. |\theta_t^* f(t) = f’(t)|. (Not to be confused with |\partial_t| which is
+only the true derivative when |c_n = n!|.) We can easily compute that |\theta_t t = xD|.
+Notably, this does <em>not</em> depend on the choice of |c|.</p>
+<p><span id="kscz"><strong>Theorem</strong> (id:kscz):</span> <em>If |\pseq{s_n(x)}{n}| is Sheffer for |(g, f)|, then
+\[ \theta_t s_n(x)
+= \sum_{k=0}^{n+1} \left[\frac{c_n}{c_k c_{n-k}} \pair{g’(t)}{s_{n-k}(x)}
++ \frac{kc_n}{c_k c_{n-k+1}} \pair{g(t)f’(t)}{s_{n-k+1}(x)} \right] s_k(x) \]</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+Start with the <a href="#PolynomialExpansionTheorem">Polynomial Expansion Theorem</a>.
+\[\begin{align}
+\theta_t s_n(x)
+&amp; = \sum_{n=0}^{n+1} \frac{\pair{g(t)f(t)^k}{\theta_t s_n(x)}}{c_k} s_k(x) \\
+&amp; = \sum_{n=0}^{n+1} \frac{\pair{\theta_t^*(g(t)f(t)^k)}{s_n(x)}}{c_k} s_k(x) \\
+&amp; = \sum_{n=0}^{n+1} \left[\frac{\pair{g’(t)f(t)^k + kg(t)f(t)^{k-1}f’(t)}{s_n(x)}}{c_k}\right] s_k(x) \\
+&amp; = \sum_{n=0}^{n+1} \left[\frac{\pair{g’(t)}{f(t)^k s_n(x)}
++ \pair{kg(t)f’(t)}{f(t)^{k-1} s_n(x)}}{c_k}\right] s_k(x) \\
+&amp; = \sum_{n=0}^{n+1} \left[\frac{c_n}{c_k c_{n-k}}\pair{g’(t)}{s_{n-k}(x)}
++ \frac{kc_n}{c_{n-k+1}c_k}\pair{g(t)f’(t)}{s_{n-k+1}(x)}\right] s_k(x)
+\end{align}\]
+|\square|
+</details>
+<p><span id="golc"><strong>Lemma</strong> (id:golc):</span> <em>A surjective derivation on |\mathscr F| is continuous.</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+For any derivation |\partial|, we have |\partial 1 = \partial 1 + \partial 1| so
+|\partial 1 = 0|. We also have |\partial t^k = kt^{k-1}\partial t|. Since
+|\deg \partial t^0 = \infty| and |\deg \partial t^k = \deg \partial t + k - 1|, the only
+way to get something of degree |0| and have |\partial| be surjective is if |\deg \partial t = 0|.
+In general, if |\deg f = k| then |f(t) = t^k g(t)| where |\deg g = 0|. Therefore,
+|\deg \partial f(t) = \deg (t^k \partial g(t) + kt^{k-1}g(t)\partial t)| and the right-hand
+side has degree |k-1| implying |\partial| is continuous.
+|\square|
+</details>
+<p><span id="gxkw"><strong>Theorem</strong> (id:gxkw):</span> <em>A surjective derivation on |\mathscr F| is adjoint to an umbral shift and vice versa.</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+<p>For the reverse direction, since |f| is a delta series in the <a href="#oqyq">previous theorem</a>
+and |\theta^* f(t)^k = kf(t)^{k-1}|, |\pseq{\theta^* f(t)^k}{k}| is a pseudobasis and so
+|\theta^*| is surjective.</p>
+For the forward direction, if |\partial| is a surjective derivation, then it is an adjoint of a
+linear operator on |P| because it is continuous. Generally, we have
+|\partial f(t) = f’(t)\partial t| so we can solve |f’(t) = (\partial t)^{-1}| with |f(0) = 0|,
+i.e. |\deg f = 1|. Then |\partial f(t)^k = kf(t)^{k-1} f’(t)\partial t| and
+|f’(t) = (\partial t)^{-1}| so we end up with just |\partial f(t)^k = k f(t)^{k-1}| as desired.
+|\square|
+</details>
+<p><span id="woxc"><strong>Lemma</strong> (id:woxc):</span> <em>If |f| and |g| are delta series, then
+\[\theta_f^* = (\theta_f^* g(t))\theta_g^* \]</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+For any derivation |\partial|, we have |\partial a^k = (\partial a)ka^{k-1}|
+and |\theta_f^*| is a derivation. Therefore
+\[ \theta_f^* g(t)^k
+= (\theta_f^* g(t))kg(t)^{k-1}
+= (\theta_f^* g(t)) \theta_g^* g(t)^k \]
+and |g(t)^k| for |k\in \mathbb N| is a pseudobasis so this suffices to show the operators are
+equal.
+|\square|
+</details>
+<p><span id="dxii"><strong>Theorem</strong> (id:dxii):</span> <em>If |\theta_f| and |\theta_g| are umbral shifts, then
+\[ \theta_f = \theta_g \circ (\theta_g^* f(t))^{-1} \]</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+\[\begin{align}
+\pair{t^k}{\theta_f p(x)}
+&amp; = \pair{\theta_f^* t^k}{p(x)} \\
+&amp; = \pair{(\theta_g^* f(t))^{-1}\theta_g^* t^k}{p(x)} \\
+&amp; = \pair{\theta_g^* t^k}{(\theta_g^* f(t))^{-1} p(x)} \\
+&amp; = \pair{t^k}{\theta_g (\theta_g^* f(t))^{-1} p(x)}
+\end{align}\]
+|\square|
+</details>
+<p><span id="ouma"><strong>Theorem</strong> (id:ouma):</span> <em>If |\pseq{p_n(x)}{n}| is associated to |f|, then
+\[ p_{n+1}(x) = \frac{c_{n+1}}{(n+1)c_n} \theta_t(f’(t))^{-1} p_n(x) \]</em></p>
+<p><strong>Proof</strong>: This is just the <a href="#dxii">previous theorem</a> applied to |p_n(x)| with |g(t) = t|. |\square|</p>
+<p><span id="xnvj"><strong>Lemma</strong> (id:xnvj):</span> <em>Let |\theta_f| be the umbral shift for |f|. Then
+\[ \theta_f^*(h(t)) = h(t) \theta_f - \theta_f h(t) \]
+for all |h \in \mathscr F|. The left-hand side is the linear operator on |P| induced by the
+formal power series that is the output of |\theta_f^*|.</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+\[\begin{align}
+\pair{t^k}{\theta_f^*(h(t))x^n) + \theta_f h(t) x^n)}
+&amp; = \pair{t^k}{\theta_f^*(h(t))x^n)} + \pair{t^k}{\theta_f h(t) x^n)} \\
+&amp; = \pair{\theta_f^*(h(t)) t^k}{x^n)} + \pair{h(t)\theta_f^*(t^k)}{x^n)} \\
+&amp; = \pair{\theta_f^*(h(t)) t^k + h(t)\theta_f^*(t^k)}{x^n)} \\
+&amp; = \pair{\theta_f^*(h(t) t^k)}{x^n)} \\
+&amp; = \pair{t^k}{h(t) \theta_f x^n)}
+\end{align}\]
+|\square|
+</details>
+<p>This lemma shows that no umbral shift has the form |g(t)| for a formal power series |g|.</p>
+<p><span id="omlq"><strong>Theorem</strong> (id:omlq):</span> <em>Let |\pseq{s_n(x)}{n}| be Sheffer for |(g, f)|.
+Then if |\theta_f| is the umbral shift for |f|,</em>
+\[ s_{n+1}(x) = \frac{c_{n+1}}{(n+1)c_n}(g(t)\theta_f^*(g(t)^{-1}) + \theta_f)s_n(x) \]</p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+We have that |\pseq{g(t)s_n(x)}{n}| is associated to |f| leading to
+\[ g(t)s_n(x) = \frac{c_{n+1}}{(n+1)c_n} \theta_f g(t)s_{n+1}(x) \]
+The <a href="#xnvj">previous lemma</a> leads to
+\[\begin{align}
+s_n(x)
+&amp; = \frac{c_{n+1}}{(n+1)c_n} g(t)^{-1}\theta_f g(t)s_{n+1}(x) \\
+&amp; = \frac{c_{n+1}}{(n+1)c_n} g(t)^{-1}(g(t)\theta_f - \theta_f^*(g(t)))s_{n+1}(x) \\
+&amp; = \frac{c_{n+1}}{(n+1)c_n} (\theta_f - g(t)^{-1}\theta_f^*(g(t)))s_{n+1}(x) \\
+&amp; = \frac{c_{n+1}}{(n+1)c_n} (\theta_f + g(t)\theta_f^*(g(t)^{-1}))s_{n+1}(x)
+\end{align}\]
+where the final equality comes from
+\[ 0 = \theta_f^*(1) = \theta_f^*(g(t)g(t)^{-1})
+= g(t)^{-1}\theta_f^*(g(t)) + g(t)\theta_f^*(g(t)^{-1}) \]
+|\square|
+</details>
+<p><span id="kusb"><strong>Theorem</strong> (id:kusb):</span> <em>Let |\pseq{s_n(x)}{n}| be Sheffer for |(g, f)|.</em>
+\[ s_{n+1}(x)
+= \frac{c_{n+1}}{(n+1)c_n}\left(\theta_t - \frac{g’(t)}{g(t)}\right) \frac{1}{f’(t)} s_n(x) \]</p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+<p>Starting from the <a href="#omlq">previous theorem</a>
+\[ s_{n+1}(x) = \frac{c_{n+1}}{(n+1)c_n}(g(t)\theta_f^*(g(t)^{-1}) + \theta_f)s_n(x) \]</p>
+<a href="#dxii">Theorem (id:dxii)</a> gives |\theta_f = \theta_t f’(t)^{-1}|.
+Since |\theta_f^* h(t) = h’(t)\theta_f^* t| for any |h|,
+we first note that using <a href="#oqyq">theorem (id:oqyq)</a>,
+|1 = \theta_f^* f(t) = f’(t) \theta_f^* t| or |\theta_f^* t = f’(t)^{-1}|.
+Then
+\[
+g(t)\theta_f^*(g(t)^{-1})
+= -\frac{g(t) g’(t)}{g(t)^2} \theta_f^* t
+= -\frac{g’(t)}{g(t)} \theta_f^* t
+= -\frac{g’(t)}{g(t)} f’(t)^{-1} \]
+|\square|
+</details>
+<p><span id="vxhh"><strong>Theorem</strong> (id:vxhh):</span> <em>Let |\pseq{s_n(x)}{n}| be Sheffer for |(g, f)|. If
+\[ T
+= \left(\theta_t - \frac{g’(t)}{g(t)}\right)\frac{f(t)}{f’(t)}
+= \left(xD - \frac{tg’(t)}{g(t)}\right)\frac{f(t)}{tf’(t)} \]
+then \[ Ts_n(x) = ns_n(x) \]
+In other words, |s_n(x)| is an eigenfunction for |T| with eigenvalue |n|.</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+The equality for |T| just involves inserting a |t/t| in the middle.
+\[
+Ts_n(x)
+= \left(\theta_t - \frac{g’(t)}{g(t)}\right)\frac{1}{f’(t)}f(t)s_n(x)
+= \frac{c_n}{c_{n-1}}\left(\theta_t - \frac{g’(t)}{g(t)}\right)\frac{1}{f’(t)}s_{n-1}(x)
+= n s_n(x) \]
+where <a href="#kusb">theorem (id:kusb)</a> and <a href="#hvdt">theorem (id:hvdt)</a> have been used.
+|\square|
+</details>
+<!--
+Lemma 1 on page 81 (24) seems to have an unnecessary condition that the leading coefficient of |h|
+is |1|. It is necessary for Lemma 2 so I assume it was just a copy/paste error. That said, the
+theorem that uses these lemmas also repeats that assumption. I just can't see why that condition
+is necessary.
+
+TODO: Finish this section.
+-->
+<h2 id="transfer-formulas">Transfer Formulas</h2>
+<p><span id="TransferFormula"><strong>Theorem</strong> (Transfer Formula):</span> <em>If |\pseq{p_n(x)}{n}| is the associated sequence
+of |f|, then
+\[ p_n(x) = f’(t)\left(\frac{t}{f(t)}\right)^{n+1} x^n \]
+for all |n \in \mathbb N|.</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+<p>We verify that the right-hand side meets the conditions of <a href="#cutg">theorem (id:cutg)</a>.
+Condition (2) is easily verified:
+\[\begin{align}
+f(t) p_n(x)
+&amp; = f(t)f’(t)\left(\frac{t}{f(t)}\right)^{n+1} x^n \\
+&amp; = f’(t)\left(\frac{t}{f(t)}\right)^n t x^n \\
+&amp; = \frac{c_n}{c_{n-1}} f’(t)\left(\frac{t}{f(t)}\right)^n x^{n-1} \\
+&amp; = \frac{c_n}{c_{n-1}} p_{n-1}(x)
+\end{align}\]</p>
+<p>For condition (1), we start with a small trick by writing |f’(t) = [t(f(t)/t)]’|.
+\[\begin{align}
+\bigpair{t^0}{f’(t)\left(\frac{t}{f(t)}\right)^{n+1} x^n}
+&amp; = \bigpair{\left(t\frac{f(t)}{t}\right)'\left(\frac{t}{f(t)}\right)^{n+1}}{x^n} \\
+&amp; = \bigpair{\left(\frac{t}{f(t)}\right)^n + t\left(\frac{f(t)}{t}\right)'\left(\frac{t}{f(t)}\right)^{n+1}}{x^n} \tag{product rule} \\
+&amp; = \bigpair{\left(\frac{t}{f(t)}\right)^n}{x^n} + \bigpair{t\left(\frac{f(t)}{t}\right)'\left(\frac{t}{f(t)}\right)^{n+1}}{x^n}
+\end{align}\]</p>
+<p>We proceed from there by cases. In the |n = 0| case, we have
+\[
+\bigpair{t^0}{x^0} + \bigpair{t\left(\frac{f(t)}{t}\right)'\left(\frac{t}{f(t)}\right)}{x^0}
+= \pair{t^0}{x^0}
+= c_0 \]</p>
+For the |n &gt; 0| case, to simplify the expressions we’ll show that
+\[ \bigpair{t\left(\frac{f(t)}{t}\right)'\left(\frac{t}{f(t)}\right)^{n+1}}{x^n} = -\bigpair{\left(\frac{t}{f(t)}\right)^n}{x^n} \]
+We proceed as follows
+\[\begin{align}
+\bigpair{t\left(\frac{f(t)}{t}\right)'\left(\frac{t}{f(t)}\right)^{n+1}}{x^n}
+&amp; = \bigpair{\left(\frac{f(t)}{t}\right)'\left(\frac{f(t)}{t}\right)^{-n-1}}{tx^n} \\
+&amp; = -\frac{1}{n}\bigpair{\left[\left(\frac{f(t)}{t}\right)^{-n}\right]'}{tx^n} \\
+&amp; = -\frac{1}{n}\bigpair{\theta_t^*\left[\left(\frac{f(t)}{t}\right)^{-n}\right]}{tx^n} \\
+&amp; = -\frac{1}{n}\bigpair{\left(\frac{f(t)}{t}\right)^{-n}}{\theta_t tx^n} \\
+&amp; = -\frac{1}{n}\bigpair{\left(\frac{f(t)}{t}\right)^{-n}}{xDx^n} \\
+&amp; = -\bigpair{\left(\frac{f(t)}{t}\right)^{-n}}{x^n}
+\end{align}\]
+|\square|
+</details>
+<p><span id="TransferFormulaAlt"><strong>Theorem</strong> (Transfer Formula, alternate form):</span> <em>If |\pseq{p_n(x)}{n}| is the
+associated sequence of |f|, then
+\[ p_n(x) = \frac{c_n}{nc_{n-1}} \theta_t \left(\frac{t}{f(t)}\right)^n x^{n-1} \]
+for all |n \geq 1|.</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+\[\begin{align}
+\bigpair{f(t)^k}{\frac{c_n}{nc_{n-1}} \theta_t \left(\frac{t}{f(t)}\right)^n x^{n-1}}
+&amp; = \frac{c_n}{nc_{n-1}}\bigpair{\theta_t^*[f(t)^k]}{\left(\frac{t}{f(t)}\right)^n x^{n-1}} \\
+&amp; = \frac{kc_n}{nc_{n-1}}\bigpair{f(t)^{k-1}f’(t)}{\left(\frac{t}{f(t)}\right)^n x^{n-1}} \\
+&amp; = \frac{kc_n}{nc_{n-1}}\bigpair{f(t)^{k-1}}{f’(t)\left(\frac{t}{f(t)}\right)^n x^{n-1}} \\
+&amp; = \frac{k}{n}\bigpair{f(t)^{k-1}}{\frac{c_n}{c_{n-1}}p_{n-1}(x)} \tag{Transfer Formula} \\
+&amp; = \frac{k}{n}\pair{f(t)^{k-1}}{f(t)p_n(x)} \tag{theorem (id:cutg)} \\
+&amp; = \frac{k}{n}\pair{f(t)^k}{p_n(x)} \\
+&amp; = \frac{k}{n}c_n\delta_k^n \\
+&amp; = c_n\delta_k^n \\
+&amp; = \pair{f(t)^k}{p_n(x)}
+\end{align}\]
+|\square|
+</details>
+<p><span id="hcem"><strong>Corollary</strong> (id:hcem):</span> <em>Let |\pseq{p_n(x)}{n}| is associated to |f| and
+|\pseq{q_n(x)}{n}| is associated to |gf| with |g| invertible. Then
+\[ q_n(x) = \theta_t g(t)^{-n} \theta_t^{-1} p_n(x) \]
+where |\theta_t^{-1} x^{n+1} = (c_{n+1}/((n+1)c_n))x^n| and |\theta_t^{-1} 1 = 0|.</em></p>
+<p><strong>Proof</strong>: Just write |q_n(x)| using the <a href="#TransferFormulaAlt">alternate form of the Transfer Formula</a>. |\square|</p>
+<p><span id="jyhq"><strong>Theorem</strong> (id:jyhq):</span> <em>Let |\pseq{s_n(x)}{n}| be Sheffer for |(g, f)|, and let |h| and |l| be invertible
+series. Then the sequence |r_n(x) = h(t)l(t)^n s_n(x)| is Sheffer for
+\[ \left(\frac{[l(t)^{-1} f(t)]'}{f’(t)h(t)}l(t)g(t), l(t)^{-1} f(t) \right) \]</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+Apply |g(t)| to both sides getting
+\[ g(t)r_n(x) = h(t)l(t)^n g(t)s_n(x) \]
+and noting that |\pseq{g(t)s_n(x)}{n}| is associated to |f| and applying the
+<a href="#TransferFormula">Transfer Formula</a>, we get:
+\[\begin{align}
+g(t)r_n(x)
+&amp; = h(t)l(t)^n f’(t)\left(\frac{t}{f(t)}\right)^{n+1} x^n \\
+&amp; = h(t)\frac{f’(t)}{l(t)} l(t)^{n+1} \left(\frac{t}{f(t)}\right)^{n+1} x^n \\
+&amp; = h(t)\frac{f’(t)}{l(t)} \left(\frac{t}{l(t)^{-1} f(t)}\right)^{n+1} x^n \\
+&amp; = h(t)\frac{f’(t)}{l(t)} \frac{[l(t)^{-1} f(t)]'}{[l(t)^{-1} f(t)]'} \left(\frac{t}{l(t)^{-1} f(t)}\right)^{n+1} x^n \\
+&amp; = \frac{h(t)f’(t)}{[l(t)^{-1} f(t)]'l(t)} [l(t)^{-1} f(t)]' \left(\frac{t}{l(t)^{-1} f(t)}\right)^{n+1} x^n \\
+\end{align} \]
+So we get
+\[ \frac{[l(t)^{-1} f(t)]'}{f’(t)h(t)} l(t)g(t)r_n(x)
+= [l(t)^{-1} f(t)]' \left(\frac{t}{l(t)^{-1} f(t)}\right)^{n+1} x^n
+\]
+which by the <a href="#TransferFormula">Transfer Formula</a> means these are associated
+to |l(t)^{-1}f(t)| and thus |\pseq{r_n(x)}{n}| is Sheffer for
+\[ \left(\frac{[l(t)^{-1} f(t)]'}{f’(t)h(t)}l(t)g(t), l(t)^{-1} f(t) \right) \]
+|\square|
+</details>
+<h2 id="umbral-composition-and-transfer-operators">Umbral Composition and Transfer Operators</h2>
+<p>Let |\pseq{p_n(x)}{n}| be the associated sequence to |f|. The <strong>transfer</strong> or
+<strong>umbral<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> operator</strong> for |\pseq{p_n(x)}{n}| (or |f|) is the linear operator
+|\lambda_f| on |P| defined by \[ \lambda_f x^n = p_n(x) \]
+This implies the adjoint operator is
+\[ \lambda_f^* g(t) = \sum_{k=0}^\infty \frac{\pair{g(t)}{p_k(x)}}{c_k} t^k \]</p>
+<p><span id="oony"><strong>Lemma</strong> (id:oony):</span> <em>A |\mathbb K|-algebra homomorphism of |\mathscr F|
+is an automorphism if and only if it is preserves degree.</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+<p>For the forward direction, assume |T| is an automorphism. Let |f(t) = T^{-1}(t)| with
+|\deg f = k| so |f(t) = t^kg(t)|. |k &gt; 0| since |\mathbb K|-algebra homomorphisms send constants
+to constants but then |T(f(t)) = t = T(t)^k T(g(t))| and the degrees can only line up if |k = 1|
+and |\deg T(t) = 1|. |T| thus can’t reduce degree and by the same logic neither can |T^{-1}|, so
+|T| must preserve degree.</p>
+For the reverse direction, a degree preserving linear operator is continuous. We have that
+|\pseq{T(t)^k}{k}| is a pseudobasis, so for any |f \in \mathscr F|, we can
+write
+\[ f(t) = \sum_{k=0}^\infty a_k T(t)^k = T\left(\sum_{k=0}^\infty a_k t^k\right) \]
+so |g(t) = \sum_{k=0}^\infty a_k t^k| satisfies |f = T(g)| and for every |f| we can find
+such a |g| making |T| surjective. The uniqueness of the |\pseq{a_k}{k}| implies |T| is injective
+and thus bijective. For abstract nonsense reasons this is enough for it to be an automorphism.
+|\square|
+</details>
+<p><span id="lfum"><strong>Lemma</strong> (id:lfum):</span> <em>If |T| is a continuous |\mathbb K|-algebra
+homomorphism on |\mathscr F| and |f, g \in \mathscr F| with |\deg f &gt; 0|,
+then |T(g(t)) = g(T(t))| and |(Tg)(f(t)) = T(g(f(t)))|.</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+\[\begin{align}
+T(g(t))
+&amp; = T\left(\sum_{k=0}^\infty g_k t^k\right) \\
+&amp; = \sum_{k=0}^\infty g_k T(t)^k) \\
+&amp; = g(T(t))
+\end{align}\]
+and |(Tg)(f(t)) = g(T(f(t))) = T(g(f(t)))|.
+|\square|
+</details>
+<p><span id="stji"><strong>Theorem</strong> (id:stji):</span> <em>A linear operator |\lambda| on |P| is the transfer
+operator for |f \in \mathscr F| if and only if its adjoint |\lambda^*| is a
+|\mathbb K|-algebra automorphism of |\mathscr F| for which |\lambda^</em> f(t) = t|.
+This makes |\lambda_f(g(t)) = g(\bar f(t))|.*</p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+<p>For the forward direction, if |\lambda| is a transfer operator for |f| then we immediately get
+\[ \lambda^* f(t)
+= \sum_{k=0}^\infty \frac{\pair{f(t)}{p_k(x)}}{c_k} t^k
+= \sum_{k=0}^\infty \delta_1^k t^k
+= t \] and
+\[\begin{align}
+\pair{\lambda^*(g(t)h(t))}{x^n}
+&amp; = \pair{g(t)h(t)}{\lambda x^n} \\
+&amp; = \pair{g(t)h(t)}{p_n(x)} \\
+&amp; = \sum_{i+j=n} \frac{c_n}{c_i c_j} \pair{g(t)}{p_i(x)}\pair{h(t)}{p_j(x)} \tag{theorem (id:jtbs)} \\
+&amp; = \sum_{i+j=n} \frac{c_n}{c_i c_j} \pair{\lambda^* g(t)}{x^i}\pair{\lambda^* h(t)}{x^j} \\
+&amp; = \sum_{i+j=n} \frac{c_n}{c_i c_j} \pair{\lambda^* g(t)}{x^i}\pair{\lambda^* h(t)}{x^j} \\
+&amp; = \pair{(\lambda^* g(t))(\lambda^* h(t))}{x^n}
+\end{align}\]</p>
+For the reverse direction,
+\[\begin{align}
+\pair{f(t)^k}{\lambda x^n}
+&amp; = \pair{\lambda^*(f(t)^k)}{x^n} \\
+&amp; = \pair{\lambda^*(f(t))^k}{x^n} \\
+&amp; = \pair{t^k}{x^n} \\
+&amp; = c_n \delta_k^n
+\end{align}\]
+so |\lambda x^n| has the characteristic property of |p_n(x)|.
+|\square|
+</details>
+<p><span id="chiw"><strong>Corollary</strong> (id:chiw):</span> <em>A continuous |\mathbb K|-algebra automorphism
+on |\mathscr F| is the adjoint of a transfer operator.</em></p>
+<p><strong>Proof</strong>: By <a href="#fdui">theorem (id:fdui)</a> a continuous linear operator is adjoint to some
+linear operator on |P|, and being an automorphism there is some |f \in \mathscr F| that gets
+mapped to |t| by the automorphism so the <a href="#stji">previous theorem</a> applies.
+|\square|</p>
+<p>Summarizing some results of this form: There’s a bijection between continuous linear operators
+on |\mathscr F| and linear operators on |P|. Further, there’s a bijection between continuous
+surjective derivations on |\mathscr F| and umbral shifts, and a bijection between continuous
+|\mathbb K|-algebra automorphisms on |\mathscr F| and transfer operators.</p>
+<p><span id="ocfq"><strong>Corollary</strong> (id:ocfq):</span> <em>Transfer operators form a group with
+|(\lambda_f^*){-1} = \lambda_{\bar f}^*|,
+|\lambda_f^* \circ \lambda_g^* = \lambda_{g\circ f}^*|.</em></p>
+<p><strong>Proof</strong>: This readily follows from |\lambda_f^* g(t) = g(\bar f(t))|. |\square|</p>
+<p><span id="ydci"><strong>Theorem</strong> (id:ydci):</span></p>
+<ol type="1">
+<li><em>An transfer operator maps associated sequences to associated sequences.</em></li>
+<li><em>If |\pseq{p_n(x)}{n}| and |\pseq{q_n(x)}{n}|
+are associated to |f| and |g| respectively, and |\lambda| is a linear operator which
+maps |p_n(x)| to |q_n(x)|, then |\lambda^* g(t) = f(t)|.</em></li>
+<li><em>Additionally, |\lambda| is a transfer operator.</em></li>
+</ol>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+<p>For all of the following let |\pseq{p_n(x)}{n}| and |\pseq{q_n(x)}{n}| be associated to |f|
+and |g| respectively and |\lambda_f|, |\lambda_g| be the transfer operators.</p>
+<p>For 1,
+\[ \pair{(\lambda_g^*)^{-1}(g(t)^k)}{\lambda_g q_n(x)}
+= \pair{\lambda_g(\lambda_g^*)^{-1}(g(t)^k)}{q_n(x)}
+= \pair{g(t)^k}{q_n(x)}
+= c_n \delta_k^n \]
+so |\lambda_g q_n(x)| is associated to |(\lambda_g^*)^{-1}(g(t))|.</p>
+<p>For 2,
+\[
+\pair{\lambda^*(g(t))}{p_n(x)}
+= \pair{g(t)}{\lambda p_n(x)}
+= \pair{g(t)}{q_n(x)}
+= c_n \delta_1^n
+= \pair{f(t)}{p_n(x)}
+\]</p>
+For 3, by <a href="#lfum">lemma (id:lfum)</a>, we can just precompose with |\bar f| to get
+|\lambda(g(\bar f(t))) = t| and do the same logic as 2 with |t^k| and |x^n| implying that
+|\lambda| is a transfer operator for |g(\bar f(t))|.
+|\square|
+</details>
+<p>Let |\pseq{p_n(x)}{n}| and |\pseq{q_n(x)}{n}| be two polynomial
+sequences. The <strong>umbral composition</strong> of |q| with |p| is written and defined as
+\[ \ucomp{q}{p} = \sum_{k=0}^n q_{n,k}p_k(x) \]
+If |\lambda| is the transfer operator for |\pseq{p_n(x)}{n}|, then we have
+\[ \ucomp{q}{p} = \lambda q_n(x) \]</p>
+<p><span id="xvse"><strong>Theorem</strong> (id:xvse):</span> <em>If |\pseq{p_n(x)}{n}| and |\pseq{q_n(x)}{n}|
+are associated to |f| and |g| respectively, then |\pseq{\ucomp{q}{p}}{n}|
+is associated to |g(f(t))|.</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+\[\begin{align}
+\pair{g(f(t))^k}{\ucomp{q}{p}}
+&amp; = \pair{g(f(t))^k}{\lambda_f q_n(x)} \\
+&amp; = \pair{\lambda_f^*(g(f(t)))^k}{q_n(x)} \\
+&amp; = \pair{g(\lambda_f^*(f(t)))^k}{q_n(x)} \\
+&amp; = \pair{g(t)^k}{q_n(x)} \\
+&amp; = c_n \delta_k^n \\
+\end{align}\]
+|\square|
+</details>
+<p><span id="xajh"><strong>Corollary</strong> (id:xajh):</span> <em>Umbral composition makes the set of associated
+sequences into a group.</em></p>
+<p><strong>Proof</strong>: It follows the group structure of transfer operators. |\square|</p>
+<p>A <strong>Sheffer operator</strong> is the linear operator |\mu_{g,f}| defined by
+|\mu_{g,f}x^n = s_n(x)| where |\pseq{s_n(x)}{n}| is Sheffer for |(g,f)|.
+By considering the associated sequence induced by a Sheffer sequence, i.e. |\pseq{g(t)s_n(x)}{n}|,
+we readily get |\mu_{g,f} = g(t)^{-1}\lambda_f| so Sheffer operators can be reduced to transfer
+operators.</p>
+<p><span id="pnci"><strong>Theorem</strong> (id:pnci):</span> <em>Let |\pseq{s_n(x)}{n}| be Sheffer for |(g, f)| and let |\pseq{r_n(x)}{n}| be
+Sheffer for |(h, l)|. Then |\ucomp{r}{s}| is Sheffer for the pair |(g(t)h(f(t)), l(f(t)))|.</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+\[\begin{align}
+\pair{g(t)h(f(t))l(f(t))^k}{\ucomp{r}{s}}
+&amp; = \pair{g(t)h(f(t))l(f(t))^k}{\mu_{g,f} r_n(x)} \\
+&amp; = \pair{h(f(t))l(f(t))^k}{g(t)\mu_{g,f} r_n(x)} \\
+&amp; = \pair{h(f(t))l(f(t))^k}{\lambda_f r_n(x)} \\
+&amp; = \pair{\lambda_f^*(h(f(t))l(f(t))^k)}{r_n(x)} \\
+&amp; = \pair{h(\lambda_f^*(f(t)))l(\lambda_f^*(f(t)))^k)}{r_n(x)} \\
+&amp; = \pair{h(t)l(t)^k)}{r_n(x)} \\
+&amp; = c_n \delta_k^n
+\end{align}\]
+|\square|
+</details>
+<p><span id="fony"><strong>Corollary</strong> (id:fony):</span>
+\[ \pair{h(t)}{\mu_{g,f} q_n(x)}
+= \pair{\mu_{g,f}^*(h(t))}{q_n(x)}
+= \pair{g(\bar f(t))^{-1} h(\bar f(t))}{q_n(x)} \]</p>
+<p><strong>Proof</strong>: Immediate from definition of |\mu_{g,f}| and <a href="#stji">theorem (id:stji)</a>. |\square|</p>
+<p>Given two polynomial sequences |\pseq{r_n(x)}{n}| and |\pseq{s_n(x)}{n}| related by
+\[ r_n(x) = \sum_{k=0}^n a_{n,k} s_k(x) \]
+the <strong>connection-constants problem</strong> is to determine the constants |a_{n,k}|. When
+|\pseq{r_n(x)}{n}| and |\pseq{s_n(x)}{n}| are Sheffer for given formal power series pairs, we
+can solve this problem as follows.</p>
+<p><span id="hqtd"><strong>Theorem</strong> (id:hqtd):</span> <em>Let |\pseq{s_n(x)}{n}| be Sheffer for |(g, f)| and
+|\pseq{r_n(x)}{n}| be Sheffer for |(h, l)|. If
+\[ r_n(x) = \sum_{k=0}^n a_{n,k} s_k(x) \]
+then the sequence |t_n(x) = \sum_{k=0}^n a_{n,k} x^k| is Sheffer for
+\[ \left(\frac{h(\bar f(t))}{g(\bar f(t))}, l(\bar f(t)) \right) \]</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+Clearly, |r_n(x) = \ucomp{t}{s}|, so we just apply &lt;a href=“#pnci&gt;theorem (id:pnci)</a>
+and solve for the |u, v \in \mathscr F| such that |\pseq{t_n(x)}{n}| is Sheffer for |(u, v)|.
+|\square|
+</details>
+<p><span id="ixkb"><strong>Corollary</strong> (id:ixkb):</span> <em>Let |\pseq{p_n(x)}{n}| be associated to |f| and
+|\pseq{q_n(x)}{n}| be associated to |l| and
+\[ q_n(x) = \sum_{k=0}^n a_{n,k} p_k(x) \]
+then |t_n(x) = \sum_{k=0}^n a_{n,k} x^k| is associated to |l(\bar f(t))|.</em></p>
+<p><strong>Proof</strong>: Immediate from the previous theorem. |\square|</p>
+<p>Transfer operators give us a concise proof of the Lagrange Inversion Formula used for the
+<a href="#cjme">compositional inverse</a>. The usual formula would arise from |g(t) = t| in the
+below.</p>
+<p><span id="LagrangeInversionFormula"><strong>Corollary</strong> (Lagrange Inversion Formula):</span>
+<em>Let |f, g \in \mathscr F| with |\deg f = 1| and |c_n = n!|, then for |n &gt; 0|
+\[ \pair{g(\bar f(t))}{x^n} = \bigpair{g’(t)\left(\frac{t}{f(t)}\right)^n}{x^{n-1}} \]
+Of course, |\pair{g(\bar f(t))}{x^0} = \pair{g(t)}{x^0}| since |\deg \bar f = 1|.</em></p>
+<details>
+<summary>
+<strong>Proof</strong>: <span class="expander">(click to expand)</span>
+</summary>
+<p>First we characterize the action of |\lambda_f^*|.
+|\lambda_f^*(g(f(t))) = g(\lambda_f^*(f(t))) = g(t)| so
+|\lambda_f^*(g(t)) = g(\bar f(t))|.</p>
+We conclude with a use of the <a href="#TransferFormulaAlt">alternate form of the Transfer Formula</a>
+with |\pseq{p_n(x)}{n}| being associated to |f|.
+\[\begin{align}
+\pair{g(\bar f(t))}{x^n}
+&amp; = \pair{\lambda_f^*(g(t))}{x^n} \\
+&amp; = \pair{g(t)}{\lambda_f x^n} \\
+&amp; = \pair{g(t)}{p_n(x)} \\
+&amp; = \bigpair{g(t)}{\theta_t\left(\frac{t}{f(t)}\right)^n x^{n-1}} \tag{Transfer Formula, alternate form} \\
+&amp; = \bigpair{\theta_t^* g(t)\left(\frac{t}{f(t)}\right)^n}{x^{n-1}} \\
+&amp; = \bigpair{g’(t)\left(\frac{t}{f(t)}\right)^n}{x^{n-1}}
+\end{align}\]
+|\square|
+</details>
+<p><span id="LagrangeInversionFormulaAlt"><strong>Corollary</strong> (Lagrange Inversion Formula, alternate form):</span>
+<em>Let |f, g \in \mathscr F| with |\deg f = 1| and |c_n = n!|, then for |n &gt; 0|
+\[ \pair{g(\bar f(t))}{x^n} = \bigpair{g(t)f’(t)\left(\frac{t}{f(t)}\right)^{n+1}}{x^n} \]</em></p>
+<p><strong>Proof</strong>: Do the same proof as the <a href="#LagrangeInversionFormula">previous corollary</a>
+just with the first form of the <a href="#TransferFormula">Transfer Formula</a>. |\square|</p>
+<p><span id="LagrangeInversionFormulaHermite"><strong>Corollary</strong> (Lagrange Inversion Formula, Hermite form):</span>
+<em>Let |f, h \in \mathscr F| with |\deg f = 1| and |c_n = n!|, then for |n &gt; 0|
+\[ \bigpair{\frac{th(\bar f(t))}{\bar f(t)f’(\bar f(t))}}{x^n}
+= \bigpair{h(t)\left(\frac{t}{f(t)}\right)^n}{x^n} \]</em></p>
+<p><strong>Proof</strong>: Apply the <a href="#LagrangeInversionFormulaAlt">previous corollary</a> with
+|g(t) = h(t)\frac{f(t)}{tf’(t)}|. |\square|</p>
+<h2 id="example-chebyshev-polynomials">Example: Chebyshev Polynomials</h2>
+<p>While the “classical” umbral calculus generally used |c_n = n!|, one interesting (orthogonal)
+polynomial sequence that benefits from the extra flexibility is Chebyshev polynomials where
+we’ll use |c_n = (-1)^n|. (This can be viewed as a special case of Gegenbauer polynomials which
+use |c_n = {-\lambda \choose n}^{-1}| which reduces to the Chebyshev case when |\lambda = 1|.)</p>
+<p>The book “The Umbral Calculus” mentioned in the <a href="#introduction">introduction</a> primarily
+covers the “classical” case and has many examples of those. It also covers the “non-classical” case
+as well albeit as a bit of a second thought.</p>
+<p>|tx^n = -x^{n-1}| so |tp(x) = -x^{-1} p(x)|</p>
+<p>|\pseq{T_n(x)}{n}| is Sheffer for |(g, f)| where |g(t) = (1-t^2)^{-2}|
+and |f(t) = \frac{\sqrt{1-t^2} - 1}{t} = \frac{-t}{1 + \sqrt{1 - t^2}}|.
+|\bar f(t) = \frac{-2t}{1+t^2}| and
+|f’(t) = \frac{-1}{\sqrt{1-t^2}(1 + \sqrt{1 - t^2})} = \frac{f(t)}{t\sqrt{1-t^2}}|.</p>
+<p>|f(t)s_n(x) = \frac{c_n}{c_{n-1}}s_n(x)| from <a href="#hvdt">theorem (id:hvdt)</a> gives the
+recurrence
+\[\frac{c_n}{c_{n+1}ts_{n+1}(x) + \frac{c_n}{c_{n-1}}ts_{n-1}(x)} + 2s_n(x) = 0 \]
+for any Sheffer sequence with |f(t)| as its delta series. For the Chebyshev polynomials, this
+simplifies to \[ 2xT_n(x) + T_{n+1}(x) + T_{n-1}(x) = 0 \]</p>
+<p>|\theta_t x^n = -(n+1)x^{n+1}| which we can compute from |\theta_t t = xD| which takes the form
+|\theta_t t x^n = -\theta_t x^{n-1} = nx^n|. This leads to |\theta_t = -x(1 + xD)|.</p>
+<p>From <a href="#vxhh">theorem (id:vxhh)</a>, we get |TT_n(x) = nT_n(x)| where</p>
+<p>\[ T = \left(\theta_t - \frac{g’(t)}{g(t)}\right)\frac{f(t)}{f’(t)}
+= \left(xD - \frac{tg’(t)}{g(t)}\right)\frac{f(t)}{tf’(t)} \]</p>
+<p>This leads to |nT_n(x) = (xD - (1-t^2)^{-1})\sqrt{1-t^2}T_n(x)|.</p>
+<h2 id="summary">Summary</h2>
+<p>Defining property of |\pseq{s_n(x)}{n}| being <strong>Sheffer</strong> for |(g, f)| where |g| is an invertible
+series and |f| is a delta series:
+\[ \pair{g(t)f(t)^k}{s_n(x)} = \pair{t^k}{x^n} = c_n \delta_k^n \]</p>
+<p>If |g(t) = 1|, then we say |\pseq{s_n(x)}{n}| is the <strong>associated sequence</strong> for |f|,
+and usually we’ll use |\pseq{p_n(x)}{n}| instead.</p>
+<p>If |f(t) = t|, then we say |\pseq{s_n(x)}{n}| is the <strong>Appell sequence</strong> for |g|.</p>
+<p>Formal power series as operators
+\[ t^k x^n = \frac{c_n}{c_{n-k}} x^{n-k} \]
+and generally,
+\[f(t) x^n = \sum_{k=0}^n \frac{c_n}{c_{n-k}} f_k x^{n-k} \]</p>
+<p>Given a linear operator |\mu| on |P|, the <strong>adjoint</strong> |\mu^*| is a linear operator on
+|\mathscr F| characterized by:
+\[ \pair{\mu^* f(t)}{p(x)} = \pair{f(t)}{\mu p(x)} \]</p>
+<p>It’s <strong>adjoint expansion</strong> is:
+\[ \mu^* f(t) = \sum_{k=0}^\infty \frac{\pair{f(t)}{\mu x^k}}{c_k} t^k \]</p>
+<p>This applies generally, but, in particular for umbral shifts and transfer operators.</p>
+<p><a href="#ahdu"><strong>Theorem</strong> (id:ahdu):</a> <em>The adjoint to a linear operator on |P| is continuous.</em></p>
+<p><a href="#fdui"><strong>Theorem</strong> (id:fdui):</a> <em>If |T| is a continuous linear operator on
+|\mathscr F|, then there exists a linear operator |\mu| on |P| such that |T = \mu^*|.</em></p>
+<p><a href="#GeneratingFunction"><strong>Theorem</strong> (Generating Function)</a>: |\pseq{s_n(x)}{n}| is
+Sheffer for |(g, f)| if and only if
+\[ \frac{1}{g(\bar f(t))} \varepsilon_y(\bar f(t))
+= \sum_{k=0}^\infty \frac{s_k(y)}{c_k} t^k \]
+for all |y \in \mathbb K|.*</p>
+<p><a href="#ShefferIdentity"><strong>Theorem</strong> (Sheffer Identity):</a> <em>A sequence |\pseq{s_n(x)}{n}| is Sheffer for
+|(g, f)| for some invertible |g| if and only if
+\[ \varepsilon_y(t) s_n(x) = \sum_{i+j=n} \frac{c_n}{c_i c_j} p_i(y) s_j(x) \]
+for all |y \in \mathbb K| where |\pseq{p_n(x)}{n}| is associated to |f|.</em></p>
+<p><a href="#cutg"><strong>Theorem</strong> (id:cutg):</a> <em>A sequence |\pseq{p_n(x)}{n}| is the associated sequence for
+|f| if and only if 1) |\pair{t^0}{p_n(x)} = c_0 \delta_n^0| for all |n \in \mathbb N|,
+and 2) |f(t) p_n(x) = \frac{c_n}{c_{n-1}}p_{n-1}(x)| for all |n \in \mathbb N|.</em></p>
+<p><a href="#TransferFormula"><strong>Theorem</strong> (Transfer Formula):</a> <em>If |\pseq{p_n(x)}{n}| is the
+associated sequence of |f|, then
+\[ p_n(x) = f’(t)\left(\frac{t}{f(t)}\right)^{n+1} x^n \]
+for all |n \in \mathbb N|.</em></p>
+<p><a href="#TransferFormulaAlt"><strong>Theorem</strong> (Transfer Formula, alternate form):</a> <em>If
+|\pseq{p_n(x)}{n}| is the associated sequence of |f|, then
+\[ p_n(x) = \frac{c_n}{nc_{n-1}} \theta_t \left(\frac{t}{f(t)}\right)^n x^{n-1} \]
+for all |n \geq 1|.</em></p>
+<p><a href="#qqes"><strong>Theorem</strong> (id:qqes):</a> <em>|\pseq{s_n(x)}{n}| is Sheffer for |(g, f)|
+if and only if |\pseq{g(t)s_n(x)}{n}| is the associated sequence for |f|.</em></p>
+<p><a href="#hvdt"><strong>Theorem</strong> (id:hvdt):</a> <em>A sequence |\pseq{s_n(x)}{n}| is Sheffer for
+|(g, f)| for some invertible |g| if and only if |f(t) s_n(x) = \frac{c_n}{c_{n-1}}s_{n-1}(x)|.</em></p>
+<p><a href="#omlq"><strong>Theorem</strong> (id:omlq):</a> <em>Let |\pseq{s_n(x)}{n}| be Sheffer for |(g, f)|.
+Then if |\theta_f| is the umbral shift for |f|,</em>
+\[ s_{n+1}(x) = \frac{c_{n+1}}{(n+1)c_n}(g(t)\theta_f^*(g(t)^{-1}) + \theta_f)s_n(x) \]</p>
+<p><a href="#ExpansionTheorem"><strong>Theorem</strong> (Expansion Theorem):</a> <em>Let |\pseq{s_n(x)}{n}| be a Sheffer for |(g, f)|.
+Then for any |h \in \mathscr F|,
+\[ h(t) = \sum_{k=0}^\infty \frac{\pair{h(t)}{s_k(x)}}{c_k}g(t)f(t)^k \]</em></p>
+<p><a href="#PolynomialExpansionTheorem"><strong>Corollary</strong> (Polynomial Expansion Theorem):</a> <em>Let |\pseq{s_n(x)}{n}| be a Sheffer for |(g, f)|.
+Then for a |p \in P|,
+\[ p(x) = \sum_{n=0}^\infty \frac{\pair{g(t)f(t)^n}{p(x)}}{c_n} s_n(x) \]</em></p>
+<p><a href="#stji"><strong>Theorem</strong> (id:stji):</a> <em>A linear operator |\lambda| on |P| is the transfer
+operator for |f \in \mathscr F| if and only if its adjoint |\lambda^*| is a
+|\mathbb K|-algebra automorphism of |\mathscr F| for which |\lambda^</em> f(t) = t|.
+This makes |\lambda_f(g(t)) = g(\bar f(t))|.*</p>
+<p><a href="#pnci"><strong>Theorem</strong> (id:pnci):</a> <em>Let |\pseq{s_n(x)}{n}| be Sheffer for |(g, f)| and let |\pseq{r_n(x)}{n}| be
+Sheffer for |(h, l)|. Then |\ucomp{r}{s}| is Sheffer for the pair |(g(t)h(f(t)), l(f(t)))|.</em></p>
+<p><a href="#fony"><strong>Corollary</strong> (id:fony):</a>
+\[ \pair{h(t)}{\mu_{g,f} q_n(x)}
+= \pair{\mu_{g,f}^*(h(t))}{q_n(x)}
+= \pair{g(\bar f(t))^{-1} h(\bar f(t))}{q_n(x)} \]</p>
+<p><a href="#kscz"><strong>Theorem</strong> (id:kscz):</a> <em>If |\pseq{s_n(x)}{n}| is Sheffer for |(g, f)|, then
+\[ \theta_t s_n(x)
+= \sum_{k=0}^{n+1} \left[\frac{c_n}{c_k c_{n-k}} \pair{g’(t)}{s_{n-k}(x)}
++ \frac{kc_n}{c_k c_{n-k+1}} \pair{g(t)f’(t)}{s_{n-k+1}(x)} \right] s_k(x) \]</em></p>
+<p><a href="#tvdx"><strong>Corollary</strong> (id:tvdx):</a>
+\[ ts_n(x) = \sum_{k=0}^{n-1} \frac{c_n}{c_k c_{n-k}} \pair{t}{p_{n-k}(x)} s_k(x) \]</p>
+<p><a href="#ConjugateRepresentation"><strong>Theorem</strong> (Conjugate Representation):</a> <em>|\pseq{s_n(x)}{n}| is Sheffer for
+|(g, f)| if and only if
+\[ s_n(x) = \sum_{k=0}^n \frac{\pair{g(\bar f(t))^{-1}\bar f(t)^k}{x^n}}{c_k} x^k \]</em></p>
+<p><a href="#MultiplicationTheorem"><strong>Theorem</strong> (Multiplication Theorem):</a>
+<em>Let |\pseq{s_n(x)}{n}| be Appell for |g|, then
+\[ s_n(\alpha x) = \alpha^n \frac{g(t)}{g(t/\alpha)} s_n(x) \]
+for |\alpha\neq 0|.</em></p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>This isn’t a basis because we’re allowing countably infinite sums of the elements
+of the pseudobasis, whereas for a basis, even with infinite elements, we’d be claiming that every
+element is a <em>finite</em> sum of the basis elements.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>As far as I can tell, “umbral operator” is used in the “classical” |c_n = n!| case
+while “transfer operator” is more general. I’m sure people use “umbral operator” generally too,
+though.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>]]></summary>
+</entry>
+<entry>
     <title>Arithmetic Functions</title>
-    <link href="https://derekelkins.github.io/posts/arithmetic-functions.html" />
-    <id>https://derekelkins.github.io/posts/arithmetic-functions.html</id>
+    <link href="https://www.hedonisticlearning.com/posts/arithmetic-functions.html" />
+    <id>https://www.hedonisticlearning.com/posts/arithmetic-functions.html</id>
     <published>2025-08-22 16:25:34-07:00</published>
     <updated>2025-08-22T23:25:34Z</updated>
     <summary type="html"><![CDATA[<h2 id="introduction">Introduction</h2>
@@ -22,6 +1345,47 @@ a variety of useful functions and theorems. This provides only a glimpse of the 
 field of analytic number theory, though many of these techniques are used in other places as we’ll
 also start to see.</p>
 <p>(See <a href="#summary">the end for a summary of identities and results</a>.)</p>
+<ul>
+<li><a href="#prelude">Prelude</a></li>
+<li><a href="#arithmetic-functions">Arithmetic Functions</a></li>
+<li><a href="#dirichlet-series">Dirichlet Series</a></li>
+<li><a href="#dirichlet-convolution">Dirichlet Convolution</a></li>
+<li><a href="#euler-product-formula">Euler Product Formula</a></li>
+<li><a href="#möbius-inversion">Möbius Inversion</a>
+<ul>
+<li><a href="#lambert-series">Lambert Series</a></li>
+<li><a href="#inclusion-exclusion">Inclusion-Exclusion</a></li>
+<li><a href="#varphi">|\varphi|</a></li>
+</ul></li>
+<li><a href="#combinatorial-species">Combinatorial Species</a></li>
+<li><a href="#derivative-of-dirichlet-series">Derivative of Dirichlet series</a></li>
+<li><a href="#dirichlet-inverse">Dirichlet Inverse</a></li>
+<li><a href="#more-examples">More Examples</a>
+<ul>
+<li><a href="#lambda-and-gamma">|\lambda| and |\gamma|</a></li>
+<li><a href="#indicator-functions">Indicator Functions</a></li>
+</ul></li>
+<li><a href="#summatory-functions">Summatory Functions</a>
+<ul>
+<li><a href="#mellin-transform">Mellin Transform</a></li>
+</ul></li>
+<li><a href="#summary">Summary</a>
+<ul>
+<li><a href="#properties">Properties</a>
+<ul>
+<li><a href="#dirichlet-convolution-1">Dirichlet Convolution</a></li>
+<li><a href="#dirichlet-inverse-1">Dirichlet Inverse</a></li>
+<li><a href="#convolution-theorem">Convolution Theorem</a></li>
+<li><a href="#möbius-inversion-1">Möbius Inversion</a></li>
+<li><a href="#dirichlet-series-1">Dirichlet Series</a></li>
+<li><a href="#euler-product-formula-1">Euler Product Formula</a></li>
+<li><a href="#lambert-series-1">Lambert Series</a></li>
+</ul></li>
+<li><a href="#arithmetic-function-definitions">Arithmetic function definitions</a></li>
+<li><a href="#dirichlet-convolutions">Dirichlet convolutions</a></li>
+<li><a href="#dirichlet-series-2">Dirichlet series</a></li>
+</ul></li>
+</ul>
 <h2 id="prelude">Prelude</h2>
 <p>As some notation, I’ll write |\mathbb N_+| for the set of positive naturals, and |\mathbb P| for
 the set of primes. |\mathbb N| will contain |0|. Slightly atypically, I’ll write |[n]| for the set
@@ -666,7 +2030,7 @@ interested in.</p>
 |\psi(x) = \sum_{n\leq x}’ \Lambda(n) = \sum_{n=1}^\infty \vartheta(x^{1/n})|</li>
 <li>The <a href="https://en.wikipedia.org/wiki/Prime_counting_function">prime-counting function</a>:
 |\pi(x) = \sum_{n\leq x}’ 1_{\mathbb P}|</li>
-<li><a href="https://en.wikipedia.org/wiki/Prime_counting_function#Riemann&#39;s_prime-power_counting_function">Riemann’s prime-power counting function</a>:
+<li>[Riemann’s prime-power counting function](https://en.wikipedia.org/wiki/Prime_counting_function#Riemann’s_prime-power_counting_function):
 |\Pi_0(x) = \sum_{n\leq x} \frac{\Lambda(n)}{\ln n}
 = \sum_{n=1}^\infty \sum_{p^n\leq x,p\in\mathbb P}’ n^{-1}
 = \sum_{n=1}^\infty\pi(x^{1/n})n^{-1}|</li>
@@ -874,8 +2238,8 @@ of the notion of a <a href="https://en.wikipedia.org/wiki/Category_algebra">cate
 </entry>
 <entry>
     <title>What difference lists actually are</title>
-    <link href="https://derekelkins.github.io/posts/functional-lists-are-not-difference-lists.html" />
-    <id>https://derekelkins.github.io/posts/functional-lists-are-not-difference-lists.html</id>
+    <link href="https://www.hedonisticlearning.com/posts/functional-lists-are-not-difference-lists.html" />
+    <id>https://www.hedonisticlearning.com/posts/functional-lists-are-not-difference-lists.html</id>
     <published>2025-04-12 16:25:24-07:00</published>
     <updated>2025-04-12T23:25:24Z</updated>
     <summary type="html"><![CDATA[<h2 id="introduction">Introduction</h2>
@@ -1039,37 +2403,37 @@ tr.odd {
 <col style="width: 46%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th>Functional Representation</th>
 <th>Difference Lists</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>constant-time concatenation</td>
 <td>constant-time concatenation</td>
 </tr>
-<tr class="even">
+<tr>
 <td>constant-time conversion from a list (though you pay for it later)</td>
 <td>O(n) conversion from a list</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>persistent</td>
 <td>non-persistent, requires linear use</td>
 </tr>
-<tr class="even">
+<tr>
 <td>represented by a tree of closures</td>
 <td>represented by a pair of a list and a unification variable</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>O(n) (or worse!) conversion to a list</td>
 <td>constant-time conversion to a list</td>
 </tr>
-<tr class="even">
+<tr>
 <td>defunctionalized version can be implemented in pretty much any language</td>
 <td>requires at least single-assignment variables</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>unclear connection to being the difference of two lists (which two lists?)</td>
 <td>mathematical, if non-obvious, connection to being the difference of two (given) lists</td>
 </tr>
@@ -1129,8 +2493,8 @@ the notion of length mentioned before.<a href="#fnref4" class="footnote-back" ro
 </entry>
 <entry>
     <title>Classical First-Order Logic from the Perspective of Categorical Logic</title>
-    <link href="https://derekelkins.github.io/posts/categorical-logic-and-fol.html" />
-    <id>https://derekelkins.github.io/posts/categorical-logic-and-fol.html</id>
+    <link href="https://www.hedonisticlearning.com/posts/categorical-logic-and-fol.html" />
+    <id>https://www.hedonisticlearning.com/posts/categorical-logic-and-fol.html</id>
     <published>2024-10-24 17:55:55-07:00</published>
     <updated>2024-10-25T00:55:55Z</updated>
     <summary type="html"><![CDATA[<h2 id="introduction">Introduction</h2>
@@ -1288,8 +2652,8 @@ I would never put any of them forward as an acceptable foundational logic.<a hre
 </entry>
 <entry>
     <title>Global Rebuilding, Coroutines, and Defunctionalization</title>
-    <link href="https://derekelkins.github.io/posts/global-rebuilding-coroutines-and-defunctionalization.html" />
-    <id>https://derekelkins.github.io/posts/global-rebuilding-coroutines-and-defunctionalization.html</id>
+    <link href="https://www.hedonisticlearning.com/posts/global-rebuilding-coroutines-and-defunctionalization.html" />
+    <id>https://www.hedonisticlearning.com/posts/global-rebuilding-coroutines-and-defunctionalization.html</id>
     <published>2024-10-04 01:24:57-07:00</published>
     <updated>2024-10-04T08:24:57Z</updated>
     <summary type="html"><![CDATA[<h2 id="introduction">Introduction</h2>
@@ -1970,8 +3334,8 @@ constant factors, e.g. by better utilizing caches and disk I/O buffers.<a href=
 </entry>
 <entry>
     <title>Morleyization</title>
-    <link href="https://derekelkins.github.io/posts/morleyization.html" />
-    <id>https://derekelkins.github.io/posts/morleyization.html</id>
+    <link href="https://www.hedonisticlearning.com/posts/morleyization.html" />
+    <id>https://www.hedonisticlearning.com/posts/morleyization.html</id>
     <published>2024-07-18 19:35:18-07:00</published>
     <updated>2024-07-19T02:35:18Z</updated>
     <summary type="html"><![CDATA[<h2 id="introduction">Introduction</h2>
@@ -2277,8 +3641,8 @@ included in the image of the disjunction for it to lead to |\to| in the target b
 </entry>
 <entry>
     <title>The Pullback Lemma in Gory Detail (Redux)</title>
-    <link href="https://derekelkins.github.io/posts/the-pullback-lemma-in-gory-detail-redux.html" />
-    <id>https://derekelkins.github.io/posts/the-pullback-lemma-in-gory-detail-redux.html</id>
+    <link href="https://www.hedonisticlearning.com/posts/the-pullback-lemma-in-gory-detail-redux.html" />
+    <id>https://www.hedonisticlearning.com/posts/the-pullback-lemma-in-gory-detail-redux.html</id>
     <published>2024-01-14 17:33:54-08:00</published>
     <updated>2024-01-15T01:33:54Z</updated>
     <summary type="html"><![CDATA[<h2 id="introduction">Introduction</h2>
@@ -2340,8 +3704,8 @@ We see that |v_2 = p_2 \circ \langle v_1, v_2\rangle = p_2 \circ q_2|.</p>
 </entry>
 <entry>
     <title>Universal Quantification and Infinite Conjunction</title>
-    <link href="https://derekelkins.github.io/posts/universal-quantification-and-infinite-conjunction.html" />
-    <id>https://derekelkins.github.io/posts/universal-quantification-and-infinite-conjunction.html</id>
+    <link href="https://www.hedonisticlearning.com/posts/universal-quantification-and-infinite-conjunction.html" />
+    <id>https://www.hedonisticlearning.com/posts/universal-quantification-and-infinite-conjunction.html</id>
     <published>2024-01-02 22:00:41-08:00</published>
     <updated>2024-01-03T06:00:41Z</updated>
     <summary type="html"><![CDATA[<script>
@@ -2711,8 +4075,8 @@ arbitrary Boolean-algebra-valued semantics.<a href="#fnref7" class="footnote-bac
 </entry>
 <entry>
     <title>What is the coproduct of two groups?</title>
-    <link href="https://derekelkins.github.io/posts/what-is-the-coproduct-of-two-groups.html" />
-    <id>https://derekelkins.github.io/posts/what-is-the-coproduct-of-two-groups.html</id>
+    <link href="https://www.hedonisticlearning.com/posts/what-is-the-coproduct-of-two-groups.html" />
+    <id>https://www.hedonisticlearning.com/posts/what-is-the-coproduct-of-two-groups.html</id>
     <published>2023-12-21 18:47:57-08:00</published>
     <updated>2023-12-22T02:47:57Z</updated>
     <summary type="html"><![CDATA[<h2 id="introduction">Introduction</h2>
@@ -3061,8 +4425,8 @@ coproducts described, you can get all the rest via filtered colimits.</p>]]></su
 </entry>
 <entry>
     <title>Preserving, Reflecting, and Creating Limits</title>
-    <link href="https://derekelkins.github.io/posts/preserves-reflects-creates.html" />
-    <id>https://derekelkins.github.io/posts/preserves-reflects-creates.html</id>
+    <link href="https://www.hedonisticlearning.com/posts/preserves-reflects-creates.html" />
+    <id>https://www.hedonisticlearning.com/posts/preserves-reflects-creates.html</id>
     <published>2023-03-20 22:39:28-07:00</published>
     <updated>2023-03-21T05:39:28Z</updated>
     <summary type="html"><![CDATA[<h2 id="introduction">Introduction</h2>
@@ -3123,209 +4487,6 @@ It’s just that we don’t have any cones with both |c| and |d| in them.</p>
 a monotonic function. |F| reflects limits if every lower bound that |F| maps to a meet is
 already a meet. |F| creates limits if whenever |F[U]| has a meet for |U \subseteq X|, then |U|
 already had a meet and |F| sends the meet of |U| to the meet of |F[U]|.</p>]]></summary>
-</entry>
-<entry>
-    <title>Overlaps</title>
-    <link href="https://derekelkins.github.io/posts/overlaps.html" />
-    <id>https://derekelkins.github.io/posts/overlaps.html</id>
-    <published>2021-01-05 19:46:59-08:00</published>
-    <updated>2021-01-06T03:46:59Z</updated>
-    <summary type="html"><![CDATA[<p><strong>tl;dr</strong> The notion of two sets overlapping is very common. Often it is expressed
-via |A \cap B \neq \varnothing|. Constructively, this is not the best definition
-as it does not imply |\exists x. x \in A \land x \in B|. Even classically, this
-second-class treatment of overlapping obscures important and useful connections.
-In particular, writing |U \between A| for “|U| overlaps |A|”, we have a De Morgan-like
-duality situation with |\between| being dual to |\subseteq|. Recognizing and
-exploiting this duality, in part by using more appropriate notation for “overlaps”,
-can lead to new concepts and connections.</p>
-<h3 id="introduction">Introduction</h3>
-<p>The most common way I’ve seen the statement “|A| overlaps |B|” formalized
-is |A \cap B \neq \varnothing|. To a constructivist, this definition isn’t
-very satisfying. In particular, this definition of overlaps does not allow
-us to constructively conclude that there exists an element contained in both
-|A| and |B|. That is, |A \cap B \neq \varnothing| does not imply
-|\exists x. x \in A \land x \in B| constructively.</p>
-<p>As is usually the case, even if you are not philosophically a constructivist,
-taking a constructivist perspective can often lead to better definitions and
-easier to see connections. In this case, constructivism suggests the more positive
-statement |\exists x. x \in A \land x \in B| be the definition of “overlaps”.
-However, given that we now have two (constructively) non-equivalent definitions,
-it is better to introduce notation to abstract from the particular definition. In
-many cases, it makes sense to have a primitive notion of “overlaps”. Here I will
-use the notation |A \between B| which is the most common option I’ve seen.</p>
-<h3 id="properties">Properties</h3>
-<p>We can more compactly write the quantifier-based definition as |\exists x \in A.x \in B|
-using a common set-theoretic abbreviation. This presentation suggests a perhaps surprising
-connection. If we swap the quantifier, we get |\forall x\in A.x \in B| which is commonly
-abbreviated |A \subseteq B|. This leads to a duality between |\subseteq| and |\between|,
-particularly in topological contexts. In particular, if we pick a containing set |X|,
-then |\neg(U \between A) \iff U \subseteq A^c| where the complement is relative to |X|,
-and |A| is assumed to be a subset of |X|. This is a De Morgan-like duality.</p>
-<p>If we want to characterize these operations via an adjunction, or, more precisely, a Galois
-connection, we have a slight awkwardness arising from |\subseteq| and |\between| being
-binary predicates on sets. So, as a first step we’ll identify sets with predicates via, for
-a set |A|, |\underline A(x) \equiv x \in A|. In terms of predicates, the adjunctions we
-want are just a special case of the adjunctions characterizing the quantifiers.</p>
-<p>\[\underline U(x) \land P \to \underline A(x) \iff P \to U \subseteq A\]</p>
-<p>\[U \between B \to Q \iff \underline B(x) \to (\underline U(x) \to Q)\]</p>
-<p>What we actually want is a formula of the form |U \between B \to Q \iff B \subseteq (\dots)|.
-To do this, we need an operation that will allow us to produce a set from a predicate. This is
-exactly what set comprehension does. For reasons that will become increasingly clear, we’ll
-assume that |A| and |B| are subsets of a set |X|. We will then consider quantification relative
-to |X|. The result we get is:</p>
-<p>\[\{x \in U \mid P\} \subseteq A \iff \{x \in X \mid x \in U \land P\} \subseteq A \iff P \to U \subseteq A\]</p>
-<p>\[U \between B \to Q \iff B \subseteq \{x \in X \mid x \in U \to Q\} \iff B \subseteq \{x \in U \mid \neg Q\}^c\]</p>
-<p>The first and last equivalences require additionally assuming |U \subseteq X|.
-The last equivalence requires classical reasoning. You can already see motivation to
-limit to subsets of |X| here. First, set complementation, the |(-)^c|, only makes sense relative to
-some containing set. Next, if we choose |Q \equiv \top|, then the latter formulas
-state that <em>no matter what |B| is</em> it should be a subset of the expression that
-follows it. Without constraining to subsets of |X|, this would require a universal
-set which doesn’t exist in typical set theories.</p>
-<p>Choosing |P| as |\top|, |Q| as |\bot|, and |B| as |A^c| leads to the
-familiar |\neg (U \between A^c) \iff U \subseteq A|, i.e. |U| is a
-subset of |A| if and only if it doesn’t overlap |A|’s complement.</p>
-<p>Incidentally, characterizing |\subseteq| and |\between| in terms of Galois
-connections, i.e. adjunctions, immediately gives us some properties for free via continuity.
-We have |U \subseteq \bigcap_{i \in I}A_i \iff \forall i\in I.U \subseteq A_i|
-and |U \between \bigcup_{i \in I}A_i \iff \exists i \in I.U \between A_i|. This
-is relative to a containing set |X|, so |\bigcap_{i \in \varnothing}A_i = X|, and |U|
-and each |A_i| are assumed to be subsets of |X|.</p>
-<h3 id="categorical-perspective">Categorical Perspective</h3>
-<p>Below I’ll perform a categorical analysis of the situation. I’ll mostly be using categorical
-notation and perspectives to manipulate normal sets. That said, almost all of what I say will
-be able to be generalized immediately just by reinterpreting the symbols.</p>
-<p>To make things a bit cleaner in the future, and to make it easier to apply these ideas
-beyond sets, I’ll introduce the concept of a <a href="https://en.wikipedia.org/wiki/Heyting_algebra">Heyting algebra</a>.
-A Heyting algebra is a partially ordered set |H| satisfying the following:</p>
-<ol type="1">
-<li>|H| has two elements called |\top| and |\bot| satisfying for all |x| in |H|, |\bot \leq x \leq \top|.</li>
-<li>We have operations |\land| and |\lor| satisfying for all |x|, |y|, |z| in |H|,
-|x \leq y \land z| if and only |x \leq y| and |x \leq z|, and similarly for |\lor|,
-|x \lor y \leq z| if and only |x \leq z| and |y \leq z|.</li>
-<li>We have an operation |\to| satisfying for all |x|, |y|, and |z| in |H|,
-|x \land y \leq z| if and only if |x \leq y \to z|.</li>
-</ol>
-<p>For those familiar with category theory, you might recognize this as simply the decategorification
-of the notion of a <a href="https://ncatlab.org/nlab/show/bicartesian+closed+category">bicartesian closed category</a>.
-We can define the <strong>pseudo-complement</strong>, |\neg x \equiv x \to \bot|.</p>
-<p>Any <a href="https://en.wikipedia.org/wiki/Boolean_algebra_(structure)">Boolean algebra</a> is an
-example of a Heyting algebra where we can define |x \to y| via |\neg x \lor y| where
-here |\neg| is taken as primitive. In particular, subsets of a given set ordered by
-inclusion form a Boolean algebra, and thus a Heyting algebra. The |\to| operation can also
-be characterized by |x \leq y \iff (x \to y) = \top|. This lets us immediately see
-that for subsets of |X|, |(A \to B) = \{x \in X \mid x \in A \to x \in B\}|. All
-this can be generalized to the subobjects in any <a href="https://ncatlab.org/nlab/show/Heyting+category">Heyting category</a>.</p>
-<p>As the notation suggests, intuitionistic logic (and thus classical logic) is another
-example of a Heyting algebra.</p>
-<p>We’ll write |\mathsf{Sub}(X)| for the partially ordered set of subsets of |X| ordered
-by inclusion. As mentioned above, this is (classically) a Boolean algebra and thus a
-Heyting algebra. Any function |f : X \to Y| gives a monotonic function
-|f^* : \mathsf{Sub}(Y) \to \mathsf{Sub}(X)|. Note the swap. |f^*(U) \equiv f^{-1}(U)|.
-(Alternatively, if we think of subsets in terms of characteristic functions, |f^*(U) \equiv U \circ f|.)
-Earlier, we needed a way to turn predicates into sets. In this case, we’ll go the other way
-and identify truth values with subsets of |1| where |1| stands for an arbitrary singleton set.
-That is, |\mathsf{Sub}(1)| is the poset of truth values. |1| being the terminal object of |\mathbf{Set}|
-induces the (unique) function |!_U : U \to 1| for any set |U|. This leads to the important
-monotonic function |!_U^* : \mathsf{Sub}(1) \to \mathsf{Sub}(U)|. This can be described
-as |!_U^*(P) = \{x \in U \mid P\}|. Note, |P| cannot contain |x| as a free variable.
-In particular |!_U^*(\bot) = \varnothing| and |!_U^*(\top) = U|. This monotonic function
-has left and right adjoints:</p>
-<p>\[\exists_U \dashv {!_U^*} \dashv \forall_U : \mathsf{Sub}(U) \to \mathsf{Sub}(1)\]</p>
-<p>|F \dashv G| for monotonic functions |F : X \to Y| and |G : Y \to X|
-means |\forall x \in X. \forall y \in Y.F(x) \leq_Y y \iff x \leq_X G(y)|.</p>
-<p>|\exists_U(A) \equiv \exists x \in U. x \in A| and |\forall_U(A) \equiv \forall x \in U. x \in A|.
-It’s easily verified that each of these functions are monotonic.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
-<p>It seems like we should be done. These formulas are the formulas I originally gave for
-|\between| and |\subseteq| in terms of quantifiers. The problem here is that these functions
-are only defined for subsets of |U|. This is especially bad for interpreting |U \between A|
-as |\exists_U(A)| as it excludes most of the interesting cases where |U| partially overlaps |A|.
-What we need is a way to extend |\exists_U| / |\forall_U| beyond subsets of |U|. That is,
-we need a suitable monotonic function |\mathsf{Sub}(X) \to \mathsf{Sub}(U)|.</p>
-<p>Assume |U \subseteq X| and that we have an inclusion |\iota_U : U \hookrightarrow X|.
-Then |\iota_U^* : \mathsf{Sub}(X) \to \mathsf{Sub}(U)| and |\iota_U^*(A) = U \cap A|.
-This will indeed allow us to define |\subseteq| and |\between| as |U \subseteq A \equiv \forall_U(\iota_U^*(A))|
-and |U \between A \equiv \exists_U(\iota_U^*(A))|. We have:</p>
-<p>\[\iota_U[-] \dashv \iota_U^* \dashv U \to \iota_U[-] : \mathsf{Sub}(U) \to \mathsf{Sub}(X)\]</p>
-<p>Here, |\iota_U[-]| is the direct image of |\iota_U|. This doesn’t really do anything in this case
-except witness that if |A \subseteq U| then |A \subseteq X| because |U \subseteq X|.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
-<p>We can recover the earlier adjunctions by simply using these two pairs of adjunctions.
-\[\begin{align}
-U \between B \to Q
-&amp; \iff \exists_U(\iota_U^*(B)) \to Q \\
-&amp; \iff \iota_U^*(B) \subseteq {!}_U^*(Q) \\
-&amp; \iff B \subseteq U \to \iota_U[{!}_U^*(Q)] \\
-&amp; \iff B \subseteq \{x \in X \mid x \in U \to Q\}
-\end{align}\]</p>
-<p>Here the |\iota_U[-]| is crucial so that we use the |\to| of |\mathsf{Sub}(X)|
-and not |\mathsf{Sub}(U)|.</p>
-<p>\[\begin{align}
-P \to U \subseteq A
-&amp; \iff P \to \forall_U(\iota_U^*(A)) \\
-&amp; \iff {!}_U^*(P) \subseteq \iota_U^*(A) \\
-&amp; \iff \iota_U[{!}_U^*(P)] \subseteq A \\
-&amp; \iff \{x \in X \mid x \in U \land P\} \subseteq A
-\end{align}\]</p>
-<p>In this case, the |\iota_U[-]| is truly doing nothing because |\{x \in X \mid x \in U \land P\}|
-is the same as |\{x \in U \mid P\}|.</p>
-<p>While we have |{!}_U^* \circ \exists_U \dashv {!}_U^* \circ \forall_U|, we
-see that the inclusion of |\iota_U^*| is what breaks the direct connection between
-|U \between A| and |U \subseteq A|.</p>
-<h3 id="examples">Examples</h3>
-<p>As a first example, write |\mathsf{Int}A| for the <strong>interior</strong> of |A| and |\bar A| for the <strong>closure</strong> of |A|
-each with respect to some <a href="https://en.wikipedia.org/wiki/Topological_space#Definition_via_open_sets">topology</a>
-on a containing set |X|.
-One way to define |\mathsf{Int}A| is |x \in \mathsf{Int}A| if and only if there exists an open set
-containing |x| that’s a subset of |A|. Writing |\mathcal O(X)| for the set of open sets, we
-can express this definition in symbols:
-\[x \in \mathsf{Int}A \iff \exists U \in \mathcal O(X). x \in U \land U \subseteq A\]
-We have a “dual” notion:
-\[x \in \bar A \iff \forall U \in \mathcal O(X). x \in U \to U \between A\]
-That is, |x| is in the closure of |A| if and only if every open set containing |x| overlaps |A|.</p>
-<p>As another example, here is a fairly unusual way of characterizing a compact subset |Q|.
-|Q| is <strong>compact</strong> if and only if |\{U \in \mathcal O(X) \mid Q \subseteq U\}| is open
-in |\mathcal O(X)| equipped with the <a href="https://ncatlab.org/nlab/show/Scott+topology">Scott topology</a><a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>.
-As before, this suggests a “dual” notion characterized by |\{U \in \mathcal O(X) \mid O \between U\}|
-being an open subset. A set |O| satisfying this is called <a href="https://ncatlab.org/nlab/show/overt+space"><strong>overt</strong></a>.
-This concept is never mentioned in traditional presentations of point-set topology because <em>every</em>
-subset is overt. However, if we don’t require that <em>arbitrary</em> unions of open sets are open (and only require
-finite unions to be open) as happens in <a href="https://ncatlab.org/nlab/show/synthetic+topology">synthetic topology</a>
-or if we aren’t working in a classical context then overtness becomes a meaningful concept.</p>
-<p>One benefit of the intersection-based definition of overlaps is that it is
-straightforward to generalize to many sets overlapping, namely |\bigcap_{i\in I} A_i \neq \varnothing|.
-This is also readily expressible using quantifiers as: |\exists x.\forall i \in I. x \in A_i|.
-As before, having an explicit “universe” set also clarifies this. So,
-|\exists x \in X.\forall i \in I. x \in A_i| with |\forall i \in I. A_i \subseteq X| would
-be better. The connection of |\between| to |\subseteq| suggests instead of this fully
-symmetric presentation, it may still be worthwhile to single out a set producing
-|\exists x \in U.\forall i \in I. x \in A_i| where |U \subseteq X|. This can be
-read as “there is a point in |U| that touches/meets/overlaps every |A_i|”.
-If desired we could notate this as |U \between \bigcap_{i \in I}A_i|. Negating and
-complementing the |A_i| leads to the dual notion |\forall x \in U.\exists i \in I.x \in A_i|
-which is equivalent to |U \subseteq \bigcup_{i \in I}A_i|. This dual notion could
-be read as “the |A_i| (jointly) cover |U|” which is another common and important concept
-in mathematics.</p>
-<h3 id="conclusion">Conclusion</h3>
-<p>Ultimately, the concept of two (or more) sets overlapping comes up quite often. The usual
-circumlocution, |A \cap B \neq \varnothing|, is both notationally and conceptually clumsy.
-Treating overlapping as a first-class notion via notation and formulating definitions in terms
-of it can reveal some common and important patterns.</p>
-<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
-<hr />
-<ol>
-<li id="fn1"><p>If one wanted to be super pedantic, I should technically write something like
-|\{\star \mid \exists x \in U. x \in A\}| where |1 = \{\star\}|
-because elements of |\mathsf{Sub}(1)| are subsets of |1|. Instead, we’ll conflate subsets
-of |1| and truth values.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>If we think
-of subobjects as (equivalence classes of) monomorphisms as is typical in category theory,
-then because |\iota_U| is itself a monomorphism, the direct image, |\iota_U[-]|, is simply
-post-composition by |\iota_U|, i.e. |\iota_U \circ {-}|.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3"><p>The
-Scott topology is the natural topology on the space of continuous functions |X \to \Sigma| where
-|\Sigma| is the <a href="https://en.wikipedia.org/wiki/Sierpi%C5%84ski_space">Sierpinski space</a>.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-</ol>
-</section>]]></summary>
 </entry>
 
 </feed>

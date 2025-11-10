@@ -43,11 +43,11 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">Category Theory, Syntactically</h2>
     <p class="blog-post-meta">November 25, 2016 06:23 UTC 
         
-        (Last updated on September 10, 2024 18:52 UTC)
+        (Last updated on October 27, 2025 05:05 UTC)
     </p>
     <h6 class="blog-post-meta">
         
-        Tags: <a title="All pages tagged 'programming'." href="../tags/programming.html">programming</a>, <a title="All pages tagged 'math'." href="../tags/math.html">math</a>, <a title="All pages tagged 'category theory'." href="../tags/category%20theory.html">category theory</a>
+        Tags: <a title="All pages tagged 'programming'." href="../tags/programming.html" rel="tag">programming</a>, <a title="All pages tagged 'math'." href="../tags/math.html" rel="tag">math</a>, <a title="All pages tagged 'category theory'." href="../tags/category%20theory.html" rel="tag">category theory</a>
         
     </h6>
 
@@ -321,7 +321,7 @@ and the equation on |\mathtt{id}| is exactly the homomorphism law.</p>
 sort |B| and |C|, every function symbol |\mathtt{f} : C \to D|, and every term |t : B \to C|:</p>
 <p>\[\alpha_D(\mathtt{f}(t)) = [\! [\mathtt{f}]\!]^\mathcal{I}(\alpha_C(t))\]</p>
 <p>Looking at this equation, the possibility of viewing it as a recursive “definition” leaps out
-suggesting that the action of |\alpha| is completely determined by it’s action on the variables. Something
+suggesting that the action of |\alpha| is completely determined by its action on the variables. Something
 like this, for example:</p>
 <p>\[\alpha_D(\mathtt{f}(\mathtt{g}(\mathtt{h}(\mathbf{x}_A)))) = [\! [\mathtt{f}]\!] (\alpha_C(\mathtt{g}(\mathtt{h}(\mathbf{x}_A)))) = [\! [\mathtt{f}]\!] ([\! [\mathtt{g}]\!] (\alpha_B(\mathtt{h}(\mathbf{x}_A)))) = [\! [\mathtt{f}]\!] ([\! [\mathtt{g}]\!] ([\! [\mathtt{h}]\!] (\alpha_A(\mathbf{x}_A))))\]</p>
 <p>We can easily establish that there’s a one-to-one correspondence between the
@@ -344,7 +344,7 @@ via the following definition:</p>
 <p>Verifying that this is a homomorphism is straightforward:</p>
 <p>\[(\alpha \cdot \mathtt{g})(\mathtt{f}(t)) = \alpha(\mathtt{f}(t(\mathtt{g}(\mathbf{x}_A)))) = [\! [\mathtt{f}]\!] (\alpha(t(\mathtt{g}(\mathbf{x}_A)))) = [\! [\mathtt{f}]\!] ((\alpha \cdot \mathtt{g})(t))\]</p>
 <p>and like any homomorphism of this form, as we’ve just established, it is completely determined by
-it’s action on variables, namely |(\alpha \cdot \mathtt{g})_A(\mathbf{x}_A) = \alpha_X(\mathtt{g}(\mathbf{x}_A)) = [\! [\mathtt{g}]\!] (\alpha_A(\mathbf{x}_A))|.
+its action on variables, namely |(\alpha \cdot \mathtt{g})_A(\mathbf{x}_A) = \alpha_X(\mathtt{g}(\mathbf{x}_A)) = [\! [\mathtt{g}]\!] (\alpha_A(\mathbf{x}_A))|.
 In particular, if |\alpha = a^{*}|, then we have |a^{*} \cdot \mathtt{g} = ([\! [\mathtt{g}]\!] (a))^{*}|.
 Together these facts establish that we have an interpretation |\mathcal{Y} : \mathcal{T} \to \mathbf{Set}| such
 that |[\! [A]\!]^\mathcal{Y} \equiv (\mathcal{T}(A, {-}) \to \mathcal{I})|, the <em>set</em> of homomorphisms, and |[\! [\mathtt{g}]\!]^\mathcal{Y}(\alpha) \equiv \alpha \cdot \mathtt{g}|.
