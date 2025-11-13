@@ -35,7 +35,7 @@ The variables like |b| were the “shadow” or “umbral” variables.</p>
 Let |\varepsilon_y| be the linear operator on polynomials satisfying
 |\varepsilon_y p(x) = p(x + y)|. Since |D_x[\varepsilon_y p(x)] = \varepsilon_y D_x p(x)|
 for all |y| where |D_x| is differentiation by |x|, |\varepsilon_y| is induced from a formal power
-series. In particular, |\varepsilon_y = e^{yD_x}|.</p>
+series in |D_x|. In particular, |\varepsilon_y = e^{yD_x}|.</p>
 <p>Let |T| be the linear operator (the transfer or umbral operator) characterized by mapping |x^n| to
 |B_n(x)| representing a change of basis on the vector space of polynomials. We can apply |T| to the
 equation
@@ -61,12 +61,13 @@ argument.</p>
 different formulas, but they will be structurally similar.</p>
 <p>In a different direction, we can ask for formal power series and polynomial sequences that
 relate to each other the way |D_x| and |x^n| do. We say that a polynomial sequence |s_n(x)| is
-<strong>Sheffer</strong> for a pair |(g(t), f(t))| with |\deg g = 0| and |\deg f = 1| when
-|\pair{g(t)f(t)^k}{s_n(x)} = c_n\delta_k^n|. This has |g(t)f(t)^k| taking the
-place of |t^k| and |s_n(x)| taking the place of |x^n|. This would let us transfer identities
-involving the |s_n(x)| to any linear operator that commutes with |g(t)f(t)|. While changing |c|
-changes our notion of “differentiation”, using a Sheffer sequence allows us to consider other
-“differential operators” using the same notion of “differentiation”.</p>
+<strong>Sheffer</strong> for a pair of formal power series |(g(t), f(t))| with |\deg g = 0| and |\deg f = 1|
+when |\pair{g(t)f(t)^k}{s_n(x)} = c_n\delta_k^n|. (This inner-product-like notation will be
+defined later, but the key thing is that this mirrors |\pair{t^k}{x^n} = c_n\delta_k^n|.)
+This has |g(t)f(t)^k| taking the place of |t^k| and |s_n(x)| taking the place of |x^n|. This
+would let us transfer identities involving the |s_n(x)| to any linear operator that commutes with
+|g(t)f(t)|. While changing |c| changes our notion of “differentiation”, using a Sheffer sequence
+allows us to consider other “differential operators” using the same notion of “differentiation”.</p>
 <p>This is based primarily off of works by Steven Roman and Gian-Carlo Rota.
 It closely follows <a href="https://doi.org/10.1016/0022-247X(82)90154-8">The Theory of the Umbral Calculus. I</a>
 by Steven Roman (1982). See also <a href="http://sroman.com/MBOOKS/MathUmbral.htm">The Umbral Calculus</a>
@@ -74,6 +75,7 @@ by Steven Roman (1984).</p>
 <p>I’ll include proofs below to illustrate that each bit of reasoning is fairly straightforward.</p>
 <!-- vim-markdown-toc GFM -->
 <ul>
+<li><a href="#overview">Overview</a></li>
 <li><a href="#conventions">Conventions</a></li>
 <li><a href="#formal-power-series">Formal Power Series</a></li>
 <li><a href="#linear-functionals">Linear Functionals</a>
@@ -95,6 +97,29 @@ by Steven Roman (1984).</p>
 <li><a href="#summary">Summary</a></li>
 </ul>
 <!-- vim-markdown-toc -->
+<h2 id="overview">Overview</h2>
+<p>One of the key ideas of umbral calculus is the relation of four vector spaces: the space of
+polynomials, its dual space, i.e. linear functionals on the space of polynomials, linear operators,
+i.e. endomorphisms, on the space of polynomials, and the space of formal power series. It will turn
+out that the space of formal power series and the space of linear functionals on the space of
+polynomials are isomorphic not just as vector spaces but as algebras. Further, we can embed
+the space of formal power series as a commutative sub-algebra of the space of linear operators on
+the space of polynomials. This latter view views formal power series as differential operators on
+polynomials. This gives us three perspectives on formal powers series and two ways they interact
+with polynomials.</p>
+<p>We’ll also be interested in linear operators on the space of polynomials that <em>aren’t</em> induced by
+formal power series such as the transfer or umbral operators and umbral shift operators. A transfer
+operator is essentially a “well-behaved” change of basis from the monomial basis. Umbral shift
+operators generalize the “multiply by |x|” operator. These operators will have adjoints that are
+linear operators on the space of formal power series.</p>
+<p>We’ll find that a linear operator on the space of formal power series is an adjoint of a linear
+operator on the space of polynomials if and only if it is continuous in a sense to be defined.
+Surjective <a href="https://en.wikipedia.org/wiki/Derivation_(differential_algebra)">derivations</a>
+on the space of formal power series will be exactly those adjoint to umbral shifts. Finally,
+continuous algebra automorphisms on the algebra of formal power series will be exactly those
+adjoint to transfer operators.</p>
+<p>Beyond these structural aspects, we’ll also derive many results for working with Sheffer sequences
+and polynomial sequences along the way.</p>
 <h2 id="conventions">Conventions</h2>
 <p>Fix a field |\mathbb K| of characteristic |0|. I’ll write |\mathscr F = \mathbb K[\![t]\!]|
 for the |\mathbb K|-algebra of univariate formal power series (with indeterminate |t|) and
@@ -497,7 +522,7 @@ if and only if |\pseq{g(t)s_n(x)}{n}| is the associated sequence for |f|.</em></
 <p><strong>Proof</strong>: Just apply adjointness to the definition. |\square|</p>
 <p><span id="cutg"><strong>Theorem</strong> (id:cutg):</span> <em>A sequence |\pseq{p_n(x)}{n}| is the associated sequence for
 |f| if and only if 1) |\pair{t^0}{p_n(x)} = c_0 \delta_n^0| for all |n \in \mathbb N|,
-and 2) |f(t) p_n(x) = \frac{c_n}{c_{n-1}}p_{n-1}(x)| for all |n \in \mathbb N|.</em></p>
+and 2) |f(t) p_n(x) = \frac{c_n}{c_{n-1}}p_{n-1}(x)| for all |n \in \mathbb N_+|.</em></p>
 <details>
 <summary>
 <strong>Proof</strong>: <span class="expander">(click to expand)</span>
@@ -1245,6 +1270,9 @@ simplifies to \[ 2xT_n(x) + T_{n+1}(x) + T_{n-1}(x) = 0 \]</p>
 = \left(xD - \frac{tg’(t)}{g(t)}\right)\frac{f(t)}{tf’(t)} \]</p>
 <p>This leads to |nT_n(x) = (xD - (1-t^2)^{-1})\sqrt{1-t^2}T_n(x)|.</p>
 <h2 id="summary">Summary</h2>
+<p>A formal power series |f| is <strong>invertible</strong> iff |\deg f = 0| and a <strong>delta series</strong> iff
+|\deg f = 1|. We call a linear functional/operator induced by an invertible/delta series an
+<strong>invertible</strong>/<strong>delta</strong> <strong>functional</strong>/<strong>operator</strong>.</p>
 <p>Defining property of |\pseq{s_n(x)}{n}| being <strong>Sheffer</strong> for |(g, f)| where |g| is an invertible
 series and |f| is a delta series:
 \[ \pair{g(t)f(t)^k}{s_n(x)} = \pair{t^k}{x^n} = c_n \delta_k^n \]</p>
@@ -1255,6 +1283,11 @@ and usually we’ll use |\pseq{p_n(x)}{n}| instead.</p>
 \[ t^k x^n = \frac{c_n}{c_{n-k}} x^{n-k} \]
 and generally,
 \[f(t) x^n = \sum_{k=0}^n \frac{c_n}{c_{n-k}} f_k x^{n-k} \]</p>
+<p>We can generalize this to Sheffer sequences a la
+\[h(f(t)) s_n(x) = \sum_{k=0}^n \frac{c_n}{c_{n-k}} h_k s_{n-k}(x) \]</p>
+<p>A linear operator |T| on |\mathscr F| is <strong>continuous</strong> if given
+|\pseq{f_k}{k}| such that |\deg f_k \to \infty| as |k \to \infty|, we have
+|\deg T(f_k) \to \infty| as |k \to \infty|.</p>
 <p>Given a linear operator |\mu| on |P|, the <strong>adjoint</strong> |\mu^*| is a linear operator on
 |\mathscr F| characterized by:
 \[ \pair{\mu^* f(t)}{p(x)} = \pair{f(t)}{\mu p(x)} \]</p>
@@ -1275,7 +1308,7 @@ for all |y \in \mathbb K|.*</p>
 for all |y \in \mathbb K| where |\pseq{p_n(x)}{n}| is associated to |f|.</em></p>
 <p><a href="#cutg"><strong>Theorem</strong> (id:cutg):</a> <em>A sequence |\pseq{p_n(x)}{n}| is the associated sequence for
 |f| if and only if 1) |\pair{t^0}{p_n(x)} = c_0 \delta_n^0| for all |n \in \mathbb N|,
-and 2) |f(t) p_n(x) = \frac{c_n}{c_{n-1}}p_{n-1}(x)| for all |n \in \mathbb N|.</em></p>
+and 2) |f(t) p_n(x) = \frac{c_n}{c_{n-1}}p_{n-1}(x)| for all |n \in \mathbb N_+|.</em></p>
 <p><a href="#TransferFormula"><strong>Theorem</strong> (Transfer Formula):</a> <em>If |\pseq{p_n(x)}{n}| is the
 associated sequence of |f|, then
 \[ p_n(x) = f’(t)\left(\frac{t}{f(t)}\right)^{n+1} x^n \]
