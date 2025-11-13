@@ -43,11 +43,11 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">Arithmetic Functions</h2>
     <p class="blog-post-meta">August 22, 2025 23:25 UTC 
         
-        (Last updated on August 25, 2025 00:00 UTC)
+        (Last updated on November 13, 2025 11:22 UTC)
     </p>
     <h6 class="blog-post-meta">
         
-        Tags: <a title="All pages tagged 'math'." href="../tags/math.html">math</a>, <a title="All pages tagged 'number theory'." href="../tags/number%20theory.html">number theory</a>
+        Tags: <a title="All pages tagged 'math'." href="../tags/math.html" rel="tag">math</a>, <a title="All pages tagged 'number theory'." href="../tags/number%20theory.html" rel="tag">number theory</a>
         
     </h6>
 
@@ -58,6 +58,47 @@ a variety of useful functions and theorems. This provides only a glimpse of the 
 field of analytic number theory, though many of these techniques are used in other places as we’ll
 also start to see.</p>
 <p>(See <a href="#summary">the end for a summary of identities and results</a>.)</p>
+<ul>
+<li><a href="#prelude">Prelude</a></li>
+<li><a href="#arithmetic-functions">Arithmetic Functions</a></li>
+<li><a href="#dirichlet-series">Dirichlet Series</a></li>
+<li><a href="#dirichlet-convolution">Dirichlet Convolution</a></li>
+<li><a href="#euler-product-formula">Euler Product Formula</a></li>
+<li><a href="#möbius-inversion">Möbius Inversion</a>
+<ul>
+<li><a href="#lambert-series">Lambert Series</a></li>
+<li><a href="#inclusion-exclusion">Inclusion-Exclusion</a></li>
+<li><a href="#varphi">|\varphi|</a></li>
+</ul></li>
+<li><a href="#combinatorial-species">Combinatorial Species</a></li>
+<li><a href="#derivative-of-dirichlet-series">Derivative of Dirichlet series</a></li>
+<li><a href="#dirichlet-inverse">Dirichlet Inverse</a></li>
+<li><a href="#more-examples">More Examples</a>
+<ul>
+<li><a href="#lambda-and-gamma">|\lambda| and |\gamma|</a></li>
+<li><a href="#indicator-functions">Indicator Functions</a></li>
+</ul></li>
+<li><a href="#summatory-functions">Summatory Functions</a>
+<ul>
+<li><a href="#mellin-transform">Mellin Transform</a></li>
+</ul></li>
+<li><a href="#summary">Summary</a>
+<ul>
+<li><a href="#properties">Properties</a>
+<ul>
+<li><a href="#dirichlet-convolution-1">Dirichlet Convolution</a></li>
+<li><a href="#dirichlet-inverse-1">Dirichlet Inverse</a></li>
+<li><a href="#convolution-theorem">Convolution Theorem</a></li>
+<li><a href="#möbius-inversion-1">Möbius Inversion</a></li>
+<li><a href="#dirichlet-series-1">Dirichlet Series</a></li>
+<li><a href="#euler-product-formula-1">Euler Product Formula</a></li>
+<li><a href="#lambert-series-1">Lambert Series</a></li>
+</ul></li>
+<li><a href="#arithmetic-function-definitions">Arithmetic function definitions</a></li>
+<li><a href="#dirichlet-convolutions">Dirichlet convolutions</a></li>
+<li><a href="#dirichlet-series-2">Dirichlet series</a></li>
+</ul></li>
+</ul>
 <h2 id="prelude">Prelude</h2>
 <p>As some notation, I’ll write |\mathbb N_+| for the set of positive naturals, and |\mathbb P| for
 the set of primes. |\mathbb N| will contain |0|. Slightly atypically, I’ll write |[n]| for the set
@@ -112,8 +153,8 @@ makes sense.</p>
 <li>Choosing |z=0| in the previous, we see the constantly one function |\bar 1(n) = 1| is completely
 multiplicative.</li>
 <li>The identity function is clearly completely multiplicative and is also the |z=1| case of the above.</li>
-<li>The Kronecker delta function |\delta(n) = \begin{cases}1, &amp; n = 0 \\ 0, &amp; n \neq 0\end{cases}|
-is completely multiplicative. Often written |\varepsilon| in this context.</li>
+<li>The unit function, i.e. the indicator function for |1|, is |\varepsilon(n) = \begin{cases}1, &amp; n = 1 \\ 0, &amp; n \neq 1\end{cases}|
+and is completely multiplicative.</li>
 <li>Define a multiplicative function via |\mu(p^n) = \begin{cases} -1, &amp; n = 1 \\ 0, &amp; n &gt; 1\end{cases}|
 where |p| is prime. This is the <a href="https://en.wikipedia.org/wiki/M%C3%B6bius_function">Möbius function</a>.
 More holistically, |\mu(n)| is |0| if |n| has any square factors, otherwise |\mu(n) = (-1)^k|
@@ -189,8 +230,8 @@ of the form |f(a)a^{-s}g(b)b^{-s} = f(a)g(b)(ab)^{-s}| where |ab = n|. We can th
 |h = f \star g| which we’ll call <a href="https://en.wikipedia.org/wiki/Dirichlet_convolution"><strong>Dirichlet convolution</strong></a>.
 We have thus shown a <strong>convolution theorem</strong> of the form
 \[\mathcal D[f]\mathcal D[g] = \mathcal D[f \star g]\]</p>
-<p>The Kronecker delta serves as a unit to this operation which is reflected by
-|\mathcal D[\delta](s) = 1|.</p>
+<p>The unit function serves as a unit to this operation which is reflected by
+|\mathcal D[\varepsilon](s) = 1|.</p>
 <p>In the same way we can view a sum of the form |\sum_{a+b=n}f(a)g(b)| that arises in “normal”
 convolution as a sum along the line |y = n - x|, we can view the sum |\sum_{ab=n}f(a)g(b)| as
 a sum along a hyperbola of the form |y = n/x|. For all of
@@ -320,10 +361,10 @@ recover |f| via |f(n) = (g \star \mu)(n) = \sum_{d\mid n}g(d)\mu(n/d)|.
 This is <a href="https://en.wikipedia.org/wiki/Mobius_inversion">Möbius inversion</a>.</p>
 <p>Formally:</p>
 <p>\[g(n) = \sum_{d\mid n} f(d) \iff f(n) = \sum_{d \mid n} \mu(d)g(n/d)\]</p>
-<p>As a simple example, we clearly have |\zeta(s)/\zeta(s) = 1 = \mathcal D[\delta](s)| so
-|\bar 1 \star \mu = \delta| or |\sum_{d \mid n}\mu(d) = 0| for |n &gt; 1| and |1| when |n = 1|.</p>
+<p>As a simple example, we clearly have |\zeta(s)/\zeta(s) = 1 = \mathcal D[\varepsilon](s)| so
+|\bar 1 \star \mu = \varepsilon| or |\sum_{d \mid n}\mu(d) = 0| for |n &gt; 1| and |1| when |n = 1|.</p>
 <p>We also get generalized Möbius inversion via
-|\delta(n) = \delta(n)n^k = (\mu\star\bar 1)(n)n^k = (({-})^k\mu\star({-})^k)(n)|. Which
+|\varepsilon(n) = \varepsilon(n)n^k = (\mu\star\bar 1)(n)n^k = (({-})^k\mu\star({-})^k)(n)|. Which
 is to say if |g(n) = \sum_{d\mid n}d^k f(n/d)| then |f(n) = \sum_{d\mid n} \mu(d)d^kg(n/d)|.</p>
 <p>By considering logarithms, we also get a multiplicative form of (generalized) Möbius inversion:
 \[g(n) = \prod_{d\mid n}f(n/d)^{d^k} \iff f(n) = \prod_{d\mid n}g(n/d)^{\mu(d)d^k}\]</p>
@@ -337,7 +378,7 @@ via |f(k) = \sum_{m=1}^\infty \mu(m)g(kh(m))|.</p>
 &amp; = \sum_{N=1}^\infty \sum_{N=mn} \mu(m)f(kh(N)) \\
 &amp; = \sum_{N=1}^\infty f(kh(N)) \sum_{N=nm} \mu(m) \\
 &amp; = \sum_{N=1}^\infty f(kh(N)) (\mu\star\bar 1)(N) \\
-&amp; = \sum_{N=1}^\infty f(kh(N)) \delta(N) \\
+&amp; = \sum_{N=1}^\infty f(kh(N)) \varepsilon(N) \\
 &amp; = f(k)
 \end{align}\] |\square|</p>
 <p>This will often show up in the form of |r(x^{1/n})| or |r(x^{1/n})/n|, i.e. with |h(n)=n^{-1}|
@@ -459,7 +500,7 @@ inclusion-exclusion to the union yields
 <p>Many of you will already have recognized that this is <a href="https://en.wikipedia.org/wiki/Euler%27s_totient_function">Euler’s totient function</a>.</p>
 <h2 id="combinatorial-species">Combinatorial Species</h2>
 <p>The book <a href="https://www.cambridge.org/core/books/combinatorial-species-and-treelike-structures/D994A1F2877BDE63FF0C9EDE2F9788A8"><em>Combinatorial Species and Tree-Like Structures</em></a>
-has many examples where Dirichlet convolutions and Möbius inversion come up.
+has many examples where Dirichlet convolutions and Möbius inversion come up<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>.
 A combinatorial species is a functor |\operatorname{Core}(\mathbf{FinSet})\to\mathbf{FinSet}|.
 Any permutation on a finite set can be decomposed into a collection of cyclic permutations.
 Let |U| be a finite set of cardinality |n| and |\pi : U \cong U| a permutation of |U|.
@@ -511,7 +552,7 @@ where |\rho_k(a) = k^{-1}\sum_{d\mid k}\varphi(k/d)a^d|.</p>
 &amp; = -\sum_{N=1}^\infty\sum_{k\mid N} \frac{a^{N/k} x^N}{N/k} \tag{N=nk} \\
 &amp; = -\sum_{N=1}^\infty\frac{x^N}{N}\sum_{k\mid N} ka^{N/k} \\
 &amp; = -\sum_{N=1}^\infty\frac{x^N}{N}(\operatorname{id}\star a^{({-})})(N) \\
-&amp; = -\sum_{N=1}^\infty\frac{x^N}{N}(\delta\star\operatorname{id}\star a^{({-})})(N) \tag{the trick} \\
+&amp; = -\sum_{N=1}^\infty\frac{x^N}{N}(\varepsilon\star\operatorname{id}\star a^{({-})})(N) \tag{the trick} \\
 &amp; = -\sum_{N=1}^\infty\frac{x^N}{N}(\bar 1\star\mu\star\operatorname{id}\star a^{({-})})(N) \\
 &amp; = -\sum_{N=1}^\infty\frac{x^N}{N}(\bar 1\star\varphi\star a^{({-})})(N) \\
 &amp; = -\sum_{N=1}^\infty\frac{x^N}{N}\sum_{k\mid N}(\varphi\star a^{({-})})(k) \\
@@ -551,8 +592,8 @@ functions besides |\bar 1| to get |\mathcal D[f]’/\mathcal D[f] = \mathcal D[f
 powers.</p>
 <h2 id="dirichlet-inverse">Dirichlet Inverse</h2>
 <p>Let’s say we’re given an arithmetic function |f|, and we want to find an arithmetic function |g|
-such that |f \star g = \delta| which we’ll call the <strong>Dirichlet inverse</strong> of |f|.
-We immediately get |(f \star g)(1) = f(1)g(1) = 1 = \delta(1)|.
+such that |f \star g = \varepsilon| which we’ll call the <strong>Dirichlet inverse</strong> of |f|.
+We immediately get |(f \star g)(1) = f(1)g(1) = 1 = \varepsilon(1)|.
 So, supposing |f(1)\neq 1|, we can define |g(1) = 1/f(1)|. We then get a recurrence relation for
 all the remaining values of |g| via:
 \[0 = (f \star g)(n) = f(1)g(n) + \sum_{d \mid n, d\neq 1} f(d)g(n/d)\]
@@ -561,13 +602,13 @@ for |n &gt; 1|. Solving for |g(n)|, we have:
 where the right-hand side only requires |g(k)| for |k &lt; n|. If |f| is multiplicative, then
 |f(1) = 1| and the inverse of |f| exists.</p>
 <p>If |f| is completely multiplicative, its Dirichlet inverse is |\mu f|. This follows easily from
-|f \star \mu f = (\bar 1 \star \mu)f = \delta f = \delta|. As an example, |({-})^z| is
+|f \star \mu f = (\bar 1 \star \mu)f = \varepsilon f = \varepsilon|. As an example, |({-})^z| is
 completely multiplicative so its inverse is |({-})^z\mu|. Since the inverse of a Dirichlet
 convolution is the convolution of the inverses, we get |\varphi^{-1}(n) = \sum_{d\mid n}d\mu(d)|.
 Not to be confused with |\varphi(n) = (\operatorname{id}\star\mu)(n) = \sum_{d\mid n} d\mu(n/d)|.</p>
 <p>Less trivially, the inverse of a multiplicative function is <em>also</em> a multiplicative function.
 We can prove it by complete induction on |\mathbb N_+| using the formula for |g| from above.</p>
-<p><strong>Theorem</strong>: If |f\star g = \delta|, then |g| is multiplicative when |f| is.</p>
+<p><strong>Theorem</strong>: If |f\star g = \varepsilon|, then |g| is multiplicative when |f| is.</p>
 <p><strong>Proof</strong>: Let |n = ab| where |a| and |b| are coprime. If |a| (or, symmetrically, |b|) is equal to
 |1|, then since |g(1) = 1/f(1) = 1|, we have |g(1n) = g(1)g(n) = g(n)|. Now assume neither |a| nor
 |b| are |1| and, as the induction hypothesis, assume that |g| is multiplicative on all numbers less
@@ -582,7 +623,7 @@ g(ab)
 &amp; = -g(a)\sum_{d \mid b,d \neq 1}f(d)g(b/d))
 - \sum_{d_a \mid a,d_a \neq 1}f(d_a)g(a/d_a)\sum_{d_b \mid b}f(d_b)g(b/d_b)) \\
 &amp; = g(a)g(b) - \sum_{d_a \mid a,d_a \neq 1}f(d_a)g(a/d_a) (f \star g)(b) \\
-&amp; = g(a)g(b) - \delta(b)\sum_{d_a \mid a,d_a \neq 1}f(d_a)g(a/d_a) \\
+&amp; = g(a)g(b) - \varepsilon(b)\sum_{d_a \mid a,d_a \neq 1}f(d_a)g(a/d_a) \\
 &amp; = g(a)g(b)
 \end{flalign}\] |\square|</p>
 <p>Assuming |f| has a Dirichlet inverse, we also have:
@@ -644,7 +685,7 @@ We have |\omega = 1_{\mathbb P}\star\bar 1| or |1_{\mathbb P} = \omega\star\mu|.
 &amp; = \sum_{p\in\mathbb P}\sum_{N=1}^\infty \sum_{N=kn} \frac{\mu(n)}{N}p^{-Ns} \\
 &amp; = \sum_{p\in\mathbb P}\sum_{N=1}^\infty \frac{p^{-Ns}}{N}\sum_{N=kn}\mu(n) \\
 &amp; = \sum_{p\in\mathbb P}\sum_{N=1}^\infty \frac{p^{-Ns}}{N}(\mu\star\bar 1)(N) \\
-&amp; = \sum_{p\in\mathbb P}\sum_{N=1}^\infty \frac{p^{-Ns}}{N}\delta(N) \\
+&amp; = \sum_{p\in\mathbb P}\sum_{N=1}^\infty \frac{p^{-Ns}}{N}\varepsilon(N) \\
 &amp; = \sum_{p\in\mathbb P} p^{-s} \\
 &amp; = \mathcal D[1_{\mathbb P}](s)
 \end{align}\] |\square|</p>
@@ -702,7 +743,7 @@ interested in.</p>
 |\psi(x) = \sum_{n\leq x}’ \Lambda(n) = \sum_{n=1}^\infty \vartheta(x^{1/n})|</li>
 <li>The <a href="https://en.wikipedia.org/wiki/Prime_counting_function">prime-counting function</a>:
 |\pi(x) = \sum_{n\leq x}’ 1_{\mathbb P}|</li>
-<li><a href="https://en.wikipedia.org/wiki/Prime_counting_function#Riemann's_prime-power_counting_function">Riemann’s prime-power counting function</a>:
+<li>[Riemann’s prime-power counting function](https://en.wikipedia.org/wiki/Prime_counting_function#Riemann’s_prime-power_counting_function):
 |\Pi_0(x) = \sum_{n\leq x} \frac{\Lambda(n)}{\ln n}
 = \sum_{n=1}^\infty \sum_{p^n\leq x,p\in\mathbb P}’ n^{-1}
 = \sum_{n=1}^\infty\pi(x^{1/n})n^{-1}|</li>
@@ -763,15 +804,15 @@ For example, we have |\mathcal M[f]’(s) = \mathcal M[f\ln](s)| generally.</p>
 <h3 id="properties">Properties</h3>
 <h4 id="dirichlet-convolution-1">Dirichlet Convolution</h4>
 <p>Dirichlet convolution is |(f\star g)(n) = \sum_{d\mid n} f(d)g(n/d) = \sum_{mk=n} f(m)g(k)|.</p>
-<p>Dirichlet convolution forms a commutative ring with it as the multiplication, |\delta| as the
+<p>Dirichlet convolution forms a commutative ring with it as the multiplication, |\varepsilon| as the
 multiplicative unit and the usual additive structure. This is to say that Dirichlet convolution
 is commutative, associative, unital, and bilinear.</p>
 <p>For |f| completely multiplicative, |f(g\star h) = fg \star fh|.</p>
 <h4 id="dirichlet-inverse-1">Dirichlet Inverse</h4>
-<p>For any |f| such that |f(1)\neq 0|, there is a |g| such that |f\star g = \delta|. In particular,
+<p>For any |f| such that |f(1)\neq 0|, there is a |g| such that |f\star g = \varepsilon|. In particular,
 the set of multiplicative functions forms a subgroup of this multiplicative group, i.e. the
 Dirichlet convolution of multiplicative functions is multiplicative.</p>
-<p>If |f(1) \neq 0|, then |f \star g = \delta| where |g| is defined by the following recurrence:</p>
+<p>If |f(1) \neq 0|, then |f \star g = \varepsilon| where |g| is defined by the following recurrence:</p>
 <p>\[\begin{flalign}
 g(1) &amp; = 1/f(1) \\
 g(n) &amp; = -f(1)^{-1}\sum_{d\mid n,d\neq 1}f(d)g(n/d)
@@ -780,11 +821,11 @@ g(n) &amp; = -f(1)^{-1}\sum_{d\mid n,d\neq 1}f(d)g(n/d)
 <h4 id="convolution-theorem">Convolution Theorem</h4>
 <p>\[\mathcal D[f](s)\mathcal D[g](s) = \mathcal D[f\star g](s)\]</p>
 <h4 id="möbius-inversion-1">Möbius Inversion</h4>
-<p>\[\delta = \bar 1 \star \mu\]</p>
+<p>\[\varepsilon = \bar 1 \star \mu\]</p>
 <p>This means from a divisor sum |g(n)\sum_{d\mid n}f(d) = (f\star\bar 1)(n)| for each |n|, we can
 recover |f| via |g\star\mu = f\star\bar 1\star\mu = f|. Which is to say
 |f(n)=\sum_{d\mid n}g(d)\mu(n/d)|.</p>
-<p>This can be generalized via |({-})^k\mu\star({-})^k = \delta|. In sums, this means when
+<p>This can be generalized via |({-})^k\mu\star({-})^k = \varepsilon|. In sums, this means when
 |g(n)=\sum_{d\mid n}d^k f(n/d)|, then |f(n)=\sum_{d\mid n}\mu(d)d^k g(n/d)|.</p>
 <p>Let |h| be a completely multiplicative function.
 Given |g(m) = \sum_{n=1}^\infty f(mh(n))|, then |f(n) = \sum_{m=1}^\infty \mu(m)g(nh(m))|.</p>
@@ -838,7 +879,7 @@ completely multiplicative/additive function.</p>
 |1_{\mathbb P}| and prime powers |1_{\mathcal P}|.</p>
 <p>The following functions are (completely) multiplicative unless otherwise specified.</p>
 <p>\[\begin{flalign}
-\delta(p) &amp; = 0 \tag{Kronecker delta} \\
+\varepsilon(p) &amp; = 0 \tag{unit function} \\
 \bar 1(p) &amp; = 1 = p^0 \\
 \mu(p^n) &amp; = \begin{cases}-1, &amp; n = 1 \\ 0, &amp; n &gt; 1\end{cases} \tag{Möbius function} \\
 \Omega(p) &amp; = 1 \tag{additive} \\
@@ -856,7 +897,7 @@ J_k(p^n) &amp; = p^{kn} - p^{k(n-1)} = p^{kn}(1 - p^{-k}) \tag{Jordan totient fu
 \end{flalign}\]</p>
 <h3 id="dirichlet-convolutions">Dirichlet convolutions</h3>
 <p>\[\begin{flalign}
-\delta &amp; = \bar 1 \star \mu \\
+\varepsilon &amp; = \bar 1 \star \mu \\
 \varphi &amp; = \operatorname{id}\star\mu \\
 \sigma_z &amp; = ({-})^z \star \bar 1 = \psi_z \star \bar 1^{(2)} \\
 \sigma_1 &amp; = \varphi \star d \\
@@ -875,7 +916,7 @@ though many are trivial consequences of the earlier properties.</p>
 <h3 id="dirichlet-series-2">Dirichlet series</h3>
 <p>\[\begin{array}{l|ll}
 f(n) &amp; \mathcal D[f](s) &amp; \\ \hline
-\delta(n) &amp; 1 &amp; \\
+\varepsilon(n) &amp; 1 &amp; \\
 \bar 1(n) &amp; \zeta(s) &amp; \\
 n &amp; \zeta(s-1) &amp; \\
 n^z &amp; \zeta(s-z) &amp; \\
@@ -905,6 +946,9 @@ any sub-multiset of the union of two disjoint multisets, we can sort the element
 original multisets producing two sub-multisets of the disjoint multisets.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2"><p>Incidence algebras are a decategorification
 of the notion of a <a href="https://en.wikipedia.org/wiki/Category_algebra">category algebra</a>.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>In a different but
+related vein, we can provide a combinatorial interpretation of Dirichlet series via Dirichlet
+species as described in <a href="https://arxiv.org/abs/math/0503436v2">On the arithmetic product of combinatorial species</a>.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 

@@ -592,8 +592,8 @@ then we’ll see that |U| must commute with |\varepsilon_y(t)| which implies its
 |g(t)|.
 |\square|
 </details>
-<p>As an example, we see that the Bernoulli polynomials |B_n(x)| are Sheffer for |t| with |c_n = n!|
-for which the associated polynomials are |\pseq{x^n}{n}|. The Sheffer Identity is
+<p>As an example, we see that the Bernoulli polynomials |B_n(x)| are Sheffer for |(1, t)| with
+|c_n = n!| for which the associated polynomials are |\pseq{x^n}{n}|. The Sheffer Identity is
 thus the one mentioned in the Introduction.</p>
 <p><span id="jtbs"><strong>Theorem</strong> (id:jtbs):</span> <em>Let |\pseq{s_n(x)}{n}| be Sheffer for |(g, f)| and
 |\pseq{p_n(x)}{n}| be associated to |f|. For all |h, l \in \mathscr F|,
@@ -805,12 +805,12 @@ formal power series that is the output of |\theta_f^*|.</em></p>
 <strong>Proof</strong>: <span class="expander">(click to expand)</span>
 </summary>
 \[\begin{align}
-\pair{t^k}{\theta_f^*(h(t))x^n) + \theta_f h(t) x^n)}
-&amp; = \pair{t^k}{\theta_f^*(h(t))x^n)} + \pair{t^k}{\theta_f h(t) x^n)} \\
-&amp; = \pair{\theta_f^*(h(t)) t^k}{x^n)} + \pair{h(t)\theta_f^*(t^k)}{x^n)} \\
-&amp; = \pair{\theta_f^*(h(t)) t^k + h(t)\theta_f^*(t^k)}{x^n)} \\
-&amp; = \pair{\theta_f^*(h(t) t^k)}{x^n)} \\
-&amp; = \pair{t^k}{h(t) \theta_f x^n)}
+\pair{t^k}{\theta_f^*(h(t))x^n + \theta_f h(t) x^n}
+&amp; = \pair{t^k}{\theta_f^*(h(t))x^n} + \pair{t^k}{\theta_f h(t) x^n} \\
+&amp; = \pair{\theta_f^*(h(t)) t^k}{x^n} + \pair{h(t)\theta_f^*(t^k)}{x^n} \\
+&amp; = \pair{\theta_f^*(h(t)) t^k + h(t)\theta_f^*(t^k)}{x^n} \\
+&amp; = \pair{\theta_f^*(h(t) t^k)}{x^n} \\
+&amp; = \pair{t^k}{h(t) \theta_f x^n}
 \end{align}\]
 |\square|
 </details>
@@ -1020,7 +1020,7 @@ then |T(g(t)) = g(T(t))| and |(Tg)(f(t)) = T(g(f(t)))|.</em></p>
 \[\begin{align}
 T(g(t))
 &amp; = T\left(\sum_{k=0}^\infty g_k t^k\right) \\
-&amp; = \sum_{k=0}^\infty g_k T(t)^k) \\
+&amp; = \sum_{k=0}^\infty g_k T(t)^k \\
 &amp; = g(T(t))
 \end{align}\]
 and |(Tg)(f(t)) = g(T(f(t))) = T(g(f(t)))|.
@@ -1028,8 +1028,8 @@ and |(Tg)(f(t)) = g(T(f(t))) = T(g(f(t)))|.
 </details>
 <p><span id="stji"><strong>Theorem</strong> (id:stji):</span> <em>A linear operator |\lambda| on |P| is the transfer
 operator for |f \in \mathscr F| if and only if its adjoint |\lambda^*| is a
-|\mathbb K|-algebra automorphism of |\mathscr F| for which |\lambda^</em> f(t) = t|.
-This makes |\lambda_f(g(t)) = g(\bar f(t))|.*</p>
+|\mathbb K|-algebra automorphism of |\mathscr F| for which |\lambda^* f(t) = t|.
+This makes |\lambda_f(g(t)) = g(\bar f(t))|.</em></p>
 <details>
 <summary>
 <strong>Proof</strong>: <span class="expander">(click to expand)</span>
@@ -1070,7 +1070,7 @@ on |\mathscr F| and linear operators on |P|. Further, there’s a bijection betw
 surjective derivations on |\mathscr F| and umbral shifts, and a bijection between continuous
 |\mathbb K|-algebra automorphisms on |\mathscr F| and transfer operators.</p>
 <p><span id="ocfq"><strong>Corollary</strong> (id:ocfq):</span> <em>Transfer operators form a group with
-|(\lambda_f^*){-1} = \lambda_{\bar f}^*|,
+|(\lambda_f^*)^{-1} = \lambda_{\bar f}^*| and
 |\lambda_f^* \circ \lambda_g^* = \lambda_{g\circ f}^*|.</em></p>
 <p><strong>Proof</strong>: This readily follows from |\lambda_f^* g(t) = g(\bar f(t))|. |\square|</p>
 <p><span id="ydci"><strong>Theorem</strong> (id:ydci):</span></p>
@@ -1173,7 +1173,7 @@ then the sequence |t_n(x) = \sum_{k=0}^n a_{n,k} x^k| is Sheffer for
 <summary>
 <strong>Proof</strong>: <span class="expander">(click to expand)</span>
 </summary>
-Clearly, |r_n(x) = \ucomp{t}{s}|, so we just apply &lt;a href=“#pnci&gt;theorem (id:pnci)</a>
+Clearly, |r_n(x) = \ucomp{t}{s}|, so we just apply <a href="#pnci">theorem (id:pnci)</a>
 and solve for the |u, v \in \mathscr F| such that |\pseq{t_n(x)}{n}| is Sheffer for |(u, v)|.
 |\square|
 </details>
@@ -1204,7 +1204,7 @@ with |\pseq{p_n(x)}{n}| being associated to |f|.
 &amp; = \pair{g(t)}{\lambda_f x^n} \\
 &amp; = \pair{g(t)}{p_n(x)} \\
 &amp; = \bigpair{g(t)}{\theta_t\left(\frac{t}{f(t)}\right)^n x^{n-1}} \tag{Transfer Formula, alternate form} \\
-&amp; = \bigpair{\theta_t^* g(t)\left(\frac{t}{f(t)}\right)^n}{x^{n-1}} \\
+&amp; = \bigpair{\theta_t^*(g(t))\left(\frac{t}{f(t)}\right)^n}{x^{n-1}} \\
 &amp; = \bigpair{g’(t)\left(\frac{t}{f(t)}\right)^n}{x^{n-1}}
 \end{align}\]
 |\square|
@@ -1258,7 +1258,7 @@ and generally,
 <p>Given a linear operator |\mu| on |P|, the <strong>adjoint</strong> |\mu^*| is a linear operator on
 |\mathscr F| characterized by:
 \[ \pair{\mu^* f(t)}{p(x)} = \pair{f(t)}{\mu p(x)} \]</p>
-<p>It’s <strong>adjoint expansion</strong> is:
+<p>Its <strong>adjoint expansion</strong> is:
 \[ \mu^* f(t) = \sum_{k=0}^\infty \frac{\pair{f(t)}{\mu x^k}}{c_k} t^k \]</p>
 <p>This applies generally, but, in particular for umbral shifts and transfer operators.</p>
 <p><a href="#ahdu"><strong>Theorem</strong> (id:ahdu):</a> <em>The adjoint to a linear operator on |P| is continuous.</em></p>
@@ -1299,8 +1299,8 @@ Then for a |p \in P|,
 \[ p(x) = \sum_{n=0}^\infty \frac{\pair{g(t)f(t)^n}{p(x)}}{c_n} s_n(x) \]</em></p>
 <p><a href="#stji"><strong>Theorem</strong> (id:stji):</a> <em>A linear operator |\lambda| on |P| is the transfer
 operator for |f \in \mathscr F| if and only if its adjoint |\lambda^*| is a
-|\mathbb K|-algebra automorphism of |\mathscr F| for which |\lambda^</em> f(t) = t|.
-This makes |\lambda_f(g(t)) = g(\bar f(t))|.*</p>
+|\mathbb K|-algebra automorphism of |\mathscr F| for which |\lambda^* f(t) = t|.
+This makes |\lambda_f(g(t)) = g(\bar f(t))|.</em></p>
 <p><a href="#pnci"><strong>Theorem</strong> (id:pnci):</a> <em>Let |\pseq{s_n(x)}{n}| be Sheffer for |(g, f)| and let |\pseq{r_n(x)}{n}| be
 Sheffer for |(h, l)|. Then |\ucomp{r}{s}| is Sheffer for the pair |(g(t)h(f(t)), l(f(t)))|.</em></p>
 <p><a href="#fony"><strong>Corollary</strong> (id:fony):</a>
@@ -1324,10 +1324,10 @@ for |\alpha\neq 0|.</em></p>
 <em>Let |f, g \in \mathscr F| with |\deg f = 1| and |c_n = n!|, then for |n &gt; 0|
 \[ \pair{g(\bar f(t))}{x^n} = \bigpair{g’(t)\left(\frac{t}{f(t)}\right)^n}{x^{n-1}} \]
 Of course, |\pair{g(\bar f(t))}{x^0} = \pair{g(t)}{x^0}| since |\deg \bar f = 1|.</em></p>
-<p><a href="LagrangeInversionFormulaAlt"><strong>Corollary</strong> (Lagrange Inversion Formula, alternate form):</a>
+<p><a href="#LagrangeInversionFormulaAlt"><strong>Corollary</strong> (Lagrange Inversion Formula, alternate form):</a>
 <em>Let |f, g \in \mathscr F| with |\deg f = 1| and |c_n = n!|, then for |n &gt; 0|
 \[ \pair{g(\bar f(t))}{x^n} = \bigpair{g(t)f’(t)\left(\frac{t}{f(t)}\right)^{n+1}}{x^n} \]</em></p>
-<p><a href="LagrangeInversionFormulaHermite"><strong>Corollary</strong> (Lagrange Inversion Formula, Hermite form):</a>
+<p><a href="#LagrangeInversionFormulaHermite"><strong>Corollary</strong> (Lagrange Inversion Formula, Hermite form):</a>
 <em>Let |f, h \in \mathscr F| with |\deg f = 1| and |c_n = n!|, then for |n &gt; 0|
 \[ \bigpair{\frac{th(\bar f(t))}{\bar f(t)f’(\bar f(t))}}{x^n}
 = \bigpair{h(t)\left(\frac{t}{f(t)}\right)^n}{x^n} \]</em></p>
@@ -1451,8 +1451,8 @@ makes sense.</p>
 <li>Choosing |z=0| in the previous, we see the constantly one function |\bar 1(n) = 1| is completely
 multiplicative.</li>
 <li>The identity function is clearly completely multiplicative and is also the |z=1| case of the above.</li>
-<li>The Kronecker delta function |\delta(n) = \begin{cases}1, &amp; n = 0 \\ 0, &amp; n \neq 0\end{cases}|
-is completely multiplicative. Often written |\varepsilon| in this context.</li>
+<li>The unit function, i.e. the indicator function for |1|, is |\varepsilon(n) = \begin{cases}1, &amp; n = 1 \\ 0, &amp; n \neq 1\end{cases}|
+and is completely multiplicative.</li>
 <li>Define a multiplicative function via |\mu(p^n) = \begin{cases} -1, &amp; n = 1 \\ 0, &amp; n &gt; 1\end{cases}|
 where |p| is prime. This is the <a href="https://en.wikipedia.org/wiki/M%C3%B6bius_function">Möbius function</a>.
 More holistically, |\mu(n)| is |0| if |n| has any square factors, otherwise |\mu(n) = (-1)^k|
@@ -1528,8 +1528,8 @@ of the form |f(a)a^{-s}g(b)b^{-s} = f(a)g(b)(ab)^{-s}| where |ab = n|. We can th
 |h = f \star g| which we’ll call <a href="https://en.wikipedia.org/wiki/Dirichlet_convolution"><strong>Dirichlet convolution</strong></a>.
 We have thus shown a <strong>convolution theorem</strong> of the form
 \[\mathcal D[f]\mathcal D[g] = \mathcal D[f \star g]\]</p>
-<p>The Kronecker delta serves as a unit to this operation which is reflected by
-|\mathcal D[\delta](s) = 1|.</p>
+<p>The unit function serves as a unit to this operation which is reflected by
+|\mathcal D[\varepsilon](s) = 1|.</p>
 <p>In the same way we can view a sum of the form |\sum_{a+b=n}f(a)g(b)| that arises in “normal”
 convolution as a sum along the line |y = n - x|, we can view the sum |\sum_{ab=n}f(a)g(b)| as
 a sum along a hyperbola of the form |y = n/x|. For all of
@@ -1659,10 +1659,10 @@ recover |f| via |f(n) = (g \star \mu)(n) = \sum_{d\mid n}g(d)\mu(n/d)|.
 This is <a href="https://en.wikipedia.org/wiki/Mobius_inversion">Möbius inversion</a>.</p>
 <p>Formally:</p>
 <p>\[g(n) = \sum_{d\mid n} f(d) \iff f(n) = \sum_{d \mid n} \mu(d)g(n/d)\]</p>
-<p>As a simple example, we clearly have |\zeta(s)/\zeta(s) = 1 = \mathcal D[\delta](s)| so
-|\bar 1 \star \mu = \delta| or |\sum_{d \mid n}\mu(d) = 0| for |n &gt; 1| and |1| when |n = 1|.</p>
+<p>As a simple example, we clearly have |\zeta(s)/\zeta(s) = 1 = \mathcal D[\varepsilon](s)| so
+|\bar 1 \star \mu = \varepsilon| or |\sum_{d \mid n}\mu(d) = 0| for |n &gt; 1| and |1| when |n = 1|.</p>
 <p>We also get generalized Möbius inversion via
-|\delta(n) = \delta(n)n^k = (\mu\star\bar 1)(n)n^k = (({-})^k\mu\star({-})^k)(n)|. Which
+|\varepsilon(n) = \varepsilon(n)n^k = (\mu\star\bar 1)(n)n^k = (({-})^k\mu\star({-})^k)(n)|. Which
 is to say if |g(n) = \sum_{d\mid n}d^k f(n/d)| then |f(n) = \sum_{d\mid n} \mu(d)d^kg(n/d)|.</p>
 <p>By considering logarithms, we also get a multiplicative form of (generalized) Möbius inversion:
 \[g(n) = \prod_{d\mid n}f(n/d)^{d^k} \iff f(n) = \prod_{d\mid n}g(n/d)^{\mu(d)d^k}\]</p>
@@ -1676,7 +1676,7 @@ via |f(k) = \sum_{m=1}^\infty \mu(m)g(kh(m))|.</p>
 &amp; = \sum_{N=1}^\infty \sum_{N=mn} \mu(m)f(kh(N)) \\
 &amp; = \sum_{N=1}^\infty f(kh(N)) \sum_{N=nm} \mu(m) \\
 &amp; = \sum_{N=1}^\infty f(kh(N)) (\mu\star\bar 1)(N) \\
-&amp; = \sum_{N=1}^\infty f(kh(N)) \delta(N) \\
+&amp; = \sum_{N=1}^\infty f(kh(N)) \varepsilon(N) \\
 &amp; = f(k)
 \end{align}\] |\square|</p>
 <p>This will often show up in the form of |r(x^{1/n})| or |r(x^{1/n})/n|, i.e. with |h(n)=n^{-1}|
@@ -1798,7 +1798,7 @@ inclusion-exclusion to the union yields
 <p>Many of you will already have recognized that this is <a href="https://en.wikipedia.org/wiki/Euler%27s_totient_function">Euler’s totient function</a>.</p>
 <h2 id="combinatorial-species">Combinatorial Species</h2>
 <p>The book <a href="https://www.cambridge.org/core/books/combinatorial-species-and-treelike-structures/D994A1F2877BDE63FF0C9EDE2F9788A8"><em>Combinatorial Species and Tree-Like Structures</em></a>
-has many examples where Dirichlet convolutions and Möbius inversion come up.
+has many examples where Dirichlet convolutions and Möbius inversion come up<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>.
 A combinatorial species is a functor |\operatorname{Core}(\mathbf{FinSet})\to\mathbf{FinSet}|.
 Any permutation on a finite set can be decomposed into a collection of cyclic permutations.
 Let |U| be a finite set of cardinality |n| and |\pi : U \cong U| a permutation of |U|.
@@ -1850,7 +1850,7 @@ where |\rho_k(a) = k^{-1}\sum_{d\mid k}\varphi(k/d)a^d|.</p>
 &amp; = -\sum_{N=1}^\infty\sum_{k\mid N} \frac{a^{N/k} x^N}{N/k} \tag{N=nk} \\
 &amp; = -\sum_{N=1}^\infty\frac{x^N}{N}\sum_{k\mid N} ka^{N/k} \\
 &amp; = -\sum_{N=1}^\infty\frac{x^N}{N}(\operatorname{id}\star a^{({-})})(N) \\
-&amp; = -\sum_{N=1}^\infty\frac{x^N}{N}(\delta\star\operatorname{id}\star a^{({-})})(N) \tag{the trick} \\
+&amp; = -\sum_{N=1}^\infty\frac{x^N}{N}(\varepsilon\star\operatorname{id}\star a^{({-})})(N) \tag{the trick} \\
 &amp; = -\sum_{N=1}^\infty\frac{x^N}{N}(\bar 1\star\mu\star\operatorname{id}\star a^{({-})})(N) \\
 &amp; = -\sum_{N=1}^\infty\frac{x^N}{N}(\bar 1\star\varphi\star a^{({-})})(N) \\
 &amp; = -\sum_{N=1}^\infty\frac{x^N}{N}\sum_{k\mid N}(\varphi\star a^{({-})})(k) \\
@@ -1890,8 +1890,8 @@ functions besides |\bar 1| to get |\mathcal D[f]’/\mathcal D[f] = \mathcal D[f
 powers.</p>
 <h2 id="dirichlet-inverse">Dirichlet Inverse</h2>
 <p>Let’s say we’re given an arithmetic function |f|, and we want to find an arithmetic function |g|
-such that |f \star g = \delta| which we’ll call the <strong>Dirichlet inverse</strong> of |f|.
-We immediately get |(f \star g)(1) = f(1)g(1) = 1 = \delta(1)|.
+such that |f \star g = \varepsilon| which we’ll call the <strong>Dirichlet inverse</strong> of |f|.
+We immediately get |(f \star g)(1) = f(1)g(1) = 1 = \varepsilon(1)|.
 So, supposing |f(1)\neq 1|, we can define |g(1) = 1/f(1)|. We then get a recurrence relation for
 all the remaining values of |g| via:
 \[0 = (f \star g)(n) = f(1)g(n) + \sum_{d \mid n, d\neq 1} f(d)g(n/d)\]
@@ -1900,13 +1900,13 @@ for |n &gt; 1|. Solving for |g(n)|, we have:
 where the right-hand side only requires |g(k)| for |k &lt; n|. If |f| is multiplicative, then
 |f(1) = 1| and the inverse of |f| exists.</p>
 <p>If |f| is completely multiplicative, its Dirichlet inverse is |\mu f|. This follows easily from
-|f \star \mu f = (\bar 1 \star \mu)f = \delta f = \delta|. As an example, |({-})^z| is
+|f \star \mu f = (\bar 1 \star \mu)f = \varepsilon f = \varepsilon|. As an example, |({-})^z| is
 completely multiplicative so its inverse is |({-})^z\mu|. Since the inverse of a Dirichlet
 convolution is the convolution of the inverses, we get |\varphi^{-1}(n) = \sum_{d\mid n}d\mu(d)|.
 Not to be confused with |\varphi(n) = (\operatorname{id}\star\mu)(n) = \sum_{d\mid n} d\mu(n/d)|.</p>
 <p>Less trivially, the inverse of a multiplicative function is <em>also</em> a multiplicative function.
 We can prove it by complete induction on |\mathbb N_+| using the formula for |g| from above.</p>
-<p><strong>Theorem</strong>: If |f\star g = \delta|, then |g| is multiplicative when |f| is.</p>
+<p><strong>Theorem</strong>: If |f\star g = \varepsilon|, then |g| is multiplicative when |f| is.</p>
 <p><strong>Proof</strong>: Let |n = ab| where |a| and |b| are coprime. If |a| (or, symmetrically, |b|) is equal to
 |1|, then since |g(1) = 1/f(1) = 1|, we have |g(1n) = g(1)g(n) = g(n)|. Now assume neither |a| nor
 |b| are |1| and, as the induction hypothesis, assume that |g| is multiplicative on all numbers less
@@ -1921,7 +1921,7 @@ g(ab)
 &amp; = -g(a)\sum_{d \mid b,d \neq 1}f(d)g(b/d))
 - \sum_{d_a \mid a,d_a \neq 1}f(d_a)g(a/d_a)\sum_{d_b \mid b}f(d_b)g(b/d_b)) \\
 &amp; = g(a)g(b) - \sum_{d_a \mid a,d_a \neq 1}f(d_a)g(a/d_a) (f \star g)(b) \\
-&amp; = g(a)g(b) - \delta(b)\sum_{d_a \mid a,d_a \neq 1}f(d_a)g(a/d_a) \\
+&amp; = g(a)g(b) - \varepsilon(b)\sum_{d_a \mid a,d_a \neq 1}f(d_a)g(a/d_a) \\
 &amp; = g(a)g(b)
 \end{flalign}\] |\square|</p>
 <p>Assuming |f| has a Dirichlet inverse, we also have:
@@ -1983,7 +1983,7 @@ We have |\omega = 1_{\mathbb P}\star\bar 1| or |1_{\mathbb P} = \omega\star\mu|.
 &amp; = \sum_{p\in\mathbb P}\sum_{N=1}^\infty \sum_{N=kn} \frac{\mu(n)}{N}p^{-Ns} \\
 &amp; = \sum_{p\in\mathbb P}\sum_{N=1}^\infty \frac{p^{-Ns}}{N}\sum_{N=kn}\mu(n) \\
 &amp; = \sum_{p\in\mathbb P}\sum_{N=1}^\infty \frac{p^{-Ns}}{N}(\mu\star\bar 1)(N) \\
-&amp; = \sum_{p\in\mathbb P}\sum_{N=1}^\infty \frac{p^{-Ns}}{N}\delta(N) \\
+&amp; = \sum_{p\in\mathbb P}\sum_{N=1}^\infty \frac{p^{-Ns}}{N}\varepsilon(N) \\
 &amp; = \sum_{p\in\mathbb P} p^{-s} \\
 &amp; = \mathcal D[1_{\mathbb P}](s)
 \end{align}\] |\square|</p>
@@ -2102,15 +2102,15 @@ For example, we have |\mathcal M[f]’(s) = \mathcal M[f\ln](s)| generally.</p>
 <h3 id="properties">Properties</h3>
 <h4 id="dirichlet-convolution-1">Dirichlet Convolution</h4>
 <p>Dirichlet convolution is |(f\star g)(n) = \sum_{d\mid n} f(d)g(n/d) = \sum_{mk=n} f(m)g(k)|.</p>
-<p>Dirichlet convolution forms a commutative ring with it as the multiplication, |\delta| as the
+<p>Dirichlet convolution forms a commutative ring with it as the multiplication, |\varepsilon| as the
 multiplicative unit and the usual additive structure. This is to say that Dirichlet convolution
 is commutative, associative, unital, and bilinear.</p>
 <p>For |f| completely multiplicative, |f(g\star h) = fg \star fh|.</p>
 <h4 id="dirichlet-inverse-1">Dirichlet Inverse</h4>
-<p>For any |f| such that |f(1)\neq 0|, there is a |g| such that |f\star g = \delta|. In particular,
+<p>For any |f| such that |f(1)\neq 0|, there is a |g| such that |f\star g = \varepsilon|. In particular,
 the set of multiplicative functions forms a subgroup of this multiplicative group, i.e. the
 Dirichlet convolution of multiplicative functions is multiplicative.</p>
-<p>If |f(1) \neq 0|, then |f \star g = \delta| where |g| is defined by the following recurrence:</p>
+<p>If |f(1) \neq 0|, then |f \star g = \varepsilon| where |g| is defined by the following recurrence:</p>
 <p>\[\begin{flalign}
 g(1) &amp; = 1/f(1) \\
 g(n) &amp; = -f(1)^{-1}\sum_{d\mid n,d\neq 1}f(d)g(n/d)
@@ -2119,11 +2119,11 @@ g(n) &amp; = -f(1)^{-1}\sum_{d\mid n,d\neq 1}f(d)g(n/d)
 <h4 id="convolution-theorem">Convolution Theorem</h4>
 <p>\[\mathcal D[f](s)\mathcal D[g](s) = \mathcal D[f\star g](s)\]</p>
 <h4 id="möbius-inversion-1">Möbius Inversion</h4>
-<p>\[\delta = \bar 1 \star \mu\]</p>
+<p>\[\varepsilon = \bar 1 \star \mu\]</p>
 <p>This means from a divisor sum |g(n)\sum_{d\mid n}f(d) = (f\star\bar 1)(n)| for each |n|, we can
 recover |f| via |g\star\mu = f\star\bar 1\star\mu = f|. Which is to say
 |f(n)=\sum_{d\mid n}g(d)\mu(n/d)|.</p>
-<p>This can be generalized via |({-})^k\mu\star({-})^k = \delta|. In sums, this means when
+<p>This can be generalized via |({-})^k\mu\star({-})^k = \varepsilon|. In sums, this means when
 |g(n)=\sum_{d\mid n}d^k f(n/d)|, then |f(n)=\sum_{d\mid n}\mu(d)d^k g(n/d)|.</p>
 <p>Let |h| be a completely multiplicative function.
 Given |g(m) = \sum_{n=1}^\infty f(mh(n))|, then |f(n) = \sum_{m=1}^\infty \mu(m)g(nh(m))|.</p>
@@ -2177,7 +2177,7 @@ completely multiplicative/additive function.</p>
 |1_{\mathbb P}| and prime powers |1_{\mathcal P}|.</p>
 <p>The following functions are (completely) multiplicative unless otherwise specified.</p>
 <p>\[\begin{flalign}
-\delta(p) &amp; = 0 \tag{Kronecker delta} \\
+\varepsilon(p) &amp; = 0 \tag{unit function} \\
 \bar 1(p) &amp; = 1 = p^0 \\
 \mu(p^n) &amp; = \begin{cases}-1, &amp; n = 1 \\ 0, &amp; n &gt; 1\end{cases} \tag{Möbius function} \\
 \Omega(p) &amp; = 1 \tag{additive} \\
@@ -2195,7 +2195,7 @@ J_k(p^n) &amp; = p^{kn} - p^{k(n-1)} = p^{kn}(1 - p^{-k}) \tag{Jordan totient fu
 \end{flalign}\]</p>
 <h3 id="dirichlet-convolutions">Dirichlet convolutions</h3>
 <p>\[\begin{flalign}
-\delta &amp; = \bar 1 \star \mu \\
+\varepsilon &amp; = \bar 1 \star \mu \\
 \varphi &amp; = \operatorname{id}\star\mu \\
 \sigma_z &amp; = ({-})^z \star \bar 1 = \psi_z \star \bar 1^{(2)} \\
 \sigma_1 &amp; = \varphi \star d \\
@@ -2214,7 +2214,7 @@ though many are trivial consequences of the earlier properties.</p>
 <h3 id="dirichlet-series-2">Dirichlet series</h3>
 <p>\[\begin{array}{l|ll}
 f(n) &amp; \mathcal D[f](s) &amp; \\ \hline
-\delta(n) &amp; 1 &amp; \\
+\varepsilon(n) &amp; 1 &amp; \\
 \bar 1(n) &amp; \zeta(s) &amp; \\
 n &amp; \zeta(s-1) &amp; \\
 n^z &amp; \zeta(s-z) &amp; \\
@@ -2244,6 +2244,9 @@ any sub-multiset of the union of two disjoint multisets, we can sort the element
 original multisets producing two sub-multisets of the disjoint multisets.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2"><p>Incidence algebras are a decategorification
 of the notion of a <a href="https://en.wikipedia.org/wiki/Category_algebra">category algebra</a>.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>In a different but
+related vein, we can provide a combinatorial interpretation of Dirichlet series via Dirichlet
+species as described in <a href="https://arxiv.org/abs/math/0503436v2">On the arithmetic product of combinatorial species</a>.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>]]></summary>
 </entry>
