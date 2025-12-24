@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">Umbral Calculus</h2>
     <p class="blog-post-meta">November 10, 2025 00:36 UTC
         
-        (Last updated on December 24, 2025 09:53 UTC)
+        (Last updated on December 24, 2025 12:33 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -81,19 +81,20 @@ to get via linearity
 \]</p>
 <p>The key property we then need is |T(\varepsilon_y(x^n)) = \varepsilon_y T(x^n) = B_n(x + y)|
 which can be reduced to |D_xT(x^n) = T(D_x x^n)|. This is just the statement that
-|D_x B_n(x) = nB_{n-1}(x) = nT(x^{n-1}) = T(nx^{n-1}) = T(D_x x^n)| using a well-known
-property of Bernoulli (and other) polynomials. In fact, this relation implies that |T| is itself
-induced by a formal power series and thus commutes with <em>any</em> other linear operator so induced.</p>
+|D_x T(x^n) = D_x B_n(x) = nB_{n-1}(x) = nT(x^{n-1}) = T(nx^{n-1}) = T(D_x x^n)| using a
+well-known property of Bernoulli (and other) polynomials. In fact, this relation implies that |T| is
+itself induced by a formal power series and thus commutes with <em>any</em> other linear operator so
+induced.</p>
 <p>Ultimately, the only properties we needed for this was that we had a (linear) change of basis from
 the monomial basis to the polynomial sequence, which we’ll have for any polynomial
 sequence whose |n|th element has degree |n|, and that the change of basis commuted with the |D_x|
 operator. The latter is more stringent, but there are various ways we can expand the scope of the
 argument.</p>
-<p>First, |D_x x^n = \frac{c_n}{c_{n-1}} x^n| with |c_n = n!| completely characterizes
+<p>First, |D_x x^n = \frac{c_n}{c_{n-1}} x^{n-1}| with |c_n = n!| completely characterizes
 (with |D_x x^0 = 0|) the differentiation operation on polynomials. Choosing a different sequence
 |c| leads to different notions of “differentiation”. This will change |\varepsilon_y| and lead to
 different formulas, but they will be structurally similar.</p>
-<p>In a different direction, we can ask for formal power series and polynomial sequences that
+<p>In a different direction, we can ask for other formal power series and polynomial sequences that
 relate to each other the way |D_x| and |x^n| do. We say that a polynomial sequence |s_n(x)| is
 <strong>Sheffer</strong> for a pair of formal power series |(g(t), f(t))| with |\deg g = 0| and |\deg f = 1|
 when |\pair{g(t)f(t)^k}{s_n(x)} = c_n\delta_k^n|. (This inner-product-like notation will be
