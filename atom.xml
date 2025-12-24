@@ -2074,7 +2074,7 @@ interested in.</p>
 |\psi(x) = \sum_{n\leq x}’ \Lambda(n) = \sum_{n=1}^\infty \vartheta(x^{1/n})|</li>
 <li>The <a href="https://en.wikipedia.org/wiki/Prime_counting_function">prime-counting function</a>:
 |\pi(x) = \sum_{n\leq x}’ 1_{\mathbb P}|</li>
-<li>[Riemann’s prime-power counting function](https://en.wikipedia.org/wiki/Prime_counting_function#Riemann’s_prime-power_counting_function):
+<li><a href="https://en.wikipedia.org/wiki/Prime_counting_function#Riemann&#39;s_prime-power_counting_function">Riemann’s prime-power counting function</a>:
 |\Pi_0(x) = \sum_{n\leq x} \frac{\Lambda(n)}{\ln n}
 = \sum_{n=1}^\infty \sum_{p^n\leq x,p\in\mathbb P}’ n^{-1}
 = \sum_{n=1}^\infty\pi(x^{1/n})n^{-1}|</li>
