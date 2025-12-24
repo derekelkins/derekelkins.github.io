@@ -41,7 +41,7 @@
         
           <div class="blog-post">
     <h2 class="blog-post-title" style="margin-top: 30px;">Category Theory, Syntactically</h2>
-    <p class="blog-post-meta">November 25, 2016 06:23 UTC 
+    <p class="blog-post-meta">November 25, 2016 06:23 UTC
         
         (Last updated on October 27, 2025 05:05 UTC)
     </p>
@@ -881,8 +881,28 @@ handled extremely vaguely in a lot of the literature.<a href="#fnref4" class="fo
         commentsBtn.addEventListener("click", () => loadDisqus());
         const disqusDiv = document.getElementById("disqus_thread");
         disqusDiv.append(commentsBtn);
+
+        window.addEventListener("load", () => {
+            const newId = location.hash.slice(1);
+            const newElem = document.getElementById(newId);
+            if (newElem !== null) {
+                newElem.classList.add("highlighted");
+            }
+        });
+        window.addEventListener("hashchange", (evt) => {
+            const oldId = URL.parse(evt.oldURL).hash.slice(1);
+            const newId = URL.parse(evt.newURL).hash.slice(1);
+            const oldElem = document.getElementById(oldId);
+            const newElem = document.getElementById(newId);
+            if (oldElem !== null) {
+                oldElem.classList.remove("highlighted");
+            }
+            if (newElem !== null) {
+                newElem.classList.add("highlighted");
+            }
+        });
     </script>
-    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript> 
+    <noscript>Enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 </div>
 
         </div><!-- /.blog-main -->

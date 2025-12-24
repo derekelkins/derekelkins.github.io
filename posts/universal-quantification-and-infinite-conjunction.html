@@ -41,13 +41,13 @@
         
           <div class="blog-post">
     <h2 class="blog-post-title" style="margin-top: 30px;">Universal Quantification and Infinite Conjunction</h2>
-    <p class="blog-post-meta">January  3, 2024 06:00 UTC 
+    <p class="blog-post-meta">January  3, 2024 06:00 UTC
         
-        (Last updated on January  3, 2024 06:00 UTC)
+        (Last updated on November 22, 2025 00:37 UTC)
     </p>
     <h6 class="blog-post-meta">
         
-        Tags: <a title="All pages tagged 'math'." href="../tags/math.html">math</a>, <a title="All pages tagged 'logic'." href="../tags/logic.html">logic</a>
+        Tags: <a title="All pages tagged 'math'." href="../tags/math.html" rel="tag">math</a>, <a title="All pages tagged 'logic'." href="../tags/logic.html" rel="tag">logic</a>
         
     </h6>
 
@@ -305,8 +305,8 @@ the foreground some structure that we have been leaving – and traditionally ac
 free variables in that formula, e.g. if |D| is our domain object, then the semantics of
 a formula with three free variables would be a subobject of |\prod_{v \in \mathsf{fv}(\varphi)}D \cong D\times D \times D|
 which I’ll continue to write as |D^{\mathsf{fv}(\varphi)}| though now it will be
-interpreted as a product rather than a function space. For |\mathbf{Set}|,
-this makes no difference.
+interpreted as a product rather than a function space, i.e. we interpret this notation
+as a <a href="https://ncatlab.org/nlab/show/powering">power</a>. For |\mathbf{Set}|, this makes no difference.
 It would be more accurate to say that a formula can be given semantics in any product
 of the domain object indexed by any <em>superset</em> of the free variables. This is just
 to say that a formula doesn’t need to use every free variable that is available. Nevertheless,
@@ -434,8 +434,28 @@ arbitrary Boolean-algebra-valued semantics.<a href="#fnref7" class="footnote-bac
         commentsBtn.addEventListener("click", () => loadDisqus());
         const disqusDiv = document.getElementById("disqus_thread");
         disqusDiv.append(commentsBtn);
+
+        window.addEventListener("load", () => {
+            const newId = location.hash.slice(1);
+            const newElem = document.getElementById(newId);
+            if (newElem !== null) {
+                newElem.classList.add("highlighted");
+            }
+        });
+        window.addEventListener("hashchange", (evt) => {
+            const oldId = URL.parse(evt.oldURL).hash.slice(1);
+            const newId = URL.parse(evt.newURL).hash.slice(1);
+            const oldElem = document.getElementById(oldId);
+            const newElem = document.getElementById(newId);
+            if (oldElem !== null) {
+                oldElem.classList.remove("highlighted");
+            }
+            if (newElem !== null) {
+                newElem.classList.add("highlighted");
+            }
+        });
     </script>
-    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript> 
+    <noscript>Enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 </div>
 
         </div><!-- /.blog-main -->

@@ -41,13 +41,13 @@
         
           <div class="blog-post">
     <h2 class="blog-post-title" style="margin-top: 30px;">The Mistake Everyone Makes with KnockoutJS</h2>
-    <p class="blog-post-meta">May  5, 2016 20:38 UTC 
+    <p class="blog-post-meta">May  5, 2016 20:38 UTC
         
-        (Last updated on August  2, 2024 02:45 UTC)
+        (Last updated on August 24, 2025 23:27 UTC)
     </p>
     <h6 class="blog-post-meta">
         
-        Tags: <a title="All pages tagged 'javascript'." href="../tags/javascript.html">javascript</a>
+        Tags: <a title="All pages tagged 'javascript'." href="../tags/javascript.html" rel="tag">javascript</a>
         
     </h6>
 
@@ -95,16 +95,16 @@ Add
 </div>
 <p>Here, the number selected is an overly simple example of using the selected items. More realistically, the selected items will trigger other items
 to show up and/or trigger AJAX requests to update the data or populate other data. The HTML for this example is completely straightforward.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">&lt;div</span> <span class="er">id</span><span class="ot">=</span><span class="st">&quot;#badExample&quot;</span><span class="kw">&gt;</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    Number selected: <span class="kw">&lt;span</span> <span class="er">data-bind</span><span class="ot">=</span><span class="st">&quot;text: $data.numberSelected()&quot;</span><span class="kw">&gt;&lt;/span&gt;</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">&lt;table&gt;</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>        <span class="kw">&lt;tr&gt;&lt;th&gt;&lt;input</span> <span class="er">type</span><span class="ot">=</span><span class="st">&quot;checkbox&quot;</span> <span class="er">data-bind</span><span class="ot">=</span><span class="st">&quot;checked: $data.allSelected&quot;</span><span class="kw">/&gt;&lt;/th&gt;&lt;th&gt;</span>Item<span class="kw">&lt;/th&gt;&lt;/tr&gt;</span></span>
+<div class="sourceCode" id="cb1"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">div</span><span class="ot"> id</span><span class="op">=</span><span class="st">&quot;#badExample&quot;</span><span class="dt">&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    Number selected: <span class="dt">&lt;</span><span class="kw">span</span><span class="ot"> data-bind</span><span class="op">=</span><span class="st">&quot;text: $data.numberSelected()&quot;</span><span class="dt">&gt;&lt;/</span><span class="kw">span</span><span class="dt">&gt;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&lt;</span><span class="kw">table</span><span class="dt">&gt;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&lt;</span><span class="kw">tr</span><span class="dt">&gt;&lt;</span><span class="kw">th</span><span class="dt">&gt;&lt;</span><span class="kw">input</span><span class="ot"> type</span><span class="op">=</span><span class="st">&quot;checkbox&quot;</span><span class="ot"> data-bind</span><span class="op">=</span><span class="st">&quot;checked: $data.allSelected&quot;</span><span class="dt">/&gt;&lt;/</span><span class="kw">th</span><span class="dt">&gt;&lt;</span><span class="kw">th</span><span class="dt">&gt;</span>Item<span class="dt">&lt;/</span><span class="kw">th</span><span class="dt">&gt;&lt;/</span><span class="kw">tr</span><span class="dt">&gt;</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        <span class="co">&lt;!-- ko foreach: { data: $data.items(), as: '$item' } --&gt;</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        <span class="kw">&lt;tr&gt;&lt;td&gt;&lt;input</span> <span class="er">type</span><span class="ot">=</span><span class="st">&quot;checkbox&quot;</span> <span class="er">data-bind</span><span class="ot">=</span><span class="st">&quot;checked: $data.selected&quot;</span><span class="kw">/&gt;&lt;/td&gt;&lt;td</span> <span class="er">data-bind</span><span class="ot">=</span><span class="st">&quot;text: 'Item number: '+$data.body&quot;</span><span class="kw">&gt;&lt;/td&gt;&lt;/tr&gt;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&lt;</span><span class="kw">tr</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">input</span><span class="ot"> type</span><span class="op">=</span><span class="st">&quot;checkbox&quot;</span><span class="ot"> data-bind</span><span class="op">=</span><span class="st">&quot;checked: $data.selected&quot;</span><span class="dt">/&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="ot"> data-bind</span><span class="op">=</span><span class="st">&quot;text: 'Item number: '+$data.body&quot;</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;/</span><span class="kw">tr</span><span class="dt">&gt;</span></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        <span class="co">&lt;!-- /ko --&gt;</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        <span class="kw">&lt;tr&gt;&lt;td&gt;&lt;button</span> <span class="er">data-bind</span><span class="ot">=</span><span class="st">&quot;click: function() { $data.add(); }&quot;</span><span class="kw">&gt;</span>Add<span class="kw">&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">&lt;/table&gt;</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="kw">&lt;/div&gt;</span></span></code></pre></div>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&lt;</span><span class="kw">tr</span><span class="dt">&gt;&lt;</span><span class="kw">td</span><span class="dt">&gt;&lt;</span><span class="kw">button</span><span class="ot"> data-bind</span><span class="op">=</span><span class="st">&quot;click: function() { $data.add(); }&quot;</span><span class="dt">&gt;</span>Add<span class="dt">&lt;/</span><span class="kw">button</span><span class="dt">&gt;&lt;/</span><span class="kw">td</span><span class="dt">&gt;&lt;/</span><span class="kw">tr</span><span class="dt">&gt;</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&lt;/</span><span class="kw">table</span><span class="dt">&gt;</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">div</span><span class="dt">&gt;</span></span></code></pre></div>
 <p>The way nearly everyone (including me) first thinks to implement this is by adding a <code>selected</code> observable to each item and then having <code>allSelected</code>
 depend on all of the <code>selected</code> observables. Since we also want to write to <code>allSelected</code> to change the state of the <code>selected</code> observables we
 use a <a href="http://knockoutjs.com/documentation/computed-writable.html">writable computed observable</a>. This computed observable will loop through all
@@ -361,8 +361,28 @@ ko.applyBindings(goodViewModel, document.getElementById('#goodExample'));
         commentsBtn.addEventListener("click", () => loadDisqus());
         const disqusDiv = document.getElementById("disqus_thread");
         disqusDiv.append(commentsBtn);
+
+        window.addEventListener("load", () => {
+            const newId = location.hash.slice(1);
+            const newElem = document.getElementById(newId);
+            if (newElem !== null) {
+                newElem.classList.add("highlighted");
+            }
+        });
+        window.addEventListener("hashchange", (evt) => {
+            const oldId = URL.parse(evt.oldURL).hash.slice(1);
+            const newId = URL.parse(evt.newURL).hash.slice(1);
+            const oldElem = document.getElementById(oldId);
+            const newElem = document.getElementById(newId);
+            if (oldElem !== null) {
+                oldElem.classList.remove("highlighted");
+            }
+            if (newElem !== null) {
+                newElem.classList.add("highlighted");
+            }
+        });
     </script>
-    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript> 
+    <noscript>Enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 </div>
 
         </div><!-- /.blog-main -->

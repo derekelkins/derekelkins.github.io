@@ -41,13 +41,13 @@
         
           <div class="blog-post">
     <h2 class="blog-post-title" style="margin-top: 30px;">What difference lists actually are</h2>
-    <p class="blog-post-meta">April 12, 2025 23:25 UTC 
+    <p class="blog-post-meta">April 12, 2025 23:25 UTC
         
-        (Last updated on April 13, 2025 05:54 UTC)
+        (Last updated on August 24, 2025 23:27 UTC)
     </p>
     <h6 class="blog-post-meta">
         
-        Tags: <a title="All pages tagged 'programming'." href="../tags/programming.html">programming</a>
+        Tags: <a title="All pages tagged 'programming'." href="../tags/programming.html" rel="tag">programming</a>
         
     </h6>
 
@@ -212,37 +212,37 @@ tr.odd {
 <col style="width: 46%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th>Functional Representation</th>
 <th>Difference Lists</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>constant-time concatenation</td>
 <td>constant-time concatenation</td>
 </tr>
-<tr class="even">
+<tr>
 <td>constant-time conversion from a list (though you pay for it later)</td>
 <td>O(n) conversion from a list</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>persistent</td>
 <td>non-persistent, requires linear use</td>
 </tr>
-<tr class="even">
+<tr>
 <td>represented by a tree of closures</td>
 <td>represented by a pair of a list and a unification variable</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>O(n) (or worse!) conversion to a list</td>
 <td>constant-time conversion to a list</td>
 </tr>
-<tr class="even">
+<tr>
 <td>defunctionalized version can be implemented in pretty much any language</td>
 <td>requires at least single-assignment variables</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>unclear connection to being the difference of two lists (which two lists?)</td>
 <td>mathematical, if non-obvious, connection to being the difference of two (given) lists</td>
 </tr>
@@ -318,8 +318,28 @@ the notion of length mentioned before.<a href="#fnref4" class="footnote-back" ro
         commentsBtn.addEventListener("click", () => loadDisqus());
         const disqusDiv = document.getElementById("disqus_thread");
         disqusDiv.append(commentsBtn);
+
+        window.addEventListener("load", () => {
+            const newId = location.hash.slice(1);
+            const newElem = document.getElementById(newId);
+            if (newElem !== null) {
+                newElem.classList.add("highlighted");
+            }
+        });
+        window.addEventListener("hashchange", (evt) => {
+            const oldId = URL.parse(evt.oldURL).hash.slice(1);
+            const newId = URL.parse(evt.newURL).hash.slice(1);
+            const oldElem = document.getElementById(oldId);
+            const newElem = document.getElementById(newId);
+            if (oldElem !== null) {
+                oldElem.classList.remove("highlighted");
+            }
+            if (newElem !== null) {
+                newElem.classList.add("highlighted");
+            }
+        });
     </script>
-    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript> 
+    <noscript>Enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 </div>
 
         </div><!-- /.blog-main -->

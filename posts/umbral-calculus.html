@@ -41,9 +41,9 @@
         
           <div class="blog-post">
     <h2 class="blog-post-title" style="margin-top: 30px;">Umbral Calculus</h2>
-    <p class="blog-post-meta">November 10, 2025 00:36 UTC 
+    <p class="blog-post-meta">November 10, 2025 00:36 UTC
         
-        (Last updated on November 13, 2025 13:06 UTC)
+        (Last updated on December 24, 2025 01:47 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -57,7 +57,7 @@
 |\newcommand{bigpair}[2]{\left\langle{#1}\ \middle|\ {#2}\right\rangle}|
 |\newcommand{pseq}[2]{\{#1\}_{#2 \in \mathbb N}}|
 |\newcommand{ucomp}[2]{#1_n(\underline #2(x))}|
-<style>details &gt; summary { cursor: pointer; } details:open &gt; summary &gt; .expander { display: none; }</style>
+<style>details summary { cursor: pointer; } details:open summary .expander { display: none; }</style>
 <style>details { color: var(–list-group-item-color); margin-bottom: 1em; }</style></p>
 <p>We know |(x+y)^n = \sum_{k=0}^n {n \choose k} x^{n-k} y^k|. We then “infer”
 that |B_n(x+y) = \sum_{k=0}^n {n \choose k} B_{n-k}(x) y^k| where
@@ -1428,8 +1428,28 @@ though.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p
         commentsBtn.addEventListener("click", () => loadDisqus());
         const disqusDiv = document.getElementById("disqus_thread");
         disqusDiv.append(commentsBtn);
+
+        window.addEventListener("load", () => {
+            const newId = location.hash.slice(1);
+            const newElem = document.getElementById(newId);
+            if (newElem !== null) {
+                newElem.classList.add("highlighted");
+            }
+        });
+        window.addEventListener("hashchange", (evt) => {
+            const oldId = URL.parse(evt.oldURL).hash.slice(1);
+            const newId = URL.parse(evt.newURL).hash.slice(1);
+            const oldElem = document.getElementById(oldId);
+            const newElem = document.getElementById(newId);
+            if (oldElem !== null) {
+                oldElem.classList.remove("highlighted");
+            }
+            if (newElem !== null) {
+                newElem.classList.add("highlighted");
+            }
+        });
     </script>
-    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript> 
+    <noscript>Enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 </div>
 
         </div><!-- /.blog-main -->

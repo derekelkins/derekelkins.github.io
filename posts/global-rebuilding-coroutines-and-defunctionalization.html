@@ -41,13 +41,13 @@
         
           <div class="blog-post">
     <h2 class="blog-post-title" style="margin-top: 30px;">Global Rebuilding, Coroutines, and Defunctionalization</h2>
-    <p class="blog-post-meta">October  4, 2024 08:24 UTC 
+    <p class="blog-post-meta">October  4, 2024 08:24 UTC
         
-        (Last updated on November 30, 2024 07:55 UTC)
+        (Last updated on August 24, 2025 23:27 UTC)
     </p>
     <h6 class="blog-post-meta">
         
-        Tags: <a title="All pages tagged 'CS'." href="../tags/CS.html">CS</a>, <a title="All pages tagged 'programming'." href="../tags/programming.html">programming</a>
+        Tags: <a title="All pages tagged 'CS'." href="../tags/CS.html" rel="tag">CS</a>, <a title="All pages tagged 'programming'." href="../tags/programming.html" rel="tag">programming</a>
         
     </h6>
 
@@ -745,8 +745,28 @@ constant factors, e.g. by better utilizing caches and disk I/O buffers.<a href=
         commentsBtn.addEventListener("click", () => loadDisqus());
         const disqusDiv = document.getElementById("disqus_thread");
         disqusDiv.append(commentsBtn);
+
+        window.addEventListener("load", () => {
+            const newId = location.hash.slice(1);
+            const newElem = document.getElementById(newId);
+            if (newElem !== null) {
+                newElem.classList.add("highlighted");
+            }
+        });
+        window.addEventListener("hashchange", (evt) => {
+            const oldId = URL.parse(evt.oldURL).hash.slice(1);
+            const newId = URL.parse(evt.newURL).hash.slice(1);
+            const oldElem = document.getElementById(oldId);
+            const newElem = document.getElementById(newId);
+            if (oldElem !== null) {
+                oldElem.classList.remove("highlighted");
+            }
+            if (newElem !== null) {
+                newElem.classList.add("highlighted");
+            }
+        });
     </script>
-    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript> 
+    <noscript>Enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 </div>
 
         </div><!-- /.blog-main -->

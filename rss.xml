@@ -17,7 +17,7 @@
 |\newcommand{bigpair}[2]{\left\langle{#1}\ \middle|\ {#2}\right\rangle}|
 |\newcommand{pseq}[2]{\{#1\}_{#2 \in \mathbb N}}|
 |\newcommand{ucomp}[2]{#1_n(\underline #2(x))}|
-<style>details &gt; summary { cursor: pointer; } details:open &gt; summary &gt; .expander { display: none; }</style>
+<style>details summary { cursor: pointer; } details:open summary .expander { display: none; }</style>
 <style>details { color: var(–list-group-item-color); margin-bottom: 1em; }</style></p>
 <p>We know |(x+y)^n = \sum_{k=0}^n {n \choose k} x^{n-k} y^k|. We then “infer”
 that |B_n(x+y) = \sum_{k=0}^n {n \choose k} B_{n-k}(x) y^k| where
@@ -4003,8 +4003,8 @@ the foreground some structure that we have been leaving – and traditionally ac
 free variables in that formula, e.g. if |D| is our domain object, then the semantics of
 a formula with three free variables would be a subobject of |\prod_{v \in \mathsf{fv}(\varphi)}D \cong D\times D \times D|
 which I’ll continue to write as |D^{\mathsf{fv}(\varphi)}| though now it will be
-interpreted as a product rather than a function space. For |\mathbf{Set}|,
-this makes no difference.
+interpreted as a product rather than a function space, i.e. we interpret this notation
+as a <a href="https://ncatlab.org/nlab/show/powering">power</a>. For |\mathbf{Set}|, this makes no difference.
 It would be more accurate to say that a formula can be given semantics in any product
 of the domain object indexed by any <em>superset</em> of the free variables. This is just
 to say that a formula doesn’t need to use every free variable that is available. Nevertheless,

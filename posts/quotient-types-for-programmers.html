@@ -41,13 +41,13 @@
         
           <div class="blog-post">
     <h2 class="blog-post-title" style="margin-top: 30px;">Quotient Types for Programmers</h2>
-    <p class="blog-post-meta">September 23, 2016 05:21 UTC 
+    <p class="blog-post-meta">September 23, 2016 05:21 UTC
         
-        (Last updated on August  2, 2024 02:42 UTC)
+        (Last updated on August 24, 2025 23:27 UTC)
     </p>
     <h6 class="blog-post-meta">
         
-        Tags: <a title="All pages tagged 'math'." href="../tags/math.html">math</a>, <a title="All pages tagged 'type theory'." href="../tags/type%20theory.html">type theory</a>
+        Tags: <a title="All pages tagged 'math'." href="../tags/math.html" rel="tag">math</a>, <a title="All pages tagged 'type theory'." href="../tags/type%20theory.html" rel="tag">type theory</a>
         
     </h6>
 
@@ -226,8 +226,28 @@ set theoretic presentation, it is much more amenable to computation as the |\mat
         commentsBtn.addEventListener("click", () => loadDisqus());
         const disqusDiv = document.getElementById("disqus_thread");
         disqusDiv.append(commentsBtn);
+
+        window.addEventListener("load", () => {
+            const newId = location.hash.slice(1);
+            const newElem = document.getElementById(newId);
+            if (newElem !== null) {
+                newElem.classList.add("highlighted");
+            }
+        });
+        window.addEventListener("hashchange", (evt) => {
+            const oldId = URL.parse(evt.oldURL).hash.slice(1);
+            const newId = URL.parse(evt.newURL).hash.slice(1);
+            const oldElem = document.getElementById(oldId);
+            const newElem = document.getElementById(newId);
+            if (oldElem !== null) {
+                oldElem.classList.remove("highlighted");
+            }
+            if (newElem !== null) {
+                newElem.classList.add("highlighted");
+            }
+        });
     </script>
-    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript> 
+    <noscript>Enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 </div>
 
         </div><!-- /.blog-main -->
