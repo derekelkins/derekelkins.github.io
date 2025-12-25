@@ -71,7 +71,7 @@ Let |\varepsilon_y| be the linear operator on polynomials satisfying
 |\varepsilon_y p(x) = p(x + y)|. Since |D_x[\varepsilon_y p(x)] = \varepsilon_y D_x p(x)|
 for all |y| where |D_x| is differentiation by |x|, |\varepsilon_y| is induced from a formal power
 series in |D_x|. In particular, |\varepsilon_y = e^{yD_x}|.</p>
-<p>Let |T| be the linear operator (the transfer or umbral operator) characterized by mapping |x^n| to
+<p>Let |T| be the linear operator (the Sheffer operator) characterized by mapping |x^n| to
 |B_n(x)| representing a change of basis on the vector space of polynomials. We can apply |T| to the
 equation
 \[ \varepsilon_y(x^n) = (x+y)^n = \sum_{k=0}^n {n \choose k} x^{n-k} y^k \]
@@ -689,9 +689,9 @@ then we’ll see that |U| must commute with |\varepsilon_y(t)| which implies its
 |g(t)|.
 |\square|
 </details>
-<p>As an example, we see that the Bernoulli polynomials |B_n(x)| are Sheffer for |(1, t)| with
-|c_n = n!| for which the associated polynomials are |\pseq{x^n}{n}|. The Sheffer Identity is
-thus the one mentioned in the Introduction.</p>
+<p>As an example, we see that the Bernoulli polynomials |B_n(x)| are Sheffer for |(g, t)| for some
+invertible |g| with |c_n = n!| for which the associated polynomials are |\pseq{x^n}{n}|.
+The Sheffer Identity is thus the one mentioned in the Introduction.</p>
 <p><span id="jtbs"><strong>Theorem</strong> (id:jtbs):</span> <em>Let |\pseq{s_n(x)}{n}| be Sheffer for |(g, f)| and
 |\pseq{p_n(x)}{n}| be associated to |f|. For all |h, l \in \mathscr F|,
 \[ \pair{h(t)l(t)}{s_n(x)}
@@ -1237,6 +1237,10 @@ sequences into a group.</em></p>
 By considering the associated sequence induced by a Sheffer sequence, i.e. |\pseq{g(t)s_n(x)}{n}|,
 we readily get |\mu_{g,f} = g(t)^{-1}\lambda_f| so Sheffer operators can be reduced to transfer
 operators.</p>
+<p>We can immediately read off the |g| for Bernoulli polynomials using its
+<a href="https://en.wikipedia.org/wiki/Bernoulli_polynomials#Representation_by_a_differential_operator">representation by a differential operator</a>.
+Namely, |g(t) = \frac{e^t - 1}{t} = \frac{\varepsilon_1(t) - 1}{t}|. This leads to the identity
+|\Delta B_n(x) = Dx^n| where |\Delta| is the <a href="https://en.wikipedia.org/wiki/Forward_difference#Basic_types">forward difference operator</a>.</p>
 <p><span id="pnci"><strong>Theorem</strong> (id:pnci):</span> <em>Let |\pseq{s_n(x)}{n}| be Sheffer for |(g, f)| and let |\pseq{r_n(x)}{n}| be
 Sheffer for |(h, l)|. Then |\ucomp{r}{s}| is Sheffer for the pair |(g(t)h(f(t)), l(f(t)))|.</em></p>
 <details>
@@ -1457,7 +1461,7 @@ though.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p
         <h6 class="blog-post-meta">
             November 10, 2025 00:36 UTC
             
-            (Last updated on December 25, 2025 21:14 UTC)
+            (Last updated on December 25, 2025 21:54 UTC)
 
             
                 Tags: <a title="All pages tagged 'math'." href="./tags/math.html" rel="tag">math</a>
