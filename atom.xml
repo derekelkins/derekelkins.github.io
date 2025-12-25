@@ -81,7 +81,7 @@ by Steven Roman (1984).</p>
 <li><a href="#formal-power-series">Formal Power Series</a></li>
 <li><a href="#linear-functionals">Linear Functionals</a>
 <ul>
-<li><a href="#properties">Properties</a></li>
+<li><a href="#some-properties">Some Properties</a></li>
 <li><a href="#evaluation-functional">Evaluation Functional</a></li>
 <li><a href="#formal-derivative">Formal Derivative</a></li>
 </ul></li>
@@ -146,7 +146,9 @@ defines a sequence also called |p| such that |p(x) = \sum_{n=0}^{\deg p}p_n x^n|
 |p_n \neq 0|. These are also sequences |\mathbb N \to \mathbb K|, and we could identify
 polynomials with such sequences that are eventually always |0|. We also have the <strong>degree of a
 formal power series</strong> written |\deg f| which is the <em>smallest</em> |k| such that |f_k \neq 0|. Note
-that this is <em>dual</em> to the notion for polynomials. It’s clear that |\deg(fg) = \deg f + \deg g|.</p>
+that this is <em>dual</em> to the notion for polynomials. It’s clear that |\deg(fg) = \deg f + \deg g|.
+Occasionally it will be useful to have |\deg 0 = -\infty| for polynomials and |\deg 0 = \infty|
+for formal power series.</p>
 <p>Of course, sometimes I will explicitly state something like |f(t) = \sum_{k=0}^\infty a_k t^k|
 in which case the sequence |f| is not defined. Usually, this will arise with a formal power series
 expression, e.g. |(f \circ g)(t)| so there shouldn’t be any ambiguity. As is typical, I’ll often
@@ -156,7 +158,8 @@ been illustrated, I’ll endeavor to use |k| as the indexing variable for formal
 <p>The <strong>Kronecker delta</strong> is written |\delta_k^n| and
 defined by |\delta_n^n = 1| and |\delta_k^n = 0| for |k \neq n|. This should typically be
 thought of as a way of forcing |n| and |k| to be equal, i.e. |f(n)\delta_k^n = f(k)\delta_k^n|
-and |\delta_{f(k)}^n = \delta_k^{f^{-1}(n)}| for an invertible function |f|.</p>
+and |\delta_{f(k)}^n = \delta_k^{f^{-1}(n)}| or, equivalently,
+|\delta_k^n = \delta_{f(k)}^{f(n)}| for an invertible function |f|.</p>
 <h2 id="formal-power-series">Formal Power Series</h2>
 <p>I’ll assume familiarity with the basic algebra of <a href="https://en.wikipedia.org/wiki/Formal_power_series">formal power series</a>.
 <a href="https://arxiv.org/abs/2205.00879">This lecture</a> gives a nice in-depth and more technical overview,
@@ -197,23 +200,27 @@ which is the case when |g_k(t) = g(t)^k| for |g| with degree |1| for example, th
 <summary>
 <strong>Proof</strong>: <span class="expander">(click to expand)</span>
 </summary>
-Suppose |g \in \mathscr F| such that |f(g(t)) = t|. By taking degrees, we
+<p>Suppose |g \in \mathscr F| such that |f(g(t)) = t|. By taking degrees, we
 immediately see that |f| (and |g|) need to be of degree exactly one to have any chance for |g| to be
 a compositional inverse to |f|. If |g(t)^k = \sum_{n=0}^\infty b_{k,n} t^n|, then clearly we
-need |f_1 b_{1,1} = 1|. By induction, we have |b_{k+1,n} = \sum_{i+j=n} b_{1,i}b_{k,j}| but
-note that |b_{k,n} = 0| for all |n &lt; k| so this sum always has |k \leq j &lt; n| and thus
-|1 \leq i \leq n-k|. This leads to
+need |f_1 b_{1,1} = 1|. |g(t)^{k+1} = g(t)g(t)^k| implies
+|b_{k+1,n} = \sum_{i+j=n} b_{1,i}b_{k,j}|. But note that |b_{k,n} = 0| for all |n &lt; k|
+since |\deg g(t)^k = k| so this sum always has |k \leq j &lt; n| and thus
+|1 \leq i \leq n-k|. Because the |n|-th coefficient of |f(g(t))| is |0| for |n &gt; 1|,
 \[\sum_{k=1}^n f_k b_{k,n} = 0 = f_1 b_{1,n} + \sum_{k=2}^n f_k b_{k,n}\]
-where the last sum only involves |b_{1,i}| for |i &lt; n|. Alternatively, simply note that if
-|f(t) = th(t)| and |g(t) = tk(t)| then, |h| and |k| have degree |0|, and
+Expanding |b_{k,n}| in the last sum shows that it only involves |b_{1,i}| for |i &lt; n|.
+Since |\deg f = 1|, |f_1 \neq 0|, and we can thus solve for |b_{1,n}| iteratively.</p>
+Alternatively, simply note that if
+|f(t) = th(t)| and |g(t) = tk(t)| then |h| and |k| have degree |0| and
 |t = f(g(t)) = t k(t)h(g(t))|. So |k(t) = h(g(t))^{-1} = h(tk(t))^{-1}|. |h| is invertible and
-|tk(t)| clearly has degree greater than |0| so the composition is well-defined. Unfolding this
-expression for |k(t)| shows that the |i|th coefficient only depends on earlier coefficients.
-|\square|
+|tk(t)| clearly has degree greater than |0| so the composition is well-defined and invertible.
+Unfolding this expression for |k(t)| shows that the |i|th coefficient only depends on earlier
+coefficients. |\square|
 </details>
 <p>A useful result linking these two together is if |\deg f = 1|, then
 \[ 1 = t’ = [\bar f(f(t))]' = \bar f’(f(t))f’(t) \]
-In other words, |f’(t)^{-1} = \bar f’(f(t))|.</p>
+where |f’(t)| is differentiation of formal power series. In other words,
+|f’(t)^{-1} = \bar f’(f(t))|.</p>
 <h2 id="linear-functionals">Linear Functionals</h2>
 <p>For |L \in P^*| and |p \in P|, we’ll write |\pair{L}{p(x)}| for the action of
 |L| on |p|. Any such |L| is uniquely defined by its values on |x^n| for all |n\in\mathbb N|.</p>
@@ -248,14 +255,30 @@ structure on |\mathscr F| then induces an algebra structure on |P^*|. We can com
 = \sum_{i+j=n}\frac{c_n}{c_i c_j}\pair{f(t)}{x^i}\pair{g(t)}{x^j}\]</p>
 <p>We’ll call |L| a <strong>delta</strong>/<strong>invertible functional</strong> when it corresponds to a delta/invertible
 power series.</p>
-<h3 id="properties">Properties</h3>
-<p>If |\deg f &gt; \deg p| then |\pair{f(t)}{p(x)} = 0|.</p>
-<p>If |\deg p_n(x) = n| and |\pair{f(t)}{p_n(x)} = 0| for all |n \in \mathbb N|, then
-|f(t) = 0|.</p>
-<p>|\pair{f(at)}{p(x)} = \pair{f(t)}{p(ax)}| [<strong>Proof</strong>: Follows immediately from
-|\pair{a^n t^n}{x^n} = a^n c_n = \pair{t^n}{a^n x^n}|. |\square|]</p>
-<p>|p(x) = \sum_{n=0}^\infty \frac{\pair{t^n}{p(x)}}{c_n}x^n|</p>
-<p>If |\deg f_k = k| and |\pair{f_k(t)}{p(x)} = 0| for all |k \in \mathbb N|, then |p(x) = 0|.</p>
+<h3 id="some-properties">Some Properties</h3>
+<p><span id="yiyi"><strong>Proposition</strong> (id:yiyi):</span> <em>If |\deg f &gt; \deg p| then |\pair{f(t)}{p(x)} = 0|.</em><br/>
+<strong>Proof</strong>: Let |N = \deg p|.
+|\pair{f(t)}{p(x)} = \sum_{n=0}^N p_n\pair{f(t)}{x^n} = \sum_{n=0}^N p_n f_n c_n| but
+|f_n = 0| for all |n &lt; \deg f|. |\square|</p>
+<p><span id="pove"><strong>Proposition</strong> (id:pove):</span> <em>If |\deg p_n(x) = n| and |\pair{f(t)}{p_n(x)} = 0| for all |n \in \mathbb N|, then |f(t) = 0|.</em><br/>
+<strong>Proof</strong>: If |f(t) = \sum_{k=K}^\infty f_k t^k|, then
+|\pair{f(t)}{p_K(x)} = p_{K,K}\pair{f(t)}{x^K} = p_{K,K} f_K c_K = 0| so |f_K = 0| and
+we can repeat with |K+1|. |\square|</p>
+<p><span id="fpoz"><strong>Proposition</strong> (id:fpoz):</span> <em>|\pair{f(at)}{p(x)} = \pair{f(t)}{p(ax)}|</em><br/>
+<strong>Proof</strong>: Follows immediately from
+|\pair{a^n t^n}{x^n} = a^n c_n = \pair{t^n}{a^n x^n}|. |\square|</p>
+<p><span id="nxqu"><strong>Proposition</strong> (id:nxqu):</span> <em>|p(x) = \sum_{n=0}^\infty \frac{\pair{t^n}{p(x)}}{c_n}x^n|</em><br/>
+<strong>Proof</strong>: Just expand |p(x)| as |\sum_{n=0}^{\deg p} p_n x^n| on both sides and simplify.
+|\square|</p>
+<p><span id="rnhv"><strong>Proposition</strong> (id:rnhv):</span> <em>If |\deg f_k = k| and |\pair{f_k(t)}{p(x)} = 0| for all |k \in \mathbb N|, then |p(x) = 0|.</em><br/>
+<strong>Proof</strong>: If |p(x) = \sum_{n=0}^k p_n x^n| and |f_k(t) = \sum_{j=k}^\infty a_j t^j|,
+then |\pair{f_k(t)}{p(x)} = \pair{a_k t^k}{p_k x^k} = a_k p_k c_k = 0| so |p_k = 0|.
+|\square|</p>
+<p>Propositions <a href="#pove">(id:pove)</a> and <a href="#rnhv">(id:rnhv)</a> will often be invoked
+tacitly to show that two formal power series or polynomials are equal. For example, choose
+|p(x) = r(x) - s(x)| in <a href="#rnhv">proposition (id:rnhv)</a>. In particular, we will often
+just prove something like |\pair{t^k}{r(x)} = \pair{t^k}{s(x)}| with |k| implicitly being
+arbitrary to conclude |r(x) = s(x)|.</p>
 <h3 id="evaluation-functional">Evaluation Functional</h3>
 <p>We always have the <strong>evaluation functional</strong> |\varepsilon_y| for |y \in \mathbb K| defined by
 \[\pair{\varepsilon_y(t)}{p(x)} = p(y)\] Note that this definition doesn’t depend on the choice
@@ -283,12 +306,15 @@ of which linear operators are of this form.</p>
 \[ \pair{f(t)g(t)}{p(x)} = \pair{f(t)}{g(t)p(x)} \] where |g(t) p(x)| is the action of the
 linear operator induced by |g(t)| on |p(x)|. We can derive what the induced linear operator must
 be to satisfy this property.</p>
+<p>If |k \leq m| and |k \leq n|, then</p>
 <p>\[\begin{align}
-c_n \delta_m^n
-&amp; = \pair{t^m}{x^n} \\
+\pair{t^{m-k}}{t^k x^n}
 &amp; = \pair{t^{m-k} t^k}{x^n} \\
-&amp; = \pair{t^{m-k}}{t^k x^n} \\
-&amp; = \bigpair{t^{m-k}}{\frac{c_n}{c_{n-k}}x^{n-k}}
+&amp; = \pair{t^m}{x^n} \\
+&amp; = c_n \delta_m^n \\
+&amp; = c_n \delta_{m-k}^{n-k} \\
+&amp; = c_n \frac{\pair{t^{m-k}}{x^{n-k}}}{c_{n-k}} \\
+&amp; = \bigpair{t^{m-k}}{\frac{c_n}{c_{n-k}} x^{n-k}}
 \end{align}\]
 so |t^k x^n = \frac{c_n}{c_{n-k}} x^{n-k}| for |k \leq n| and |0| otherwise. Thus,
 \[f(t) x^n = \sum_{k=0}^n \frac{c_n}{c_{n-k}} f_k x^{n-k} \]
@@ -317,6 +343,9 @@ choices of |c|, |t| behaves as the following linear operators:</p>
 |t = 4(1 + \alpha + \beta + 2xD)^{-1} (2 + \alpha + \beta + 2xD)^{-1} x^{-1} (\alpha + xD)|</li>
 <li>|c_n = (1-q^n)^{-1} \prod_{k=1}^n (1-q^k)| implies |tp(x) = (p(qx) - p(x))/(qx - x)|</li>
 </ul>
+<p>Here |x_{(n)}| and |x^{(n)}| are the
+<a href="https://en.wikipedia.org/wiki/Falling_and_rising_factorials">falling and rising factorials</a>
+respectively.</p>
 <p>A linear operator |T| on |\mathscr F| is <strong>continuous</strong> if given a sequence of formal power series
 |\pseq{f_k}{k}| such that |\deg f_k \to \infty| as |k \to \infty|, we have
 |\deg T(f_k) \to \infty| as |k \to \infty|.</p>
@@ -324,7 +353,8 @@ choices of |c|, |t| behaves as the following linear operators:</p>
 \[ T\left(\sum_{k=0}^\infty a_k f_k(t)\right) = \sum_{k=0}^\infty a_k T(f_k(t)) \]
 for all sequences |\pseq{a_k}{k}| in |\mathbb K| and
 |\pseq{f_k}{k}| in |\mathscr F| for which |\deg f_k \to \infty|
-as |k \to \infty|.</em></p>
+as |k \to \infty|. In particular, a continuous linear operator is completely determined by its
+action on the elements of a pseudobasis.</em></p>
 <details>
 <summary>
 <strong>Proof</strong>: <span class="expander">(click to expand)</span>
@@ -453,7 +483,9 @@ Then for a |p \in P|,
 <strong>Proof</strong>: <span class="expander">(click to expand)</span>
 </summary>
 Choose |h = \varepsilon_y| in the <a href="#ExpansionTheorem">Expansion Theorem</a>,
-then apply it as a linear functional to |p|.
+then apply it as a linear functional to |p|. (Note this proof relies on |\mathbb K| having
+characteristic |0| so that |p(y) = q(y)| as functions |\mathbb K \to \mathbb K| implies |p = q|
+as polynomials.)
 |\square|
 </details>
 <p><span id="GeneratingFunction"><strong>Theorem</strong> (Generating Function):</span> <em>|\pseq{s_n(x)}{n}| is
@@ -471,11 +503,12 @@ for all |y \in \mathbb K|.</em></p>
 = \sum_{k=0}^\infty \frac{s_k(y)}{c_k} g(t) f(t)^k \]
 Substituting |\bar f(t)| for |t| and dividing both sides by |g(\bar f(t))| gives the result.</p>
 For the reverse implication, if |\pseq{r_n(x)}{n}| is the Sheffer sequence for |(g, f)| then we
-immediately get
+immediately get from the forward implication
 \[ \sum_{k=0}^\infty \frac{r_k(y)}{c_k} t^k
 = \frac{1}{g(\bar f(t))} \varepsilon_y(\bar f(t))
 = \sum_{k=0}^\infty \frac{s_k(y)}{c_k} t^k \]
 and applying both sides to |x^n| then gives |s_n(y) = r_n(y)| for all |y \in \mathbb K|.
+(Again, this proof relies on the characteristic of |\mathbb K| being |0|.)
 |\square|
 </details>
 <p><span id="ConjugateRepresentation"><strong>Theorem</strong> (Conjugate Representation):</span> <em>|\pseq{s_n(x)}{n}| is Sheffer for
@@ -508,7 +541,7 @@ for |\alpha\neq 0|.</em></p>
 \[\begin{align}
 \pair{t^k}{g(t/\alpha) s_n(\alpha x)}
 &amp; = \pair{t^k g(t/\alpha)}{s_n(\alpha x)} \\
-&amp; = \pair{(\alpha t)^k g(\alpha t/\alpha)}{s_n(x)} \\
+&amp; = \pair{(\alpha t)^k g(\alpha t/\alpha)}{s_n(x)} \tag{proposition (id: fpoz)} \\
 &amp; = \alpha^k \pair{g(t) t^k}{s_n(x)} \\
 &amp; = \alpha^k c_n \delta_k^n \\
 &amp; = \alpha^n c_n \delta_k^n \\
@@ -571,6 +604,9 @@ Thus |\pseq{g(t)s_n(x)}{n}| is associated to |f| which is equivalent to |\pseq{s
 being Sheffer for |(g, f)|.
 |\square|
 </details>
+<p>Iterating |k| times gives |f(t)^k s_n(x) = \frac{c_n}{c_{n-k}}s_{n-k}(x)|,
+and this implies
+\[ h(f(t)) s_n(x) = \sum_{k=0}^n \frac{c_n}{c_{n-k}} h_k s_{n-k}(x) \]</p>
 <p><span id="tvdx"><strong>Corollary</strong> (id:tvdx):</span>
 \[ ts_n(x) = \sum_{k=0}^{n-1} \frac{c_n}{c_k c_{n-k}} \pair{t}{p_{n-k}(x)} s_k(x) \]</p>
 <details>
@@ -756,7 +792,7 @@ Start with the <a href="#PolynomialExpansionTheorem">Polynomial Expansion Theore
 &amp; = \sum_{n=0}^{n+1} \left[\frac{\pair{g’(t)}{f(t)^k s_n(x)}
 + \pair{kg(t)f’(t)}{f(t)^{k-1} s_n(x)}}{c_k}\right] s_k(x) \\
 &amp; = \sum_{n=0}^{n+1} \left[\frac{c_n}{c_k c_{n-k}}\pair{g’(t)}{s_{n-k}(x)}
-+ \frac{kc_n}{c_{n-k+1}c_k}\pair{g(t)f’(t)}{s_{n-k+1}(x)}\right] s_k(x)
++ \frac{kc_n}{c_k c_{n-k+1}}\pair{g(t)f’(t)}{s_{n-k+1}(x)}\right] s_k(x)
 \end{align}\]
 |\square|
 </details>
@@ -779,14 +815,16 @@ side has degree |k-1| implying |\partial| is continuous.
 <summary>
 <strong>Proof</strong>: <span class="expander">(click to expand)</span>
 </summary>
-<p>For the reverse direction, since |f| is a delta series in the <a href="#oqyq">previous theorem</a>
+<p>For the reverse direction, since |f| is a delta series in <a href="#oqyq">theorem (id:oqyq)</a>
 and |\theta^* f(t)^k = kf(t)^{k-1}|, |\pseq{\theta^* f(t)^k}{k}| is a pseudobasis and so
 |\theta^*| is surjective.</p>
 For the forward direction, if |\partial| is a surjective derivation, then it is an adjoint of a
-linear operator on |P| because it is continuous. Generally, we have
-|\partial f(t) = f’(t)\partial t| so we can solve |f’(t) = (\partial t)^{-1}| with |f(0) = 0|,
-i.e. |\deg f = 1|. Then |\partial f(t)^k = kf(t)^{k-1} f’(t)\partial t| and
-|f’(t) = (\partial t)^{-1}| so we end up with just |\partial f(t)^k = k f(t)^{k-1}| as desired.
+linear operator on |P| because it is continuous. We want to find the delta series |f| for which the
+adjoint is the umbral shift. Generally, we have |\partial f(t)^k = kf(t)^{k-1} f’(t)\partial t|,
+and we want |\partial f(t)^k = k f(t)^{k-1}| for <a href="#oqyq">theorem (id:oqyq)</a>.
+Thus we want |f’(t)\partial t = 1| or |f’(t) = (\partial t)^{-1}| where |\partial t| is
+invertible because |\partial| is surjective. We can solve this differential equation with
+|f(0) = 0|, i.e. |\deg f = 1|, to determine the delta series |f|.
 |\square|
 </details>
 <p><span id="woxc"><strong>Lemma</strong> (id:woxc):</span> <em>If |f| and |g| are delta series, then
@@ -840,7 +878,7 @@ formal power series that is the output of |\theta_f^*|.</em></p>
 \end{align}\]
 |\square|
 </details>
-<p>This lemma shows that no umbral shift has the form |g(t)| for a formal power series |g|.</p>
+<p>This lemma shows that <em>no</em> umbral shift has the form |g(t)| for a formal power series |g|.</p>
 <p><span id="omlq"><strong>Theorem</strong> (id:omlq):</span> <em>Let |\pseq{s_n(x)}{n}| be Sheffer for |(g, f)|.
 Then if |\theta_f| is the umbral shift for |f|,</em>
 \[ s_{n+1}(x) = \frac{c_{n+1}}{(n+1)c_n}(g(t)\theta_f^*(g(t)^{-1}) + \theta_f)s_n(x) \]</p>
@@ -977,11 +1015,11 @@ for all |n \geq 1|.</em></p>
 \end{align}\]
 |\square|
 </details>
-<p><span id="hcem"><strong>Corollary</strong> (id:hcem):</span> <em>Let |\pseq{p_n(x)}{n}| is associated to |f| and
-|\pseq{q_n(x)}{n}| is associated to |gf| with |g| invertible. Then
+<p><span id="hcem"><strong>Corollary</strong> (id:hcem):</span> <em>Let |\pseq{p_n(x)}{n}| be associated to |f| and
+|\pseq{q_n(x)}{n}| be associated to |gf| with |g| invertible. Then
 \[ q_n(x) = \theta_t g(t)^{-n} \theta_t^{-1} p_n(x) \]
 where |\theta_t^{-1} x^{n+1} = (c_{n+1}/((n+1)c_n))x^n| and |\theta_t^{-1} 1 = 0|.</em></p>
-<p><strong>Proof</strong>: Just write |q_n(x)| using the <a href="#TransferFormulaAlt">alternate form of the Transfer Formula</a>. |\square|</p>
+<p><strong>Proof</strong>: Note that |\theta_t^{-1}\theta_t = 1| and write |q_n(x)| using the <a href="#TransferFormulaAlt">alternate form of the Transfer Formula</a>. |\square|</p>
 <p><span id="jyhq"><strong>Theorem</strong> (id:jyhq):</span> <em>Let |\pseq{s_n(x)}{n}| be Sheffer for |(g, f)|, and let |h| and |l| be invertible
 series. Then the sequence |r_n(x) = h(t)l(t)^n s_n(x)| is Sheffer for
 \[ \left(\frac{[l(t)^{-1} f(t)]'}{f’(t)h(t)}l(t)g(t), l(t)^{-1} f(t) \right) \]</em></p>
@@ -1016,6 +1054,9 @@ to |l(t)^{-1}f(t)| and thus |\pseq{r_n(x)}{n}| is Sheffer for
 |\lambda_f| on |P| defined by \[ \lambda_f x^n = p_n(x) \]
 This implies the adjoint operator is
 \[ \lambda_f^* g(t) = \sum_{k=0}^\infty \frac{\pair{g(t)}{p_k(x)}}{c_k} t^k \]</p>
+<p>The <a href="#TransferFormula">Transfer Formula</a> gives us the action of a transfer operator at
+each monomial. Note, this doesn’t imply that a transfer operator is induced by a formal power
+series, since the Transfer Formula uses a <em>different</em> formal power series for each monomial.</p>
 <p><span id="oony"><strong>Lemma</strong> (id:oony):</span> <em>A |\mathbb K|-algebra homomorphism of |\mathscr F|
 is an automorphism if and only if it is preserves degree.</em></p>
 <details>
@@ -1023,10 +1064,10 @@ is an automorphism if and only if it is preserves degree.</em></p>
 <strong>Proof</strong>: <span class="expander">(click to expand)</span>
 </summary>
 <p>For the forward direction, assume |T| is an automorphism. Let |f(t) = T^{-1}(t)| with
-|\deg f = k| so |f(t) = t^kg(t)|. |k &gt; 0| since |\mathbb K|-algebra homomorphisms send constants
-to constants but then |T(f(t)) = t = T(t)^k T(g(t))| and the degrees can only line up if |k = 1|
-and |\deg T(t) = 1|. |T| thus can’t reduce degree and by the same logic neither can |T^{-1}|, so
-|T| must preserve degree.</p>
+|\deg f = k| so |f(t) = t^kg(t)| with |g(t)| invertible. |k &gt; 0| since |\mathbb K|-algebra
+homomorphisms send constants to themselves but then |T(f(t)) = t = T(t)^k T(g(t))| and the degrees
+can only line up if |k = 1| and |\deg T(t) = 1|. |T| thus can’t reduce degree and by the same logic
+neither can |T^{-1}|, so |T| must preserve degree.</p>
 For the reverse direction, a degree preserving linear operator is continuous. We have that
 |\pseq{T(t)^k}{k}| is a pseudobasis, so for any |f \in \mathscr F|, we can
 write
@@ -1071,7 +1112,6 @@ This makes |\lambda_f(g(t)) = g(\bar f(t))|.</em></p>
 &amp; = \pair{g(t)h(t)}{p_n(x)} \\
 &amp; = \sum_{i+j=n} \frac{c_n}{c_i c_j} \pair{g(t)}{p_i(x)}\pair{h(t)}{p_j(x)} \tag{theorem (id:jtbs)} \\
 &amp; = \sum_{i+j=n} \frac{c_n}{c_i c_j} \pair{\lambda^* g(t)}{x^i}\pair{\lambda^* h(t)}{x^j} \\
-&amp; = \sum_{i+j=n} \frac{c_n}{c_i c_j} \pair{\lambda^* g(t)}{x^i}\pair{\lambda^* h(t)}{x^j} \\
 &amp; = \pair{(\lambda^* g(t))(\lambda^* h(t))}{x^n}
 \end{align}\]</p>
 For the reverse direction,
@@ -1092,9 +1132,9 @@ linear operator on |P|, and being an automorphism there is some |f \in \mathscr 
 mapped to |t| by the automorphism so the <a href="#stji">previous theorem</a> applies.
 |\square|</p>
 <p>Summarizing some results of this form: There’s a bijection between continuous linear operators
-on |\mathscr F| and linear operators on |P|. Further, there’s a bijection between continuous
-surjective derivations on |\mathscr F| and umbral shifts, and a bijection between continuous
-|\mathbb K|-algebra automorphisms on |\mathscr F| and transfer operators.</p>
+on |\mathscr F| and linear operators on |P| via adjointness. Further, there’s a bijection between
+continuous surjective derivations on |\mathscr F| and umbral shifts, and a bijection between
+continuous |\mathbb K|-algebra automorphisms on |\mathscr F| and transfer operators.</p>
 <p><span id="ocfq"><strong>Corollary</strong> (id:ocfq):</span> <em>Transfer operators form a group with
 |(\lambda_f^*)^{-1} = \lambda_{\bar f}^*| and
 |\lambda_f^* \circ \lambda_g^* = \lambda_{g\circ f}^*|.</em></p>
@@ -1219,9 +1259,7 @@ Of course, |\pair{g(\bar f(t))}{x^0} = \pair{g(t)}{x^0}| since |\deg \bar f = 1|
 <summary>
 <strong>Proof</strong>: <span class="expander">(click to expand)</span>
 </summary>
-<p>First we characterize the action of |\lambda_f^*|.
-|\lambda_f^*(g(f(t))) = g(\lambda_f^*(f(t))) = g(t)| so
-|\lambda_f^*(g(t)) = g(\bar f(t))|.</p>
+<p>From <a href="#stji">theorem (id:stji)</a>, |\lambda_f^*(g(t)) = g(\bar f(t))|.</p>
 We conclude with a use of the <a href="#TransferFormulaAlt">alternate form of the Transfer Formula</a>
 with |\pseq{p_n(x)}{n}| being associated to |f|.
 \[\begin{align}
@@ -1274,8 +1312,8 @@ simplifies to \[ 2xT_n(x) + T_{n+1}(x) + T_{n-1}(x) = 0 \]</p>
 <p>A formal power series |f| is <strong>invertible</strong> iff |\deg f = 0| and a <strong>delta series</strong> iff
 |\deg f = 1|. We call a linear functional/operator induced by an invertible/delta series an
 <strong>invertible</strong>/<strong>delta</strong> <strong>functional</strong>/<strong>operator</strong>.</p>
-<p>Defining property of |\pseq{s_n(x)}{n}| being <strong>Sheffer</strong> for |(g, f)| where |g| is an invertible
-series and |f| is a delta series:
+<p>The defining property of |\pseq{s_n(x)}{n}| being <strong>Sheffer</strong> for |(g, f)| where |g| is an
+invertible series and |f| is a delta series is
 \[ \pair{g(t)f(t)^k}{s_n(x)} = \pair{t^k}{x^n} = c_n \delta_k^n \]</p>
 <p>If |g(t) = 1|, then we say |\pseq{s_n(x)}{n}| is the <strong>associated sequence</strong> for |f|,
 and usually we’ll use |\pseq{p_n(x)}{n}| instead.</p>
@@ -1283,9 +1321,10 @@ and usually we’ll use |\pseq{p_n(x)}{n}| instead.</p>
 <p>Formal power series as operators
 \[ t^k x^n = \frac{c_n}{c_{n-k}} x^{n-k} \]
 and generally,
-\[f(t) x^n = \sum_{k=0}^n \frac{c_n}{c_{n-k}} f_k x^{n-k} \]</p>
+\[h(t) x^n = \sum_{k=0}^n \frac{c_n}{c_{n-k}} h_k x^{n-k} \]</p>
 <p>We can generalize this to Sheffer sequences a la
-\[h(f(t)) s_n(x) = \sum_{k=0}^n \frac{c_n}{c_{n-k}} h_k s_{n-k}(x) \]</p>
+\[h(f(t)) s_n(x) = \sum_{k=0}^n \frac{c_n}{c_{n-k}} h_k s_{n-k}(x) \]
+where |(g, f)| is Sheffer for |\pseq{s_n(x)}{n}| for some invertible |g \in \mathscr F|.</p>
 <p>A linear operator |T| on |\mathscr F| is <strong>continuous</strong> if given
 |\pseq{f_k}{k}| such that |\deg f_k \to \infty| as |k \to \infty|, we have
 |\deg T(f_k) \to \infty| as |k \to \infty|.</p>
