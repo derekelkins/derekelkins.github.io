@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">Complex-Step Differentiation</h2>
     <p class="blog-post-meta">August  9, 2020 05:28 UTC
         
-        (Last updated on August 24, 2025 23:27 UTC)
+        (Last updated on January 13, 2026 10:07 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -182,24 +182,37 @@ A better approach is to use the formulas |\left(\oint \frac{z\mathrm dz}{p(z)}\r
 Similar ideas can be used to adapt this to counting and finding multiple roots. See
 <a href="https://doi.org/10.1137/130931035">Numerical Algorithms based on Analytic Function Values at Roots of Unity</a> by Austin, Kravanja, and
 Trefethen (2014) which is a good survey in general.</p>
-<p>Another very common use of Cauchy’s Residue Theorem is to sum (convergent) infinite series. |\tan(\pi z)/\pi| has a zero at
-|z = k| for each integer |k| and a non-zero derivative at those points. In fact, the derivative is |1|. Alternatively,
-we could use |\sin(\pi z)/\pi| which has a zero at |z = k| for each integer |k| but has derivative |(-1)^k| at those points.
-Therefore, |\pi\cot(\pi z) = \pi/\tan(\pi z)| has a (first-order) pole at |z = k| for each integer |k|
-with residue |1|. In particular, if |f| is a holomorphic function (at least near the real axis), then the value of the
-Cauchy integral of |f(z)\pi\cot(\pi z)| along a Hankel contour will be |2\pi i \sum_{k=0}^\infty f(k)|. Along an infinite strip
-around the real axis we’d get |2 \pi i \sum_{k=-\infty}^\infty f(k)|. As an example, we can consider the
-<a href="https://en.wikipedia.org/wiki/Basel_problem">famous sum</a>, |\sum_{k=1}^\infty 1/k^2|. It can be shown that if |f| is a meromorphic
-function whose poles are not located at integers and |\vert zf(z)\vert| is bounded for sufficiently large |\vert z\vert|, then |\oint f(z)\pi \cot(\pi z)\mathrm dz = 0|. We thus have
-that \[\sum_{k=-\infty}^{\infty} f(k) = -\sum_j \mathrm{Res}(f(z)\pi\cot(\pi z); z_j)\] where |z_j| are the poles of |f|.
-In particular, |f(z) = \frac{1}{z^2 + a^2}| has (first-order) poles at |\pm ai|. This gives us simply
-<span class="math display">$$\sum_{k=-\infty}^{\infty} \frac{1}{k^2 + a^2} = -\pi\frac{\cot(\pi a i)-\cot(-\pi a i)}{2ai} = \frac{\pi}{a}\coth(\pi a)$$</span>
-where I’ve used |\coth(x) = i\cot(xi)| and the fact that |\coth| is an odd function. Exploiting the symmetry of the sum
-gives us <span class="math display">$$\sum_{k=1}^{\infty} \frac{1}{k^2 + a^2} = \frac{\pi}{2a}\coth(\pi a) - \frac{1}{2a^2}$$</span> By expanding |\coth|
-in a Laurent series, we see that the limit of the right-hand side as |a| approaches |0| is |\frac{\pi^2}{6}|. While contour
-integration is quite effective for coming up with analytic solutions to infinite sums, numerically integrating the contour
-integrals is also highly effective as illustrated in <a href="https://doi.org/10.1007/s10543-006-0077-9">Talbot quadratures and rational approximations</a>
-by Trefethen, Weideman, and Schmelzer (2006), for example.</p>
+<p>Another very common use of Cauchy’s Residue Theorem is to sum (convergent)
+infinite series. |\tan(\pi z)/\pi| has a zero at |z = k| for each integer
+|k| and a non-zero derivative at those points. In fact, the derivative is |1|.
+Alternatively, we could use |\sin(\pi z)/\pi| which has a zero at |z = k|
+for each integer |k| but has derivative |(-1)^k| at those points. Therefore,
+|\pi\cot(\pi z) = \pi/\tan(\pi z)| has a (first-order) pole at |z = k|
+for each integer |k| with residue |1|. In particular, if |f| is a holomorphic
+function (at least near the real axis), then the value of the Cauchy integral
+of |f(z)\pi\cot(\pi z)| along a Hankel contour will be |2\pi i
+\sum_{k=0}^\infty f(k)|. Along an infinite strip around the real axis we’d
+get |2 \pi i \sum_{k=-\infty}^\infty f(k)|. As an example, we can consider
+the <a href="https://en.wikipedia.org/wiki/Basel_problem">famous sum</a>,
+|\sum_{k=1}^\infty 1/k^2|. It can be shown that if |f| is a meromorphic
+function whose poles are not located at integers and |\vert zf(z)\vert| is
+bounded for sufficiently large |\vert z\vert|, then |\oint f(z)\pi
+\cot(\pi z)\mathrm dz = 0|. We thus have that
+\[\sum_{k=-\infty}^{\infty} f(k) = -\sum_j \mathrm{Res}(f(z)\pi\cot(\pi z); z_j)\]
+where |z_j| are the poles of |f| and |\mathrm{Res}(g(z); c)| is the residue of |g| at |c|.
+In particular, |f(z) = \frac{1}{z^2 + a^2}| has (first-order) poles at |\pm
+ai|. This gives us simply <span class="math display">$$\sum_{k=-\infty}^{\infty} \frac{1}{k^2 + a^2} =
+-\pi\frac{\cot(\pi a i)-\cot(-\pi a i)}{2ai} = \frac{\pi}{a}\coth(\pi a)$$</span>
+where I’ve used |\coth(x) = i\cot(xi)|, the <a href="https://en.wikipedia.org/wiki/Hyperbolic_functions#Definitions">hyperbolic cotangent</a>,
+and the fact that |\coth| is an odd function. Exploiting the symmetry of the sum gives us
+<span class="math display">$$\sum_{k=1}^{\infty} \frac{1}{k^2 + a^2} = \frac{\pi}{2a}\coth(\pi a) - \frac{1}{2a^2}$$</span> By
+expanding |\coth| in a <a href="https://en.wikipedia.org/wiki/Laurent_series">Laurent series</a><a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>
+about |0|, we see that the limit of the right-hand side as |a| approaches |0| is
+|\frac{\pi^2}{6}|. While contour integration is quite effective for coming up
+with analytic solutions to infinite sums, numerically integrating the contour
+integrals is also highly effective as illustrated in <a href="https://doi.org/10.1007/s10543-006-0077-9">Talbot quadratures and
+rational approximations</a> by
+Trefethen, Weideman, and Schmelzer (2006), for example.</p>
 <h2 id="computing-the-integrals">Computing the Integrals</h2>
 <p>We’ve seen in the previous section that |f’(z_0) = \frac{1}{2\pi i}\oint_{\Gamma} \frac{f(z)\mathrm dz}{(z-z_0)^2}|.
 This doesn’t much help us if we don’t have a way to compute the integrals. From this point forward, fix |\Gamma|
@@ -249,13 +262,13 @@ steadily decreases until there is no error at all.</p>
 |f’(|<span class="point"></span>|)|: <span id="complex"></span><br />
 error: <span id="complexError"></span></p>
 <p>This formula using |\operatorname{Im}| avoids catastrophic cancellation simply by not doing a subtraction. However, it turns out
-for real |x_0| (which is necessary to derive the simplified formula), there isn’t a problem either way. Using the first form of
+for real |x_0| (which is necessary to derive the simplified formula), there isn’t a problem either way. The first form of
 the Complex-Step Differentiation formula is also numerically stable. The key here is that the imaginary part of |x_0| and |f(x_0)| are
-both |0| and so we don’t get catastrophic cancellation for the same reason we wouldn’t get it with Central Differences if |f(x_0) = 0|.
+both |0|, and so we don’t get catastrophic cancellation for the same reason we wouldn’t get it with Central Differences if |f(x_0) = 0|.
 This suggests that if we wanted to evaluate |f’| at some non-zero point on the imaginary axis, Complex-Step Differentiation would
 perform poorly while Central Differences would perform well. Further, if we wanted to evaluate |f’| at some point not on either
 the real or imaginary axes, neither approach would perform well. In this case, choosing different values for |N| and the radius
-would be necessary<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>.</p>
+would be necessary<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>.</p>
 <p>A third perspective on Complex-Step Differentiation comes when we think about which value of |h| should we use. The smaller |f’(x_0)|
 is, the smaller we’d want |h| to be. Unlike Central Differences, there is little stopping us from having |h| be <em>very</em> small and
 values like |h=10^{-100}| are typical. In fact, around |h=10^{-155}| in double precision floating point arithmetic, |h| gets the
@@ -311,7 +324,7 @@ define the directional derivative of |f : V \to V| in the direction |v| via
 |\frac{\partial f}{\partial v}(x) \equiv \frac{\mathrm d f(x + \tau v)}{\mathrm d\tau}|. In our case,
 we have the basis vectors |\{1, \mathbf e_1, \mathbf e_2, I\}| though we only care about the even subalgebra
 corresponding to the basis vectors |\{1, I\}|. Define |\partial_1 f(x) \equiv \frac{\mathrm d f(x + \tau)}{\mathrm d \tau}|
-and |\partial_I f(x) \equiv \frac{\mathrm d f(x + \tau I)}{\mathrm d \tau}| assuming |f| is a spinor-valued function<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>.
+and |\partial_I f(x) \equiv \frac{\mathrm d f(x + \tau I)}{\mathrm d \tau}| assuming |f| is a spinor-valued function<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>.
 We can then define |\nabla_{\mathbf z} \equiv \partial_1 + I\partial_I|. We now have |\nabla_{\mathbf z} f = 0| is
 the equivalent to the Cauchy-Riemann equations where |f| is now a spinor-valued spinor function, i.e. a function of |\mathbf z|.</p>
 See <a href="https://doi.org/10.1016/0022-247X(68)90002-4">Multivector Functions</a> by Hestenes for more about this.
@@ -563,11 +576,16 @@ of matrices, e.g. the square root, exponent, inverse, and log of a matrix. See
 for details.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn3"><p>See
 <a href="https://doi.org/10.1137/060659831">Is Gauss Quadrature Better than Clenshaw-Curtis?</a> by Trefethen (2008) for more details.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn4"><p>While focused on issues that mostly come up with very high-order derivatives, e.g. |100|-th derivatives and higher,
+<li id="fn4"><p>
+Probably the quickest way to compute the Laurent series is to simply note that
+|x\coth x = \frac{e^{2x}+1}{(e^{2x}-1)/x}| where the denominator is now invertible
+as a formal power series so we can apply <a href="https://en.wikipedia.org/wiki/Formal_power_series#Division">formal power series division</a>.
+Doing that produces |\coth x = x^{-1} + x/3 + O(x^3)|.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>While focused on issues that mostly come up with very high-order derivatives, e.g. |100|-th derivatives and higher,
 <a href="https://arxiv.org/abs/0910.1841">Accuracy and Stability of Computing High-Order Derivatives of Analytic Functions by Cauchy Integrals</a>
-by Bornemann (2009) nevertheless has a good discussions of the concerns here.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn5"><p>If
-we allowed arbitrary multivector-valued functions, then we’d need to add a projection producing the tangential derivative.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+by Bornemann (2009) nevertheless has a good discussions of the concerns here.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>If
+we allowed arbitrary multivector-valued functions, then we’d need to add a projection producing the tangential derivative.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 
