@@ -43,7 +43,7 @@
     <h2 class="blog-post-title" style="margin-top: 30px;">What is the coproduct of two groups?</h2>
     <p class="blog-post-meta">December 22, 2023 02:47 UTC
         
-        (Last updated on August 24, 2025 23:27 UTC)
+        (Last updated on February 25, 2026 01:28 UTC)
     </p>
     <h6 class="blog-post-meta">
         
@@ -67,7 +67,7 @@ and is described on the linked Wikipedia page.</p>
 <h2 id="groups-as-models-of-a-lawvere-theory">Groups as Models of a Lawvere Theory</h2>
 <p>A group is a model of an equational theory. This means a group is described by a set
 equipped with a collection of operations that must satisfy some equations. So we’d
-have a set, |G|, and operations |\mathtt{e} : () \to G|, |\mathtt{i} : G \to G|,
+have a set, |G|, and operations |\mathtt{e} : 1 \to G|, |\mathtt{i} : G \to G|,
 and |\mathtt{m} : G \times G \to G|. These operations satisfy the equations,
 \[
 \begin{align}
@@ -81,10 +81,10 @@ universally quantified over |x|, |y|, and |z|.</p>
 of compositions of arrows, in any category with finite products of an object, |G|,
 with itself. For example, the left inverse law becomes:
 \[
-\mathtt{m} \circ (\mathtt{i} \times id_G) = \mathtt{e} \circ {!}_G
+\mathtt{m} \circ \langle\mathtt{i}, id_G\rangle = \mathtt{e} \circ {!}_G
 \]
 where |{!}_G : G \to 1| is the unique arrow into the terminal object corresponding
-to the |0|-ary product of copies of |G|.</p>
+to the |0|-ary product of copies of |G| and |\langle f, g\rangle(x) = (f(x), g(x))|.</p>
 <p>One nice thing about this categorical description is that we can now talk about
 a group object in any category with finite products. Even better, we can make this
 pattern describing what a group is first-class. The (<strong>Lawvere</strong>) <strong>theory of a
